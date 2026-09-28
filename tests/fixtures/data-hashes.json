@@ -1,0 +1,15 @@
+{
+  "breedingData": "2384ccda20d851604ade5bff57de209aaf6764744417e3c30a147b3d11d039bb",
+  "monsterSprites": "d2f0033f2228fedb38e80bc760043db28cf25533c4ec39ec9e47fd783d270d13",
+  "overworldSprites": "5f63be3f2cd2f4b939e91e39de7527e156078b8219941a30163b8d8e1d9d328f",
+  "counts": {
+    "species": 326,
+    "playable": 315,
+    "matrixRows": 326,
+    "families": 11,
+    "plusRules": 10,
+    "roomRules": 26,
+    "monsterSprites": 325,
+    "overworldSprites": 325
+  }
+}
