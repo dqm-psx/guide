@@ -632,3 +632,28 @@ test('subscribe is a no-op without an event target', () => {
   const unsubscribe = adapter.subscribe('k', () => {});
   assert.doesNotThrow(() => unsubscribe());
 });
+
+test('create accepts either the DQMPlannerCore module or an instance', () => {
+  const fromModule = context.DQMAppState.create(context.DATA, context.DQMPlannerCore);
+  assert.equal(fromModule.summarize(fromModule.defaultState()).teams, 1);
+  const fromInstance = context.DQMAppState.create(context.DATA, core);
+  assert.equal(fromInstance.summarize(fromInstance.defaultState()).teams, 1);
+});
+
+test('setTargetPlan bounds real flat plan trees by parent depth and node count', () => {
+  let state = api.defaultState();
+  const teamId = state.teams[0].id;
+  state = api.addTarget(state, teamId, 60);
+  const targetId = state.teams[0].activeTargetId;
+  const chain = [];
+  for (let i = 0; i <= api.MAX_PLAN_DEPTH + 1; i += 1) {
+    chain.push({ id: 'n' + i, parent: i === 0 ? null : 'n' + (i - 1) });
+  }
+  assertCode(() => api.setTargetPlan(state, teamId, targetId, { speciesIndex: 60, context: 'shrine', rootId: 'n0', nodes: chain }), 'limit');
+  const wide = [];
+  for (let i = 0; i <= api.MAX_PLAN_NODES; i += 1) wide.push({ id: 'w' + i, parent: null });
+  assertCode(() => api.setTargetPlan(state, teamId, targetId, { speciesIndex: 60, context: 'shrine', rootId: 'w0', nodes: wide }), 'limit');
+  const shallow = chain.slice(0, 3);
+  state = api.setTargetPlan(state, teamId, targetId, { speciesIndex: 60, context: 'shrine', rootId: 'n0', nodes: shallow });
+  assert.ok(state.teams[0].targets[0].plan);
+});

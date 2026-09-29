@@ -428,3 +428,69 @@ test('create validates its inputs', () => {
   assert.throws(() => context.DQMRecipePlanner.create(null, context.DQMPlannerCore), err => err.code === 'invalid');
   assert.throws(() => context.DQMRecipePlanner.create(context.DATA, null), err => err.code === 'invalid');
 });
+
+test('room context prefers the room override over a plus rule for the same pair', () => {
+  const planner = createPlanner();
+  const samePair = item => item.parents[0] === 252 && item.parents[1] === 252;
+  const room = planner.suggestions(253, { context: 'room', pageSize: 5000 }).items.filter(samePair);
+  assert.equal(room.length, 1);
+  assert.equal(room[0].kind, 'flag_gated');
+  const shrine = planner.suggestions(253, { context: 'shrine', pageSize: 5000 }).items.filter(samePair);
+  assert.equal(shrine.length, 1);
+  assert.equal(shrine[0].kind, 'plus_threshold');
+});
+
+test('suggestions only use playable parents', () => {
+  const planner = createPlanner();
+  for (const context of ['base', 'shrine', 'room']) {
+    for (const item of planner.suggestions(0, { context, pageSize: 5000 }).items) {
+      assert.ok(item.parents[0] >= 0 && item.parents[0] < 315, 'pedigree is playable');
+      assert.ok(item.parents[1] === null || (item.parents[1] >= 0 && item.parents[1] < 315), 'mate is playable or a wildcard');
+    }
+  }
+});
+
+test('ranking puts roster recipes first and keeps the documented tie order', () => {
+  const planner = createPlanner();
+  const all = planner.suggestions(0, { context: 'base', pageSize: 5000 }).items;
+  const last = all[all.length - 1];
+  const reranked = planner.suggestions(0, { context: 'base', rosterSpecies: last.parents, pageSize: 5000 }).items;
+  assert.deepEqual([reranked[0].parents[0], reranked[0].parents[1]], [last.parents[0], last.parents[1]]);
+  assert.ok(reranked[0].rosterParents.length > 0);
+  const kindRank = { base: 0, plus_threshold: 1, flag_gated: 2 };
+  for (let i = 1; i < all.length; i += 1) {
+    const prev = all[i - 1];
+    const cur = all[i];
+    const cmp = kindRank[prev.kind] - kindRank[cur.kind] || prev.parents[0] - cur.parents[0] || prev.parents[1] - cur.parents[1];
+    assert.ok(cmp <= 0, 'stable order at index ' + i);
+  }
+});
+
+test('a recipe is canonicalized to the verified condition and flagged when tampered', () => {
+  const planner = createPlanner();
+  const plan = planner.createPlan(17, 'shrine');
+  const expanded = planner.expand(plan, plan.rootId, { parents: [1, 1], kind: 'plus_threshold', context: 'shrine', condition: 'ignored', minPlus: 255 });
+  const root = expanded.nodes.find(node => node.id === expanded.rootId);
+  assert.equal(root.recipe.minPlus, 4);
+  assert.match(root.recipe.condition, /\+4/);
+  root.recipe.minPlus = 255;
+  const flags = planner.validateContext(expanded);
+  assert.ok(flags.some(flag => flag.nodeId === root.id), 'a tampered + threshold is flagged');
+});
+
+test('a recipe cannot be stored under a context other than the plan context', () => {
+  const planner = createPlanner();
+  const plan = planner.createPlan(2, 'shrine');
+  assert.throws(
+    () => planner.expand(plan, plan.rootId, { parents: [0, 89], kind: 'base', context: 'room', condition: '', minPlus: null }),
+    err => err.code === 'invalid'
+  );
+  const roomPlan = planner.createPlan(52, 'room');
+  const expanded = planner.expand(roomPlan, roomPlan.rootId, { parents: [45, 97], kind: 'flag_gated', context: 'room', condition: '', minPlus: null });
+  assert.ok(planner.validate(expanded));
+  const shrinePlan = planner.createPlan(52, 'shrine');
+  assert.throws(
+    () => planner.expand(shrinePlan, shrinePlan.rootId, { parents: [45, 97], kind: 'flag_gated', context: 'room', condition: '', minPlus: null }),
+    err => err.code === 'invalid'
+  );
+});

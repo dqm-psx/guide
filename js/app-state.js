@@ -47,6 +47,12 @@
     if (!data || !core) {
       throw new Error('The species data and DQMPlannerCore are required.');
     }
+    if (typeof core.normalizeState !== 'function' && typeof core.create === 'function') {
+      core = core.create(data);
+    }
+    if (typeof core.normalizeState !== 'function') {
+      throw new Error('The DQMPlannerCore module or instance is required.');
+    }
     const playable = new Set();
     for (const species of data.species) {
       if (record(species) && species.playable === true && Number.isInteger(species.index)) {
@@ -481,6 +487,31 @@
         fail('invalid', 'The plan must be JSON-serializable.');
       }
       if (serialized.length > MAX_IMPORT_LENGTH) fail('limit', 'The plan is too large to save.');
+      if (Array.isArray(plan.nodes)) {
+        if (plan.nodes.length > MAX_PLAN_NODES) fail('limit', 'A plan can hold at most ' + MAX_PLAN_NODES + ' nodes.');
+        const byId = new Map();
+        for (const node of plan.nodes) {
+          if (node && typeof node === 'object' && typeof node.id === 'string') {
+            if (byId.has(node.id)) fail('invalid', 'The plan has duplicate node IDs.');
+            byId.set(node.id, node);
+          }
+        }
+        for (const id of byId.keys()) {
+          let cursor = id;
+          let depth = 0;
+          const chain = new Set();
+          while (cursor !== null && cursor !== undefined) {
+            if (chain.has(cursor)) fail('invalid', 'The plan contains a cycle.');
+            chain.add(cursor);
+            depth += 1;
+            if (depth > MAX_PLAN_DEPTH) fail('limit', 'A plan can be at most ' + MAX_PLAN_DEPTH + ' levels deep.');
+            const node = byId.get(cursor);
+            if (!node) break;
+            cursor = node.parent === undefined ? null : node.parent;
+          }
+        }
+        return;
+      }
       let nodes = 0;
       let maxDepth = 0;
       const visit = (value, depth, seen) => {

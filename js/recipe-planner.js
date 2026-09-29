@@ -441,6 +441,20 @@
       }
     }
 
+    function canonicalStoredRecipe(speciesIndex, context, stored) {
+      const found = findRecipe(speciesIndex, context, stored.parents);
+      if (!found || found.kind !== stored.kind || found.context !== stored.context) {
+        throw fail('invalid', 'This recipe does not produce species ' + speciesIndex + ' in the ' + context + ' context.');
+      }
+      return {
+        parents: [found.parents[0], found.parents[1]],
+        kind: found.kind,
+        context: found.context,
+        condition: found.condition === undefined ? '' : found.condition,
+        minPlus: found.minPlus === undefined ? null : found.minPlus
+      };
+    }
+
     function applyRecipe(node, nodeId, stored) {
       const pedigreeId = makeNodeId();
       const mateId = makeNodeId();
@@ -483,13 +497,10 @@
       if (!node) throw fail('invalid', 'Plan node ' + nodeId + ' does not exist.');
       if (node.children !== null) throw fail('invalid', 'Plan node ' + nodeId + ' is already expanded.');
       const stored = normalizeStoredRecipe(recipe);
-      const found = findRecipe(node.speciesIndex, next.context, stored.parents);
-      if (!found || found.kind !== stored.kind) {
-        throw fail('invalid', 'This recipe does not produce species ' + node.speciesIndex + ' in the ' + next.context + ' context.');
-      }
-      verifyWithCore(node.speciesIndex, stored);
+      const canonical = canonicalStoredRecipe(node.speciesIndex, next.context, stored);
+      verifyWithCore(node.speciesIndex, canonical);
       const ancestors = ancestorSpecies(next, nodeId);
-      for (const childSpecies of stored.parents) {
+      for (const childSpecies of canonical.parents) {
         if (childSpecies !== null && ancestors.indexOf(childSpecies) !== -1) {
           throw fail('invalid', 'Expanding species ' + node.speciesIndex + ' with these parents would create a cycle: species ' + childSpecies + ' is already an ancestor.');
         }
@@ -502,7 +513,7 @@
         throw fail('limit', 'The plan exceeds the maximum of ' + MAX_PLAN_NODES + ' nodes.');
       }
       node.fulfillment = { choice: 'recipe', rosterEntryId: node.fulfillment.rosterEntryId };
-      const children = applyRecipe(node, nodeId, stored);
+      const children = applyRecipe(node, nodeId, canonical);
       next.nodes.push(children[0], children[1]);
       return next;
     }
@@ -529,13 +540,10 @@
       if (!node) throw fail('invalid', 'Plan node ' + nodeId + ' does not exist.');
       if (node.children === null) throw fail('invalid', 'Plan node ' + nodeId + ' is not expanded.');
       const stored = normalizeStoredRecipe(recipe);
-      const found = findRecipe(node.speciesIndex, next.context, stored.parents);
-      if (!found || found.kind !== stored.kind) {
-        throw fail('invalid', 'This recipe does not produce species ' + node.speciesIndex + ' in the ' + next.context + ' context.');
-      }
-      verifyWithCore(node.speciesIndex, stored);
+      const canonical = canonicalStoredRecipe(node.speciesIndex, next.context, stored);
+      verifyWithCore(node.speciesIndex, canonical);
       const ancestors = ancestorSpecies(next, nodeId);
-      for (const childSpecies of stored.parents) {
+      for (const childSpecies of canonical.parents) {
         if (childSpecies !== null && ancestors.indexOf(childSpecies) !== -1) {
           throw fail('invalid', 'Replacing the recipe on species ' + node.speciesIndex + ' would create a cycle: species ' + childSpecies + ' is already an ancestor.');
         }
@@ -551,7 +559,7 @@
         throw fail('limit', 'The plan exceeds the maximum depth of ' + MAX_PLAN_DEPTH + '.');
       }
       next.nodes = next.nodes.filter(n => !toRemove.has(n.id));
-      const children = applyRecipe(node, nodeId, stored);
+      const children = applyRecipe(node, nodeId, canonical);
       next.nodes.push(children[0], children[1]);
       return { plan: next, undo: () => plan };
     }
@@ -660,6 +668,9 @@
           throw fail('invalid', 'Plan node ' + node.id + ' has an invalid species index.');
         }
         if (node.recipe !== null) validateStoredRecipe(node.recipe, 'Plan node ' + node.id);
+        if (node.recipe !== null && node.recipe.context !== plan.context) {
+          throw fail('invalid', 'Plan node ' + node.id + ' stores a recipe for a different breeding context.');
+        }
         if (!record(node.fulfillment) || !FULFILLMENT_CHOICES.includes(node.fulfillment.choice)) {
           throw fail('invalid', 'Plan node ' + node.id + ' has an invalid fulfillment choice.');
         }
@@ -812,6 +823,17 @@
             reason: 'The stored ' + node.recipe.kind + ' recipe does not match the ' + plan.context + ' plan context.'
           });
           continue;
+        }
+        if (node.recipe.kind === 'plus_threshold') {
+          const rule = view.plusRules.find(candidate => candidate.pedigree_index === node.recipe.parents[0] &&
+            candidate.mate_index === node.recipe.parents[1]);
+          if (!rule || node.recipe.minPlus !== rule.minimum_parent_plus) {
+            flags.push({
+              nodeId: node.id,
+              reason: 'The stored + threshold does not match the verified rule.'
+            });
+            continue;
+          }
         }
         const result = recomputeResult(view, node.recipe);
         if (result !== node.speciesIndex) {
