@@ -175,3 +175,50 @@ button.species-star[aria-pressed=true]{color:var(--gold)}
 .target-actions button{padding:5px 11px;font-size:12px}
 #planner-open-target{display:inline-block;margin:0 0 14px;font-size:13px;font-weight:650}
 @media(max-width:650px){.target-toolbar{padding:6px 18px 17px}.target-list{padding:0 18px 15px}.target-item{align-items:flex-start;flex-direction:column;gap:8px}.target-actions{width:100%}}
+.plan-panel{margin-top:20px}
+.plan-toolbar{display:flex;align-items:end;gap:14px;flex-wrap:wrap;padding:6px 23px 16px}
+.plan-toolbar .field{min-width:220px}
+#plan-summary{font-size:13px;color:var(--muted);font-weight:600}
+.plan-warnings{padding:0 23px 4px;font-size:13px;color:var(--gold);font-weight:600}
+.plan-warnings:empty{display:none}
+.plan-inline-error{margin:4px 23px 0;padding:12px 16px;background:#fdf3e3;border:1px solid #e3c893;border-left:5px solid var(--gold);border-radius:9px;color:#6b4d16;font-size:13px}
+.plan-inline-error[hidden]{display:none}
+#plan-clear{margin:12px 23px 0;font-size:13px}
+#plan-clear[hidden]{display:none}
+.plan-undo-row{padding:12px 23px 0}
+.plan-undo-row button{font-size:13px}
+.plan-undo-row[hidden]{display:none}
+.plan-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;padding:16px 23px 0}
+.plan-tree-column h4,.plan-side-column h4{margin:0 0 10px;font-size:14px}
+.plan-tree{min-width:0}
+.plan-node{border:1px solid var(--line);border-radius:10px;background:var(--white);padding:14px 16px;margin-bottom:12px}
+.plan-node-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.plan-node-header .monster-sprite{width:40px;height:40px;flex:0 0 40px}
+.plan-node-name{font-weight:650;font-size:15px;min-width:0}
+.plan-node-role{font-size:11px;font-weight:700;color:var(--teal);background:var(--light);border-radius:20px;padding:2px 9px;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0}
+.plan-node select,.plan-node textarea{width:100%;margin-bottom:8px}
+.plan-node textarea{min-height:56px;resize:vertical}
+.plan-node-recipe{font-size:13px;color:var(--muted);margin:0 0 8px}
+.plan-node-parents{font-weight:650;color:var(--ink);margin:0 0 4px}
+.plan-node-kind{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);background:var(--light);border-radius:20px;padding:2px 9px;margin-bottom:4px}
+.plan-node-context{margin:0 0 4px}
+.plan-node-condition{margin:0 0 4px;color:var(--gold);font-weight:600}
+.plan-node-unknowns{margin:0 0 4px;font-size:12px}
+.plan-node-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.plan-node-actions button{font-size:12px;padding:6px 11px}
+.plan-node-children{margin-top:12px;margin-left:18px;border-left:2px solid var(--line);padding-left:14px}
+.plan-side-column{min-width:0}
+#plan-suggestions-for{margin:0 0 10px;font-size:13px;font-weight:600}
+#plan-suggestions{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.plan-suggestion{border:1px solid var(--line);border-radius:10px;background:var(--white);padding:12px 14px}
+.plan-suggestion-parents{font-weight:650;font-size:14px;margin:0 0 4px}
+.plan-suggestion-kind{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);background:var(--light);border-radius:20px;padding:2px 9px;margin-bottom:4px}
+.plan-suggestion-condition{font-size:12px;color:var(--muted);margin:0 0 4px}
+.plan-suggestion-badges{margin:0 0 4px}
+.plan-suggestion-badge{display:inline-block;font-size:10px;font-weight:700;color:var(--gold);background:#fdf3e3;border-radius:20px;padding:2px 8px;margin-right:4px}
+.plan-suggestion-unknowns{font-size:11px;color:var(--muted);margin:0 0 8px}
+.plan-suggestion button{font-size:12px;padding:6px 11px}
+#plan-suggestions-clear{font-size:13px;margin-top:10px}
+#plan-suggestions-clear[hidden]{display:none}
+@media(max-width:950px){.plan-layout{grid-template-columns:1fr}}
+@media(max-width:650px){.plan-toolbar{padding:6px 18px 13px}.plan-inline-error{margin:4px 18px 0}#plan-clear{margin:10px 18px 0}.plan-undo-row{padding:10px 18px 0}.plan-layout{padding:14px 18px 0}.plan-node-actions button{flex:1 1 auto}}

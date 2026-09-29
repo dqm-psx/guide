@@ -5,6 +5,7 @@
 (() => {
   "use strict";
   const core = DQMPlannerCore.create(DATA);
+  const planner = DQMRecipePlanner.create(DATA, core);
   const app = DQMAppState.create(DATA, core);
   const storage = DQMStorage.create();
   const P = id => document.getElementById(id);
@@ -29,6 +30,14 @@
   let teamFormMode = null;
   let freshConfirm = false;
   let currentSpriteStyle = storage.read(app.LEGACY_SPRITE_KEY) === "overworld" ? "overworld" : "portrait";
+  let plan = null;
+  let planInvalid = null;
+  let planMismatch = [];
+  let suggestionTarget = null;
+  let suggestionPage = 0;
+  let undoPlan = null;
+  let focusSelector = null;
+  let currentTargetId = null;
 
   const listeners = new Set();
   function subscribe(listener) {
@@ -225,11 +234,282 @@
         "</div></li>";
     }).join("");
   }
+  // ---- breeding plan per target ----
+  const activeTarget = () => {
+    const team = activeTeam();
+    if (!team || !team.activeTargetId) return null;
+    return team.targets.find(t => t.id === team.activeTargetId) || null;
+  };
+  const planNotice = message => { P("plan-message").textContent = message; };
+  function restoreFocus() {
+    if (!focusSelector) return;
+    const element = document.querySelector(focusSelector);
+    if (element) {
+      if (element.tagName === "DIV") {
+        const focusTarget = element.querySelector("button, select, textarea");
+        if (focusTarget) focusTarget.focus({ preventScroll: true });
+      } else {
+        element.focus({ preventScroll: true });
+      }
+    }
+    focusSelector = null;
+  }
+  function savePlan(nextPlan) {
+    const team = activeTeam();
+    const target = activeTarget();
+    if (!team || !target) return;
+    plan = nextPlan;
+    state = app.setTargetPlan(state, team.id, target.id, nextPlan);
+    persist();
+    renderPlan();
+    planNotice(nextPlan === null ? "Cleared the breeding plan." : "Plan saved.");
+    restoreFocus();
+  }
+  function renderPlan() {
+    const team = activeTeam();
+    const target = activeTarget();
+    const empty = P("plan-empty");
+    const body = P("plan-body");
+    if (!team || !target) {
+      empty.hidden = false;
+      body.hidden = true;
+      plan = null;
+      currentTargetId = null;
+      return;
+    }
+    if (target.id !== currentTargetId) {
+      currentTargetId = target.id;
+      suggestionTarget = null;
+      suggestionPage = 0;
+      undoPlan = null;
+    }
+    empty.hidden = true;
+    body.hidden = false;
+    if (target.plan === null) {
+      plan = planner.createPlan(target.speciesIndex, "shrine");
+      state = app.setTargetPlan(state, team.id, target.id, plan);
+      persist();
+    } else {
+      plan = target.plan;
+    }
+    planInvalid = null;
+    try {
+      planner.validate(plan);
+    } catch (error) {
+      planInvalid = error.message;
+    }
+    planMismatch = planner.validateContext(plan, { data: DATA });
+    renderPlanToolbar();
+    renderPlanTree();
+    renderSuggestions();
+  }
+  function renderPlanToolbar() {
+    P("plan-context").value = plan.context;
+    const summary = planner.planSummary(plan);
+    P("plan-summary").textContent = summary.completed + " completed · " + summary.ready + " ready · " + summary.needed + " needed · depth " + summary.depth;
+    const warnings = planner.duplicateRosterWarnings(plan);
+    const team = activeTeam();
+    P("plan-warnings").textContent = warnings.map(w => {
+      const entry = team.entries.find(e => e.id === w.entryId);
+      const name = entry ? memberName(entry) : w.entryId;
+      return "Roster monster " + name + " is needed by more than one unfinished step; breeding consumes parents.";
+    }).join(" ");
+    const mismatch = P("plan-mismatch");
+    const clear = P("plan-clear");
+    if (planInvalid) {
+      mismatch.hidden = false;
+      mismatch.textContent = "This plan could not be read: " + planInvalid + " You can clear it to start over.";
+      clear.hidden = false;
+    } else if (planMismatch.length > 0) {
+      mismatch.hidden = false;
+      mismatch.textContent = planMismatch.map(f => f.reason).join(" ");
+      clear.hidden = true;
+    } else {
+      mismatch.hidden = true;
+      mismatch.textContent = "";
+      clear.hidden = true;
+    }
+    P("plan-undo-recipe").hidden = undoPlan === null;
+  }
+  function renderPlanTree() {
+    const tree = P("plan-tree");
+    tree.innerHTML = "";
+    if (!plan) return;
+    const root = planner.nodeById(plan, plan.rootId);
+    if (!root) return;
+    tree.appendChild(renderNodeCard(root, "Target"));
+  }
+  function renderNodeCard(node, role) {
+    const species = node.speciesIndex !== null ? byId.get(node.speciesIndex) : null;
+    const name = species ? displayName(species) : "Any monster";
+    const card = document.createElement("div");
+    card.className = "plan-node";
+    card.dataset.nodeId = node.id;
+    const header = document.createElement("div");
+    header.className = "plan-node-header";
+    header.innerHTML = spriteMarkup(node.speciesIndex) +
+      '<span class="plan-node-name">' + safe(name) + "</span>" +
+      '<span class="plan-node-role">' + safe(role) + "</span>";
+    card.appendChild(header);
+    const status = document.createElement("select");
+    status.dataset.nodeStatus = node.id;
+    status.setAttribute("aria-label", "Status for " + name);
+    for (const s of ["needed", "ready", "completed"]) {
+      const option = document.createElement("option");
+      option.value = s;
+      option.textContent = s;
+      status.appendChild(option);
+    }
+    status.value = node.status;
+    card.appendChild(status);
+    const note = document.createElement("textarea");
+    note.dataset.nodeNote = node.id;
+    note.maxLength = 200;
+    note.setAttribute("aria-label", "Note for " + name);
+    note.value = node.note;
+    card.appendChild(note);
+    if (node.recipe) {
+      const recipe = node.recipe;
+      const pedigreeName = named(recipe.parents[0]);
+      const mateName = recipe.parents[1] === null ? "Any monster" : named(recipe.parents[1]);
+      const kindLabel = ruleLabel({ ruleKind: recipe.kind });
+      const recipeInfo = document.createElement("div");
+      recipeInfo.className = "plan-node-recipe";
+      recipeInfo.innerHTML =
+        '<p class="plan-node-parents">Pedigree ' + safe(pedigreeName) + " + Mate " + safe(mateName) + "</p>" +
+        '<span class="plan-node-kind">' + safe(kindLabel) + "</span>" +
+        '<p class="plan-node-context">' + safe(contextLabel(recipe.context)) + "</p>";
+      if (recipe.kind === "plus_threshold" && recipe.minPlus !== null) {
+        recipeInfo.innerHTML += '<p class="plan-node-condition">Either parent +' + recipe.minPlus + " or higher.</p>";
+      }
+      recipeInfo.innerHTML += '<p class="plan-node-unknowns">Acquisition, offspring sex, inherited + value, and breeding eligibility are not established by this table.</p>';
+      if (recipe.kind === "plus_threshold") {
+        recipeInfo.innerHTML += '<p class="plan-node-unknowns">An unknown + value is not treated as zero.</p>';
+      }
+      if (recipe.kind === "flag_gated") {
+        recipeInfo.innerHTML += '<p class="plan-node-unknowns">Applies in the title-screen Breeding room only.</p>';
+      }
+      card.appendChild(recipeInfo);
+      const actions = document.createElement("div");
+      actions.className = "plan-node-actions";
+      actions.innerHTML =
+        '<button type="button" data-node-replace="' + safe(node.id) + '">Replace recipe</button>' +
+        '<button type="button" data-node-collapse="' + safe(node.id) + '">Collapse</button>';
+      card.appendChild(actions);
+    } else {
+      const actions = document.createElement("div");
+      actions.className = "plan-node-actions";
+      actions.innerHTML =
+        '<button type="button" data-node-choose="' + safe(node.id) + '">Choose recipe</button>' +
+        '<button type="button" data-node-available="' + safe(node.id) + '">Mark available</button>';
+      card.appendChild(actions);
+      const rosterSelect = document.createElement("select");
+      rosterSelect.dataset.nodeRoster = node.id;
+      rosterSelect.setAttribute("aria-label", "Link roster entry for " + name);
+      const notLinked = document.createElement("option");
+      notLinked.value = "";
+      notLinked.textContent = "Not linked";
+      rosterSelect.appendChild(notLinked);
+      const team = activeTeam();
+      for (const entry of team.entries) {
+        if (entry.speciesIndex === node.speciesIndex) {
+          const option = document.createElement("option");
+          option.value = entry.id;
+          option.textContent = memberName(entry);
+          rosterSelect.appendChild(option);
+        }
+      }
+      rosterSelect.value = node.fulfillment.rosterEntryId || "";
+      card.appendChild(rosterSelect);
+    }
+    if (node.children !== null) {
+      const childrenContainer = document.createElement("div");
+      childrenContainer.className = "plan-node-children";
+      const pedigree = planner.nodeById(plan, node.children[0]);
+      const mate = planner.nodeById(plan, node.children[1]);
+      if (pedigree) childrenContainer.appendChild(renderNodeCard(pedigree, "Pedigree"));
+      if (mate) childrenContainer.appendChild(renderNodeCard(mate, "Mate"));
+      card.appendChild(childrenContainer);
+    }
+    return card;
+  }
+  function renderSuggestions() {
+    const team = activeTeam();
+    const target = activeTarget();
+    const container = P("plan-suggestions");
+    container.innerHTML = "";
+    if (!team || !target || !plan) {
+      P("plan-suggestions-for").textContent = "";
+      P("plan-suggestions-clear").hidden = true;
+      P("plan-suggestions-range").textContent = "";
+      P("plan-suggestions-page").textContent = "";
+      P("plan-suggestions-prev").disabled = true;
+      P("plan-suggestions-next").disabled = true;
+      return;
+    }
+    const isTarget = suggestionTarget === null;
+    const nodeId = isTarget ? plan.rootId : suggestionTarget;
+    const node = planner.nodeById(plan, nodeId);
+    if (!node) {
+      suggestionTarget = null;
+      P("plan-suggestions-for").textContent = "";
+      P("plan-suggestions-clear").hidden = true;
+      return;
+    }
+    const speciesName = node.speciesIndex !== null ? named(node.speciesIndex) : "Any monster";
+    P("plan-suggestions-for").textContent = isTarget ? "" : "Recipe options for " + speciesName;
+    P("plan-suggestions-clear").hidden = isTarget;
+    const rosterSpecies = team.entries.map(e => e.speciesIndex);
+    const availableSpecies = plan.nodes
+      .filter(n => n.fulfillment.choice === "available")
+      .map(n => n.speciesIndex);
+    const result = planner.suggestions(node.speciesIndex, {
+      context: plan.context,
+      rosterSpecies,
+      availableSpecies,
+      page: suggestionPage,
+      pageSize: 12
+    });
+    for (const item of result.items) {
+      const card = document.createElement("div");
+      card.className = "plan-suggestion";
+      card.setAttribute("role", "listitem");
+      let html = '<p class="plan-suggestion-parents">Pedigree ' + safe(item.parentNames[0]) + " + Mate " + safe(item.parentNames[1]) + "</p>" +
+        '<span class="plan-suggestion-kind">' + safe(ruleLabel({ ruleKind: item.kind })) + "</span>";
+      if (item.condition) {
+        html += '<p class="plan-suggestion-condition">' + safe(item.condition) + "</p>";
+      }
+      html += '<p class="plan-suggestion-badges">';
+      if (item.rosterParents.length > 0) html += '<span class="plan-suggestion-badge">Roster</span>';
+      if (item.missingParents.length > 0) html += '<span class="plan-suggestion-badge">Missing</span>';
+      html += "</p>";
+      html += '<p class="plan-suggestion-unknowns">Acquisition, offspring sex, inherited + value, and breeding eligibility are not established by this table.</p>';
+      html += '<button type="button" data-suggestion-use="' + safe(item.id) + '">Use this recipe</button>';
+      card.innerHTML = html;
+      container.appendChild(card);
+    }
+    const range = P("plan-suggestions-range");
+    const pageLabel = P("plan-suggestions-page");
+    const prev = P("plan-suggestions-prev");
+    const next = P("plan-suggestions-next");
+    if (result.total === 0) {
+      range.textContent = "No suggested recipes.";
+      pageLabel.textContent = "";
+    } else {
+      const start = result.page * 12 + 1;
+      const end = Math.min((result.page + 1) * 12, result.total);
+      range.textContent = start + "–" + end + " of " + result.total;
+      pageLabel.textContent = "Page " + (result.page + 1) + " of " + result.pages;
+    }
+    prev.disabled = result.page === 0;
+    next.disabled = result.page + 1 >= result.pages;
+  }
   function renderAll() {
     renderTeams();
     renderRoster();
     renderBreeding();
     renderTargets();
+    renderPlan();
     if (typeof DQMReference !== "undefined" && typeof DQMReference.refresh === "function") DQMReference.refresh();
     updateSaveStatus();
   }
@@ -731,6 +1011,160 @@
     };
     window.addEventListener("hashchange", onHashChange);
   });
+  // ---- breeding plan events ----
+  P("plan-context").addEventListener("change", () => {
+    const newContext = P("plan-context").value;
+    if (!plan || newContext === plan.context) return;
+    plan = { ...plan, context: newContext };
+    savePlan(plan);
+    planNotice("Breeding context: " + contextLabel(newContext) + ".");
+  });
+  P("plan-clear").addEventListener("click", () => {
+    if (!plan) return;
+    savePlan(null);
+  });
+  P("plan-undo-recipe").addEventListener("click", () => {
+    if (!undoPlan) return;
+    plan = undoPlan;
+    undoPlan = null;
+    savePlan(plan);
+    planNotice("Restored the previous recipe.");
+  });
+  P("plan-suggestions-prev").addEventListener("click", () => {
+    if (suggestionPage > 0) {
+      suggestionPage--;
+      renderSuggestions();
+    }
+  });
+  P("plan-suggestions-next").addEventListener("click", () => {
+    suggestionPage++;
+    renderSuggestions();
+  });
+  P("plan-suggestions-clear").addEventListener("click", () => {
+    suggestionTarget = null;
+    suggestionPage = 0;
+    renderSuggestions();
+  });
+  P("plan-tree").addEventListener("change", event => {
+    const statusSelect = event.target.closest("select[data-node-status]");
+    const rosterSelect = event.target.closest("select[data-node-roster]");
+    const noteTextarea = event.target.closest("textarea[data-node-note]");
+    if (statusSelect) {
+      const nodeId = statusSelect.dataset.nodeStatus;
+      focusSelector = 'select[data-node-status="' + nodeId + '"]';
+      try {
+        const nextPlan = planner.setStatus(plan, nodeId, statusSelect.value);
+        savePlan(nextPlan);
+        planNotice("Status updated.");
+      } catch (error) {
+        planNotice(error.message);
+      }
+    } else if (rosterSelect) {
+      const nodeId = rosterSelect.dataset.nodeRoster;
+      focusSelector = 'select[data-node-roster="' + nodeId + '"]';
+      try {
+        const fulfillment = rosterSelect.value === ""
+          ? { choice: "recipe", rosterEntryId: null }
+          : { choice: "roster", rosterEntryId: rosterSelect.value };
+        const nextPlan = planner.setFulfillment(plan, nodeId, fulfillment);
+        savePlan(nextPlan);
+        planNotice(rosterSelect.value === "" ? "Roster link removed." : "Roster entry linked.");
+      } catch (error) {
+        planNotice(error.message);
+      }
+    } else if (noteTextarea) {
+      const nodeId = noteTextarea.dataset.nodeNote;
+      focusSelector = 'textarea[data-node-note="' + nodeId + '"]';
+      try {
+        const nextPlan = planner.setNote(plan, nodeId, noteTextarea.value);
+        savePlan(nextPlan);
+        planNotice("Note saved.");
+      } catch (error) {
+        planNotice(error.message);
+      }
+    }
+  });
+  P("plan-tree").addEventListener("click", event => {
+    const chooseButton = event.target.closest("button[data-node-choose]");
+    const availableButton = event.target.closest("button[data-node-available]");
+    const replaceButton = event.target.closest("button[data-node-replace]");
+    const collapseButton = event.target.closest("button[data-node-collapse]");
+    if (chooseButton) {
+      const nodeId = chooseButton.dataset.nodeChoose;
+      suggestionTarget = nodeId;
+      suggestionPage = 0;
+      renderSuggestions();
+      P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } else if (availableButton) {
+      const nodeId = availableButton.dataset.nodeAvailable;
+      focusSelector = '[data-node-id="' + nodeId + '"]';
+      try {
+        const nextPlan = planner.setFulfillment(plan, nodeId, { choice: "available", rosterEntryId: null });
+        savePlan(nextPlan);
+        planNotice("Marked available without a roster link.");
+      } catch (error) {
+        planNotice(error.message);
+      }
+    } else if (replaceButton) {
+      const nodeId = replaceButton.dataset.nodeReplace;
+      suggestionTarget = nodeId;
+      suggestionPage = 0;
+      renderSuggestions();
+      P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } else if (collapseButton) {
+      const nodeId = collapseButton.dataset.nodeCollapse;
+      focusSelector = '[data-node-id="' + nodeId + '"]';
+      try {
+        const nextPlan = planner.collapse(plan, nodeId);
+        savePlan(nextPlan);
+        planNotice("Collapsed the recipe branch.");
+      } catch (error) {
+        planNotice(error.message);
+      }
+    }
+  });
+  P("plan-suggestions").addEventListener("click", event => {
+    const button = event.target.closest("button[data-suggestion-use]");
+    if (!button) return;
+    const suggestionId = button.dataset.suggestionUse;
+    const team = activeTeam();
+    const target = activeTarget();
+    if (!team || !target || !plan) return;
+    const isTarget = suggestionTarget === null;
+    const nodeId = isTarget ? plan.rootId : suggestionTarget;
+    const node = planner.nodeById(plan, nodeId);
+    if (!node) return;
+    const rosterSpecies = team.entries.map(e => e.speciesIndex);
+    const availableSpecies = plan.nodes
+      .filter(n => n.fulfillment.choice === "available")
+      .map(n => n.speciesIndex);
+    const result = planner.suggestions(node.speciesIndex, {
+      context: plan.context,
+      rosterSpecies,
+      availableSpecies,
+      page: suggestionPage,
+      pageSize: 12
+    });
+    const item = result.items.find(r => r.id === suggestionId);
+    if (!item) return;
+    const speciesName = node.speciesIndex !== null ? named(node.speciesIndex) : "Any monster";
+    try {
+      if (node.children === null) {
+        const nextPlan = planner.expand(plan, nodeId, item);
+        focusSelector = '[data-node-id="' + nodeId + '"]';
+        savePlan(nextPlan);
+        planNotice("Chose recipe for " + speciesName + ".");
+      } else {
+        const replaceResult = planner.replaceRecipe(plan, nodeId, item);
+        undoPlan = replaceResult.undo();
+        focusSelector = '[data-node-id="' + nodeId + '"]';
+        savePlan(replaceResult.plan);
+        planNotice("Replaced recipe for " + speciesName + ". Undo is available.");
+      }
+    } catch (error) {
+      planNotice(error.message);
+    }
+  });
   window.addEventListener("hashchange", route);
   document.querySelectorAll('.nav a[href^="#"]').forEach(link => link.addEventListener("click", () => {
     const isPlanner = link.hash === "#team-planner";
@@ -743,6 +1177,8 @@
   window.DQMApp = Object.freeze({
     state: () => state,
     activeTeam,
+    activeTarget,
+    savePlan,
     isSpeciesFavorite: index => state.favoriteSpeciesIndices.includes(index),
     toggleSpeciesFavorite: index => {
       try {

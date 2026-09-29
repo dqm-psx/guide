@@ -37,6 +37,38 @@
   </div>
   <ul id="target-list" class="target-list" aria-label="Saved breeding targets"></ul>
 </div>
+<div class="panel plan-panel" id="plan-panel">
+  <div class="planner-panel-heading">
+    <h3 id="plan-heading">Breeding plan</h3>
+    <p class="hint">Plan a route to your active target. Suggested recipes are ranked by your roster and missing parents. They are a suggestion, not a guarantee of playability or the shortest path. The table does not establish acquisition, offspring sex, inherited + value, or breeding eligibility.</p>
+  </div>
+  <p id="plan-empty" class="planner-empty">Pin an offspring as your active target to build a breeding plan.</p>
+  <div id="plan-body" hidden>
+    <div class="plan-toolbar">
+      <div class="field"><label for="plan-context">Breeding context</label>
+        <select id="plan-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option></select></div>
+      <span id="plan-summary" role="status"></span>
+    </div>
+    <p id="plan-warnings" class="plan-warnings" role="status"></p>
+    <div id="plan-mismatch" class="plan-inline-error" role="alert" hidden></div>
+    <button id="plan-clear" type="button" hidden>Clear this plan</button>
+    <div class="plan-undo-row"><button id="plan-undo-recipe" type="button" hidden>Undo recipe change</button></div>
+    <div class="plan-layout">
+      <div class="plan-tree-column"><h4>Requirements</h4><div id="plan-tree"></div></div>
+      <aside class="plan-side-column">
+        <h4>Suggested recipes</h4>
+        <p id="plan-suggestions-for" class="hint"></p>
+        <div id="plan-suggestions" role="list" aria-label="Suggested recipes"></div>
+        <div class="pagination">
+          <span id="plan-suggestions-range" role="status"></span>
+          <div class="controls"><button id="plan-suggestions-prev" type="button">← Previous</button><span id="plan-suggestions-page"></span><button id="plan-suggestions-next" type="button">Next →</button></div>
+        </div>
+        <button id="plan-suggestions-clear" type="button" hidden>Back to the target</button>
+      </aside>
+    </div>
+    <p id="plan-message" class="planner-message" role="status"></p>
+  </div>
+</div>
 </section>
 <section id="conditional-rules" class="section" aria-labelledby="rules-heading"><div class="section-head"><div><h2 id="rules-heading"><span class="section-number">03</span>Conditional results</h2><p>Species rules applied after the base table lookup.</p></div></div><div class="scope"><p><strong>Confirmed + rules:</strong> either parent meeting the listed + value is sufficient. The two + values are not added together. These are ordered pairings.</p></div><div class="panel"><div class="table-scroll"><table><caption class="sr-only">Confirmed plus threshold overrides</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Result</th><th scope="col">Required + value</th></tr></thead><tbody id="plus-rules"></tbody></table></div></div><details><summary id="flag-rules-title">Title-screen Breeding room overrides</summary><p class="target-explain target-explain-room">These rules apply when breeding monsters from two saved games using <strong>Breeding</strong> on the title screen. They do not apply to ordinary in-game shrine breeding. A matching room rule takes precedence over the base table and the + rules above; otherwise the ordinary result remains. Each player uses their own monster as pedigree, so the other player receives the reversed-order result.</p><div class="table-scroll"><table><caption class="sr-only">Confirmed title-screen Breeding room overrides</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Conditional result</th></tr></thead><tbody id="flag-rules"></tbody></table></div></details></section>
 <section id="species-index" class="section" aria-labelledby="species-heading"><div class="section-head"><div><h2 id="species-heading"><span class="section-number">04</span>English name index</h2><p>Use the in-game name column when a battle or breeding menu uses an abbreviated label.</p></div></div>
@@ -187,6 +219,7 @@
 <script src="js/sprites.js"></script>
 <script src="js/reference.js"></script>
 <script src="js/planner-core.js"></script>
+<script src="js/recipe-planner.js"></script>
 <script src="js/app-state.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/planner-ui.js"></script>
