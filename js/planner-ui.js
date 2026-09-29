@@ -33,6 +33,7 @@
   let plan = null;
   let planInvalid = null;
   let planMismatch = [];
+  let planFlagged = new Set();
   let suggestionTarget = null;
   let suggestionPage = 0;
   let undoPlan = null;
@@ -298,7 +299,16 @@
     } catch (error) {
       planInvalid = error.message;
     }
-    planMismatch = planner.validateContext(plan, { data: DATA });
+    planMismatch = [];
+    try {
+      planMismatch = planner.validateContext(plan, { data: DATA });
+    } catch (error) {
+      if (!planInvalid) planInvalid = error.message;
+    }
+    // A stored recipe that no longer matches the selected context is a flaggable
+    // state, not a corrupt document: keep the nodes and never offer to delete.
+    if (planInvalid && planMismatch.length > 0) planInvalid = null;
+    planFlagged = new Set(planMismatch.map(flag => flag.nodeId));
     renderPlanToolbar();
     renderPlanTree();
     renderSuggestions();
@@ -343,7 +353,7 @@
     const species = node.speciesIndex !== null ? byId.get(node.speciesIndex) : null;
     const name = species ? displayName(species) : "Any monster";
     const card = document.createElement("div");
-    card.className = "plan-node";
+    card.className = "plan-node" + (planFlagged.has(node.id) ? " is-incompatible" : "");
     card.dataset.nodeId = node.id;
     const header = document.createElement("div");
     header.className = "plan-node-header";
@@ -376,6 +386,9 @@
       const recipeInfo = document.createElement("div");
       recipeInfo.className = "plan-node-recipe";
       recipeInfo.innerHTML =
+        (planFlagged.has(node.id)
+          ? '<p class="plan-node-incompatible">This stored recipe does not apply in the ' + safe(contextLabel(plan.context)) + " context. Choose another recipe or switch the breeding context.</p>"
+          : "") +
         '<p class="plan-node-parents">Pedigree ' + safe(pedigreeName) + " + Mate " + safe(mateName) + "</p>" +
         '<span class="plan-node-kind">' + safe(kindLabel) + "</span>" +
         '<p class="plan-node-context">' + safe(contextLabel(recipe.context)) + "</p>";
@@ -393,15 +406,20 @@
       const actions = document.createElement("div");
       actions.className = "plan-node-actions";
       actions.innerHTML =
-        '<button type="button" data-node-replace="' + safe(node.id) + '">Replace recipe</button>' +
-        '<button type="button" data-node-collapse="' + safe(node.id) + '">Collapse</button>';
+        '<button type="button" data-node-replace="' + safe(node.id) + '" aria-label="Replace recipe for ' + safe(name) + '">Replace recipe</button>' +
+        '<button type="button" data-node-collapse="' + safe(node.id) + '" aria-label="Collapse recipe for ' + safe(name) + '">Collapse</button>';
       card.appendChild(actions);
+    } else if (node.speciesIndex === null) {
+      const hint = document.createElement("p");
+      hint.className = "plan-node-hint";
+      hint.textContent = "This requirement is any monster from the recipe's family; it cannot be expanded further.";
+      card.appendChild(hint);
     } else {
       const actions = document.createElement("div");
       actions.className = "plan-node-actions";
       actions.innerHTML =
-        '<button type="button" data-node-choose="' + safe(node.id) + '">Choose recipe</button>' +
-        '<button type="button" data-node-available="' + safe(node.id) + '">Mark available</button>';
+        '<button type="button" data-node-choose="' + safe(node.id) + '" aria-label="Choose recipe for ' + safe(name) + '">Choose recipe</button>' +
+        '<button type="button" data-node-available="' + safe(node.id) + '" aria-label="Mark ' + safe(name) + ' available without a roster link">Mark available</button>';
       card.appendChild(actions);
       const rosterSelect = document.createElement("select");
       rosterSelect.dataset.nodeRoster = node.id;
@@ -457,11 +475,21 @@
       return;
     }
     const speciesName = node.speciesIndex !== null ? named(node.speciesIndex) : "Any monster";
+    if (node.speciesIndex === null) {
+      suggestionTarget = null;
+      P("plan-suggestions-for").textContent = "";
+      P("plan-suggestions-clear").hidden = true;
+      P("plan-suggestions-range").textContent = "";
+      P("plan-suggestions-page").textContent = "";
+      P("plan-suggestions-prev").disabled = true;
+      P("plan-suggestions-next").disabled = true;
+      return;
+    }
     P("plan-suggestions-for").textContent = isTarget ? "" : "Recipe options for " + speciesName;
     P("plan-suggestions-clear").hidden = isTarget;
     const rosterSpecies = team.entries.map(e => e.speciesIndex);
     const availableSpecies = plan.nodes
-      .filter(n => n.fulfillment.choice === "available")
+      .filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null)
       .map(n => n.speciesIndex);
     const result = planner.suggestions(node.speciesIndex, {
       context: plan.context,
@@ -484,7 +512,7 @@
       if (item.missingParents.length > 0) html += '<span class="plan-suggestion-badge">Missing</span>';
       html += "</p>";
       html += '<p class="plan-suggestion-unknowns">Acquisition, offspring sex, inherited + value, and breeding eligibility are not established by this table.</p>';
-      html += '<button type="button" data-suggestion-use="' + safe(item.id) + '">Use this recipe</button>';
+      html += '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' + safe(item.parentNames[0]) + " + Mate " + safe(item.parentNames[1]) + '">Use this recipe</button>';
       card.innerHTML = html;
       container.appendChild(card);
     }
@@ -673,6 +701,22 @@
   }
 
   // ---- import (shared by the team input and the full backup input) ----
+  // A full-backup import replaces the whole document, so reject it up front when
+  // any target holds a structurally broken plan. A recipe that merely mismatches
+  // the selected context is flaggable and importable.
+  function planImportProblem(nextState) {
+    for (const team of nextState.teams) {
+      for (const target of team.targets) {
+        if (target.plan === null) continue;
+        let invalid = null;
+        let flags = [];
+        try { planner.validate(target.plan); } catch (error) { invalid = error.message; }
+        try { flags = planner.validateContext(target.plan, { data: DATA }); } catch (error) { if (!invalid) invalid = error.message; }
+        if (invalid && flags.length === 0) return invalid;
+      }
+    }
+    return null;
+  }
   function handleImport(text, fileName, target) {
     let result;
     try {
@@ -682,6 +726,11 @@
       return;
     }
     if (result.kind === "full") {
+      const problem = planImportProblem(result.state);
+      if (problem) {
+        target.textContent = "Import failed: " + problem + " Your saved data has not changed.";
+        return;
+      }
       pendingImport = result;
       const s = result.summary;
       P("planner-import-preview-text").textContent = "Replace your saved data with "+s.teams+" teams and "+s.targets+" targets ("+s.favorites+" favorites, "+s.entries+" monsters)?";
@@ -1134,9 +1183,13 @@
     const nodeId = isTarget ? plan.rootId : suggestionTarget;
     const node = planner.nodeById(plan, nodeId);
     if (!node) return;
+    if (node.speciesIndex === null) {
+      planNotice("This requirement cannot be expanded further.");
+      return;
+    }
     const rosterSpecies = team.entries.map(e => e.speciesIndex);
     const availableSpecies = plan.nodes
-      .filter(n => n.fulfillment.choice === "available")
+      .filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null)
       .map(n => n.speciesIndex);
     const result = planner.suggestions(node.speciesIndex, {
       context: plan.context,

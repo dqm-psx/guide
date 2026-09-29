@@ -188,16 +188,25 @@ for (const name of ['file', 'server']) {
     test('marking a node available ranks the available parent first in suggestions', async ({ page }) => {
       await page.goto(url());
       await pinTarget(page, 2); // Winged Slime
-      await useSuggestionById(page, 'base:shrine:0:89');
+      const firstBefore = page.locator('#plan-suggestions button[data-suggestion-use]').first();
+      await expect(firstBefore).toHaveAttribute('data-suggestion-use', 'base:shrine:0:89');
+
+      // Build the route through Spotted Slime + Picky.
+      await useSuggestionById(page, 'base:shrine:1:89');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
 
-      // Mark Drake Slime as available without a roster link.
-      const drakeCard = nodeCard(page, 'Drake Slime');
-      await drakeCard.locator('button[data-node-available]').click();
+      // Return the suggestion pager to the first page.
+      while (await page.locator('#plan-suggestions-prev').isEnabled()) {
+        await page.locator('#plan-suggestions-prev').click();
+      }
 
-      // The suggestions for the target now rank the available parent first.
-      const firstSuggestion = page.locator('#plan-suggestions button[data-suggestion-use]').first();
-      await expect(firstSuggestion).toHaveAttribute('data-suggestion-use', 'base:shrine:0:89');
+      // Mark Spotted Slime available without a roster link.
+      const spotted = nodeCard(page, 'Spotted Slime');
+      await spotted.locator('button[data-node-available]').click();
+
+      // The suggestions now rank the available parent first.
+      const firstAfter = page.locator('#plan-suggestions button[data-suggestion-use]').first();
+      await expect(firstAfter).toHaveAttribute('data-suggestion-use', 'base:shrine:1:89');
     });
 
     test('replace a recipe keeps an unrelated branch and offers undo', async ({ page }) => {
@@ -404,6 +413,129 @@ for (const name of ['file', 'server']) {
       await page.locator('#plan-clear').click();
       await expect(page.locator('#plan-mismatch')).toBeHidden();
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(1);
+    });
+
+    test('switching a room plan to shrine flags the recipe without offering to delete it', async ({ page }) => {
+      const errors = [];
+      page.on('pageerror', error => errors.push(error.message));
+      await page.goto(url());
+      await pinTarget(page, 19); // Angel Slime
+      await page.selectOption('#plan-context', 'room');
+      await useSuggestionById(page, 'flag_gated:room:13:family7');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+
+      const rootCard = page.locator('#plan-tree .plan-node').first();
+      await rootCard.locator(':scope > textarea[data-node-note]').fill('keep me');
+      await page.locator('#plan-heading').click();
+
+      // The family-wildcard mate cannot be expanded and must not crash the page.
+      const mateCard = rootCard.locator('.plan-node-children .plan-node').nth(1);
+      await expect(mateCard.locator('.plan-node-hint')).toBeVisible();
+      await expect(mateCard.locator('button[data-node-choose]')).toHaveCount(0);
+      assert.deepEqual(errors, []);
+
+      // Switching to shrine flags the stored room recipe.
+      await page.selectOption('#plan-context', 'shrine');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+      await expect(page.locator('#plan-mismatch')).toBeVisible();
+      await expect(page.locator('#plan-clear')).toBeHidden();
+      const rootAfter = page.locator('#plan-tree .plan-node').first();
+      await expect(rootAfter).toHaveClass(/is-incompatible/);
+      await expect(rootAfter.locator('.plan-node-incompatible')).toContainText('does not apply');
+      await expect(rootAfter.locator(':scope > textarea[data-node-note]')).toHaveValue('keep me');
+
+      // Switching back clears the flag and keeps the progress.
+      await page.selectOption('#plan-context', 'room');
+      await expect(page.locator('#plan-mismatch')).toBeHidden();
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+      await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > textarea[data-node-note]')).toHaveValue('keep me');
+    });
+
+    test('a full backup with a broken plan is rejected and leaves the document intact', async ({ page }) => {
+      await page.goto(url() + '#team-planner');
+      await page.selectOption('#planner-add-species', '11');
+      await page.click('#planner-add-button');
+      await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+      const before = await readStored(page, STORAGE_KEY);
+
+      const bad = {
+        version: 1,
+        game: 'dqm1-2-ps1-v61',
+        spriteStyle: 'portrait',
+        favoriteSpeciesIndices: [],
+        activeTeamId: 't-1',
+        teams: [{
+          id: 't-1', name: 'Bad', entries: [], activeTargetId: 'tg-1',
+          targets: [{
+            id: 'tg-1', speciesIndex: 2,
+            plan: {
+              speciesIndex: 2, context: 'shrine', rootId: 'n0',
+              nodes: [
+                { id: 'n0', speciesIndex: 2, recipe: null, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: null, parent: null },
+                { id: 'n0', speciesIndex: 11, recipe: null, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: null, parent: null },
+              ],
+            },
+          }],
+        }],
+      };
+      const tmp = path.join(os.tmpdir(), 'dqm-guide-bad-plan-test.json');
+      fs.writeFileSync(tmp, JSON.stringify(bad));
+      await page.setInputFiles('#planner-backup-import', tmp);
+
+      await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
+      await expect(page.locator('#planner-import-preview')).toBeHidden();
+      assert.equal(await readStored(page, STORAGE_KEY), before);
+      await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    });
+
+    test('plans are independent per target', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2); // Winged Slime
+      await useSuggestionById(page, 'base:shrine:0:89');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+
+      await pinTarget(page, 17); // Spotted King becomes active
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(1);
+      await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > .plan-node-header > .plan-node-name')).toHaveText('Spotted King');
+
+      await page.locator('#target-list .target-item').filter({ hasText: 'Winged Slime' }).locator('button[data-target-switch]').click();
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+      await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > .plan-node-recipe > .plan-node-parents')).toContainText('Drake Slime + Mate Picky');
+
+      const doc = JSON.parse(await readStored(page, STORAGE_KEY));
+      const wing = doc.teams[0].targets.find(t => t.speciesIndex === 2);
+      const king = doc.teams[0].targets.find(t => t.speciesIndex === 17);
+      assert.equal(wing.plan.nodes.length, 3);
+      assert.equal(king.plan.nodes.length, 1);
+      assert.notEqual(wing.plan.rootId, king.plan.rootId);
+    });
+
+    test('a plan change is a single saved write and viewing writes nothing', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      await page.evaluate(() => {
+        window.__writes = 0;
+        const original = localStorage.setItem.bind(localStorage);
+        localStorage.setItem = (...args) => { window.__writes += 1; return original(...args); };
+      });
+
+      const child = page.locator('#plan-tree .plan-node').first().locator('.plan-node-children .plan-node').first();
+      await child.locator('select[data-node-status]').selectOption('ready');
+      assert.equal(await page.evaluate(() => window.__writes), 1);
+
+      await page.locator('#plan-suggestions-next').click();
+      assert.equal(await page.evaluate(() => window.__writes), 1);
+    });
+
+    test('node and suggestion actions have descriptive accessible names', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      const firstSuggestion = page.locator('#plan-suggestions button[data-suggestion-use]').first();
+      await expect(firstSuggestion).toHaveAttribute('aria-label', /^Use recipe: Pedigree .+ \+ Mate .+/);
+      const rootCard = page.locator('#plan-tree .plan-node').first();
+      await expect(rootCard.locator('button[data-node-choose]')).toHaveAttribute('aria-label', 'Choose recipe for Winged Slime');
+      await expect(rootCard.locator('button[data-node-available]')).toHaveAttribute('aria-label', 'Mark Winged Slime available without a roster link');
     });
   });
 }
