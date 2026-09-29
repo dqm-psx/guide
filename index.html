@@ -10,6 +10,13 @@
 <body>
 <a class="skip" href="#pair-finder">Skip to pair finder</a>
 <header class="masthead"><div class="wrap"><div class="title-line"><span class="eyebrow">Dragon Quest Monsters 1 &amp; 2 · PlayStation</span><span class="version">Patch v1.0.61 - Current</span><h1>Breeding reference</h1></div><span class="offline">● Works offline</span></div></header>
+<div id="app-storage-error" class="app-error wrap" role="alert" hidden>
+  <p id="app-storage-error-text"></p>
+  <div class="app-error-actions">
+    <button id="app-storage-error-download" type="button" hidden>Download saved data</button>
+    <button id="app-storage-error-fresh" type="button" hidden>Start fresh (replaces saved data)</button>
+  </div>
+</div>
 <div class="nav"><nav class="wrap" aria-label="Reference sections"><a href="#pair-finder">Find a pairing</a> &nbsp; &nbsp; <a href="#offspring-finder">Find parents</a> &nbsp; &nbsp; <a href="#conditional-rules">Conditional results</a> &nbsp; &nbsp; <a href="#species-index">Name index</a> &nbsp; &nbsp; <a href="#about">Read the table</a> &nbsp; &nbsp; <a id="planner-nav-link" href="#team-planner">Team planner</a></nav></div>
 <main class="wrap">
 <noscript><div class="noscript">This offline reference needs JavaScript for its lookup tools. Enable JavaScript in your browser, or use the accompanying printable PDF and JSON data files.</div></noscript>
@@ -42,6 +49,22 @@
   </div>
 
   <div id="planner-roster" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-roster">
+    <div class="panel planner-teams-panel">
+      <div class="planner-panel-heading"><h3>Your teams</h3><p class="hint">Each team keeps its own roster and breeding targets. Everything is stored only in this browser.</p></div>
+      <div class="planner-team-bar">
+        <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
+        <div class="planner-actions">
+          <button id="planner-team-new" type="button">New team</button>
+          <button id="planner-team-rename" type="button">Rename</button>
+          <button id="planner-team-delete" type="button">Delete</button>
+        </div>
+        <form id="planner-team-name-form" class="planner-team-name" hidden>
+          <div class="field"><label for="planner-team-name">Team name</label><input id="planner-team-name" maxlength="40" autocomplete="off" required></div>
+          <button id="planner-team-name-save" type="submit" class="planner-primary">Save name</button>
+          <button id="planner-team-name-cancel" type="button">Cancel</button>
+        </form>
+      </div>
+    </div>
     <div class="panel planner-entry">
       <div class="planner-panel-heading"><h3>Add a monster</h3><p class="hint">Keep separate entries for individual monsters, including duplicates.</p></div>
       <form id="planner-entry-form" class="planner-entry-form">
@@ -60,10 +83,26 @@
         <button id="planner-undo" type="button" disabled>Undo last change</button>
         <button id="planner-export" type="button">Export team</button>
         <div class="planner-import"><label for="planner-import">Import team</label><input id="planner-import" type="file" accept="application/json,.json"></div>
+        <label class="planner-toggle"><input id="planner-roster-favorites" type="checkbox"> Favorites only</label>
       </div>
       <p id="planner-save-status" class="hint" role="status"></p>
     </div>
-    <p class="hint">Importing a team replaces your current roster. Use “Undo last change” to restore it.</p>
+    <p class="hint">Importing a team adds it as a new team. A full backup replaces everything — “Undo last change” restores your previous data.</p>
+    <div class="panel planner-backup-panel">
+      <div class="planner-panel-heading"><h3>Backup</h3><p class="hint">Saved in this browser only. Export a full backup to keep or move everything: teams, rosters, favorites, targets, and plans.</p></div>
+      <div class="planner-actions">
+        <button id="planner-backup-export" type="button">Export full backup</button>
+        <div class="planner-import"><label for="planner-backup-import">Import full backup</label><input id="planner-backup-import" type="file" accept="application/json,.json"></div>
+      </div>
+      <div id="planner-import-preview" class="planner-import-preview" role="region" aria-label="Import preview" hidden>
+        <p id="planner-import-preview-text" role="status"></p>
+        <div class="planner-actions">
+          <button id="planner-import-confirm" type="button" class="planner-primary">Replace my saved data</button>
+          <button id="planner-import-cancel" type="button">Cancel</button>
+        </div>
+      </div>
+      <p id="planner-backup-message" class="planner-message" role="status"></p>
+    </div>
     <p id="planner-message" class="planner-message" role="status"></p>
     <p id="planner-team-summary" class="planner-summary" role="status"></p>
     <div class="planner-roster-columns">
@@ -139,5 +178,7 @@
 <script src="js/sprites.js"></script>
 <script src="js/reference.js"></script>
 <script src="js/planner-core.js"></script>
+<script src="js/app-state.js"></script>
+<script src="js/storage.js"></script>
 <script src="js/planner-ui.js"></script>
 </body></html>

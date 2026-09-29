@@ -8,7 +8,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const FILE_URL = 'file://' + path.join(REPO_ROOT, 'index.html');
 let serverUrl = null;
 
-const STORAGE_KEY = 'dqm-guide-team-v61-v1';
+const STORAGE_KEY = 'dqm-guide-state-v61-v1';
 const SPRITE_STYLE_KEY = 'dqm-guide-sprite-style-v1';
 
 test.beforeAll(async () => {
@@ -70,7 +70,7 @@ for (const name of ['file', 'server']) {
       assert.equal(exported.entries[0].nickname, 'Slimo');
     });
 
-    test('import team updates the roster and the saved storage value', async ({ page }) => {
+    test('import team adds the imported team as a new named team', async ({ page }) => {
       const team = {
         version: 1,
         game: 'dqm1-2-ps1-v61',
@@ -83,11 +83,17 @@ for (const name of ['file', 'server']) {
       fs.writeFileSync(tmp, JSON.stringify(team));
       await page.goto(url() + '#team-planner');
       await page.setInputFiles('#planner-import', tmp);
+      await expect(page.locator('#planner-team-select option')).toHaveCount(2);
+      await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'dqm-guide-import-test']);
       await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
       await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Healy');
       const saved = JSON.parse(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY));
-      assert.deepEqual(saved, team);
+      assert.equal(saved.version, 1);
+      assert.equal(saved.teams.length, 2);
+      assert.equal(saved.teams[1].name, 'dqm-guide-import-test');
+      assert.equal(saved.teams[1].entries.length, 2);
+      assert.equal(saved.activeTeamId, saved.teams[1].id);
     });
 
     test('sprite style preference persists under its storage key', async ({ page }) => {
