@@ -170,10 +170,56 @@
     pageRange("planner-male", malePage, males.length, "Pedigrees");
     pageRange("planner-female", femalePage, females.length, "Pedigrees");
   }
+  function renderTargets() {
+    const team = activeTeam();
+    const activeTargetId = team ? team.activeTargetId : null;
+    const activeTarget = team ? team.targets.find(target => target.id === activeTargetId) : null;
+    const activeSpecies = activeTarget ? byId.get(activeTarget.speciesIndex) : null;
+    const browsingIndex = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
+    const browsingSpecies = browsingIndex != null ? byId.get(browsingIndex) : null;
+
+    const summary = P("target-active-summary");
+    const activeText = activeSpecies
+      ? "Active target: " + displayName(activeSpecies)
+      : "No active target yet. Pin the offspring you want to breed toward.";
+    const viewing = browsingSpecies && (!activeSpecies || browsingSpecies.index !== activeSpecies.index);
+    summary.textContent = (viewing ? "Viewing " + displayName(browsingSpecies) + " · " : "") + activeText;
+
+    const pin = P("target-pin");
+    const canPin = Boolean(browsingSpecies) && isPlayable(browsingSpecies);
+    pin.disabled = !canPin;
+    pin.textContent = canPin ? "Pin " + displayName(browsingSpecies) : "Pin current offspring";
+
+    const link = P("planner-open-target");
+    if (activeSpecies) {
+      link.hidden = false;
+      link.textContent = "Open active target: " + displayName(activeSpecies) + " ↗";
+    } else {
+      link.hidden = true;
+      link.textContent = "Open active target ↗";
+    }
+
+    const list = P("target-list");
+    if (!team || !team.targets.length) {
+      list.innerHTML = "";
+      return;
+    }
+    list.innerHTML = team.targets.map(target => {
+      const species = byId.get(target.speciesIndex);
+      const isActive = target.id === activeTargetId;
+      return '<li class="target-item' + (isActive ? " is-active" : "") + '" data-target-id="' + safe(target.id) + '">' +
+        '<span class="target-name">' + spriteMarkup(target.speciesIndex) + safe(displayName(species)) + "</span>" +
+        '<div class="target-actions">' +
+        '<button type="button" data-target-switch="' + safe(target.id) + '" aria-label="Open target ' + safe(displayName(species)) + '"' + (isActive ? ' aria-current="true"' : "") + ">Open</button>" +
+        '<button type="button" data-target-remove="' + safe(target.id) + '" aria-label="Remove target ' + safe(displayName(species)) + '">Remove</button>' +
+        "</div></li>";
+    }).join("");
+  }
   function renderAll() {
     renderTeams();
     renderRoster();
     renderBreeding();
+    renderTargets();
     if (typeof DQMReference !== "undefined" && typeof DQMReference.refresh === "function") DQMReference.refresh();
     updateSaveStatus();
   }
@@ -604,6 +650,70 @@
     if (!detail) return;
     choosePair(detail.a, detail.b); location.hash = "pair-finder"; route();
     P("pair-finder").scrollIntoView({behavior:"smooth"}); P("pedigree").focus({preventScroll: true});
+  });
+  P("target-pin").addEventListener("click", () => {
+    const index = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
+    const species = index != null ? byId.get(index) : null;
+    const team = activeTeam();
+    if (!species || !isPlayable(species) || !team) return;
+    try {
+      const next = app.addTarget(state, team.id, index);
+      const targetId = next.teams.find(t => t.id === team.id).targets.find(t => t.speciesIndex === index).id;
+      commit(next, "Pinned " + displayName(species) + " as a breeding target.");
+      if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(index);
+      renderTargets();
+      const item = P("target-list").querySelector('li[data-target-id="' + targetId + '"] button[data-target-switch]');
+      if (item) item.focus({preventScroll: true});
+    } catch (error) {
+      notice(error.message);
+    }
+  });
+  P("target-list").addEventListener("click", event => {
+    const team = activeTeam();
+    if (!team) return;
+    const switchButton = event.target.closest("button[data-target-switch]");
+    const removeButton = event.target.closest("button[data-target-remove]");
+    if (switchButton) {
+      const targetId = switchButton.dataset.targetSwitch;
+      const target = team.targets.find(t => t.id === targetId);
+      if (!target) return;
+      try {
+        const next = app.setActiveTarget(state, team.id, targetId);
+        commit(next, "Switched the active target.");
+        if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(target.speciesIndex);
+        renderTargets();
+      } catch (error) {
+        notice(error.message);
+      }
+    } else if (removeButton) {
+      const targetId = removeButton.dataset.targetRemove;
+      try {
+        const next = app.removeTarget(state, team.id, targetId);
+        commit(next, "Removed the target.");
+        renderTargets();
+      } catch (error) {
+        notice(error.message);
+      }
+    }
+  });
+  P("target").addEventListener("change", renderTargets);
+  P("target-search").addEventListener("input", renderTargets);
+  P("planner-open-target").addEventListener("click", () => {
+    const team = activeTeam();
+    const activeTargetId = team ? team.activeTargetId : null;
+    const activeTarget = team ? team.targets.find(t => t.id === activeTargetId) : null;
+    const activeSpecies = activeTarget ? byId.get(activeTarget.speciesIndex) : null;
+    if (!activeSpecies) return;
+    const select = () => {
+      if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(activeSpecies.index);
+      renderTargets();
+    };
+    if (location.hash === "#offspring-finder") { select(); return; }
+    const onHashChange = () => {
+      window.removeEventListener("hashchange", onHashChange);
+      select();
+    };
+    window.addEventListener("hashchange", onHashChange);
   });
   window.addEventListener("hashchange", route);
   document.querySelectorAll('.nav a[href^="#"]').forEach(link => link.addEventListener("click", () => {

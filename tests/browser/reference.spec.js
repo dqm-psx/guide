@@ -73,11 +73,11 @@ for (const name of ['file', 'server']) {
       await page.fill('#species-search', 'Spotted Slime');
       await expect(page.locator('#species-count')).toHaveText('1 matching species');
       await expect(page.locator('#species-rows tr')).toHaveCount(1);
-      await expect(page.locator('#species-rows tr td').first()).toContainText('Spotted Slime');
+      await expect(page.locator('#species-rows tr td:nth-child(2)')).toContainText('Spotted Slime');
       await page.fill('#species-search', '');
       await page.selectOption('#species-family', '1');
       await expect(page.locator('#species-count')).toHaveText('31 matching species');
-      const familyCells = page.locator('#species-rows tr td:nth-child(3)');
+      const familyCells = page.locator('#species-rows tr td:nth-child(4)');
       const rowCount = await familyCells.count();
       for (let i = 0; i < rowCount; i++) {
         await expect(familyCells.nth(i)).toHaveText('Dragon');

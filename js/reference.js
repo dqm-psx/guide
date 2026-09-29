@@ -10,6 +10,9 @@ const normalize = value => String(value ?? "").toLocaleLowerCase().normalize("NF
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const isPlayable = s => s.playable !== false;
 const allSpecies = () => DATA.species.filter(s => $("show-internal").checked || isPlayable(s));
+const hasApp = () => typeof DQMApp !== "undefined";
+const isFavorite = index => hasApp() && DQMApp.isSpeciesFavorite(index);
+const favoritesOnly = () => hasApp() && $("species-favorites-only").checked;
 const displayName = s => s.display_name || s.name;
 const nameLabel = s => displayName(s) + (s.short_name && s.short_name !== s.name ? " (" + s.short_name + ")" : "") + (!isPlayable(s) ? " [extra / internal]" : "");
 const matchesName = (s, query) => !query || normalize([s.name,s.display_name,s.short_name,s.japanese].join(" ")).includes(normalize(query));
@@ -91,12 +94,35 @@ function renderReverse() {
   renderReversePage();
 }
 function updateTarget(selected) { setOptions("target", allSpecies().filter(s => matchesName(s, $("target-search").value)), selected); renderReverse(); }
+function selectTarget(index) {
+  const species = byId.get(Number(index));
+  if (!species) return;
+  if (!matchesName(species, $("target-search").value)) $("target-search").value = "";
+  updateTarget(species.index);
+}
+function currentTargetIndex() {
+  const value = $("target").value;
+  return value === "" ? null : Number(value);
+}
+function refresh() {
+  const speciesPageIndex = speciesPage, reversePageIndex = reversePage;
+  renderSpecies();
+  renderReverse();
+  speciesPage = Math.min(speciesPageIndex, Math.max(0, Math.ceil(speciesMatches.length / PAGE_SIZE) - 1));
+  reversePage = Math.min(reversePageIndex, Math.max(0, Math.ceil(reverseMatches.length / PAGE_SIZE) - 1));
+  renderSpeciesPage();
+  renderReversePage();
+}
 function renderSpeciesPage() {
-  $("species-rows").innerHTML = speciesMatches.slice(speciesPage * PAGE_SIZE, (speciesPage + 1) * PAGE_SIZE).map(s => '<tr><td>' + spriteLabel(s.index,displayName(s)) + (!isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + escapeHTML(s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td></tr>").join("") || '<tr><td colspan="4" class="empty">No species match these filters.</td></tr>';
+  $("species-rows").innerHTML = speciesMatches.slice(speciesPage * PAGE_SIZE, (speciesPage + 1) * PAGE_SIZE).map(s => {
+    const favorite = isFavorite(s.index);
+    const star = '<td class="species-favorite-cell"><button type="button" class="species-star" data-species-favorite="' + s.index + '" aria-pressed="' + favorite + '" aria-label="' + (favorite ? "Unfavorite " : "Favorite ") + escapeHTML(displayName(s)) + '"' + (isPlayable(s) && hasApp() ? "" : " disabled") + '>' + (favorite ? "★" : "☆") + "</button></td>";
+    return "<tr>" + star + "<td>" + spriteLabel(s.index,displayName(s)) + (!isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + escapeHTML(s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td></tr>";
+  }).join("") || '<tr><td colspan="5" class="empty">No species match these filters.</td></tr>';
   pageControls("species", speciesPage, speciesMatches.length);
 }
 function renderSpecies() {
-  speciesMatches = allSpecies().filter(s => familyMatches(s, $("species-family").value) && matchesName(s, $("species-search").value));
+  speciesMatches = allSpecies().filter(s => familyMatches(s, $("species-family").value) && matchesName(s, $("species-search").value) && (!favoritesOnly() || isFavorite(s.index)));
   speciesPage = 0; $("species-count").textContent = speciesMatches.length + " matching species"; renderSpeciesPage();
 }
 for (const id of ["pedigree-family","mate-family","reverse-pedigree-family","reverse-mate-family","species-family"]) setFamilies(id);
@@ -118,6 +144,12 @@ $("species-search").addEventListener("input", renderSpecies);
 $("species-family").addEventListener("change", renderSpecies);
 $("reverse-rows").addEventListener("click", event => { const button = event.target.closest("button[data-a]"); if (!button) return; choosePair(Number(button.dataset.a), Number(button.dataset.b)); $("pair-finder").scrollIntoView({behavior:"smooth"}); $("pedigree").focus({preventScroll:true}); });
 $("show-internal").addEventListener("change", () => { updateParent("pedigree"); updateParent("mate"); renderPair(); updateTarget(); renderSpecies(); });
+$("species-favorites-only").addEventListener("change", renderSpecies);
+$("species-rows").addEventListener("click", event => {
+  const star = event.target.closest("button[data-species-favorite]");
+  if (!star || !hasApp()) return;
+  DQMApp.toggleSpeciesFavorite(Number(star.dataset.speciesFavorite));
+});
 const initialSpecies = allSpecies();
 const initialA = initialSpecies.find(s => normalize(s.name) === "slime") ?? initialSpecies[0];
 const initialB = initialSpecies.find(s => normalize(s.name) === "dracky") ?? initialSpecies[1] ?? initialSpecies[0];
@@ -135,3 +167,8 @@ function renderRules() {
   $("source-metadata").textContent = JSON.stringify({table:DATA.metadata,runtime_rules:DATA.runtime_rules}, null, 2);
 }
 renderRules();
+window.DQMReference = Object.freeze({
+  refresh,
+  selectTarget,
+  currentTargetIndex,
+});
