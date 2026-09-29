@@ -20,7 +20,7 @@ data/                   breeding data and sprite maps as classic scripts
   monster-sprites.js      assigns globalThis.MONSTER_SPRITES
   overworld-sprites.js    assigns globalThis.OVERWORLD_SPRITES
 js/                     page scripts, loaded in order by index.html
-  sprites.js  reference.js  planner-core.js  app-state.js  storage.js  planner-ui.js
+  sprites.js  reference.js  planner-core.js  recipe-planner.js  app-state.js  storage.js  planner-ui.js
 tests/                  test tooling (not part of the shipped page)
 ```
 
@@ -46,6 +46,32 @@ On first load, a previously saved team and sprite style are migrated into the
 new document; the old storage keys are left untouched. If the saved document
 was written by a newer version or cannot be read, it is never overwritten — the
 banner explains the situation and offers a download or a fresh start.
+
+## Breeding plans
+
+Pin an offspring in **Find parents** to make it a saved target, then build a
+breeding plan for the active target below the parent list.
+
+- **Suggested recipes** are ranked by the species already in your roster, then
+  by fewer missing parents. They are a suggestion, not a guarantee of
+  playability or of the shortest route.
+- Choose a recipe to expand an ordered **Pedigree + Mate** pair into child
+  requirements. Each requirement can link to a matching roster entry, be marked
+  available without a link, or expand through another recipe. Roster matches are
+  hints and never change a requirement's status.
+- Track each requirement as **needed**, **ready**, or **completed**, and add a
+  note. Completing a step does not consume parents or add an offspring; those
+  stay explicit. If one roster entry is needed by two unfinished steps, the plan
+  warns you that breeding consumes parents.
+- Pick the **Ordinary shrine** or **Two-save Breeding room** context. Verified
+  `+` rules apply in the shrine; title-screen Breeding room overrides appear only
+  in the room context. Switching context flags a recipe that no longer applies
+  instead of deleting your notes or progress.
+- The plan never claims to establish acquisition, offspring sex, inherited `+`
+  value, or breeding eligibility, and an unknown `+` value is not treated as
+  zero. Replacements are warned and can be undone.
+
+Plans are saved per target and are included in the full backup.
 
 ## Test
 
