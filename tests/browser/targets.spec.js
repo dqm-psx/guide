@@ -73,12 +73,27 @@ for (const name of ['file', 'server']) {
       await page.keyboard.press('Enter');
       await expect(star).toHaveAttribute('aria-pressed', 'true');
       await expect(page.locator('#planner-message')).toHaveText('Favorited Slime.');
+      await expect(page.locator('#species-message')).toHaveText('Favorited Slime.');
       await expect(star).toBeFocused();
       await star.focus();
       await page.keyboard.press('Space');
       await expect(star).toHaveAttribute('aria-pressed', 'false');
       await expect(page.locator('#planner-message')).toHaveText('Unfavorited Slime.');
+      await expect(page.locator('#species-message')).toHaveText('Unfavorited Slime.');
       await expect(star).toBeFocused();
+    });
+
+    test('target switching works with the keyboard', async ({ page }) => {
+      await page.goto(url());
+      await page.selectOption('#target', '11');
+      await page.click('#target-pin');
+      await page.selectOption('#target', '99');
+      await page.click('#target-pin');
+      const firstSwitch = page.locator('#target-list .target-item').nth(0).locator('button[data-target-switch]');
+      await firstSwitch.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#target-list .target-item').nth(0)).toHaveClass(/is-active/);
+      await expect(page.locator('#target-active-summary')).toHaveText('Active target: Slime');
     });
 
     test('internal slots cannot be favorited (star is disabled)', async ({ page }) => {

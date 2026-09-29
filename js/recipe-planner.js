@@ -783,6 +783,13 @@
       return true;
     }
 
+    // A concrete-parent Breeding room override, which supersedes the base table
+    // and any matching + rule whenever the plan is in the room context.
+    function concreteRoomRule(view, parents) {
+      if (parents[1] === null) return null;
+      return view.roomRules.find(rule => rule.pedigree_index === parents[0] && rule.mate_index === parents[1]) || null;
+    }
+
     // Recompute what a stored recipe produces under the given data, mirroring
     // the core's per-kind precedence. Returns the result species index, or null
     // when the recipe no longer produces a result.
@@ -832,6 +839,13 @@
           flags.push({
             nodeId: node.id,
             reason: 'The stored ' + node.recipe.kind + ' recipe does not match the ' + plan.context + ' plan context.'
+          });
+          continue;
+        }
+        if (plan.context === 'room' && node.recipe.kind !== 'flag_gated' && concreteRoomRule(view, node.recipe.parents)) {
+          flags.push({
+            nodeId: node.id,
+            reason: 'A Breeding room override applies to this pair and supersedes the stored ' + node.recipe.kind + ' recipe.'
           });
           continue;
         }

@@ -34,6 +34,7 @@
   let planInvalid = null;
   let planMismatch = [];
   let planFlagged = new Set();
+  let pendingReplaceId = null;
   let suggestionTarget = null;
   let suggestionPage = 0;
   let undoPlan = null;
@@ -309,6 +310,8 @@
       suggestionTarget = null;
       suggestionPage = 0;
       undoPlan = null;
+      pendingReplaceId = null;
+      P("plan-replace-warning").hidden = true;
     }
     empty.hidden = true;
     body.hidden = false;
@@ -325,6 +328,7 @@
     } catch (error) {
       planInvalid = error.message;
     }
+    if (!planInvalid) planInvalid = planTargetProblem(plan, target);
     planMismatch = [];
     try {
       planMismatch = planner.validateContext(plan, { data: DATA });
@@ -724,6 +728,17 @@
   }
 
   // ---- import (shared by the team input and the full backup input) ----
+  // A plan may only describe the target it is saved under.
+  function planTargetProblem(candidate, target) {
+    if (candidate.speciesIndex !== target.speciesIndex) {
+      return "The plan describes a different species than its target.";
+    }
+    const root = planner.nodeById(candidate, candidate.rootId);
+    if (root && root.speciesIndex !== candidate.speciesIndex) {
+      return "The plan root does not match the target species.";
+    }
+    return null;
+  }
   // A full-backup import replaces the whole document, so reject it up front when
   // any target holds a structurally broken plan. A recipe that merely mismatches
   // the selected context is flaggable and importable.
@@ -736,6 +751,8 @@
         } catch (error) {
           return error.message;
         }
+        const mismatch = planTargetProblem(target.plan, target);
+        if (mismatch) return mismatch;
       }
     }
     return null;
@@ -1102,6 +1119,21 @@
     savePlan(plan);
     planNotice("Restored the previous recipe.");
   });
+  P("plan-replace-confirm").addEventListener("click", () => {
+    const nodeId = pendingReplaceId;
+    pendingReplaceId = null;
+    P("plan-replace-warning").hidden = true;
+    if (!nodeId || !plan || !planner.nodeById(plan, nodeId)) return;
+    suggestionTarget = nodeId;
+    suggestionPage = 0;
+    renderSuggestions();
+    P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  P("plan-replace-cancel").addEventListener("click", () => {
+    pendingReplaceId = null;
+    P("plan-replace-warning").hidden = true;
+    planNotice("Replacement cancelled.");
+  });
   P("plan-suggestions-prev").addEventListener("click", () => {
     if (suggestionPage > 0) {
       suggestionPage--;
@@ -1183,6 +1215,15 @@
       }
     } else if (replaceButton) {
       const nodeId = replaceButton.dataset.nodeReplace;
+      const node = planner.nodeById(plan, nodeId);
+      if (node && node.children !== null) {
+        // Replacement deletes the dependent branch and its progress, so warn first.
+        pendingReplaceId = nodeId;
+        P("plan-replace-warning-text").textContent = "Replacing this recipe removes its dependent steps and their progress. Replace anyway?";
+        P("plan-replace-warning").hidden = false;
+        P("plan-replace-confirm").focus({preventScroll: true});
+        return;
+      }
       suggestionTarget = nodeId;
       suggestionPage = 0;
       renderSuggestions();
@@ -1263,11 +1304,14 @@
     toggleSpeciesFavorite: index => {
       try {
         const favorite = !state.favoriteSpeciesIndices.includes(index);
-        commit(app.toggleSpeciesFavorite(state, index), (favorite ? "Favorited " : "Unfavorited ")+named(index)+".");
+        const message = (favorite ? "Favorited " : "Unfavorited ")+named(index)+".";
+        commit(app.toggleSpeciesFavorite(state, index), message);
         const star = document.querySelector('button[data-species-favorite="'+index+'"]');
         if (star) star.focus({preventScroll: true});
+        return message;
       } catch (error) {
         notice(error.message);
+        return error.message;
       }
     },
     render: () => renderAll(),

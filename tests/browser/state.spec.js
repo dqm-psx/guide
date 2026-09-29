@@ -328,6 +328,23 @@ for (const name of ['file', 'server']) {
       assert.equal(exported.teams[0].entries.length, 1);
     });
 
+    test('the team select is labeled and switching announces', async ({ page }) => {
+      await page.goto(url() + '#team-planner');
+      await page.click('#planner-team-new');
+      await page.fill('#planner-team-name', 'Second');
+      await page.click('#planner-team-name-save');
+      await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'Second']);
+
+      // The native team select is focusable and labeled for keyboard use; the
+      // app announces the resulting switch through its status message.
+      const select = page.locator('#planner-team-select');
+      await select.focus();
+      await expect(select).toBeFocused();
+      await expect(page.locator('label[for="planner-team-select"]')).toHaveText('Active team');
+      await select.selectOption({ index: 0 });
+      await expect(page.locator('#planner-message')).toContainText('Switched to team "My team"');
+    });
+
     test('keyboard: stars, team select, and import preview announce state', async ({ page }) => {
       await page.goto(url() + '#team-planner');
       await addMonster(page, 11);

@@ -522,3 +522,21 @@ test('expanding a plan restored by a fresh instance does not reuse node ids', ()
   assert.equal(new Set(ids).size, ids.length, 'node ids stay unique after a reload');
   assert.ok(after.validate(next));
 });
+
+test('validateContext flags a base recipe that a Breeding room override supersedes', () => {
+  const planner = createPlanner();
+  const shrinePlan = planner.createPlan(2, 'shrine');
+  const expanded = planner.expand(shrinePlan, shrinePlan.rootId, planner.findRecipe(2, 'shrine', [11, 101]));
+  assert.equal(planner.validateContext(expanded).length, 0);
+  const room = { ...expanded, context: 'room' };
+  const flags = planner.validateContext(room);
+  assert.equal(flags.length, 1);
+  assert.match(flags[0].reason, /Breeding room override/);
+
+  // The room override recipe is clean in the room context and flagged in shrine.
+  const roomPlan = planner.createPlan(25, 'room');
+  const expandedRoom = planner.expand(roomPlan, roomPlan.rootId, planner.findRecipe(25, 'room', [11, 101]));
+  assert.equal(planner.validateContext(expandedRoom).length, 0);
+  const backToShrine = { ...expandedRoom, context: 'shrine' };
+  assert.equal(planner.validateContext(backToShrine).length, 1);
+});

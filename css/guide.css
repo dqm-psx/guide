@@ -210,6 +210,7 @@ button.species-star[aria-pressed=true]{color:var(--gold)}
 .plan-node.is-incompatible{border-color:#e3c893;background:#fffaf0}
 .plan-node-incompatible{margin:0 0 6px;font-size:12px;font-weight:650;color:#8a5a12}
 .plan-node-hint{margin:0 0 4px;font-size:12px;color:var(--muted)}
+.plan-inline-error .plan-node-actions{margin-top:8px}
 .plan-side-column{min-width:0}
 #plan-suggestions-for{margin:0 0 10px;font-size:13px;font-weight:600}
 #plan-suggestions{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}

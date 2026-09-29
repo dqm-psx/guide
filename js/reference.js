@@ -148,7 +148,8 @@ $("species-favorites-only").addEventListener("change", renderSpecies);
 $("species-rows").addEventListener("click", event => {
   const star = event.target.closest("button[data-species-favorite]");
   if (!star || !hasApp()) return;
-  DQMApp.toggleSpeciesFavorite(Number(star.dataset.speciesFavorite));
+  const message = DQMApp.toggleSpeciesFavorite(Number(star.dataset.speciesFavorite));
+  if (typeof message === "string") $("species-message").textContent = message;
 });
 const initialSpecies = allSpecies();
 const initialA = initialSpecies.find(s => normalize(s.name) === "slime") ?? initialSpecies[0];

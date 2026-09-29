@@ -47,7 +47,7 @@ for (const name of ['file', 'server']) {
     // Navigate to the suggestion by id, paging forward until it is visible.
     const useSuggestionById = async (page, suggestionId) => {
       const button = page.locator('button[data-suggestion-use="' + suggestionId + '"]');
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 60; i++) {
         if (await button.isVisible().catch(() => false)) break;
         const next = page.locator('#plan-suggestions-next');
         if (await next.isDisabled()) break;
@@ -233,6 +233,8 @@ for (const name of ['file', 'server']) {
       // Replace Drake Slime's recipe with Spotted Slime + species 27.
       const drakeCard2 = nodeCard(page, 'Drake Slime');
       await drakeCard2.locator('button[data-node-replace]').click();
+      await expect(page.locator('#plan-replace-warning')).toBeVisible();
+      await page.click('#plan-replace-confirm');
       await useSuggestionById(page, 'base:shrine:1:27');
 
       // The undo button is shown.
@@ -262,9 +264,30 @@ for (const name of ['file', 'server']) {
       // Drake Slime + Drake Slime would make Drake Slime its own ancestor.
       const drake2 = nodeCard(page, 'Drake Slime');
       await drake2.locator('button[data-node-replace]').click();
+      await page.click('#plan-replace-confirm');
       await useSuggestionById(page, 'base:shrine:0:0');
       await expect(page.locator('#plan-message')).toContainText('cycle');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
+    });
+
+    test('a replacement can be cancelled and keeps the branch', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      const drake = nodeCard(page, 'Drake Slime');
+      await drake.locator('button[data-node-choose]').click();
+      await useSuggestionById(page, 'base:shrine:1:26');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
+
+      const drake2 = nodeCard(page, 'Drake Slime');
+      await drake2.locator('button[data-node-replace]').click();
+      await expect(page.locator('#plan-replace-warning')).toBeVisible();
+      await expect(page.locator('#plan-replace-warning-text')).toContainText('removes its dependent steps');
+      await page.click('#plan-replace-cancel');
+      await expect(page.locator('#plan-replace-warning')).toBeHidden();
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
+      await expect(nodeCard(page, 'Drake Slime').locator('.plan-node-parents')).toContainText('Spotted Slime + Mate Dragon Kid');
+      await expect(page.locator('#plan-message')).toContainText('Replacement cancelled');
     });
 
     test('status changes and collapse return focus to the node', async ({ page }) => {
@@ -387,6 +410,13 @@ for (const name of ['file', 'server']) {
       const rootCard = page.locator('#plan-tree .plan-node').first();
       await expect(rootCard.locator('select[data-node-status]')).toHaveAttribute('aria-label', 'Status for Winged Slime');
       await expect(rootCard.locator('textarea[data-node-note]')).toHaveAttribute('aria-label', 'Note for Winged Slime');
+
+      // Plan steps are operable from the keyboard: Enter opens the suggestions.
+      const choose = rootCard.locator('button[data-node-choose]');
+      await choose.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#plan-suggestions-for')).toContainText('Recipe options for Winged Slime');
+      await page.locator('#plan-suggestions-clear').click();
 
       // The summary announces via role="status".
       await expect(page.locator('#plan-summary')).toHaveAttribute('role', 'status');
@@ -618,6 +648,20 @@ for (const name of ['file', 'server']) {
       await expect(note).toHaveValue('spaced');
     });
 
+    test('a base recipe superseded by a room override is flagged in the room context', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:11:101');
+      await expect(page.locator('#plan-mismatch')).toBeHidden();
+
+      await page.selectOption('#plan-context', 'room');
+      await expect(page.locator('#plan-mismatch')).toBeVisible();
+      await expect(page.locator('#plan-mismatch')).toContainText('Breeding room override');
+      await expect(page.locator('#plan-clear')).toBeHidden();
+      await expect(page.locator('#plan-tree .plan-node').first()).toHaveClass(/is-incompatible/);
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+    });
+
     test('switching a base plan to the room context keeps it usable without a clear', async ({ page }) => {
       await page.goto(url());
       await pinTarget(page, 2);
@@ -660,6 +704,57 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
       await expect(page.locator('#planner-import-preview')).toBeHidden();
       assert.equal(await readStored(page, STORAGE_KEY), before);
+    });
+
+    test('a backup whose plan targets a different species is rejected', async ({ page }) => {
+      await page.goto(url() + '#team-planner');
+      await page.selectOption('#planner-add-species', '11');
+      await page.click('#planner-add-button');
+      const before = await readStored(page, STORAGE_KEY);
+
+      const doc = {
+        version: 1, game: 'dqm1-2-ps1-v61', spriteStyle: 'portrait', favoriteSpeciesIndices: [], activeTeamId: 't-1',
+        teams: [{
+          id: 't-1', name: 'Wrong', entries: [], activeTargetId: 'tg-1',
+          targets: [{
+            id: 'tg-1', speciesIndex: 2,
+            plan: {
+              speciesIndex: 17, context: 'shrine', rootId: 'n0',
+              nodes: [{ id: 'n0', speciesIndex: 17, recipe: null, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: null, parent: null }],
+            },
+          }],
+        }],
+      };
+      const tmp = path.join(os.tmpdir(), 'dqm-guide-wrong-target-plan-test.json');
+      fs.writeFileSync(tmp, JSON.stringify(doc));
+      await page.setInputFiles('#planner-backup-import', tmp);
+
+      await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
+      await expect(page.locator('#planner-import-preview')).toBeHidden();
+      assert.equal(await readStored(page, STORAGE_KEY), before);
+    });
+
+    test('a stored plan for a different species is flagged on load', async ({ page }) => {
+      const doc = {
+        version: 1, game: 'dqm1-2-ps1-v61', spriteStyle: 'portrait', favoriteSpeciesIndices: [], activeTeamId: 't-1',
+        teams: [{
+          id: 't-1', name: 'Wrong', entries: [], activeTargetId: 'tg-1',
+          targets: [{
+            id: 'tg-1', speciesIndex: 2,
+            plan: {
+              speciesIndex: 17, context: 'shrine', rootId: 'n0',
+              nodes: [{ id: 'n0', speciesIndex: 17, recipe: null, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: null, parent: null }],
+            },
+          }],
+        }],
+      };
+      await page.addInitScript(({ key, doc }) => localStorage.setItem(key, JSON.stringify(doc)), { key: STORAGE_KEY, doc });
+      await page.goto(url());
+
+      await expect(page.locator('#plan-body')).toBeVisible();
+      await expect(page.locator('#plan-mismatch')).toBeVisible();
+      await expect(page.locator('#plan-mismatch')).toContainText('could not be read');
+      await expect(page.locator('#plan-clear')).toBeVisible();
     });
   });
 }
