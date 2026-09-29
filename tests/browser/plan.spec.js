@@ -250,6 +250,36 @@ for (const name of ['file', 'server']) {
       await expect(drakeCard3.locator('.plan-node-parents')).toContainText('Pedigree Spotted Slime + Mate Dragon Kid');
     });
 
+    test('replacing a recipe refuses a cycle-creating recipe', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      const drake = nodeCard(page, 'Drake Slime');
+      await drake.locator('button[data-node-choose]').click();
+      await useSuggestionById(page, 'base:shrine:1:26');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
+
+      // Drake Slime + Drake Slime would make Drake Slime its own ancestor.
+      const drake2 = nodeCard(page, 'Drake Slime');
+      await drake2.locator('button[data-node-replace]').click();
+      await useSuggestionById(page, 'base:shrine:0:0');
+      await expect(page.locator('#plan-message')).toContainText('cycle');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
+    });
+
+    test('status changes and collapse return focus to the node', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      const rootCard = page.locator('#plan-tree .plan-node').first();
+      const status = rootCard.locator(':scope > select[data-node-status]');
+      await status.selectOption('ready');
+      await expect(status).toBeFocused();
+
+      await rootCard.locator('button[data-node-collapse]').click();
+      await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > select[data-node-status]')).toBeFocused();
+    });
+
     test('room recipes appear only in the room context', async ({ page }) => {
       await page.goto(url());
       await pinTarget(page, 19); // Angel Slime
@@ -287,6 +317,7 @@ for (const name of ['file', 'server']) {
       // The plus recipe shows the required +N condition.
       const rootCard2 = page.locator('#plan-tree .plan-node').first();
       await expect(rootCard2.locator('.plan-node-condition')).toContainText('Either parent +4 or higher');
+      await expect(rootCard2.locator('.plan-node-unknowns').last()).toContainText('not treated as zero');
     });
 
     test('full backup round trip restores the plan, statuses, notes, and roster links', async ({ page }) => {
@@ -359,6 +390,7 @@ for (const name of ['file', 'server']) {
 
       // The summary announces via role="status".
       await expect(page.locator('#plan-summary')).toHaveAttribute('role', 'status');
+      await expect(page.locator('#plan-mismatch')).toHaveAttribute('role', 'alert');
 
       // Expand to get children with roster selects.
       await useSuggestionById(page, 'base:shrine:0:89');
@@ -373,6 +405,8 @@ for (const name of ['file', 'server']) {
     });
 
     test('a structurally invalid plan does not crash the page and offers a clear control', async ({ page }) => {
+      const errors = [];
+      page.on('pageerror', error => errors.push(error.message));
       await page.addInitScript(key => {
         const doc = {
           version: 1,
@@ -408,6 +442,10 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#plan-mismatch')).toBeVisible();
       await expect(page.locator('#plan-mismatch')).toContainText('could not be read');
       await expect(page.locator('#plan-clear')).toBeVisible();
+
+      // Typing a note on an unreadable plan must not throw or lose data.
+      await page.locator('#plan-tree .plan-node').first().locator(':scope > textarea[data-node-note]').fill('typed on a broken plan');
+      assert.deepEqual(errors, []);
 
       // Clearing the plan starts fresh.
       await page.locator('#plan-clear').click();
@@ -572,6 +610,12 @@ for (const name of ['file', 'server']) {
 
       await page.reload();
       await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > textarea[data-node-note]')).toHaveValue('no blur');
+
+      // Blurring normalizes the box to the stored, trimmed value.
+      const note = page.locator('#plan-tree .plan-node').first().locator(':scope > textarea[data-node-note]');
+      await note.fill('  spaced  ');
+      await page.locator('#plan-heading').click();
+      await expect(note).toHaveValue('spaced');
     });
 
     test('switching a base plan to the room context keeps it usable without a clear', async ({ page }) => {

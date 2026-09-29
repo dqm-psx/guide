@@ -283,10 +283,14 @@
     const before = plan.nodes.find(node => node.id === nodeId);
     const after = nextPlan.nodes.find(node => node.id === nodeId);
     if (before && after && before.note === after.note) return;
-    const nextState = app.setTargetPlan(state, team.id, target.id, nextPlan);
-    plan = nextPlan;
-    state = nextState;
-    persist();
+    try {
+      const nextState = app.setTargetPlan(state, team.id, target.id, nextPlan);
+      plan = nextPlan;
+      state = nextState;
+      persist();
+    } catch (error) {
+      planNotice(error.message);
+    }
   }
   function renderPlan() {
     const team = activeTeam();
@@ -1144,6 +1148,7 @@
       const nodeId = noteTextarea.dataset.nodeNote;
       try {
         commitNote(nodeId, noteTextarea.value);
+        noteTextarea.value = noteTextarea.value.trim();
         planNotice("Note saved.");
       } catch (error) {
         planNotice(error.message);
