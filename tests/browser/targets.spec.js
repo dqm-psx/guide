@@ -73,10 +73,12 @@ for (const name of ['file', 'server']) {
       await page.keyboard.press('Enter');
       await expect(star).toHaveAttribute('aria-pressed', 'true');
       await expect(page.locator('#planner-message')).toHaveText('Favorited Slime.');
+      await expect(star).toBeFocused();
       await star.focus();
       await page.keyboard.press('Space');
       await expect(star).toHaveAttribute('aria-pressed', 'false');
       await expect(page.locator('#planner-message')).toHaveText('Unfavorited Slime.');
+      await expect(star).toBeFocused();
     });
 
     test('internal slots cannot be favorited (star is disabled)', async ({ page }) => {
@@ -116,6 +118,21 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#target')).toHaveValue('11');
       await expect(page.locator('#target-list .target-item').nth(0)).toHaveClass(/is-active/);
       await expect(page.locator('#target-list .target-item').nth(1)).not.toHaveClass(/is-active/);
+    });
+
+    test('re-pinning the same species reuses the existing target', async ({ page }) => {
+      await page.goto(url());
+      await page.selectOption('#target', '11');
+      await page.click('#target-pin');
+      await page.selectOption('#target', '99');
+      await page.click('#target-pin');
+      await page.selectOption('#target', '11');
+      await page.click('#target-pin');
+      await expect(page.locator('#target-list .target-item')).toHaveCount(2);
+      await expect(page.locator('#target-list .target-item').nth(0)).toHaveClass(/is-active/);
+      const doc = JSON.parse(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY));
+      assert.equal(doc.teams[0].targets.length, 2);
+      assert.equal(doc.teams[0].activeTargetId, doc.teams[0].targets[0].id);
     });
 
     test('browsing another species does not overwrite the active target', async ({ page }) => {

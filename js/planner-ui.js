@@ -67,9 +67,19 @@
     if (!ok) {
       storageHealthy = false;
       showStorageBanner("unavailable");
+    } else if (!storageHealthy) {
+      storageHealthy = true;
+      hideStorageBanner();
     }
     updateSaveStatus();
     return ok;
+  }
+  function hideStorageBanner() {
+    P("app-storage-error").hidden = true;
+    P("app-storage-error-download").hidden = true;
+    P("app-storage-error-fresh").hidden = true;
+    freshConfirm = false;
+    P("app-storage-error-fresh").textContent = "Start fresh (replaces saved data)";
   }
   function showStorageBanner(kind, detail) {
     const banner = P("app-storage-error");
@@ -147,7 +157,7 @@
       P("planner-"+sex+"s").innerHTML = entries.map(e => cardMarkup(e, sex)).join("") ||
         '<p class="planner-empty">'+(favoritesOnly ? "No favorites yet. Star a monster to see it here." : "No "+sex+" monsters yet. Add one using the form above.")+'</p>';
     }
-    P("planner-team-summary").textContent = team.entries.length+" / "+core.MAX_ENTRIES+" monsters in "+team.name;
+    P("planner-team-summary").textContent = team.entries.length+" / "+DQMPlannerCore.MAX_ENTRIES+" monsters in "+team.name;
     P("planner-export").disabled = !team.entries.length;
   }
   function renderBreeding() {
@@ -388,11 +398,6 @@
     try {
       result = app.importAny(text);
     } catch (error) {
-      if (app.isNewerError(error)) {
-        storageBlocked = true;
-        storedRawText = text;
-        showStorageBanner("blocked", "newer");
-      }
       target.textContent = "Import failed: "+error.message+" Your saved data has not changed.";
       return;
     }
@@ -429,6 +434,10 @@
       state = adopted;
       if (state.spriteStyle !== currentSpriteStyle) setSpriteStyle(state.spriteStyle);
       currentSpriteStyle = state.spriteStyle;
+      storageBlocked = false;
+      storageHealthy = true;
+      hideStorageBanner();
+      updateSaveStatus();
       renderAll();
       if (announce) notice(announce);
       emit();
@@ -527,7 +536,7 @@
   });
   P("planner-team-new").addEventListener("click", () => openTeamForm("new"));
   P("planner-team-rename").addEventListener("click", () => openTeamForm("rename"));
-  P("planner-team-name-cancel").addEventListener("click", () => { closeTeamForm(); notice("Team name cancelled."); });
+  P("planner-team-name-cancel").addEventListener("click", () => { closeTeamForm(); P("planner-team-rename").focus({preventScroll: true}); notice("Team name cancelled."); });
   P("planner-team-name-form").addEventListener("submit", event => {
     event.preventDefault();
     if (!teamFormMode) return;
@@ -542,12 +551,14 @@
         commit(app.renameTeam(state, team.id, name), 'Renamed team to "'+name.trim()+'".');
       }
       closeTeamForm();
+      P("planner-team-rename").focus({preventScroll: true});
     } catch (error) { notice(error.message); }
   });
   P("planner-team-name-form").addEventListener("keydown", event => {
     if (event.key === "Escape") {
       event.preventDefault();
       closeTeamForm();
+      P("planner-team-rename").focus({preventScroll: true});
       notice("Team name cancelled.");
     }
   });
@@ -578,11 +589,13 @@
     pendingImport = null;
     P("planner-import-preview").hidden = true;
     commit(next, "Imported a full backup: "+summary.teams+" teams, "+summary.entries+" monsters, "+summary.targets+" targets.");
+    P("planner-backup-export").focus({preventScroll: true});
   });
   P("planner-import-cancel").addEventListener("click", () => {
     pendingImport = null;
     P("planner-import-preview").hidden = true;
     P("planner-backup-message").textContent = "Import cancelled. Your saved data has not changed.";
+    P("planner-backup-import").focus({preventScroll: true});
   });
   P("app-storage-error-download").addEventListener("click", () => {
     if (storedRawText !== null) downloadText(storedRawText, "DQM-guide-saved-data.json");
@@ -682,6 +695,8 @@
         commit(next, "Switched the active target.");
         if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(target.speciesIndex);
         renderTargets();
+        const refocused = P("target-list").querySelector('button[data-target-switch="' + targetId + '"]');
+        if (refocused) refocused.focus({preventScroll: true});
       } catch (error) {
         notice(error.message);
       }
@@ -691,6 +706,7 @@
         const next = app.removeTarget(state, team.id, targetId);
         commit(next, "Removed the target.");
         renderTargets();
+        P("target-pin").focus({preventScroll: true});
       } catch (error) {
         notice(error.message);
       }
@@ -729,8 +745,14 @@
     activeTeam,
     isSpeciesFavorite: index => state.favoriteSpeciesIndices.includes(index),
     toggleSpeciesFavorite: index => {
-      const favorite = !state.favoriteSpeciesIndices.includes(index);
-      commit(app.toggleSpeciesFavorite(state, index), (favorite ? "Favorited " : "Unfavorited ")+named(index)+".");
+      try {
+        const favorite = !state.favoriteSpeciesIndices.includes(index);
+        commit(app.toggleSpeciesFavorite(state, index), (favorite ? "Favorited " : "Unfavorited ")+named(index)+".");
+        const star = document.querySelector('button[data-species-favorite="'+index+'"]');
+        if (star) star.focus({preventScroll: true});
+      } catch (error) {
+        notice(error.message);
+      }
     },
     render: () => renderAll(),
     subscribe,

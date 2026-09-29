@@ -226,6 +226,85 @@ for (const name of ['file', 'server']) {
       assert.equal(await readStored(page, STATE_KEY), before);
     });
 
+    test('the blocked-document download contains the stored value', async ({ page }) => {
+      const doc = { ...legacyTeam(), version: 2 };
+      await page.addInitScript(({ key, doc }) => localStorage.setItem(key, JSON.stringify(doc)), { key: STATE_KEY, doc });
+      await page.goto(url() + '#team-planner');
+      await expect(page.locator('#app-storage-error')).toBeVisible();
+      const stored = await readStored(page, STATE_KEY);
+      const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        page.click('#app-storage-error-download'),
+      ]);
+      assert.equal(download.suggestedFilename(), 'DQM-guide-saved-data.json');
+      assert.equal(fs.readFileSync(await download.path(), 'utf8'), stored);
+    });
+
+    test('start fresh requires two clicks, clears the banner, and saves', async ({ page }) => {
+      const doc = { ...legacyTeam(), version: 2 };
+      await page.addInitScript(({ key, doc }) => localStorage.setItem(key, JSON.stringify(doc)), { key: STATE_KEY, doc });
+      await page.goto(url() + '#team-planner');
+      await expect(page.locator('#app-storage-error')).toBeVisible();
+      const before = await readStored(page, STATE_KEY);
+
+      // The first click only asks for confirmation and must not write.
+      await page.click('#app-storage-error-fresh');
+      await expect(page.locator('#app-storage-error-fresh')).toHaveText('Click again to confirm');
+      assert.equal(await readStored(page, STATE_KEY), before);
+
+      // The second click replaces the document, clears the banner, and saves.
+      await page.click('#app-storage-error-fresh');
+      await expect(page.locator('#app-storage-error')).toBeHidden();
+      const after = JSON.parse(await readStored(page, STATE_KEY));
+      assert.equal(after.version, 1);
+      assert.equal(after.teams.length, 1);
+      await addMonster(page, 11);
+      const saved = JSON.parse(await readStored(page, STATE_KEY));
+      assert.equal(saved.teams[0].entries.length, 1);
+    });
+
+    test('a newer backup file is rejected without blocking saving', async ({ page }) => {
+      await page.goto(url() + '#team-planner');
+      await addMonster(page, 11);
+      const before = await readStored(page, STATE_KEY);
+      const newer = {
+        version: 2,
+        game: 'dqm1-2-ps1-v61',
+        spriteStyle: 'portrait',
+        favoriteSpeciesIndices: [],
+        activeTeamId: 't-newer',
+        teams: [{ id: 't-newer', name: 'Newer', entries: [], activeTargetId: null, targets: [] }],
+      };
+      const tmp = path.join(os.tmpdir(), 'dqm-guide-newer-backup.json');
+      fs.writeFileSync(tmp, JSON.stringify(newer));
+      await page.setInputFiles('#planner-backup-import', tmp);
+      await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
+
+      // Importing a file must not be treated as a stored-document conflict.
+      assert.equal(await readStored(page, STATE_KEY), before);
+      await expect(page.locator('#app-storage-error')).toBeHidden();
+
+      // Saving still works after the rejected import.
+      await addMonster(page, 99);
+      const after = JSON.parse(await readStored(page, STATE_KEY));
+      assert.equal(after.teams[0].entries.length, 2);
+    });
+
+    test('the roster favorites filter narrows each column to starred entries', async ({ page }) => {
+      await page.goto(url() + '#team-planner');
+      await addMonster(page, 11);
+      await addMonster(page, 99);
+      await addMonster(page, 13);
+      await expect(page.locator('#planner-males .planner-card')).toHaveCount(3);
+
+      const stars = page.locator('#planner-males button[data-member-favorite]');
+      await stars.nth(0).click();
+      await stars.nth(2).click();
+      await page.check('#planner-roster-favorites');
+      await expect(page.locator('#planner-males .planner-card')).toHaveCount(2);
+      await expect(page.locator('#planner-males .planner-card-name')).toHaveText(['Slime', 'Healer Slime']);
+    });
+
     test('storage unavailable keeps the session usable and offers export', async ({ page }) => {
       await page.addInitScript(() => {
         localStorage.setItem = () => { throw new Error('blocked'); };
@@ -304,6 +383,41 @@ for (const name of ['file', 'server']) {
         await expect(pageB.locator('#planner-team-select option')).toHaveCount(2);
         await expect(pageB.locator('#planner-team-select option')).toHaveText(['My team', 'Shared']);
         await expect(pageB.locator('#planner-message')).toContainText('Updated from another tab');
+        await pageB.close();
+      });
+
+      test('cross-tab: a valid document clears a newer-document block', async ({ page }) => {
+        const context = page.context();
+        const pageB = await context.newPage();
+        await page.goto(url() + '#team-planner');
+        await pageB.goto(url() + '#team-planner');
+
+        // Page A writes a newer document; page B must block and not overwrite it.
+        await page.evaluate(key => localStorage.setItem(key, JSON.stringify({ version: 2, game: 'dqm1-2-ps1-v61' })), STATE_KEY);
+        await expect(pageB.locator('#app-storage-error')).toBeVisible();
+        await expect(pageB.locator('#app-storage-error-text')).toContainText('newer version');
+        const newerRaw = await readStored(page, STATE_KEY);
+
+        // Page A writes a valid document; page B must recover and save again.
+        const valid = {
+          version: 1,
+          game: 'dqm1-2-ps1-v61',
+          spriteStyle: 'portrait',
+          favoriteSpeciesIndices: [],
+          activeTeamId: 't-recover',
+          teams: [{ id: 't-recover', name: 'Recovered', entries: [], activeTargetId: null, targets: [] }],
+        };
+        await page.evaluate(({ key, doc }) => localStorage.setItem(key, JSON.stringify(doc)), { key: STATE_KEY, doc: valid });
+        await expect(pageB.locator('#app-storage-error')).toBeHidden();
+        await expect(pageB.locator('#planner-team-select option')).toHaveText(['Recovered']);
+
+        // Page B can now save again.
+        await pageB.click('#planner-team-new');
+        await pageB.fill('#planner-team-name', 'After recovery');
+        await pageB.click('#planner-team-name-save');
+        const saved = JSON.parse(await readStored(pageB, STATE_KEY));
+        assert.equal(saved.teams.length, 2);
+        assert.notEqual(await readStored(page, STATE_KEY), newerRaw);
         await pageB.close();
       });
     }
