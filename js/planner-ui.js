@@ -259,12 +259,34 @@
     const team = activeTeam();
     const target = activeTarget();
     if (!team || !target) return;
+    const nextState = app.setTargetPlan(state, team.id, target.id, nextPlan);
     plan = nextPlan;
-    state = app.setTargetPlan(state, team.id, target.id, nextPlan);
+    state = nextState;
     persist();
     renderPlan();
     planNotice(nextPlan === null ? "Cleared the breeding plan." : "Plan saved.");
     restoreFocus();
+  }
+  // Notes are free text. Persist them without re-rendering the tree so typing
+  // keeps focus and caret, and a note is never lost to an unblurred reload.
+  function commitNote(nodeId, value) {
+    const team = activeTeam();
+    const target = activeTarget();
+    if (!team || !target || !plan) return;
+    let nextPlan;
+    try {
+      nextPlan = planner.setNote(plan, nodeId, value);
+    } catch (error) {
+      planNotice(error.message);
+      return;
+    }
+    const before = plan.nodes.find(node => node.id === nodeId);
+    const after = nextPlan.nodes.find(node => node.id === nodeId);
+    if (before && after && before.note === after.note) return;
+    const nextState = app.setTargetPlan(state, team.id, target.id, nextPlan);
+    plan = nextPlan;
+    state = nextState;
+    persist();
   }
   function renderPlan() {
     const team = activeTeam();
@@ -305,9 +327,6 @@
     } catch (error) {
       if (!planInvalid) planInvalid = error.message;
     }
-    // A stored recipe that no longer matches the selected context is a flaggable
-    // state, not a corrupt document: keep the nodes and never offer to delete.
-    if (planInvalid && planMismatch.length > 0) planInvalid = null;
     planFlagged = new Set(planMismatch.map(flag => flag.nodeId));
     renderPlanToolbar();
     renderPlanTree();
@@ -391,7 +410,7 @@
           : "") +
         '<p class="plan-node-parents">Pedigree ' + safe(pedigreeName) + " + Mate " + safe(mateName) + "</p>" +
         '<span class="plan-node-kind">' + safe(kindLabel) + "</span>" +
-        '<p class="plan-node-context">' + safe(contextLabel(recipe.context)) + "</p>";
+        '<p class="plan-node-context">' + safe(contextLabel(plan.context)) + "</p>";
       if (recipe.kind === "plus_threshold" && recipe.minPlus !== null) {
         recipeInfo.innerHTML += '<p class="plan-node-condition">Either parent +' + recipe.minPlus + " or higher.</p>";
       }
@@ -512,7 +531,7 @@
       if (item.missingParents.length > 0) html += '<span class="plan-suggestion-badge">Missing</span>';
       html += "</p>";
       html += '<p class="plan-suggestion-unknowns">Acquisition, offspring sex, inherited + value, and breeding eligibility are not established by this table.</p>';
-      html += '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' + safe(item.parentNames[0]) + " + Mate " + safe(item.parentNames[1]) + '">Use this recipe</button>';
+      html += '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' + safe(named(item.parents[0])) + " + Mate " + safe(item.parents[1] === null ? "Any monster" : named(item.parents[1])) + '">Use this recipe</button>';
       card.innerHTML = html;
       container.appendChild(card);
     }
@@ -708,11 +727,11 @@
     for (const team of nextState.teams) {
       for (const target of team.targets) {
         if (target.plan === null) continue;
-        let invalid = null;
-        let flags = [];
-        try { planner.validate(target.plan); } catch (error) { invalid = error.message; }
-        try { flags = planner.validateContext(target.plan, { data: DATA }); } catch (error) { if (!invalid) invalid = error.message; }
-        if (invalid && flags.length === 0) return invalid;
+        try {
+          planner.validate(target.plan);
+        } catch (error) {
+          return error.message;
+        }
       }
     }
     return null;
@@ -1123,15 +1142,18 @@
       }
     } else if (noteTextarea) {
       const nodeId = noteTextarea.dataset.nodeNote;
-      focusSelector = 'textarea[data-node-note="' + nodeId + '"]';
       try {
-        const nextPlan = planner.setNote(plan, nodeId, noteTextarea.value);
-        savePlan(nextPlan);
+        commitNote(nodeId, noteTextarea.value);
         planNotice("Note saved.");
       } catch (error) {
         planNotice(error.message);
       }
     }
+  });
+  P("plan-tree").addEventListener("input", event => {
+    const noteTextarea = event.target.closest("textarea[data-node-note]");
+    if (!noteTextarea) return;
+    commitNote(noteTextarea.dataset.nodeNote, noteTextarea.value);
   });
   P("plan-tree").addEventListener("click", event => {
     const chooseButton = event.target.closest("button[data-node-choose]");

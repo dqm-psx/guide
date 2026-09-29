@@ -455,9 +455,23 @@
       };
     }
 
-    function applyRecipe(node, nodeId, stored) {
-      const pedigreeId = makeNodeId();
-      const mateId = makeNodeId();
+    // Node ids must stay unique across page loads. The raw counter restarts at
+    // zero on reload, so skip any id already used by the plan being edited.
+    function planIdGenerator(plan) {
+      const used = new Set(plan.nodes.map(node => node.id));
+      return () => {
+        let id = makeNodeId();
+        let guard = 0;
+        while (used.has(id) && guard++ < 10000) id = makeNodeId();
+        if (used.has(id)) id = id + '-' + Math.random().toString(36).slice(2, 8);
+        used.add(id);
+        return id;
+      };
+    }
+
+    function applyRecipe(node, nodeId, stored, nextId) {
+      const pedigreeId = nextId();
+      const mateId = nextId();
       node.recipe = {
         parents: [stored.parents[0], stored.parents[1]],
         kind: stored.kind,
@@ -513,7 +527,7 @@
         throw fail('limit', 'The plan exceeds the maximum of ' + MAX_PLAN_NODES + ' nodes.');
       }
       node.fulfillment = { choice: 'recipe', rosterEntryId: node.fulfillment.rosterEntryId };
-      const children = applyRecipe(node, nodeId, canonical);
+      const children = applyRecipe(node, nodeId, canonical, planIdGenerator(next));
       next.nodes.push(children[0], children[1]);
       return next;
     }
@@ -559,7 +573,7 @@
         throw fail('limit', 'The plan exceeds the maximum depth of ' + MAX_PLAN_DEPTH + '.');
       }
       next.nodes = next.nodes.filter(n => !toRemove.has(n.id));
-      const children = applyRecipe(node, nodeId, canonical);
+      const children = applyRecipe(node, nodeId, canonical, planIdGenerator(next));
       next.nodes.push(children[0], children[1]);
       return { plan: next, undo: () => plan };
     }
@@ -668,9 +682,6 @@
           throw fail('invalid', 'Plan node ' + node.id + ' has an invalid species index.');
         }
         if (node.recipe !== null) validateStoredRecipe(node.recipe, 'Plan node ' + node.id);
-        if (node.recipe !== null && node.recipe.context !== plan.context) {
-          throw fail('invalid', 'Plan node ' + node.id + ' stores a recipe for a different breeding context.');
-        }
         if (!record(node.fulfillment) || !FULFILLMENT_CHOICES.includes(node.fulfillment.choice)) {
           throw fail('invalid', 'Plan node ' + node.id + ' has an invalid fulfillment choice.');
         }

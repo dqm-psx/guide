@@ -494,3 +494,31 @@ test('a recipe cannot be stored under a context other than the plan context', ()
     err => err.code === 'invalid'
   );
 });
+
+test('validate accepts a stored recipe whose context differs; validateContext flags it', () => {
+  const planner = createPlanner();
+  const roomPlan = planner.createPlan(19, 'room');
+  const expanded = planner.expand(roomPlan, roomPlan.rootId, {
+    parents: [13, null], kind: 'flag_gated', context: 'room', condition: '', minPlus: null,
+  });
+  // Switching the plan back to shrine keeps the stored room recipe in place.
+  const switched = { ...expanded, context: 'shrine' };
+  assert.ok(planner.validate(switched));
+  const flags = planner.validateContext(switched);
+  assert.equal(flags.length, 1);
+  assert.equal(flags[0].nodeId, switched.rootId);
+});
+
+test('expanding a plan restored by a fresh instance does not reuse node ids', () => {
+  const before = createPlanner();
+  let plan = before.createPlan(2, 'shrine');
+  plan = before.expand(plan, plan.rootId, before.findRecipe(2, 'shrine', [0, 89]));
+  const drake = plan.nodes.find(node => node.speciesIndex === 0 && node.parent === plan.rootId);
+  assert.ok(drake, 'the pedigree child exists');
+  // A reload builds a new instance whose id counter restarts at zero.
+  const after = createPlanner();
+  const next = after.expand(plan, drake.id, after.findRecipe(0, 'shrine', [1, 26]));
+  const ids = next.nodes.map(node => node.id);
+  assert.equal(new Set(ids).size, ids.length, 'node ids stay unique after a reload');
+  assert.ok(after.validate(next));
+});

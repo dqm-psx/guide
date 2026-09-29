@@ -537,5 +537,85 @@ for (const name of ['file', 'server']) {
       await expect(rootCard.locator('button[data-node-choose]')).toHaveAttribute('aria-label', 'Choose recipe for Winged Slime');
       await expect(rootCard.locator('button[data-node-available]')).toHaveAttribute('aria-label', 'Mark Winged Slime available without a roster link');
     });
+
+    test('suggestion buttons for twin forms have unique accessible names', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 9); // King Slime: two Dragonlord forms on the first page
+      const labels = await page.locator('#plan-suggestions button[data-suggestion-use]')
+        .evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label')));
+      assert.ok(labels.length > 1);
+      assert.equal(new Set(labels).size, labels.length);
+    });
+
+    test('expanding a plan after reload keeps node ids unique', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+
+      await page.reload();
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+
+      const drake = nodeCard(page, 'Drake Slime');
+      await drake.locator('button[data-node-choose]').click();
+      await useSuggestionById(page, 'base:shrine:1:26');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
+      await expect(page.locator('#plan-message')).toContainText('Chose recipe for Drake Slime');
+    });
+
+    test('a note typed without blurring persists across a reload', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      const rootCard = page.locator('#plan-tree .plan-node').first();
+      await rootCard.locator(':scope > textarea[data-node-note]').fill('no blur');
+
+      await page.reload();
+      await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > textarea[data-node-note]')).toHaveValue('no blur');
+    });
+
+    test('switching a base plan to the room context keeps it usable without a clear', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      await page.selectOption('#plan-context', 'room');
+      await expect(page.locator('#plan-mismatch')).toBeHidden();
+      await expect(page.locator('#plan-clear')).toBeHidden();
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+      await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > .plan-node-recipe > .plan-node-context')).toContainText('Two-save Breeding room');
+    });
+
+    test('a full backup whose broken plan also has a flagged recipe is still rejected', async ({ page }) => {
+      await page.goto(url() + '#team-planner');
+      await page.selectOption('#planner-add-species', '11');
+      await page.click('#planner-add-button');
+      const before = await readStored(page, STORAGE_KEY);
+
+      const bad = {
+        version: 1, game: 'dqm1-2-ps1-v61', spriteStyle: 'portrait', favoriteSpeciesIndices: [], activeTeamId: 't-1',
+        teams: [{
+          id: 't-1', name: 'Bad', entries: [], activeTargetId: 'tg-1',
+          targets: [{
+            id: 'tg-1', speciesIndex: 19,
+            plan: {
+              speciesIndex: 19, context: 'shrine', rootId: 'n0',
+              nodes: [
+                { id: 'n0', speciesIndex: 19, recipe: { parents: [13, null], kind: 'flag_gated', context: 'room', condition: '', minPlus: null }, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: ['n1', 'n2'], parent: null },
+                { id: 'n1', speciesIndex: 13, recipe: null, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: null, parent: 'n0' },
+                { id: 'n2', speciesIndex: null, recipe: null, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: null, parent: 'n0' },
+                { id: 'n0', speciesIndex: 19, recipe: null, fulfillment: { choice: 'recipe', rosterEntryId: null }, status: 'needed', note: '', children: null, parent: null },
+              ],
+            },
+          }],
+        }],
+      };
+      const tmp = path.join(os.tmpdir(), 'dqm-guide-bad-flagged-plan-test.json');
+      fs.writeFileSync(tmp, JSON.stringify(bad));
+      await page.setInputFiles('#planner-backup-import', tmp);
+
+      await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
+      await expect(page.locator('#planner-import-preview')).toBeHidden();
+      assert.equal(await readStored(page, STORAGE_KEY), before);
+    });
   });
 }
