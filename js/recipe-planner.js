@@ -783,11 +783,16 @@
       return true;
     }
 
-    // A concrete-parent Breeding room override, which supersedes the base table
-    // and any matching + rule whenever the plan is in the room context.
-    function concreteRoomRule(view, parents) {
+    // A stored concrete-parent recipe is superseded whenever the plan is in the
+    // room context and a room override matches the pair, including family
+    // wildcards. Mirrors roomOverride() but reads the supplied rules view.
+    function viewRoomOverride(view, parents) {
       if (parents[1] === null) return null;
-      return view.roomRules.find(rule => rule.pedigree_index === parents[0] && rule.mate_index === parents[1]) || null;
+      const a = parents[0];
+      const b = parents[1];
+      const family = speciesFamily(b);
+      return view.roomRules.find(rule => rule.pedigree_index === a &&
+        (rule.mate_index != null ? rule.mate_index === b : family === rule.mate_family_index)) || null;
     }
 
     // Recompute what a stored recipe produces under the given data, mirroring
@@ -842,7 +847,7 @@
           });
           continue;
         }
-        if (plan.context === 'room' && node.recipe.kind !== 'flag_gated' && concreteRoomRule(view, node.recipe.parents)) {
+        if (plan.context === 'room' && node.recipe.kind !== 'flag_gated' && viewRoomOverride(view, node.recipe.parents)) {
           flags.push({
             nodeId: node.id,
             reason: 'A Breeding room override applies to this pair and supersedes the stored ' + node.recipe.kind + ' recipe.'

@@ -35,6 +35,8 @@
   let planMismatch = [];
   let planFlagged = new Set();
   let pendingReplaceId = null;
+  let pendingReplaceSuggestion = null;
+  let replaceConfirmedForNode = null;
   let suggestionTarget = null;
   let suggestionPage = 0;
   let undoPlan = null;
@@ -311,6 +313,8 @@
       suggestionPage = 0;
       undoPlan = null;
       pendingReplaceId = null;
+      pendingReplaceSuggestion = null;
+      replaceConfirmedForNode = null;
       P("plan-replace-warning").hidden = true;
     }
     empty.hidden = true;
@@ -1120,17 +1124,28 @@
     planNotice("Restored the previous recipe.");
   });
   P("plan-replace-confirm").addEventListener("click", () => {
-    const nodeId = pendingReplaceId;
-    pendingReplaceId = null;
     P("plan-replace-warning").hidden = true;
-    if (!nodeId || !plan || !planner.nodeById(plan, nodeId)) return;
-    suggestionTarget = nodeId;
+    const pendingSuggestion = pendingReplaceSuggestion;
+    const pendingNodeId = pendingReplaceId;
+    pendingReplaceSuggestion = null;
+    pendingReplaceId = null;
+    if (pendingSuggestion) {
+      replaceConfirmedForNode = pendingSuggestion.nodeId;
+      applySuggestion(pendingSuggestion.nodeId, pendingSuggestion.suggestionId);
+      replaceConfirmedForNode = null;
+      return;
+    }
+    if (!pendingNodeId || !plan || !planner.nodeById(plan, pendingNodeId)) return;
+    replaceConfirmedForNode = pendingNodeId;
+    suggestionTarget = pendingNodeId;
     suggestionPage = 0;
     renderSuggestions();
     P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
   P("plan-replace-cancel").addEventListener("click", () => {
     pendingReplaceId = null;
+    pendingReplaceSuggestion = null;
+    replaceConfirmedForNode = null;
     P("plan-replace-warning").hidden = true;
     planNotice("Replacement cancelled.");
   });
@@ -1199,12 +1214,16 @@
     const collapseButton = event.target.closest("button[data-node-collapse]");
     if (chooseButton) {
       const nodeId = chooseButton.dataset.nodeChoose;
+      pendingReplaceSuggestion = null;
+      replaceConfirmedForNode = null;
       suggestionTarget = nodeId;
       suggestionPage = 0;
       renderSuggestions();
       P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
     } else if (availableButton) {
       const nodeId = availableButton.dataset.nodeAvailable;
+      pendingReplaceSuggestion = null;
+      replaceConfirmedForNode = null;
       focusSelector = '[data-node-id="' + nodeId + '"]';
       try {
         const nextPlan = planner.setFulfillment(plan, nodeId, { choice: "available", rosterEntryId: null });
@@ -1217,19 +1236,24 @@
       const nodeId = replaceButton.dataset.nodeReplace;
       const node = planner.nodeById(plan, nodeId);
       if (node && node.children !== null) {
-        // Replacement deletes the dependent branch and its progress, so warn first.
+        pendingReplaceSuggestion = null;
+        replaceConfirmedForNode = null;
         pendingReplaceId = nodeId;
         P("plan-replace-warning-text").textContent = "Replacing this recipe removes its dependent steps and their progress. Replace anyway?";
         P("plan-replace-warning").hidden = false;
-        P("plan-replace-confirm").focus({preventScroll: true});
+        P("plan-replace-confirm").focus({ preventScroll: true });
         return;
       }
+      pendingReplaceSuggestion = null;
+      replaceConfirmedForNode = null;
       suggestionTarget = nodeId;
       suggestionPage = 0;
       renderSuggestions();
       P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
     } else if (collapseButton) {
       const nodeId = collapseButton.dataset.nodeCollapse;
+      pendingReplaceSuggestion = null;
+      replaceConfirmedForNode = null;
       focusSelector = '[data-node-id="' + nodeId + '"]';
       try {
         const nextPlan = planner.collapse(plan, nodeId);
@@ -1240,15 +1264,10 @@
       }
     }
   });
-  P("plan-suggestions").addEventListener("click", event => {
-    const button = event.target.closest("button[data-suggestion-use]");
-    if (!button) return;
-    const suggestionId = button.dataset.suggestionUse;
+  function applySuggestion(nodeId, suggestionId) {
     const team = activeTeam();
     const target = activeTarget();
     if (!team || !target || !plan) return;
-    const isTarget = suggestionTarget === null;
-    const nodeId = isTarget ? plan.rootId : suggestionTarget;
     const node = planner.nodeById(plan, nodeId);
     if (!node) return;
     if (node.speciesIndex === null) {
@@ -1285,6 +1304,28 @@
     } catch (error) {
       planNotice(error.message);
     }
+  }
+  P("plan-suggestions").addEventListener("click", event => {
+    const button = event.target.closest("button[data-suggestion-use]");
+    if (!button) return;
+    const suggestionId = button.dataset.suggestionUse;
+    const team = activeTeam();
+    const target = activeTarget();
+    if (!team || !target || !plan) return;
+    const nodeId = suggestionTarget === null ? plan.rootId : suggestionTarget;
+    const node = planner.nodeById(plan, nodeId);
+    if (!node) return;
+    // Applying a suggestion to an expanded node replaces its branch, so warn
+    // first unless a replacement for this exact node was just confirmed.
+    if (node.children !== null && replaceConfirmedForNode !== node.id) {
+      pendingReplaceSuggestion = { nodeId, suggestionId };
+      P("plan-replace-warning-text").textContent = "Replacing this recipe removes its dependent steps and their progress. Replace anyway?";
+      P("plan-replace-warning").hidden = false;
+      P("plan-replace-confirm").focus({ preventScroll: true });
+      return;
+    }
+    replaceConfirmedForNode = null;
+    applySuggestion(nodeId, suggestionId);
   });
   window.addEventListener("hashchange", route);
   document.querySelectorAll('.nav a[href^="#"]').forEach(link => link.addEventListener("click", () => {

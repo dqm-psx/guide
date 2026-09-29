@@ -270,6 +270,26 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
     });
 
+    test('a stale suggestion cannot replace a branch without confirmation', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 2);
+      await useSuggestionById(page, 'base:shrine:0:89');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+
+      // The suggestions still target the expanded root; clicking another one
+      // would remove its branch, so it must warn first.
+      await useSuggestionById(page, 'base:shrine:0:90');
+      await expect(page.locator('#plan-replace-warning')).toBeVisible();
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+      const parents = page.locator('#plan-tree .plan-node').first().locator(':scope > .plan-node-recipe > .plan-node-parents');
+      await expect(parents).toContainText('Drake Slime + Mate Picky');
+
+      await page.click('#plan-replace-confirm');
+      await expect(page.locator('#plan-replace-warning')).toBeHidden();
+      await expect(parents).not.toContainText('Picky');
+      await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+    });
+
     test('a replacement can be cancelled and keeps the branch', async ({ page }) => {
       await page.goto(url());
       await pinTarget(page, 2);
@@ -660,6 +680,18 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#plan-clear')).toBeHidden();
       await expect(page.locator('#plan-tree .plan-node').first()).toHaveClass(/is-incompatible/);
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
+    });
+
+    test('a family-wildcard room override flags a base recipe in the room context', async ({ page }) => {
+      await page.goto(url());
+      await pinTarget(page, 6); // Bubble Slime
+      await useSuggestionById(page, 'base:shrine:13:199'); // Healer Slime + Ghost
+      await expect(page.locator('#plan-mismatch')).toBeHidden();
+
+      await page.selectOption('#plan-context', 'room');
+      await expect(page.locator('#plan-mismatch')).toContainText('Breeding room override');
+      await expect(page.locator('#plan-clear')).toBeHidden();
+      await expect(page.locator('#plan-tree .plan-node').first()).toHaveClass(/is-incompatible/);
     });
 
     test('switching a base plan to the room context keeps it usable without a clear', async ({ page }) => {

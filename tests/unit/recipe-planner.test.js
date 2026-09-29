@@ -533,6 +533,13 @@ test('validateContext flags a base recipe that a Breeding room override supersed
   assert.equal(flags.length, 1);
   assert.match(flags[0].reason, /Breeding room override/);
 
+  // The override also matches by mate family (Ghost belongs to the Zombie family).
+  const wildPlan = planner.createPlan(6, 'shrine');
+  const wildExpanded = planner.expand(wildPlan, wildPlan.rootId, planner.findRecipe(6, 'shrine', [13, 199]));
+  assert.equal(planner.validateContext(wildExpanded).length, 0);
+  const wildRoom = { ...wildExpanded, context: 'room' };
+  assert.equal(planner.validateContext(wildRoom).length, 1);
+
   // The room override recipe is clean in the room context and flagged in shrine.
   const roomPlan = planner.createPlan(25, 'room');
   const expandedRoom = planner.expand(roomPlan, roomPlan.rootId, planner.findRecipe(25, 'room', [11, 101]));
