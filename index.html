@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="css/guide.css">
 </head>
 <body>
-<a class="skip" href="#pair-finder">Skip to pair finder</a>
+<a class="skip" href="#pair-finder">Skip to main content</a>
 <header class="masthead"><div class="wrap"><div class="title-line"><span class="eyebrow">Dragon Quest Monsters 1 &amp; 2 · PlayStation</span><span class="version">Patch v1.0.61 - Current</span><h1>Breeding reference</h1></div><span class="offline">● Works offline</span></div></header>
 <div id="app-storage-error" class="app-error wrap" role="alert" hidden>
   <p id="app-storage-error-text"></p>
@@ -17,80 +17,38 @@
     <button id="app-storage-error-fresh" type="button" hidden>Start fresh (replaces saved data)</button>
   </div>
 </div>
-<div class="nav"><nav class="wrap" aria-label="Reference sections"><a href="#pair-finder">Find a pairing</a> &nbsp; &nbsp; <a href="#offspring-finder">Find parents</a> &nbsp; &nbsp; <a href="#conditional-rules">Conditional results</a> &nbsp; &nbsp; <a href="#species-index">Name index</a> &nbsp; &nbsp; <a href="#about">Read the table</a> &nbsp; &nbsp; <a id="planner-nav-link" href="#team-planner">Team planner</a></nav></div>
+<div class="nav"><nav class="wrap" aria-label="Views"><a href="#pair-finder">Find a pairing</a><a href="#offspring-finder">Find parents</a><a href="#species-index">Name index</a><a id="planner-nav-link" href="#team-planner">My game</a><a href="#rules-guide">Rules &amp; guide</a></nav></div>
 <main class="wrap">
 <noscript><div class="noscript">This offline reference needs JavaScript for its lookup tools. Enable JavaScript in your browser, or use the accompanying printable PDF and JSON data files.</div></noscript>
-<section id="pair-finder" class="section" aria-labelledby="pair-heading"><div class="section-head"><div><h2 id="pair-heading"><span class="section-number">01</span>Find a pairing</h2><p>Full English names appear first; abbreviated in-game names appear in parentheses.</p></div><div class="sprite-style-picker" role="group" aria-label="Monster sprite style"><span>Sprites</span><div class="sprite-style-options"><button type="button" data-sprite-style="portrait" aria-pressed="true">Portrait</button><button type="button" data-sprite-style="overworld" aria-pressed="false">Overworld</button></div></div></div>
+<section id="pair-finder" class="section view" data-view="pair-finder" aria-labelledby="pair-heading"><div class="section-head"><div><h2 id="pair-heading" tabindex="-1"><span class="section-number">01</span>Find a pairing</h2><p>Full English names appear first; abbreviated in-game names appear in parentheses.</p></div><div class="sprite-style-picker" role="group" aria-label="Monster sprite style"><span>Sprites</span><div class="sprite-style-options"><button type="button" data-sprite-style="portrait" aria-pressed="true">Portrait</button><button type="button" data-sprite-style="overworld" aria-pressed="false">Overworld</button></div></div></div>
 <div class="panel"><div class="pair-layout">
 <div><div class="parent-title"><span class="letter">A</span><div><h3>Pedigree</h3><small>First parent · table row</small></div></div><div class="filters"><div class="field"><label for="pedigree-family">Family</label><select id="pedigree-family"></select></div><div class="field"><label for="pedigree-search">Filter names</label><input id="pedigree-search" type="search" placeholder="e.g. Slime" autocomplete="off"></div></div><div class="field"><label for="pedigree">Choose pedigree</label><div class="monster-picker"><span id="pedigree-sprite" class="monster-preview" aria-hidden="true"></span><select id="pedigree"></select></div></div><p id="pedigree-hint" class="hint"></p></div>
 <button id="swap" class="swap" type="button" aria-label="Swap pedigree and mate" title="Swap pedigree and mate">⇄</button>
 <div><div class="parent-title"><span class="letter">B</span><div><h3>Mate</h3><small>Second parent · table column</small></div></div><div class="filters"><div class="field"><label for="mate-family">Family</label><select id="mate-family"></select></div><div class="field"><label for="mate-search">Filter names</label><input id="mate-search" type="search" placeholder="e.g. Dracky" autocomplete="off"></div></div><div class="field"><label for="mate">Choose mate</label><div class="monster-picker"><span id="mate-sprite" class="monster-preview" aria-hidden="true"></span><select id="mate"></select></div></div><p id="mate-hint" class="hint"></p></div>
 </div><div class="result" id="pair-result" aria-live="polite" aria-atomic="true"><div><div class="kicker">Base matrix result · A + B</div><span id="result-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="result-name">Choose two parents</h3><p id="result-detail" class="short"></p><p id="pair-description"></p><p id="pair-room-note" class="hint" hidden></p><p id="pair-plus-note" class="pair-plus-note" hidden></p></div><div class="reverse-result"><div class="kicker">Reversed base result · B + A</div><span id="reverse-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="reverse-name">—</h3><p id="reverse-detail" class="short"></p><p id="reverse-comparison"></p><p id="reverse-room-note" class="hint" hidden></p></div></div></div>
 </section>
-<section id="offspring-finder" class="section" aria-labelledby="offspring-heading"><div class="section-head"><div><h2 id="offspring-heading"><span class="section-number">02</span>Find parents</h2><p>Explore every ordered pair that produces your chosen species in the base table.</p></div></div>
-<div class="panel"><div class="target-row"><div class="field"><label for="target">Desired base offspring</label><div class="monster-picker"><span id="target-sprite" class="monster-preview" aria-hidden="true"></span><select id="target"></select></div></div><p class="target-explain">Each row is an ordered pair. Use “Try pair” to inspect both directions above. These entries do not include conditional recipes.</p></div><div class="toolbar"><div class="field"><label for="target-search">Filter offspring names</label><input id="target-search" type="search" placeholder="Search full or in-game name" autocomplete="off"></div><div class="field"><label for="reverse-pedigree-family">Pedigree family</label><select id="reverse-pedigree-family"></select></div><div class="field"><label for="reverse-mate-family">Mate family</label><select id="reverse-mate-family"></select></div><div class="field"><label for="reverse-search">Either parent’s name</label><input id="reverse-search" type="search" placeholder="Search parent names" autocomplete="off"></div></div><div class="table-info"><p id="reverse-count" role="status"></p><p>Pedigree + Mate → base offspring</p></div><div class="table-scroll"><table><caption class="sr-only">Ordered parent combinations for the desired base offspring</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col"><span class="sr-only">Inspect pairing</span></th></tr></thead><tbody id="reverse-rows"></tbody></table></div><div class="pagination"><span id="reverse-range"></span><div class="controls"><button id="reverse-prev" type="button">← Previous</button><span id="reverse-page"></span><button id="reverse-next" type="button">Next →</button></div></div></div>
-<div class="panel target-panel">
-  <div class="planner-panel-heading"><h3>Saved breeding targets</h3><p class="hint">Pin the offspring you are working toward. Each team keeps its own list; the active target is what a breeding plan will track.</p></div>
-  <div class="target-toolbar planner-actions">
-    <button id="target-pin" type="button" class="planner-primary">Pin current offspring</button>
-    <span id="target-active-summary" role="status"></span>
-  </div>
-  <ul id="target-list" class="target-list" aria-label="Saved breeding targets"></ul>
-</div>
-<div class="panel plan-panel" id="plan-panel">
-  <div class="planner-panel-heading">
-    <h3 id="plan-heading">Breeding plan</h3>
-    <p class="hint">Plan a route to your active target. Suggested recipes are ranked by your roster and missing parents. They are a suggestion, not a guarantee of playability or the shortest path. The table does not establish acquisition, offspring sex, inherited + value, or breeding eligibility.</p>
-  </div>
-  <p id="plan-empty" class="planner-empty">Pin an offspring as your active target to build a breeding plan.</p>
-  <div id="plan-body" hidden>
-    <div class="plan-toolbar">
-      <div class="field"><label for="plan-context">Breeding context</label>
-        <select id="plan-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option></select></div>
-      <span id="plan-summary" role="status"></span>
-    </div>
-    <p id="plan-warnings" class="plan-warnings" role="status"></p>
-    <div id="plan-mismatch" class="plan-inline-error" role="alert" hidden></div>
-    <button id="plan-clear" type="button" hidden>Clear this plan</button>
-    <div id="plan-replace-warning" class="plan-inline-error" hidden>
-      <p id="plan-replace-warning-text" role="alert"></p>
-      <div class="plan-node-actions">
-        <button id="plan-replace-confirm" type="button">Replace and remove dependent steps</button>
-        <button id="plan-replace-cancel" type="button">Keep the current recipe</button>
-      </div>
-    </div>
-    <div class="plan-undo-row"><button id="plan-undo-recipe" type="button" hidden>Undo recipe change</button></div>
-    <div class="plan-layout">
-      <div class="plan-tree-column"><h4>Requirements</h4><div id="plan-tree"></div></div>
-      <aside class="plan-side-column">
-        <h4>Suggested recipes</h4>
-        <p id="plan-suggestions-for" class="hint"></p>
-        <div id="plan-suggestions" role="list" aria-label="Suggested recipes"></div>
-        <div class="pagination">
-          <span id="plan-suggestions-range" role="status"></span>
-          <div class="controls"><button id="plan-suggestions-prev" type="button">← Previous</button><span id="plan-suggestions-page"></span><button id="plan-suggestions-next" type="button">Next →</button></div>
-        </div>
-        <button id="plan-suggestions-clear" type="button" hidden>Back to the target</button>
-      </aside>
-    </div>
-    <p id="plan-message" class="planner-message" role="status"></p>
-  </div>
-</div>
+<section id="offspring-finder" class="section view" data-view="offspring-finder" aria-labelledby="offspring-heading" hidden><div class="section-head"><div><h2 id="offspring-heading" tabindex="-1"><span class="section-number">02</span>Find parents</h2><p>Explore every ordered pair that produces your chosen species in the base table.</p></div></div>
+<div class="panel"><div class="target-row"><div class="field"><label for="target">Desired base offspring</label><div class="monster-picker"><span id="target-sprite" class="monster-preview" aria-hidden="true"></span><select id="target"></select></div></div><div class="target-pin-block"><p class="target-explain">Each row is an ordered pair. Use “Try pair” to inspect both directions in Find a pairing. These entries do not include conditional recipes.</p><div class="target-toolbar"><button id="target-pin" type="button" class="planner-primary">Pin current offspring</button><button id="target-view-plan" type="button" hidden>View plan in My game ↗</button></div></div></div><div class="toolbar"><div class="field"><label for="target-search">Filter offspring names</label><input id="target-search" type="search" placeholder="Search full or in-game name" autocomplete="off"></div><div class="field"><label for="reverse-pedigree-family">Pedigree family</label><select id="reverse-pedigree-family"></select></div><div class="field"><label for="reverse-mate-family">Mate family</label><select id="reverse-mate-family"></select></div><div class="field"><label for="reverse-search">Either parent’s name</label><input id="reverse-search" type="search" placeholder="Search parent names" autocomplete="off"></div></div><div class="table-info"><p id="reverse-count" role="status"></p><p>Pedigree + Mate → base offspring</p></div><div class="table-scroll"><table><caption class="sr-only">Ordered parent combinations for the desired base offspring</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col"><span class="sr-only">Inspect pairing</span></th></tr></thead><tbody id="reverse-rows"></tbody></table></div><div class="pagination"><span id="reverse-range"></span><div class="controls"><button id="reverse-prev" type="button">← Previous</button><span id="reverse-page"></span><button id="reverse-next" type="button">Next →</button></div></div></div>
+<p class="target-hint hint">Pinned targets and their breeding plans live in <strong>My game</strong>, in the Targets &amp; plans tab. Choose an offspring above, pin it, then open its plan there.</p>
 </section>
+<section id="rules-guide" class="view" data-view="rules-guide" aria-labelledby="rules-guide-heading" hidden><h2 id="rules-guide-heading" class="sr-only" tabindex="-1">Rules &amp; guide</h2>
 <section id="conditional-rules" class="section" aria-labelledby="rules-heading"><div class="section-head"><div><h2 id="rules-heading"><span class="section-number">03</span>Conditional results</h2><p>Species rules applied after the base table lookup.</p></div></div><div class="scope"><p><strong>Confirmed + rules:</strong> either parent meeting the listed + value is sufficient. The two + values are not added together. These are ordered pairings.</p></div><div class="panel"><div class="table-scroll"><table><caption class="sr-only">Confirmed plus threshold overrides</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Result</th><th scope="col">Required + value</th></tr></thead><tbody id="plus-rules"></tbody></table></div></div><details><summary id="flag-rules-title">Title-screen Breeding room overrides</summary><p class="target-explain target-explain-room">These rules apply when breeding monsters from two saved games using <strong>Breeding</strong> on the title screen. They do not apply to ordinary in-game shrine breeding. A matching room rule takes precedence over the base table and the + rules above; otherwise the ordinary result remains. Each player uses their own monster as pedigree, so the other player receives the reversed-order result.</p><div class="table-scroll"><table><caption class="sr-only">Confirmed title-screen Breeding room overrides</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Conditional result</th></tr></thead><tbody id="flag-rules"></tbody></table></div></details></section>
-<section id="species-index" class="section" aria-labelledby="species-heading"><div class="section-head"><div><h2 id="species-heading"><span class="section-number">04</span>English name index</h2><p>Use the in-game name column when a battle or breeding menu uses an abbreviated label.</p></div></div>
+<section id="about" class="section" aria-labelledby="about-heading"><div class="section-head"><h2 id="about-heading"><span class="section-number">05</span>Read the table</h2></div><div class="notes-grid"><div class="note-card"><h3>Order is part of the recipe</h3><p>The pedigree selects a row and the mate selects a column. A + B and B + A are separate entries. The result panel compares both automatically.</p></div><div class="note-card"><h3>A base result is only a starting point</h3><p>This resource shows the base table, documents + value rules, and identifies title-screen Breeding room overrides. Read any conditional notice shown with a pair. It does not check the parents’ breeding eligibility or availability.</p></div><div class="note-card"><h3>Names belong to this build</h3><p>The full English name helps you identify the monster; the shorter in-game name helps you locate it in the menus. Numbered form labels are editorial aids for species that share a native name. Other localizations and later games may use different names or recipes.</p></div><div class="note-card"><h3>Extra slots are kept for completeness</h3><p>Extra and internal entries are hidden by default. Enable them in Name index to inspect the original table’s complete coverage. Their presence does not establish that they are obtainable.</p></div></div><details><summary>Source, coverage, and verification</summary><div class="source-body"><p id="coverage-summary"></p><p>The embedded data is a fixed snapshot for v1.0.61-CURRENT. This file makes no network requests and does not update itself.</p><pre id="source-metadata"></pre></div></details></section>
+</section>
+<section id="species-index" class="section view" data-view="species-index" aria-labelledby="species-heading" hidden><div class="section-head"><div><h2 id="species-heading" tabindex="-1"><span class="section-number">04</span>English name index</h2><p>Use the in-game name column when a battle or breeding menu uses an abbreviated label.</p></div></div>
 <div class="panel"><div class="toolbar species-toolbar"><div class="field"><label for="species-search">Search species</label><input id="species-search" type="search" placeholder="Full name, in-game name, or Japanese name" autocomplete="off"></div><div class="field"><label for="species-family">Family</label><select id="species-family"></select></div><label class="settings-inline"><input id="species-favorites-only" type="checkbox"> Favorites only</label></div><div class="table-info"><p id="species-count" role="status"></p><p id="species-message" class="hint" role="status"></p><p>English names from this translation build</p></div><div class="table-scroll"><table><caption class="sr-only">English and in-game species names by family</caption><thead><tr><th scope="col"><span class="sr-only">Favorite</span></th><th scope="col">English name</th><th scope="col">In-game name</th><th scope="col">Family</th><th scope="col">Japanese</th></tr></thead><tbody id="species-rows"></tbody></table></div><div class="pagination"><span id="species-range"></span><div class="controls"><button id="species-prev" type="button">← Previous</button><span id="species-page"></span><button id="species-next" type="button">Next →</button></div></div></div>
 <label class="settings"><input id="show-internal" type="checkbox"> Include extra / internal table slots in all tools</label>
 </section>
-<section id="about" class="section" aria-labelledby="about-heading"><div class="section-head"><h2 id="about-heading"><span class="section-number">05</span>Read the table</h2></div><div class="notes-grid"><div class="note-card"><h3>Order is part of the recipe</h3><p>The pedigree selects a row and the mate selects a column. A + B and B + A are separate entries. The result panel compares both automatically.</p></div><div class="note-card"><h3>A base result is only a starting point</h3><p>This resource shows the base table, documents + value rules, and identifies title-screen Breeding room overrides. Read any conditional notice shown with a pair. It does not check the parents’ breeding eligibility or availability.</p></div><div class="note-card"><h3>Names belong to this build</h3><p>The full English name helps you identify the monster; the shorter in-game name helps you locate it in the menus. Numbered form labels are editorial aids for species that share a native name. Other localizations and later games may use different names or recipes.</p></div><div class="note-card"><h3>Extra slots are kept for completeness</h3><p>Extra and internal entries are hidden by default. Enable them below the name index to inspect the original table’s complete coverage. Their presence does not establish that they are obtainable.</p></div></div><details><summary>Source, coverage, and verification</summary><div class="source-body"><p id="coverage-summary"></p><p>The embedded data is a fixed snapshot for v1.0.61-CURRENT. This file makes no network requests and does not update itself.</p><pre id="source-metadata"></pre></div></details></section>
 
-<section id="team-planner" class="section planner" aria-labelledby="planner-heading" hidden>
+<section id="team-planner" class="section planner view" data-view="team-planner" aria-labelledby="planner-heading" hidden>
   <div class="section-head">
-    <div><h2 id="planner-heading">Team planner</h2><p>Build your team, compare both parent orders, and explore the full breeding table.</p></div>
+    <div><h2 id="planner-heading" tabindex="-1">My game</h2><p>Build your team for DQM1 or DQM2, compare both parent orders, and explore the full breeding table.</p></div>
+    <div class="planner-game-switch" role="group" aria-label="Game"><span>Game</span><div class="planner-game-options"><button id="planner-game-dqm1" type="button" data-game="dqm1" aria-pressed="true">DQM1</button><button id="planner-game-dqm2" type="button" data-game="dqm2" aria-pressed="false">DQM2</button></div></div>
     <div class="sprite-style-picker" role="group" aria-label="Monster sprite style"><span>Sprites</span><div class="sprite-style-options"><button type="button" data-sprite-style="portrait" aria-pressed="true">Portrait</button><button type="button" data-sprite-style="overworld" aria-pressed="false">Overworld</button></div></div>
   </div>
-  <div class="planner-tabs" role="tablist" aria-label="Team planner views">
+  <div class="planner-tabs" role="tablist" aria-label="My game views">
     <button id="planner-tab-roster" type="button" role="tab" aria-selected="true" aria-controls="planner-roster" data-planner-tab="roster">My monsters</button>
+    <button id="planner-tab-targets" type="button" role="tab" aria-selected="false" aria-controls="planner-targets" tabindex="-1" data-planner-tab="targets">Targets &amp; plans</button>
     <button id="planner-tab-breeding" type="button" role="tab" aria-selected="false" aria-controls="planner-breeding" tabindex="-1" data-planner-tab="breeding">Team breeding</button>
     <button id="planner-tab-everything" type="button" role="tab" aria-selected="false" aria-controls="planner-everything" tabindex="-1" data-planner-tab="everything">Everything</button>
   </div>
@@ -100,6 +58,7 @@
       <div class="planner-panel-heading"><h3>Your teams</h3><p class="hint">Each team keeps its own roster and breeding targets. Everything is stored only in this browser.</p></div>
       <div class="planner-team-bar">
         <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
+        <div class="field planner-team-game-field"><label for="planner-team-game">Team game</label><select id="planner-team-game"><option value="">Unassigned</option><option value="dqm1">DQM1</option><option value="dqm2">DQM2</option></select></div>
         <div class="planner-actions">
           <button id="planner-team-new" type="button">New team</button>
           <button id="planner-team-rename" type="button">Rename</button>
@@ -111,6 +70,7 @@
           <button id="planner-team-name-cancel" type="button">Cancel</button>
         </form>
       </div>
+      <p id="planner-team-game-hint" class="hint planner-team-game-hint" hidden>This team is not assigned to a game. Choose DQM1 or DQM2 to file it under a game.</p>
     </div>
     <div class="panel planner-entry">
       <div class="planner-panel-heading"><h3>Add a monster</h3><p class="hint">Keep separate entries for individual monsters, including duplicates.</p></div>
@@ -119,6 +79,7 @@
         <div class="field planner-entry-family"><label for="planner-add-family">Family</label><select id="planner-add-family"></select></div>
         <div class="field planner-entry-species"><label for="planner-add-species">Monster</label><div class="monster-picker"><span id="planner-add-sprite" class="monster-preview" aria-hidden="true"></span><select id="planner-add-species" required></select></div></div>
         <fieldset class="planner-sex-field"><legend>Sex</legend><div class="planner-sex-options"><label for="planner-sex-male"><input id="planner-sex-male" type="radio" name="planner-sex" value="male" checked> Male</label><label for="planner-sex-female"><input id="planner-sex-female" type="radio" name="planner-sex" value="female"> Female</label></div></fieldset>
+        <fieldset class="planner-location-field"><legend>Location</legend><div class="planner-location-options"><label for="planner-location-party"><input id="planner-location-party" type="radio" name="planner-location" value="party" checked> Party</label><label for="planner-location-farm"><input id="planner-location-farm" type="radio" name="planner-location" value="farm"> Farm</label></div></fieldset>
         <div class="field"><label for="planner-add-plus">+ value</label><input id="planner-add-plus" type="number" min="0" max="255" step="1" value="0" required inputmode="numeric"></div>
         <div class="field planner-entry-nickname"><label for="planner-add-nickname">Nickname <span class="planner-optional">(optional)</span></label><input id="planner-add-nickname" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Slimo"></div>
         <div class="planner-entry-actions"><button id="planner-add-button" class="planner-primary planner-add-button" type="submit">Add monster</button><button id="planner-cancel-edit" type="button" hidden>Cancel edit</button></div>
@@ -152,16 +113,65 @@
     </div>
     <p id="planner-message" class="planner-message" role="status"></p>
     <p id="planner-team-summary" class="planner-summary" role="status"></p>
-    <a id="planner-open-target" href="#offspring-finder" hidden>Open active target ↗</a>
     <div class="planner-roster-columns">
       <section class="panel planner-roster-column" aria-labelledby="planner-male-heading">
         <div class="planner-roster-heading"><h3 id="planner-male-heading">Male monsters</h3><span id="planner-male-count" class="planner-count">0</span></div>
-        <div id="planner-males" class="planner-card-list"></div>
+        <div id="planner-males"></div>
       </section>
       <section class="panel planner-roster-column" aria-labelledby="planner-female-heading">
         <div class="planner-roster-heading"><h3 id="planner-female-heading">Female monsters</h3><span id="planner-female-count" class="planner-count">0</span></div>
-        <div id="planner-females" class="planner-card-list"></div>
+        <div id="planner-females"></div>
       </section>
+    </div>
+  </div>
+
+  <div id="planner-targets" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-targets" hidden>
+    <div class="panel target-panel">
+      <div class="planner-panel-heading"><h3>Saved breeding targets</h3><p class="hint">Pin the offspring you are working toward in Find parents. Each team keeps its own list; the active target is what a breeding plan will track.</p></div>
+      <div class="target-toolbar planner-actions">
+        <span id="target-active-summary" role="status"></span>
+        <a id="planner-open-target" href="#offspring-finder" hidden>Open active target in Find parents ↗</a>
+      </div>
+      <ul id="target-list" class="target-list" aria-label="Saved breeding targets"></ul>
+    </div>
+    <div class="panel plan-panel" id="plan-panel">
+      <div class="planner-panel-heading">
+        <h3 id="plan-heading">Breeding plan</h3>
+        <p class="hint">Plan a route to your active target. Suggested recipes are ranked by your roster and missing parents. They are a suggestion, not a guarantee of playability or the shortest path. The table does not establish acquisition, offspring sex, inherited + value, or breeding eligibility.</p>
+      </div>
+      <p id="plan-empty" class="planner-empty">Pin an offspring in Find parents as your active target to build a breeding plan.</p>
+      <div id="plan-body" hidden>
+        <div class="plan-toolbar">
+          <div class="field"><label for="plan-context">Breeding context</label>
+            <select id="plan-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option></select></div>
+          <span id="plan-summary" role="status"></span>
+        </div>
+        <p id="plan-warnings" class="plan-warnings" role="status"></p>
+        <div id="plan-mismatch" class="plan-inline-error" role="alert" hidden></div>
+        <button id="plan-clear" type="button" hidden>Clear this plan</button>
+        <div id="plan-replace-warning" class="plan-inline-error" hidden>
+          <p id="plan-replace-warning-text" role="alert"></p>
+          <div class="plan-node-actions">
+            <button id="plan-replace-confirm" type="button">Replace and remove dependent steps</button>
+            <button id="plan-replace-cancel" type="button">Keep the current recipe</button>
+          </div>
+        </div>
+        <div class="plan-undo-row"><button id="plan-undo-recipe" type="button" hidden>Undo recipe change</button></div>
+        <div class="plan-layout">
+          <div class="plan-tree-column"><h4>Requirements</h4><div id="plan-tree"></div></div>
+          <aside class="plan-side-column">
+            <h4>Suggested recipes</h4>
+            <p id="plan-suggestions-for" class="hint"></p>
+            <div id="plan-suggestions" role="list" aria-label="Suggested recipes"></div>
+            <div class="pagination">
+              <span id="plan-suggestions-range" role="status"></span>
+              <div class="controls"><button id="plan-suggestions-prev" type="button">← Previous</button><span id="plan-suggestions-page"></span><button id="plan-suggestions-next" type="button">Next →</button></div>
+            </div>
+            <button id="plan-suggestions-clear" type="button" hidden>Back to the target</button>
+          </aside>
+        </div>
+        <p id="plan-message" class="planner-message" role="status"></p>
+      </div>
     </div>
   </div>
 
@@ -170,6 +180,7 @@
       <div class="planner-controls">
         <div class="field"><label for="planner-context">Breeding context</label><select id="planner-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></div>
         <div class="field"><label for="planner-result-search">Find an offspring</label><input id="planner-result-search" type="search" placeholder="Filter offspring by name" autocomplete="off"></div>
+        <label class="settings-inline"><input id="planner-breeding-include-farm" type="checkbox"> Include farm monsters</label>
       </div>
       <p class="hint planner-context-note">Opposite-sex pairs appear in both parent orders. Breeding eligibility is not checked. Choose an offspring cell to see its parents and applicable rule.</p>
     </div>
@@ -230,4 +241,5 @@
 <script src="js/app-state.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/planner-ui.js"></script>
+<script src="js/router.js"></script>
 </body></html>

@@ -20,19 +20,51 @@ data/                   breeding data and sprite maps as classic scripts
   monster-sprites.js      assigns globalThis.MONSTER_SPRITES
   overworld-sprites.js    assigns globalThis.OVERWORLD_SPRITES
 js/                     page scripts, loaded in order by index.html
-  sprites.js  reference.js  planner-core.js  recipe-planner.js  app-state.js  storage.js  planner-ui.js
+  sprites.js  reference.js  planner-core.js  recipe-planner.js  app-state.js  storage.js  planner-ui.js  router.js
 tests/                  test tooling (not part of the shipped page)
 ```
 
 The data and scripts are plain classic scripts, so the page runs from `file://`
 with no build step, no service worker, and no `fetch()` for its own data.
 
+## Views
+
+The page is five task views behind a hash route, and the URL says which one is
+open: `#pair-finder` (the default), `#offspring-finder`, `#species-index`,
+`#team-planner` (My game), and `#rules-guide`. An empty or unknown hash opens
+Find a pairing. All five views stay in the page, so a view keeps its filters,
+selections, and planner tab when you come back to it, and printing the page
+prints only the view you are looking at. The older `#conditional-rules` and
+`#about` links still open their headings inside Rules & guide.
+
 ## Saved data
 
-Teams, rosters, favorites, targets, plans, and the sprite style are stored
-**only in this browser** (localStorage). They never leave the device unless you
-export them. If browser storage is unavailable or full, the page keeps working
-for the session and shows a banner; use the backup export to keep your data.
+Teams, rosters, favorites, targets, plans, the game switch, and the sprite
+style are stored **only in this browser** (localStorage). They never leave the
+device unless you export them. If browser storage is unavailable or full, the
+page keeps working for the session and shows a banner; use the backup export to
+keep your data.
+
+The saved document is **version 2**. It records which game you are viewing, and
+each team carries its own game plus a location (`party` or `farm`) on every
+monster:
+
+```js
+{
+  version: 2,
+  activeGame: 'dqm1',            // which game the view is showing
+  teams: [{
+    game: 'dqm2',                // 'dqm1' | 'dqm2' | null when unassigned
+    entries: [{ speciesIndex: 11, sex: 'male', plus: 0, location: 'farm' }],
+  }],
+}
+```
+
+A version-1 document still loads: its teams become unassigned, its monsters
+become party monsters, and the migrated document is written back on your next
+save. A team imported from a file also starts unassigned, so you choose which
+game it belongs to. A document written by a newer build is never read or
+overwritten.
 
 - **Export team** downloads the active team in the legacy team format.
 - **Export full backup** downloads the complete document — every team, roster,
@@ -49,8 +81,9 @@ banner explains the situation and offers a download or a fresh start.
 
 ## Breeding plans
 
-Pin an offspring in **Find parents** to make it a saved target, then build a
-breeding plan for the active target below the parent list.
+Pin an offspring in **Find parents** to save it as a target, then build its
+breeding plan in the **Targets & plans** tab of **My game**. Each team keeps
+its own targets and plans.
 
 - **Suggested recipes** are ranked by the species already in your roster, then
   by fewer missing parents. They are a suggestion, not a guarantee of
@@ -72,6 +105,18 @@ breeding plan for the active target below the parent list.
   zero. Replacements are warned and can be undone.
 
 Plans are saved per target and are included in the full backup.
+
+## Games and farm
+
+The **My game** view holds a DQM1/DQM2 switch. A team is filed under one game,
+and because farms, saved targets, and plans all live under a team, each game
+keeps its own of all four. Every monster is marked **Party** or **Farm**;
+moving one is a single-field change, so its nickname, sex, `+` value, and
+favorite are preserved by construction. The team breeding grid shows party
+monsters, and **Include farm monsters** adds the rest, tagged in the row and
+column headers. Suggested recipes count party and farm monsters alike as owned
+and say where each roster parent is. The breeding table, the rules, and the
+data bundle are shared between the two games; only your saved data is split.
 
 ## Test
 

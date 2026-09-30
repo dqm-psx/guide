@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
 
-  const APP_VERSION = 1;
+  const APP_VERSION = 2;
   const GAME_ID = 'dqm1-2-ps1-v61';
   const STORAGE_KEY = 'dqm-guide-state-v61-v1';
   const LEGACY_TEAM_KEY = 'dqm-guide-team-v61-v1';
@@ -15,15 +15,18 @@
   const MAX_NAME_LENGTH = 40;
   const MAX_IMPORT_LENGTH = 2000000;
   const SPRITE_STYLES = Object.freeze(['portrait', 'overworld']);
+  const TEAM_GAMES = Object.freeze(['dqm1', 'dqm2']);
+  const ENTRY_LOCATIONS = Object.freeze(['party', 'farm']);
+  const DEFAULT_GAME = 'dqm1';
   const TARGET_STATUSES = Object.freeze(['needed', 'ready', 'completed']);
   const MAX_PLAN_DEPTH = 12;
   const MAX_PLAN_NODES = 100;
   const DEFAULT_TEAM_NAME = 'My team';
   const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
   const FORBIDDEN_IDS = ['constructor', 'prototype'];
-  const DOCUMENT_KEYS = ['version', 'game', 'spriteStyle', 'favoriteSpeciesIndices', 'activeTeamId', 'teams'];
-  const TEAM_KEYS = ['id', 'name', 'entries', 'activeTargetId', 'targets'];
-  const ENTRY_KEYS = ['id', 'speciesIndex', 'sex', 'plus', 'nickname'];
+  const DOCUMENT_KEYS = ['version', 'game', 'activeGame', 'spriteStyle', 'favoriteSpeciesIndices', 'activeTeamId', 'teams'];
+  const TEAM_KEYS = ['id', 'name', 'game', 'entries', 'activeTargetId', 'targets'];
+  const ENTRY_KEYS = ['id', 'speciesIndex', 'sex', 'plus', 'nickname', 'location'];
   const TARGET_KEYS = ['id', 'speciesIndex', 'plan'];
 
   const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -106,6 +109,30 @@
       return trimmed;
     }
 
+    /** A team's game: 'dqm1' | 'dqm2', or null while it stays unassigned. */
+    function teamGameOrNull(value, label) {
+      if (value === undefined || value === null) return null;
+      if (!TEAM_GAMES.includes(value)) {
+        fail('invalid', label + ' game must be dqm1, dqm2, or null for an unassigned team.');
+      }
+      return value;
+    }
+
+    /** Where a saved monster lives. Every version-1 monster is a party monster. */
+    function entryLocation(value, label) {
+      if (value === undefined) return 'party';
+      if (!ENTRY_LOCATIONS.includes(value)) {
+        fail('invalid', label + ' location must be party or farm.');
+      }
+      return value;
+    }
+
+    function documentGame(value) {
+      if (value === undefined) return DEFAULT_GAME;
+      if (!TEAM_GAMES.includes(value)) fail('invalid', 'The active game must be dqm1 or dqm2.');
+      return value;
+    }
+
     function validateEntries(entries, defaultFavorite) {
       if (!Array.isArray(entries)) fail('invalid', 'Entries must be a list.');
       if (entries.length > MAX_ENTRIES) fail('limit', 'A team can hold at most ' + MAX_ENTRIES + ' monsters.');
@@ -120,7 +147,8 @@
         const label = 'Monster ' + (index + 1);
         const favorite = raw.favorite === undefined ? defaultFavorite : raw.favorite;
         if (typeof favorite !== 'boolean') fail('invalid', label + ' favorite must be true or false.');
-        return { ...extraKeys(raw, ENTRY_KEYS), ...entry, favorite };
+        const location = entryLocation(raw.location, label);
+        return { ...extraKeys(raw, ENTRY_KEYS), ...entry, favorite, location };
       });
     }
 
@@ -131,6 +159,7 @@
       if (teamIds.has(team.id)) fail('invalid', label + ' has a duplicate ID. Each team needs its own ID.');
       teamIds.add(team.id);
       const name = teamName(team.name, label);
+      const game = teamGameOrNull(team.game, label);
       const entries = validateEntries(team.entries);
       if (!Array.isArray(team.targets)) fail('invalid', label + ' must include a targets list.');
       if (team.targets.length > MAX_TARGETS) fail('limit', label + ' can hold at most ' + MAX_TARGETS + ' targets.');
@@ -158,6 +187,7 @@
         ...extraKeys(team, TEAM_KEYS),
         id: team.id,
         name,
+        game,
         entries,
         activeTargetId: team.activeTargetId,
         targets,
@@ -169,8 +199,11 @@
       if (typeof input.version === 'number' && input.version > APP_VERSION) {
         fail('newer', 'This document was saved by a newer version of the guide. Expected version ' + APP_VERSION + '.');
       }
-      if (input.version !== APP_VERSION) fail('invalid', 'Unsupported document version. Expected ' + APP_VERSION + '.');
+      if (input.version !== 1 && input.version !== APP_VERSION) {
+        fail('invalid', 'Unsupported document version. Expected 1 or ' + APP_VERSION + '.');
+      }
       if (input.game !== GAME_ID) fail('game', 'This document belongs to a different game or patch. Expected ' + GAME_ID + '.');
+      const activeGame = documentGame(input.activeGame);
       if (!SPRITE_STYLES.includes(input.spriteStyle)) {
         fail('invalid', 'Sprite style must be ' + SPRITE_STYLES.join(' or ') + '.');
       }
@@ -194,6 +227,7 @@
         ...extraKeys(input, DOCUMENT_KEYS),
         version: APP_VERSION,
         game: GAME_ID,
+        activeGame,
         spriteStyle: input.spriteStyle,
         favoriteSpeciesIndices: favorites,
         activeTeamId: input.activeTeamId,
@@ -223,10 +257,11 @@
     }
 
     function defaultState() {
-      const team = { id: makeId('t-'), name: DEFAULT_TEAM_NAME, entries: [], activeTargetId: null, targets: [] };
+      const team = { id: makeId('t-'), name: DEFAULT_TEAM_NAME, game: null, entries: [], activeTargetId: null, targets: [] };
       return {
         version: APP_VERSION,
         game: GAME_ID,
+        activeGame: DEFAULT_GAME,
         spriteStyle: 'portrait',
         favoriteSpeciesIndices: [],
         activeTeamId: team.id,
@@ -273,14 +308,17 @@
       if (typeof input.version === 'number' && input.version > APP_VERSION) {
         fail('newer', 'This team file was saved by a newer version of the guide. Expected version ' + APP_VERSION + '.');
       }
-      if (input.version !== APP_VERSION) fail('invalid', 'Unsupported team file. Expected version ' + APP_VERSION + '.');
+      if (input.version !== 1 && input.version !== APP_VERSION) {
+        fail('invalid', 'Unsupported team file. Expected version 1 or ' + APP_VERSION + '.');
+      }
       if (input.game !== GAME_ID) fail('game', 'This team file belongs to a different game or patch. Expected ' + GAME_ID + '.');
       const validated = validateEntries(entries, false);
       if (validated.length === 0) fail('invalid', 'The legacy team has no usable entries.');
       const teamName = typeof name === 'string' && name.trim()
         ? name.trim().slice(0, MAX_NAME_LENGTH)
         : DEFAULT_TEAM_NAME;
-      return { id: makeId('t-'), name: teamName, entries: validated, activeTargetId: null, targets: [] };
+      // Imported teams start unassigned; the player files them under a game.
+      return { id: makeId('t-'), name: teamName, game: null, entries: validated, activeTargetId: null, targets: [] };
     }
 
     function parseLegacyTeam(text, name) {
@@ -350,7 +388,8 @@
     function addTeam(state, name) {
       const trimmed = teamName(name, 'Team');
       if (state.teams.length >= MAX_TEAMS) fail('limit', 'A document can hold at most ' + MAX_TEAMS + ' teams.');
-      const team = { id: makeId('t-'), name: trimmed, entries: [], activeTargetId: null, targets: [] };
+      // A team created while viewing a game belongs to that game.
+      const team = { id: makeId('t-'), name: trimmed, game: state.activeGame, entries: [], activeTargetId: null, targets: [] };
       return { ...state, teams: [...state.teams, team] };
     }
 
@@ -372,9 +411,13 @@
       if (index === -1) fail('invalid', 'The team was not found.');
       const teams = state.teams.filter(team => team.id !== teamId);
       let activeTeamId = state.activeTeamId;
-      if (activeTeamId === teamId) activeTeamId = teams.length ? teams[0].id : null;
+      if (activeTeamId === teamId) {
+        // Prefer a team the player can still see under the game they are viewing.
+        const fallback = teams.find(team => team.game === state.activeGame || team.game === null) || teams[0];
+        activeTeamId = fallback ? fallback.id : null;
+      }
       if (!teams.length) {
-        const fresh = { id: makeId('t-'), name: DEFAULT_TEAM_NAME, entries: [], activeTargetId: null, targets: [] };
+        const fresh = { id: makeId('t-'), name: DEFAULT_TEAM_NAME, game: state.activeGame, entries: [], activeTargetId: null, targets: [] };
         return { ...state, teams: [fresh], activeTeamId: fresh.id };
       }
       return { ...state, teams, activeTeamId };
@@ -383,6 +426,36 @@
     function setActiveTeam(state, teamId) {
       if (teamIndex(state, teamId) === -1) fail('invalid', 'The team was not found.');
       return { ...state, activeTeamId: teamId };
+    }
+
+    // Unassigned teams stay visible under both games so migration never hides data.
+    const visibleIn = game => team => team.game === game || team.game === null;
+
+    /** Switch the active game, always leaving the document with a visible active team. */
+    function setActiveGame(state, game) {
+      if (!TEAM_GAMES.includes(game)) fail('invalid', 'The active game must be dqm1 or dqm2.');
+      if (game === state.activeGame) return { ...state };
+      const visible = visibleIn(game);
+      const next = { ...state, activeGame: game };
+      const active = findTeam(next, next.activeTeamId);
+      if (active && visible(active)) return next;
+      const candidate = next.teams.find(visible);
+      if (candidate) return { ...next, activeTeamId: candidate.id };
+      if (next.teams.length >= MAX_TEAMS) fail('limit', 'A document can hold at most ' + MAX_TEAMS + ' teams.');
+      const team = { id: makeId('t-'), name: DEFAULT_TEAM_NAME, game, entries: [], activeTargetId: null, targets: [] };
+      return { ...next, teams: [...next.teams, team], activeTeamId: team.id };
+    }
+
+    /** File one team under a game, or unassign it with null. */
+    function setTeamGame(state, teamId, game) {
+      if (teamIndex(state, teamId) === -1) fail('invalid', 'The team was not found.');
+      if (game !== null && !TEAM_GAMES.includes(game)) fail('invalid', 'Team game must be dqm1, dqm2, or null.');
+      let next = withTeam(state, teamId, { game });
+      // The switch follows the active team so it never leaves the filtered dropdown.
+      if (state.activeTeamId === teamId && game !== null && game !== next.activeGame) {
+        next = { ...next, activeGame: game };
+      }
+      return next;
     }
 
     function addEntry(state, teamId, entryWithoutId) {
@@ -562,6 +635,9 @@
       MAX_NAME_LENGTH,
       MAX_IMPORT_LENGTH,
       SPRITE_STYLES,
+      TEAM_GAMES,
+      ENTRY_LOCATIONS,
+      DEFAULT_GAME,
       TARGET_STATUSES,
       MAX_PLAN_DEPTH,
       MAX_PLAN_NODES,
@@ -584,6 +660,8 @@
       renameTeam,
       deleteTeam,
       setActiveTeam,
+      setActiveGame,
+      setTeamGame,
       addEntry,
       updateEntry,
       removeEntry,
@@ -611,6 +689,9 @@
     MAX_NAME_LENGTH,
     MAX_IMPORT_LENGTH,
     SPRITE_STYLES,
+    TEAM_GAMES,
+    ENTRY_LOCATIONS,
+    DEFAULT_GAME,
     TARGET_STATUSES,
     MAX_PLAN_DEPTH,
     MAX_PLAN_NODES,

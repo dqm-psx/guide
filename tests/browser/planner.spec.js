@@ -64,7 +64,7 @@ for (const name of ['file', 'server']) {
       ]);
       assert.equal(download.suggestedFilename(), 'DQM-guide-team-v61.json');
       const exported = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
-      assert.equal(exported.version, 1);
+      assert.equal(exported.version, 2);
       assert.equal(exported.game, 'dqm1-2-ps1-v61');
       assert.equal(exported.entries.length, 1);
       assert.equal(exported.entries[0].nickname, 'Slimo');
@@ -89,7 +89,7 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
       await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Healy');
       const saved = JSON.parse(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY));
-      assert.equal(saved.version, 1);
+      assert.equal(saved.version, 2);
       assert.equal(saved.teams.length, 2);
       assert.equal(saved.teams[1].name, 'dqm-guide-import-test');
       assert.equal(saved.teams[1].entries.length, 2);

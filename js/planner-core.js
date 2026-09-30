@@ -3,7 +3,7 @@
   'use strict';
 
   const GAME_ID = 'dqm1-2-ps1-v61';
-  const STATE_VERSION = 1;
+  const STATE_VERSION = 2;
   const MAX_ENTRIES = 100;
   const MAX_NICKNAME_LENGTH = 40;
   const MAX_IMPORT_LENGTH = 100000;
@@ -75,8 +75,9 @@
 
     /** Validate the complete persistence envelope. Never coerce species IDs or numeric values. */
     function normalizeState(input) {
-      if (!record(input) || !own(input, 'version') || input.version !== STATE_VERSION) {
-        throw new Error('Unsupported team file. Expected version ' + STATE_VERSION + '.');
+      if (!record(input) || !own(input, 'version') ||
+          (input.version !== 1 && input.version !== STATE_VERSION)) {
+        throw new Error('Unsupported team file. Expected version 1 or ' + STATE_VERSION + '.');
       }
       if (!own(input, 'game') || input.game !== GAME_ID) {
         throw new Error('This team file belongs to a different game or patch. Expected ' + GAME_ID + '.');

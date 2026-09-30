@@ -33,6 +33,13 @@ const legacyTeam = () => ({
 
 const readStored = (page, key) => page.evaluate(k => localStorage.getItem(k), key);
 
+// Teams are filed under the game being viewed, so the select renders optgroups:
+// the active game's teams first, unassigned teams second. Option order is
+// therefore not creation order, which makes flat indexes unsafe to select on.
+const expectTeamGroups = async (select, expected) =>
+  assert.deepEqual(await select.evaluate(node => [...node.querySelectorAll('optgroup')]
+    .map(group => [group.label, [...group.querySelectorAll('option')].map(option => option.textContent)])), expected);
+
 const addMonster = async (page, speciesIndex) => {
   await page.selectOption('#planner-add-species', String(speciesIndex));
   await page.click('#planner-add-button');
@@ -74,7 +81,10 @@ for (const name of ['file', 'server']) {
       await page.fill('#planner-team-name', 'Breeders');
       await page.click('#planner-team-name-save');
       await expect(page.locator('#planner-team-select option')).toHaveCount(2);
-      await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'Breeders']);
+      await expectTeamGroups(page.locator('#planner-team-select'), [
+        ['DQM1 teams', ['Breeders']],
+        ['Unassigned teams', ['My team']],
+      ]);
       await expect(page.locator('#planner-message')).toContainText('Created team "Breeders"');
       await expect(page.locator('#planner-team-summary')).toContainText('monsters in Breeders');
 
@@ -86,14 +96,17 @@ for (const name of ['file', 'server']) {
       await page.click('#planner-team-rename');
       await page.fill('#planner-team-name', 'Renamed');
       await page.keyboard.press('Enter');
-      await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'Renamed']);
+      await expectTeamGroups(page.locator('#planner-team-select'), [
+        ['DQM1 teams', ['Renamed']],
+        ['Unassigned teams', ['My team']],
+      ]);
       await expect(page.locator('#planner-message')).toContainText('Renamed team to "Renamed"');
 
       // Switching teams switches the active roster.
-      await page.selectOption('#planner-team-select', { index: 0 });
+      await page.selectOption('#planner-team-select', { label: 'My team' });
       await expect(page.locator('#planner-message')).toContainText('Switched to team "My team"');
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
-      await page.selectOption('#planner-team-select', { index: 1 });
+      await page.selectOption('#planner-team-select', { label: 'Renamed' });
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
 
       // Escape cancels the name form.
@@ -101,7 +114,10 @@ for (const name of ['file', 'server']) {
       await page.fill('#planner-team-name', 'Nope');
       await page.keyboard.press('Escape');
       await expect(page.locator('#planner-team-name-form')).toBeHidden();
-      await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'Renamed']);
+      await expectTeamGroups(page.locator('#planner-team-select'), [
+        ['DQM1 teams', ['Renamed']],
+        ['Unassigned teams', ['My team']],
+      ]);
 
       // Delete the second team; the first becomes active again.
       await page.click('#planner-team-delete');
@@ -166,8 +182,9 @@ for (const name of ['file', 'server']) {
       ]);
       assert.equal(download.suggestedFilename(), 'DQM-guide-backup-v61.json');
       const exported = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
-      assert.equal(exported.version, 1);
+      assert.equal(exported.version, 2);
       assert.equal(exported.game, 'dqm1-2-ps1-v61');
+      assert.equal(exported.activeGame, 'dqm1');
       assert.equal(exported.teams.length, 2);
       assert.equal(exported.teams[0].entries.length, 1);
       assert.equal(exported.teams[1].entries.length, 1);
@@ -207,7 +224,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('a newer stored document is never overwritten', async ({ page }) => {
-      const stored = { ...legacyTeam(), version: 2 };
+      const stored = { ...legacyTeam(), version: 3 };
       await page.addInitScript(({ key, doc }) => {
         localStorage.setItem(key, JSON.stringify(doc));
       }, { key: STATE_KEY, doc: stored });
@@ -227,7 +244,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('the blocked-document download contains the stored value', async ({ page }) => {
-      const doc = { ...legacyTeam(), version: 2 };
+      const doc = { ...legacyTeam(), version: 3 };
       await page.addInitScript(({ key, doc }) => localStorage.setItem(key, JSON.stringify(doc)), { key: STATE_KEY, doc });
       await page.goto(url() + '#team-planner');
       await expect(page.locator('#app-storage-error')).toBeVisible();
@@ -241,7 +258,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('start fresh requires two clicks, clears the banner, and saves', async ({ page }) => {
-      const doc = { ...legacyTeam(), version: 2 };
+      const doc = { ...legacyTeam(), version: 3 };
       await page.addInitScript(({ key, doc }) => localStorage.setItem(key, JSON.stringify(doc)), { key: STATE_KEY, doc });
       await page.goto(url() + '#team-planner');
       await expect(page.locator('#app-storage-error')).toBeVisible();
@@ -256,7 +273,7 @@ for (const name of ['file', 'server']) {
       await page.click('#app-storage-error-fresh');
       await expect(page.locator('#app-storage-error')).toBeHidden();
       const after = JSON.parse(await readStored(page, STATE_KEY));
-      assert.equal(after.version, 1);
+      assert.equal(after.version, 2);
       assert.equal(after.teams.length, 1);
       await addMonster(page, 11);
       const saved = JSON.parse(await readStored(page, STATE_KEY));
@@ -268,7 +285,7 @@ for (const name of ['file', 'server']) {
       await addMonster(page, 11);
       const before = await readStored(page, STATE_KEY);
       const newer = {
-        version: 2,
+        version: 3,
         game: 'dqm1-2-ps1-v61',
         spriteStyle: 'portrait',
         favoriteSpeciesIndices: [],
@@ -333,7 +350,10 @@ for (const name of ['file', 'server']) {
       await page.click('#planner-team-new');
       await page.fill('#planner-team-name', 'Second');
       await page.click('#planner-team-name-save');
-      await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'Second']);
+      await expectTeamGroups(page.locator('#planner-team-select'), [
+        ['DQM1 teams', ['Second']],
+        ['Unassigned teams', ['My team']],
+      ]);
 
       // The native team select is focusable and labeled for keyboard use; the
       // app announces the resulting switch through its status message.
@@ -341,7 +361,7 @@ for (const name of ['file', 'server']) {
       await select.focus();
       await expect(select).toBeFocused();
       await expect(page.locator('label[for="planner-team-select"]')).toHaveText('Active team');
-      await select.selectOption({ index: 0 });
+      await select.selectOption({ label: 'My team' });
       await expect(page.locator('#planner-message')).toContainText('Switched to team "My team"');
     });
 
@@ -361,8 +381,8 @@ for (const name of ['file', 'server']) {
       await page.fill('#planner-team-name', 'Second');
       await page.click('#planner-team-name-save');
       await expect(page.locator('#planner-message')).toContainText('Created team "Second"');
-      // Switch back to the first team so its monster is on screen.
-      await page.selectOption('#planner-team-select', { index: 0 });
+      // Switch back to the team holding the monster so it is on screen.
+      await page.selectOption('#planner-team-select', { label: 'My team' });
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
 
       // The import preview announces its counts and is keyboard-operable.
@@ -398,7 +418,10 @@ for (const name of ['file', 'server']) {
         await page.fill('#planner-team-name', 'Shared');
         await page.click('#planner-team-name-save');
         await expect(pageB.locator('#planner-team-select option')).toHaveCount(2);
-        await expect(pageB.locator('#planner-team-select option')).toHaveText(['My team', 'Shared']);
+        await expectTeamGroups(pageB.locator('#planner-team-select'), [
+          ['DQM1 teams', ['Shared']],
+          ['Unassigned teams', ['My team']],
+        ]);
         await expect(pageB.locator('#planner-message')).toContainText('Updated from another tab');
         await pageB.close();
       });
@@ -410,7 +433,7 @@ for (const name of ['file', 'server']) {
         await pageB.goto(url() + '#team-planner');
 
         // Page A writes a newer document; page B must block and not overwrite it.
-        await page.evaluate(key => localStorage.setItem(key, JSON.stringify({ version: 2, game: 'dqm1-2-ps1-v61' })), STATE_KEY);
+        await page.evaluate(key => localStorage.setItem(key, JSON.stringify({ version: 3, game: 'dqm1-2-ps1-v61' })), STATE_KEY);
         await expect(pageB.locator('#app-storage-error')).toBeVisible();
         await expect(pageB.locator('#app-storage-error-text')).toContainText('newer version');
         const newerRaw = await readStored(page, STATE_KEY);

@@ -56,9 +56,23 @@ for (const name of ['file', 'server']) {
       await button.click();
     };
 
+    // The plan panel lives in the planner's Targets & plans tab. A reload
+    // returns to that tab's view, but not to the tab itself.
+    const openPlan = async (page) => {
+      await page.click('#planner-nav-link');
+      await page.click('#planner-tab-targets');
+      await expect(page.locator('#planner-targets')).toBeVisible();
+    };
+
+    // Pin an offspring in Find parents, then take the "View plan" path into
+    // the planner, where the target list and the plan are.
     const pinTarget = async (page, speciesIndex) => {
+      await page.click('.nav a[href="#offspring-finder"]');
+      await expect(page.locator('#offspring-finder')).toBeVisible();
       await page.selectOption('#target', String(speciesIndex));
       await page.click('#target-pin');
+      await page.click('#target-view-plan');
+      await expect(page.locator('#planner-targets')).toBeVisible();
     };
 
     // Find a node card by the exact species name shown in its own header.
@@ -70,13 +84,14 @@ for (const name of ['file', 'server']) {
     const readStored = (page, key) => page.evaluate(k => localStorage.getItem(k), key);
 
     test('shows the empty plan state when no target is pinned', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#team-planner');
+      await openPlan(page);
       await expect(page.locator('#plan-empty')).toBeVisible();
       await expect(page.locator('#plan-body')).toBeHidden();
     });
 
     test('pin a target, choose the top suggestion, and see the recipe with ordered parents and two children', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
       await expect(page.locator('#plan-body')).toBeVisible();
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(1);
@@ -99,7 +114,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('expand a child and reject a cycle-creating recipe', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
 
       // Expand root with Drake Slime + Picky.
@@ -124,7 +139,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('status and note persist across reload', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
       await useSuggestionById(page, 'base:shrine:0:89');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
@@ -155,7 +170,7 @@ for (const name of ['file', 'server']) {
       await seedTeam(page, [
         { speciesIndex: 1, sex: 'male', plus: 0, nickname: 'Spottie' }, // Spotted Slime
       ]);
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 17); // Spotted King
 
       // Expand with the plus recipe: Spotted Slime + Spotted Slime.
@@ -186,7 +201,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('marking a node available ranks the available parent first in suggestions', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
       const firstBefore = page.locator('#plan-suggestions button[data-suggestion-use]').first();
       await expect(firstBefore).toHaveAttribute('data-suggestion-use', 'base:shrine:0:89');
@@ -210,7 +225,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('replace a recipe keeps an unrelated branch and offers undo', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
       await useSuggestionById(page, 'base:shrine:0:89');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
@@ -253,7 +268,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('replacing a recipe refuses a cycle-creating recipe', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       const drake = nodeCard(page, 'Drake Slime');
@@ -271,7 +286,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('a stale suggestion cannot replace a branch without confirmation', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
@@ -291,7 +306,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('a replacement can be cancelled and keeps the branch', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       const drake = nodeCard(page, 'Drake Slime');
@@ -311,7 +326,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('status changes and collapse return focus to the node', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       const rootCard = page.locator('#plan-tree .plan-node').first();
@@ -324,7 +339,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('room recipes appear only in the room context', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 19); // Angel Slime
 
       // In shrine context, the top suggestion is a base recipe.
@@ -345,7 +360,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('base recipes show the unknown caveat and plus recipes show the required +N condition', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
       await useSuggestionById(page, 'base:shrine:0:89');
 
@@ -367,7 +382,7 @@ for (const name of ['file', 'server']) {
       await seedTeam(page, [
         { speciesIndex: 0, sex: 'male', plus: 0, nickname: 'Drake' }, // Drake Slime
       ]);
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
       await useSuggestionById(page, 'base:shrine:0:89');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
@@ -387,8 +402,9 @@ for (const name of ['file', 'server']) {
       // Link the roster entry to Drake Slime.
       await drakeCard.locator('select[data-node-roster]').selectOption('m-seed-0');
 
-      // Export the full backup from the team planner.
+      // Export the full backup from the My monsters tab of the team planner.
       await page.click('#planner-nav-link');
+      await page.click('#planner-tab-roster');
       const [download] = await Promise.all([
         page.waitForEvent('download'),
         page.click('#planner-backup-export'),
@@ -412,7 +428,7 @@ for (const name of ['file', 'server']) {
       await page.click('#planner-import-confirm');
 
       // The plan, statuses, notes, and roster links are restored.
-      await page.evaluate(() => { location.hash = 'offspring-finder'; });
+      await openPlan(page);
       const rootCard2 = page.locator('#plan-tree .plan-node').first();
       const children2 = rootCard2.locator('.plan-node-children .plan-node');
       await expect(children2.nth(0).locator('select[data-node-status]')).toHaveValue('ready');
@@ -423,7 +439,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('node controls have accessible names and the suggestion pager is keyboard operable', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
 
       // Node controls have accessible names.
@@ -486,7 +502,8 @@ for (const name of ['file', 'server']) {
         };
         localStorage.setItem(key, JSON.stringify(doc));
       }, STORAGE_KEY);
-      await page.goto(url());
+      await page.goto(url() + '#team-planner');
+      await openPlan(page);
 
       // The page does not crash and shows a message with a clear control.
       await expect(page.locator('#plan-mismatch')).toBeVisible();
@@ -506,7 +523,7 @@ for (const name of ['file', 'server']) {
     test('switching a room plan to shrine flags the recipe without offering to delete it', async ({ page }) => {
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 19); // Angel Slime
       await page.selectOption('#plan-context', 'room');
       await useSuggestionById(page, 'flag_gated:room:13:family7');
@@ -577,7 +594,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('plans are independent per target', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2); // Winged Slime
       await useSuggestionById(page, 'base:shrine:0:89');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
@@ -599,7 +616,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('a plan change is a single saved write and viewing writes nothing', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       await page.evaluate(() => {
@@ -617,7 +634,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('node and suggestion actions have descriptive accessible names', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       const firstSuggestion = page.locator('#plan-suggestions button[data-suggestion-use]').first();
       await expect(firstSuggestion).toHaveAttribute('aria-label', /^Use recipe: Pedigree .+ \+ Mate .+/);
@@ -627,7 +644,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('suggestion buttons for twin forms have unique accessible names', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 9); // King Slime: two Dragonlord forms on the first page
       const labels = await page.locator('#plan-suggestions button[data-suggestion-use]')
         .evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label')));
@@ -636,12 +653,13 @@ for (const name of ['file', 'server']) {
     });
 
     test('expanding a plan after reload keeps node ids unique', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
 
       await page.reload();
+      await openPlan(page);
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
 
       const drake = nodeCard(page, 'Drake Slime');
@@ -652,13 +670,14 @@ for (const name of ['file', 'server']) {
     });
 
     test('a note typed without blurring persists across a reload', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       const rootCard = page.locator('#plan-tree .plan-node').first();
       await rootCard.locator(':scope > textarea[data-node-note]').fill('no blur');
 
       await page.reload();
+      await openPlan(page);
       await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > textarea[data-node-note]')).toHaveValue('no blur');
 
       // Blurring normalizes the box to the stored, trimmed value.
@@ -669,7 +688,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('a base recipe superseded by a room override is flagged in the room context', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:11:101');
       await expect(page.locator('#plan-mismatch')).toBeHidden();
@@ -683,7 +702,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('a family-wildcard room override flags a base recipe in the room context', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 6); // Bubble Slime
       await useSuggestionById(page, 'base:shrine:13:199'); // Healer Slime + Ghost
       await expect(page.locator('#plan-mismatch')).toBeHidden();
@@ -695,7 +714,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('switching a base plan to the room context keeps it usable without a clear', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await pinTarget(page, 2);
       await useSuggestionById(page, 'base:shrine:0:89');
       await page.selectOption('#plan-context', 'room');
@@ -781,7 +800,8 @@ for (const name of ['file', 'server']) {
         }],
       };
       await page.addInitScript(({ key, doc }) => localStorage.setItem(key, JSON.stringify(doc)), { key: STORAGE_KEY, doc });
-      await page.goto(url());
+      await page.goto(url() + '#team-planner');
+      await openPlan(page);
 
       await expect(page.locator('#plan-body')).toBeVisible();
       await expect(page.locator('#plan-mismatch')).toBeVisible();

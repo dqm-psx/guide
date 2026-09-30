@@ -58,7 +58,7 @@ function renderPair() {
   $("reverse-comparison").textContent = a && b ? (forward && reverse && forward.index === reverse.index ? "Both orders have the same base result." : "Reversed: " + displayName(b) + " + " + displayName(a)) : "";
   const plusRule = a && b ? RULES.find(r => r.kind === "plus_threshold" && r.pedigree_index === a.index && r.mate_index === b.index) : undefined;
   $("pair-plus-note").hidden = !plusRule;
-  $("pair-plus-note").textContent = plusRule ? "Confirmed + rule: " + displayName(byId.get(plusRule.offspring_index)) + " if either parent is +" + plusRule.minimum_parent_plus + " or higher. See conditional results below." : "";
+  $("pair-plus-note").textContent = plusRule ? "Confirmed + rule: " + displayName(byId.get(plusRule.offspring_index)) + " if either parent is +" + plusRule.minimum_parent_plus + " or higher. See conditional results in Rules & guide." : "";
   const roomRule = a && b ? RULES.find(r => r.kind === "flag_gated" && r.pedigree_index === a.index && (r.mate_index === b.index || (r.mate_index == null && r.mate_family_index === b.family_id))) : undefined;
   $("pair-room-note").hidden = !roomRule;
   $("pair-room-note").textContent = roomRule ? "Title-screen Breeding room (between two saves): " + displayName(byId.get(roomRule.offspring_index)) + ". This room rule takes precedence over the base result and any + rule." : "";
@@ -142,7 +142,10 @@ $("species-prev").addEventListener("click", () => { speciesPage--; renderSpecies
 $("species-next").addEventListener("click", () => { speciesPage++; renderSpeciesPage(); });
 $("species-search").addEventListener("input", renderSpecies);
 $("species-family").addEventListener("change", renderSpecies);
-$("reverse-rows").addEventListener("click", event => { const button = event.target.closest("button[data-a]"); if (!button) return; choosePair(Number(button.dataset.a), Number(button.dataset.b)); $("pair-finder").scrollIntoView({behavior:"smooth"}); $("pedigree").focus({preventScroll:true}); });
+// "Try pair" fills Find a pairing, which is a separate view. The selections are
+// set first, then the router reveals and focuses the result, so the handoff
+// also works when Find a pairing is already open.
+$("reverse-rows").addEventListener("click", event => { const button = event.target.closest("button[data-a]"); if (!button) return; choosePair(Number(button.dataset.a), Number(button.dataset.b)); DQMViews.go("pair-finder", { focusId: "result-name" }); });
 $("show-internal").addEventListener("change", () => { updateParent("pedigree"); updateParent("mate"); renderPair(); updateTarget(); renderSpecies(); });
 $("species-favorites-only").addEventListener("change", renderSpecies);
 $("species-rows").addEventListener("click", event => {

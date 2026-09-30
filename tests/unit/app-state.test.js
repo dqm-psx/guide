@@ -43,8 +43,8 @@ const legacyTeam = () => ({
 });
 
 const legacyEntries = () => [
-  { id: 'm-1', speciesIndex: 11, sex: 'male', plus: 0, nickname: '', favorite: false },
-  { id: 'm-2', speciesIndex: 99, sex: 'female', plus: 4, nickname: 'Drake', favorite: false },
+  { id: 'm-1', speciesIndex: 11, sex: 'male', plus: 0, nickname: '', favorite: false, location: 'party' },
+  { id: 'm-2', speciesIndex: 99, sex: 'female', plus: 4, nickname: 'Drake', favorite: false, location: 'party' },
 ];
 
 test('defaultState validates, holds one named team, and round-trips through toJSON', () => {
@@ -58,6 +58,8 @@ test('defaultState validates, holds one named team, and round-trips through toJS
   assert.equal(normalized.teams[0].entries.length, 0);
   assert.equal(normalized.teams[0].targets.length, 0);
   assert.equal(normalized.teams[0].activeTargetId, null);
+  assert.equal(normalized.teams[0].game, null);
+  assert.equal(normalized.activeGame, 'dqm1');
 
   const summary = api.summarize(state);
   assert.deepEqual(plain(summary), { teams: 1, entries: 0, targets: 0, favorites: 0 });
@@ -186,11 +188,11 @@ test('normalizeDocument rejects newer, invalid, and wrong-game documents', () =>
   assert.equal(api.errorCode(new Error('plain')), undefined);
   assert.equal(api.errorCode(null), undefined);
 
-  assertCode(() => api.normalizeDocument({ ...plain(state), version: 2 }), 'newer');
-  assertCode(() => api.importAny(JSON.stringify({ ...plain(state), version: 2 })), 'newer');
+  assertCode(() => api.normalizeDocument({ ...plain(state), version: 3 }), 'newer');
+  assertCode(() => api.importAny(JSON.stringify({ ...plain(state), version: 3 })), 'newer');
   // A newer version is reported before any other interpretation of the file.
-  assertCode(() => api.importAny('{"version":2,"teams":[]}'), 'newer');
-  assertCode(() => api.importAny('{"version":2,"entries":[]}'), 'newer');
+  assertCode(() => api.importAny('{"version":3,"teams":[]}'), 'newer');
+  assertCode(() => api.importAny('{"version":3,"entries":[]}'), 'newer');
   assertCode(() => api.normalizeDocument({ ...plain(state), version: 'x' }), 'invalid');
   assertCode(() => api.normalizeDocument({ ...plain(state), game: 'dqm1-2-ps1-v60' }), 'game');
   assertCode(() => api.importAny(JSON.stringify({ ...plain(state), game: 'other' })), 'game');
@@ -259,13 +261,87 @@ test('normalizeDocument rejects newer, invalid, and wrong-game documents', () =>
   assertCode(() => api.importAny('{"foo":1}'), 'invalid');
   assertCode(() => api.importAny('not json'), 'invalid');
   assertCode(() => api.parseDocument('not json'), 'invalid');
-  assertCode(() => api.parseDocument('{"version":2}'), 'newer');
+  assertCode(() => api.parseDocument('{"version":3}'), 'newer');
   assertCode(() => api.parseDocument('x'.repeat(api.MAX_IMPORT_LENGTH + 1)), 'invalid');
 });
 
 test('normalizeDocument sorts favorite species indices', () => {
   const doc = { ...plain(api.defaultState()), favoriteSpeciesIndices: [20, 3, 9] };
   assert.deepEqual(plain(api.normalizeDocument(doc).favoriteSpeciesIndices), [3, 9, 20]);
+});
+
+const version1Document = () => ({
+  version: 1,
+  game: 'dqm1-2-ps1-v61',
+  spriteStyle: 'overworld',
+  favoriteSpeciesIndices: [20, 3],
+  activeTeamId: 't-old',
+  teams: [{
+    id: 't-old',
+    name: 'Old team',
+    entries: [{ id: 'm-1', speciesIndex: 11, sex: 'male', plus: 3, nickname: 'Bud', favorite: true }],
+    activeTargetId: 't-target',
+    targets: [{ id: 't-target', speciesIndex: 99, plan: null }],
+  }],
+});
+
+test('a version-1 document migrates to version 2 with default game and locations', () => {
+  const migrated = api.normalizeDocument(plain(version1Document()));
+  assert.equal(migrated.version, 2);
+  assert.equal(migrated.game, 'dqm1-2-ps1-v61');
+  assert.equal(migrated.activeGame, 'dqm1');
+  assert.equal(migrated.spriteStyle, 'overworld');
+  assert.equal(migrated.activeTeamId, 't-old');
+  assert.deepEqual(plain(migrated.favoriteSpeciesIndices), [3, 20]);
+  assert.equal(migrated.teams[0].game, null);
+  assert.equal(migrated.teams[0].entries[0].location, 'party');
+  assert.equal(migrated.teams[0].entries[0].nickname, 'Bud');
+  assert.equal(migrated.teams[0].entries[0].plus, 3);
+  assert.equal(migrated.teams[0].entries[0].favorite, true);
+  assert.equal(migrated.teams[0].targets.length, 1);
+
+  // The migrated document is already valid as version 2 and round-trips.
+  assert.deepEqual(plain(api.parseDocument(api.toJSON(migrated))), plain(migrated));
+});
+
+test('importAny migrates a version-1 full backup and leaves version 2 fields alone', () => {
+  const imported = api.importAny(JSON.stringify(plain(version1Document())));
+  assert.equal(imported.kind, 'full');
+  assert.equal(imported.state.version, 2);
+  assert.equal(imported.state.activeGame, 'dqm1');
+  assert.equal(imported.state.teams[0].game, null);
+  assert.equal(imported.state.teams[0].entries[0].location, 'party');
+  assert.equal(imported.summary.entries, 1);
+
+  // A version-2 document keeps the game fields it was saved with.
+  const freshDoc = api.defaultState();
+  const assignedDoc = api.setTeamGame(freshDoc, freshDoc.teams[0].id, 'dqm2');
+  const assigned = api.importAny(api.toJSON(assignedDoc));
+  assert.equal(assigned.state.activeGame, 'dqm2');
+  assert.equal(assigned.state.teams[0].game, 'dqm2');
+  assert.equal(assigned.state.teams[0].entries.length, 0);
+});
+
+test('a version-1 team file imports unassigned with party locations', () => {
+  const team = api.teamFromLegacy(plain(legacyTeam()), 'Old save');
+  assert.equal(team.game, null);
+  assert.deepEqual(plain(team.entries.map(entry => entry.location)), ['party', 'party']);
+
+  const parsed = api.parseLegacyTeam(JSON.stringify(plain(legacyTeam())), 'Old save');
+  assert.equal(parsed.game, null);
+  assert.equal(parsed.entries.length, 2);
+
+  // A version-2 team file keeps the farm locations it was exported with.
+  const v2 = { version: 2, game: 'dqm1-2-ps1-v61', entries: [
+    { id: 'm-1', speciesIndex: 11, sex: 'male', plus: 0, nickname: '', location: 'farm' },
+    { id: 'm-2', speciesIndex: 99, sex: 'female', plus: 4, nickname: 'Drake', location: 'party' },
+  ] };
+  const current = api.parseLegacyTeam(JSON.stringify(v2), 'Current save');
+  assert.equal(current.game, null);
+  assert.deepEqual(plain(current.entries.map(entry => entry.location)), ['farm', 'party']);
+
+  // Version 3 team files stay blocked.
+  assertCode(() => api.teamFromLegacy({ ...plain(legacyTeam()), version: 3 }, 'x'), 'newer');
 });
 
 test('mutators enforce the team, entry, and target limits', () => {
@@ -419,6 +495,7 @@ test('teams switch, rename, and delete with the active team preserved', () => {
   state = api.deleteTeam(state, firstId);
   assert.equal(state.teams.length, 1);
   assert.equal(state.teams[0].name, 'My team');
+  assert.equal(state.teams[0].game, 'dqm1');
   assert.notEqual(state.teams[0].id, firstId);
   assert.equal(state.activeTeamId, state.teams[0].id);
   assert.equal(state.teams[0].entries.length, 0);
@@ -477,6 +554,229 @@ test('updateEntry preserves the entry id and validates patches', () => {
   assert.equal(state.teams[0].entries[0].plus, 9);
   assertCode(() => api.updateEntry(state, teamId, entryId, { sex: 'other' }), 'invalid');
   assertCode(() => api.updateEntry(state, teamId, 'missing', { plus: 1 }), 'invalid');
+});
+
+test('setActiveGame keeps a visible active team, switches, and creates one when needed', () => {
+  let state = api.defaultState();
+  const unassignedId = state.teams[0].id;
+  assert.equal(state.activeGame, 'dqm1');
+  state = api.setTeamGame(state, unassignedId, 'dqm1');
+  const dqm1Id = state.teams[0].id;
+
+  // Already active: nothing changes.
+  const same = api.setActiveGame(state, 'dqm1');
+  assert.equal(same.activeGame, 'dqm1');
+  assert.equal(same.activeTeamId, dqm1Id);
+  assert.equal(same.teams.length, 1);
+
+  // No team is visible under dqm2, so a fresh one is created for that game.
+  const dqm2 = api.setActiveGame(state, 'dqm2');
+  assert.equal(dqm2.activeGame, 'dqm2');
+  assert.equal(dqm2.teams.length, 2);
+  assert.equal(dqm2.teams[1].name, 'My team');
+  assert.equal(dqm2.teams[1].game, 'dqm2');
+  assert.equal(dqm2.teams[1].entries.length, 0);
+  assert.equal(dqm2.activeTeamId, dqm2.teams[1].id);
+  assert.deepEqual(plain(api.normalizeDocument(dqm2)), plain(dqm2));
+
+  // Switching back activates the first visible team instead of creating another.
+  const back = api.setActiveGame(dqm2, 'dqm1');
+  assert.equal(back.activeGame, 'dqm1');
+  assert.equal(back.activeTeamId, dqm1Id);
+  assert.equal(back.teams.length, 2);
+
+  // An unassigned active team stays visible under the other game.
+  const fresh = api.defaultState();
+  const unassigned = api.setActiveGame(fresh, 'dqm2');
+  assert.equal(unassigned.activeTeamId, fresh.teams[0].id);
+  assert.equal(unassigned.teams.length, 1);
+  assert.equal(unassigned.teams[0].game, null);
+
+  assertCode(() => api.setActiveGame(state, 'dqm3'), 'invalid');
+  assertCode(() => api.setActiveGame(state, ''), 'invalid');
+  assertCode(() => api.setActiveGame(state, null), 'invalid');
+
+  // A full document cannot hold a team for every game.
+  let full = api.defaultState();
+  full = api.setTeamGame(full, full.teams[0].id, 'dqm1');
+  for (let i = full.teams.length; i < api.MAX_TEAMS; i += 1) full = api.addTeam(full, 'Team ' + i);
+  assert.equal(full.teams.every(team => team.game === 'dqm1'), true);
+  assertCode(() => api.setActiveGame(full, 'dqm2'), 'limit');
+});
+
+test('setTeamGame assigns, unassigns, and makes the switch follow the active team', () => {
+  let state = api.defaultState();
+  const firstId = state.teams[0].id;
+  state = api.addTeam(state, 'Second');
+  const secondId = state.teams[1].id;
+  assert.equal(state.teams[1].game, 'dqm1');
+
+  state = api.setTeamGame(state, firstId, 'dqm2');
+  assert.equal(state.teams[0].game, 'dqm2');
+  // The active team moved to dqm2, so the switch follows it.
+  assert.equal(state.activeGame, 'dqm2');
+
+  // A team that is not active does not move the switch.
+  state = api.setTeamGame(state, secondId, 'dqm1');
+  assert.equal(state.teams[1].game, 'dqm1');
+  assert.equal(state.activeGame, 'dqm2');
+
+  // Unassigning the active team leaves the switch where it is.
+  state = api.setActiveTeam(state, secondId);
+  state = api.setTeamGame(state, secondId, null);
+  assert.equal(state.teams[1].game, null);
+  assert.equal(state.activeGame, 'dqm2');
+
+  // Assigning the active team to its own game is a no-op on the switch.
+  state = api.setTeamGame(state, secondId, 'dqm2');
+  assert.equal(state.teams[1].game, 'dqm2');
+  assert.equal(state.activeGame, 'dqm2');
+  assert.deepEqual(plain(api.normalizeDocument(state)), plain(state));
+
+  assertCode(() => api.setTeamGame(state, secondId, 'dqm3'), 'invalid');
+  assertCode(() => api.setTeamGame(state, secondId, undefined), 'invalid');
+  assertCode(() => api.setTeamGame(state, 'missing', 'dqm1'), 'invalid');
+});
+
+test('addTeam inherits the active game and deleteTeam falls back to a visible team', () => {
+  let state = api.defaultState();
+  const unassignedId = state.teams[0].id;
+  state = api.setTeamGame(state, unassignedId, 'dqm1');
+  state = api.addTeam(state, 'DQM1 spare');
+  assert.equal(state.teams[1].game, 'dqm1');
+
+  // Moving to a game with no teams creates one, and new teams inherit it.
+  state = api.setActiveGame(state, 'dqm2');
+  const dqm2Id = state.activeTeamId;
+  state = api.addTeam(state, 'DQM2 spare');
+  const dqm2SpareId = state.teams[3].id;
+  assert.equal(state.teams[3].game, 'dqm2');
+  assert.equal(state.teams.length, 4);
+
+  // Deleting the active dqm2 team falls back to the other visible dqm2 team.
+  state = api.setActiveTeam(state, dqm2Id);
+  state = api.deleteTeam(state, dqm2Id);
+  assert.equal(state.teams.length, 3);
+  assert.equal(state.activeTeamId, dqm2SpareId);
+
+  // With no dqm2 or unassigned team left, the first team overall becomes active.
+  state = api.deleteTeam(state, dqm2SpareId);
+  assert.equal(state.teams.length, 2);
+  assert.equal(state.activeTeamId, unassignedId);
+
+  // Deleting the last team leaves a fresh one under the active game.
+  const solo = api.defaultState();
+  const soloId = solo.teams[0].id;
+  const fresh = api.deleteTeam(solo, soloId);
+  assert.equal(fresh.teams.length, 1);
+  assert.equal(fresh.teams[0].game, 'dqm1');
+  assert.equal(fresh.activeTeamId, fresh.teams[0].id);
+  assert.deepEqual(plain(api.normalizeDocument(fresh)), plain(fresh));
+});
+
+test('moving a monster to the farm keeps nickname, sex, + value, and favorite', () => {
+  let state = api.defaultState();
+  const teamId = state.teams[0].id;
+  state = api.addEntry(state, teamId, { speciesIndex: 11, sex: 'male', plus: 6, nickname: 'Bud', favorite: true });
+  const entryId = state.teams[0].entries[0].id;
+  assert.equal(state.teams[0].entries[0].location, 'party');
+
+  state = api.updateEntry(state, teamId, entryId, { location: 'farm' });
+  const onFarm = state.teams[0].entries[0];
+  assert.equal(onFarm.location, 'farm');
+  assert.equal(onFarm.nickname, 'Bud');
+  assert.equal(onFarm.sex, 'male');
+  assert.equal(onFarm.plus, 6);
+  assert.equal(onFarm.favorite, true);
+
+  state = api.updateEntry(state, teamId, entryId, { location: 'party' });
+  assert.equal(state.teams[0].entries[0].location, 'party');
+  assert.equal(state.teams[0].entries[0].nickname, 'Bud');
+
+  // A monster can also be created directly on the farm.
+  state = api.addEntry(state, teamId, { speciesIndex: 99, sex: 'female', plus: 0, nickname: '', location: 'farm' });
+  assert.equal(state.teams[0].entries[1].location, 'farm');
+  assert.deepEqual(plain(api.normalizeDocument(state)), plain(state));
+
+  assertCode(() => api.updateEntry(state, teamId, entryId, { location: 'lagoon' }), 'invalid');
+  assertCode(() => api.addEntry(state, teamId, { speciesIndex: 5, sex: 'male', plus: 0, nickname: '', location: 'lagoon' }), 'invalid');
+});
+
+test('invalid game and location values fail with code invalid', () => {
+  const doc = () => plain(api.defaultState());
+  const withEntry = () => [{
+    id: 'm-1', speciesIndex: 11, sex: 'male', plus: 0, nickname: '', favorite: false, location: 'party',
+  }];
+
+  let base = doc();
+  base.teams[0].entries = withEntry();
+  base.teams[0].game = 'dqm3';
+  assertCode(() => api.normalizeDocument(base), 'invalid');
+
+  base = doc();
+  base.activeGame = 'dqm3';
+  assertCode(() => api.normalizeDocument(base), 'invalid');
+
+  base = doc();
+  base.teams[0].entries = [{ ...withEntry()[0], location: 'lagoon' }];
+  assertCode(() => api.normalizeDocument(base), 'invalid');
+
+  base = doc();
+  base.teams[0].entries = [{ ...withEntry()[0], location: null }];
+  assertCode(() => api.normalizeDocument(base), 'invalid');
+
+  // A missing location and a null team game both take the documented default.
+  base = doc();
+  base.teams[0].entries = [{ id: 'm-1', speciesIndex: 11, sex: 'male', plus: 0, nickname: '', favorite: false }];
+  base.teams[0].game = null;
+  const defaulted = api.normalizeDocument(base);
+  assert.equal(defaulted.teams[0].entries[0].location, 'party');
+  assert.equal(defaulted.teams[0].game, null);
+  assert.equal(defaulted.activeGame, 'dqm1');
+});
+
+test('a version-2 backup round-trips game and location through toJSON and parseDocument', () => {
+  let state = api.defaultState();
+  const teamId = state.teams[0].id;
+  state = api.addEntry(state, teamId, { speciesIndex: 11, sex: 'male', plus: 2, nickname: 'Bud', location: 'farm' });
+  state = api.addEntry(state, teamId, { speciesIndex: 99, sex: 'female', plus: 0, nickname: '' });
+  state = api.setTeamGame(state, teamId, 'dqm2');
+  state = api.setActiveGame(state, 'dqm2');
+  state = api.addTeam(state, 'Spare');
+  assert.equal(state.teams[1].game, 'dqm2');
+
+  const text = api.toJSON(state);
+  const exported = JSON.parse(text);
+  assert.equal(exported.version, 2);
+  assert.equal(exported.game, 'dqm1-2-ps1-v61');
+  assert.equal(exported.activeGame, 'dqm2');
+  assert.equal(exported.teams[0].game, 'dqm2');
+  assert.equal(exported.teams[0].entries[0].location, 'farm');
+  assert.equal(exported.teams[0].entries[1].location, 'party');
+
+  assert.deepEqual(plain(api.parseDocument(text)), plain(state));
+  const imported = api.importAny(text);
+  assert.equal(imported.kind, 'full');
+  assert.equal(imported.state.teams[0].game, 'dqm2');
+  assert.equal(imported.state.teams[0].entries[0].location, 'farm');
+  assert.deepEqual(plain(imported.state), plain(state));
+
+  // A version-3 backup is still refused.
+  assertCode(() => api.importAny(JSON.stringify({ ...exported, version: 3 })), 'newer');
+});
+
+test('the module exports the game and location constants', () => {
+  assert.deepEqual(plain(context.DQMAppState.TEAM_GAMES), ['dqm1', 'dqm2']);
+  assert.deepEqual(plain(context.DQMAppState.ENTRY_LOCATIONS), ['party', 'farm']);
+  assert.equal(context.DQMAppState.DEFAULT_GAME, 'dqm1');
+  assert.equal(api.TEAM_GAMES, context.DQMAppState.TEAM_GAMES);
+  assert.equal(api.ENTRY_LOCATIONS, context.DQMAppState.ENTRY_LOCATIONS);
+  assert.equal(api.DEFAULT_GAME, 'dqm1');
+  assert.equal(api.APP_VERSION, 2);
+  assert.equal(context.DQMPlannerCore.STATE_VERSION, 2);
+  // The storage key and the backup filenames' inputs stay unchanged.
+  assert.equal(context.DQMAppState.STORAGE_KEY, 'dqm-guide-state-v61-v1');
+  assert.equal(context.DQMAppState.LEGACY_TEAM_KEY, 'dqm-guide-team-v61-v1');
 });
 
 test('setSpriteStyle validates the style', () => {

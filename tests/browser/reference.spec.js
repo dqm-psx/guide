@@ -40,16 +40,19 @@ for (const name of ['file', 'server']) {
     });
 
     test('reverse-finder Try pair path shows the + rule note for Spotted Slime', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#offspring-finder');
       await page.selectOption('#target', '1');
       await page.selectOption('#reverse-pedigree-family', '0');
       await page.selectOption('#reverse-mate-family', '0');
       const tryPair = page.locator('#reverse-rows button[data-a="1"][data-b="1"]');
       await expect(tryPair).toHaveCount(1);
       await tryPair.click();
+      // "Try pair" hands off to Find a pairing itself.
+      await expect(page.locator('#pair-finder')).toBeVisible();
+      await expect(page).toHaveURL(/#pair-finder$/);
       const note = page.locator('#pair-plus-note');
       await expect(note).toBeVisible();
-      await expect(note).toHaveText('Confirmed + rule: Spotted King if either parent is +4 or higher. See conditional results below.');
+      await expect(note).toHaveText('Confirmed + rule: Spotted King if either parent is +4 or higher. See conditional results in Rules & guide.');
       await expect(page.locator('#result-name')).toHaveText('Spotted Slime');
       const noteStyle = await note.evaluate(el => {
         const style = getComputedStyle(el);
@@ -68,7 +71,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('species index filters by name query and family', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#species-index');
       await expect(page.locator('#species-count')).toHaveText('315 matching species');
       await page.fill('#species-search', 'Spotted Slime');
       await expect(page.locator('#species-count')).toHaveText('1 matching species');
@@ -85,7 +88,7 @@ for (const name of ['file', 'server']) {
     });
 
     test('include extra / internal toggles the species count', async ({ page }) => {
-      await page.goto(url());
+      await page.goto(url() + '#species-index');
       await expect(page.locator('#species-count')).toHaveText('315 matching species');
       await page.check('#show-internal');
       await expect(page.locator('#species-count')).toHaveText('326 matching species');
@@ -117,14 +120,13 @@ for (const name of ['file', 'server']) {
         await expect(page.locator('#' + id)).toBeHidden();
       }
       await page.focus('#planner-tab-roster');
-      await page.keyboard.press('ArrowRight');
-      await expect(page.locator('#planner-tab-breeding')).toHaveAttribute('aria-selected', 'true');
-      await expect(page.locator('#planner-tab-roster')).toHaveAttribute('aria-selected', 'false');
-      await expect(page.locator('#planner-breeding')).toBeVisible();
-      await expect(page.locator('#planner-roster')).toBeHidden();
-      await page.keyboard.press('ArrowRight');
-      await expect(page.locator('#planner-tab-everything')).toHaveAttribute('aria-selected', 'true');
-      await expect(page.locator('#planner-everything')).toBeVisible();
+      // The arrow keys walk every tab, Targets & plans included.
+      for (const tab of ['targets', 'breeding', 'everything']) {
+        await page.keyboard.press('ArrowRight');
+        await expect(page.locator('#planner-tab-' + tab)).toHaveAttribute('aria-selected', 'true');
+        await expect(page.locator('#planner-' + tab)).toBeVisible();
+        await expect(page.locator('#planner-roster')).toBeHidden();
+      }
     });
   });
 }

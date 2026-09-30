@@ -98,17 +98,40 @@ test('result rejects unknown contexts and non-roster species', () => {
 test('normalizeState accepts a valid document', () => {
   const core = createCore();
   const normalized = core.normalizeState(validDocument());
-  assert.equal(normalized.version, 1);
+  assert.equal(normalized.version, 2);
   assert.equal(normalized.game, 'dqm1-2-ps1-v61');
   assert.equal(normalized.entries.length, 2);
   assert.deepEqual(plain(normalized.entries[1]), { id: 'm-2', speciesIndex: 99, sex: 'female', plus: 4, nickname: 'Drake' });
 });
 
+test('normalizeState accepts version 1 and 2 and stamps the current version', () => {
+  const core = createCore();
+  const v1 = core.normalizeState(validDocument());
+  const v2 = core.normalizeState({ ...validDocument(), version: 2 });
+  assert.equal(v1.version, 2);
+  assert.equal(v2.version, 2);
+  assert.deepEqual(plain(v2.entries), plain(v1.entries));
+});
+
+test('normalizeState tolerates and drops the app-level location key', () => {
+  const core = createCore();
+  const doc = validDocument();
+  doc.entries[0].location = 'farm';
+  const normalized = core.normalizeState(doc);
+  // The core owns the entry shape; app-state re-attaches and validates location.
+  assert.deepEqual(plain(normalized.entries[0]), {
+    id: 'm-1', speciesIndex: 11, sex: 'male', plus: 0, nickname: '',
+  });
+});
+
 test('normalizeState rejects the wrong version', () => {
   const core = createCore();
   const doc = validDocument();
-  doc.version = 2;
-  assert.throws(() => core.normalizeState(doc), /version 1/);
+  doc.version = 3;
+  assert.throws(() => core.normalizeState(doc), /version 1 or 2/);
+  const missing = validDocument();
+  delete missing.version;
+  assert.throws(() => core.normalizeState(missing), /version 1 or 2/);
 });
 
 test('normalizeState rejects the wrong game', () => {
@@ -147,5 +170,5 @@ test('parseState accepts a valid JSON string and rejects invalid input', () => {
   const parsed = core.parseState(JSON.stringify(validDocument()));
   assert.equal(parsed.entries.length, 2);
   assert.throws(() => core.parseState('not json'), /not valid JSON/);
-  assert.throws(() => core.parseState('{"version":2}'), /version 1/);
+  assert.throws(() => core.parseState('{"version":3}'), /version 1 or 2/);
 });

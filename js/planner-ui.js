@@ -12,11 +12,18 @@
   const safe = escapeHTML;
   const rosterSpecies = DATA.species.filter(s => s.index < 315 && isPlayable(s));
   const PAGE = 12;
+  // The planner's tabs, in the order the arrow keys walk them.
+  const PLANNER_TABS = ["roster", "targets", "breeding", "everything"];
   const named = index => displayName(byId.get(index));
   const copy = value => JSON.parse(JSON.stringify(value));
   const memberName = entry => entry.nickname || named(entry.speciesIndex);
   const fullName = entry => (entry.nickname ? entry.nickname + " · " : "") + named(entry.speciesIndex) + " +" + entry.plus;
   const contextLabel = value => ({base:"Base table only",shrine:"Ordinary shrine",room:"Two-save Breeding room"})[value];
+  const gameLabel = value => value === "dqm1" ? "DQM1" : value === "dqm2" ? "DQM2" : "Unassigned";
+  // 'party' is the default location, so an entry that never carried one reads
+  // as a party monster rather than vanishing from both roster subsections.
+  const entryLocation = entry => entry.location === "farm" ? "farm" : "party";
+  const otherLocation = location => location === "farm" ? "party" : "farm";
   const activeTeam = () => app.findTeam(state, state.activeTeamId);
 
   let state = null;
@@ -134,6 +141,7 @@
     editing = null;
     P("planner-add-button").textContent = "Add monster";
     P("planner-cancel-edit").hidden = true;
+    P("planner-location-party").checked = true;
   }
   function downloadText(text, filename) {
     const blob = new Blob([text], {type:"application/json"});
@@ -146,18 +154,31 @@
   function renderTeams() {
     const select = P("planner-team-select");
     select.replaceChildren();
-    for (const team of state.teams) {
-      const option = document.createElement("option");
-      option.value = team.id; option.textContent = team.name;
-      select.append(option);
-    }
+    // Teams filed under the game being viewed come first; unassigned teams stay
+    // listed under both games so migration never hides a team.
+    const addGroup = (label, teams) => {
+      if (!teams.length) return;
+      const group = document.createElement("optgroup");
+      group.label = label;
+      for (const team of teams) {
+        const option = document.createElement("option");
+        option.value = team.id; option.textContent = team.name;
+        group.append(option);
+      }
+      select.append(group);
+    };
+    addGroup(gameLabel(state.activeGame)+" teams", state.teams.filter(team => team.game === state.activeGame));
+    addGroup("Unassigned teams", state.teams.filter(team => team.game === null));
     select.value = state.activeTeamId;
     P("planner-team-delete").disabled = state.teams.length <= 1;
+    const active = activeTeam();
+    P("planner-team-game").value = active && active.game ? active.game : "";
+    P("planner-team-game-hint").hidden = Boolean(active && active.game);
   }
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
     const star = '<button type="button" data-member-favorite="'+safe(entry.id)+'" aria-pressed="'+entry.favorite+'" aria-label="Favorite '+safe(memberName(entry))+'">★</button>';
-    return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+safe(memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button></div></article>';
+    return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+safe(memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button><button type="button" data-member-move="'+safe(entry.id)+'" aria-label="Move '+safe(fullName(entry))+' to the '+otherLocation(entryLocation(entry))+'">Move to '+otherLocation(entryLocation(entry))+'</button></div></article>';
   }
   function renderRoster() {
     malePage = femalePage = rowPage = columnPage = 0;
@@ -167,15 +188,24 @@
       let entries = team.entries.filter(e => e.sex === sex);
       if (favoritesOnly) entries = entries.filter(e => e.favorite === true);
       P("planner-"+sex+"-count").textContent = entries.length;
-      P("planner-"+sex+"s").innerHTML = entries.map(e => cardMarkup(e, sex)).join("") ||
-        '<p class="planner-empty">'+(favoritesOnly ? "No favorites yet. Star a monster to see it here." : "No "+sex+" monsters yet. Add one using the form above.")+'</p>';
+      const empty = '<p class="planner-empty">'+(favoritesOnly ? "No favorites yet. Star a monster to see it here." : "No "+sex+" monsters yet. Add one using the form above.")+'</p>';
+      P("planner-"+sex+"s").innerHTML = entries.length ? ["party","farm"].map(loc => {
+        const group = entries.filter(e => entryLocation(e) === loc);
+        return '<h4 class="planner-location-heading">'+loc[0].toUpperCase()+loc.slice(1)+' <span class="planner-count">'+group.length+'</span></h4>' +
+          '<div class="planner-card-list">'+(group.map(e => cardMarkup(e, sex)).join("") || '<p class="planner-empty">No '+sex+' monsters in the '+loc+'.</p>')+'</div>';
+      }).join("") : '<div class="planner-card-list">'+empty+'</div>';
     }
-    P("planner-team-summary").textContent = team.entries.length+" / "+DQMPlannerCore.MAX_ENTRIES+" monsters in "+team.name;
+    const party = team.entries.filter(e => entryLocation(e) === "party").length;
+    P("planner-team-summary").textContent = team.entries.length+" / "+DQMPlannerCore.MAX_ENTRIES+" monsters in "+team.name+" ("+party+" party · "+(team.entries.length-party)+" farm)";
     P("planner-export").disabled = !team.entries.length;
   }
   function renderBreeding() {
     const team = activeTeam();
-    const males = team.entries.filter(e => e.sex === "male"), females = team.entries.filter(e => e.sex === "female");
+    // The grid shows party monsters by default; the farm toggle adds the rest,
+    // tagged in the row and column headers.
+    const includeFarm = P("planner-breeding-include-farm").checked;
+    const pool = team.entries.filter(e => includeFarm || entryLocation(e) !== "farm");
+    const males = pool.filter(e => e.sex === "male"), females = pool.filter(e => e.sex === "female");
     const context = P("planner-context").value, query = P("planner-result-search").value;
     malePage = Math.max(0,Math.min(malePage, Math.max(0, Math.ceil(males.length/PAGE)-1)));
     femalePage = Math.max(0, Math.min(femalePage, Math.max(0, Math.ceil(females.length/PAGE)-1)));
@@ -187,7 +217,7 @@
       }
     }
     const total = 2*males.length*females.length;
-    P("planner-breeding-summary").textContent = total.toLocaleString()+" ordered pairings · "+contextLabel(context)+(query ? " · "+matches.toLocaleString()+" matching offspring; other cells are faded." : " · Select any result for details.");
+    P("planner-breeding-summary").textContent = total.toLocaleString()+" ordered pairings · "+contextLabel(context)+" · "+(includeFarm ? "party + farm" : "party only")+(query ? " · "+matches.toLocaleString()+" matching offspring; other cells are faded." : " · Select any result for details.");
     renderMatrix("planner-male-grid", males.slice(malePage*PAGE, (malePage+1)*PAGE), females, context, query, "Male pedigree and female mate: offspring by ordered pairing");
     renderMatrix("planner-female-grid", females.slice(femalePage*PAGE, (femalePage+1)*PAGE), males, context, query, "Female pedigree and male mate: offspring by ordered pairing");
     pageRange("planner-male", malePage, males.length, "Pedigrees");
@@ -201,6 +231,8 @@
     const browsingIndex = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
     const browsingSpecies = browsingIndex != null ? byId.get(browsingIndex) : null;
 
+    // The pin control stays beside the offspring selector in Find parents;
+    // the saved list and the plan it opens live in the planner.
     const summary = P("target-active-summary");
     const activeText = activeSpecies
       ? "Active target: " + displayName(activeSpecies)
@@ -213,13 +245,21 @@
     pin.disabled = !canPin;
     pin.textContent = canPin ? "Pin " + displayName(browsingSpecies) : "Pin current offspring";
 
+    // The path to the plan, offered once something is pinned.
+    const viewPlan = P("target-view-plan");
+    viewPlan.hidden = !activeSpecies;
+    viewPlan.textContent = activeSpecies
+      ? "View plan for " + displayName(activeSpecies) + " in My game ↗"
+      : "View plan in My game ↗";
+
+    // The path back to Find parents to choose another target.
     const link = P("planner-open-target");
     if (activeSpecies) {
       link.hidden = false;
-      link.textContent = "Open active target: " + displayName(activeSpecies) + " ↗";
+      link.textContent = "Open active target in Find parents: " + displayName(activeSpecies) + " ↗";
     } else {
       link.hidden = true;
-      link.textContent = "Open active target ↗";
+      link.textContent = "Open active target in Find parents ↗";
     }
 
     const list = P("target-list");
@@ -464,7 +504,7 @@
         if (entry.speciesIndex === node.speciesIndex) {
           const option = document.createElement("option");
           option.value = entry.id;
-          option.textContent = memberName(entry);
+          option.textContent = memberName(entry) + (entryLocation(entry) === "farm" ? " (Farm)" : "");
           rosterSelect.appendChild(option);
         }
       }
@@ -519,6 +559,14 @@
     P("plan-suggestions-for").textContent = isTarget ? "" : "Recipe options for " + speciesName;
     P("plan-suggestions-clear").hidden = isTarget;
     const rosterSpecies = team.entries.map(e => e.speciesIndex);
+    // Both locations count as owned, so a parent can be in the party, on the
+    // farm, or both. The badge says where each roster parent lives.
+    const locationsBySpecies = new Map();
+    for (const e of team.entries) {
+      const set = locationsBySpecies.get(e.speciesIndex) || new Set();
+      set.add(entryLocation(e));
+      locationsBySpecies.set(e.speciesIndex, set);
+    }
     const availableSpecies = plan.nodes
       .filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null)
       .map(n => n.speciesIndex);
@@ -539,7 +587,10 @@
         html += '<p class="plan-suggestion-condition">' + safe(item.condition) + "</p>";
       }
       html += '<p class="plan-suggestion-badges">';
-      if (item.rosterParents.length > 0) html += '<span class="plan-suggestion-badge">Roster</span>';
+      for (const pos of item.rosterParents) {
+        const locs = ["party","farm"].filter(loc => locationsBySpecies.get(item.parents[pos])?.has(loc));
+        if (locs.length) html += '<span class="plan-suggestion-badge">'+safe((pos === 0 ? "Pedigree" : "Mate")+" in "+locs.join(" + "))+'</span>';
+      }
       if (item.missingParents.length > 0) html += '<span class="plan-suggestion-badge">Missing</span>';
       html += "</p>";
       html += '<p class="plan-suggestion-unknowns">Acquisition, offspring sex, inherited + value, and breeding eligibility are not established by this table.</p>';
@@ -563,8 +614,14 @@
     prev.disabled = result.page === 0;
     next.disabled = result.page + 1 >= result.pages;
   }
+  function renderGameSwitch() {
+    for (const game of DQMAppState.TEAM_GAMES) {
+      P("planner-game-"+game).setAttribute("aria-pressed", String(state.activeGame === game));
+    }
+  }
   function renderAll() {
     renderTeams();
+    renderGameSwitch();
     renderRoster();
     renderBreeding();
     renderTargets();
@@ -603,11 +660,13 @@
       P(targetId).innerHTML = '<p class="planner-empty">'+safe(targetId === "planner-all-grid" ? "No species match these filters." : "Add at least one male and one female monster to compare their offspring.")+'</p>';
       return;
     }
+    // Synthetic entries from the Everything tab carry no location, so the tag never shows there.
+    const farmTag = e => entryLocation(e) === "farm" ? ' <small class="planner-farm-tag">Farm</small>' : "";
     let html = '<table class="planner-matrix"><caption class="sr-only">'+safe(caption)+'</caption><thead><tr><th scope="col" class="planner-corner">Pedigree ↓<br>Mate →</th>';
-    html += columns.map(e => '<th scope="col">'+spriteMarkup(e.speciesIndex)+'<span>'+safe(memberName(e))+'</span><small>+'+e.plus+'</small></th>').join("");
+    html += columns.map(e => '<th scope="col">'+spriteMarkup(e.speciesIndex)+'<span>'+safe(memberName(e))+'</span>'+farmTag(e)+'<small>+'+e.plus+'</small></th>').join("");
     html += '</tr></thead><tbody>';
     for (const row of rows) {
-      html += '<tr><th scope="row">'+spriteMarkup(row.speciesIndex)+'<span>'+safe(memberName(row))+'</span><small>+'+row.plus+'</small></th>';
+      html += '<tr><th scope="row">'+spriteMarkup(row.speciesIndex)+'<span>'+safe(memberName(row))+'</span>'+farmTag(row)+'<small>+'+row.plus+'</small></th>';
       for (const column of columns) {
         const outcome = core.result(row.speciesIndex, column.speciesIndex, row.plus, column.plus, context);
         const visible = matchesName(byId.get(outcome.resultIndex), query);
@@ -652,25 +711,20 @@
   }
   function setPlannerTab(name, focus = false) {
     activeTab = name;
-    for (const mode of ["roster","breeding","everything"]) {
+    for (const mode of PLANNER_TABS) {
       P("planner-"+mode).hidden = mode !== name;
       const tab = P("planner-tab-"+mode);
       tab.setAttribute("aria-selected", String(mode === name)); tab.tabIndex = mode === name ? 0 : -1;
     }
     P("planner-pair-detail").hidden = true;
+    if (name === "targets") { renderTargets(); renderPlan(); }
     if (name === "breeding") renderBreeding();
     if (name === "everything") renderEverything();
     if (focus) P("planner-tab-"+name).focus();
   }
-  const referenceIds = ["pair-finder","offspring-finder","conditional-rules","species-index","about"];
-  function route() {
-    const isPlanner = location.hash === "#team-planner";
-    P("team-planner").hidden = !isPlanner;
-    for (const id of referenceIds) P(id).hidden = isPlanner || (id === "conditional-rules" && !RULES.length);
-    P("planner-nav-link").setAttribute("aria-current", isPlanner ? "page" : "false");
-    P("planner-nav-link").classList.toggle("planner-nav-active", isPlanner);
-    if (isPlanner) setPlannerTab(activeTab);
-  }
+  // Visibility, the active nav link, the page title, scroll position, and
+  // navigation focus belong to js/router.js, which is their only owner. The
+  // planner reacts to its own view being revealed through DQMApp.viewShown.
 
   // ---- roster card actions ----
   function focusEntryStar(entryId) {
@@ -684,6 +738,7 @@
     const remove = event.target.closest("button[data-member-remove]");
     const edit = event.target.closest("button[data-member-edit]");
     const switchSex = event.target.closest("button[data-member-switch]");
+    const move = event.target.closest("button[data-member-move]");
     if (favorite) {
       const member = team.entries.find(e => e.id === favorite.dataset.memberFavorite);
       if (!member) return;
@@ -700,6 +755,13 @@
       commit(app.updateEntry(state, team.id, member.id, {sex}), "Switched "+memberName(member)+" to "+sex+". Undo is available.");
       const target = P("planner-"+sex+"s").querySelector('button[data-member-switch="'+member.id+'"]');
       if (target) target.focus({preventScroll: true});
+    } else if (move) {
+      const member = team.entries.find(e => e.id === move.dataset.memberMove);
+      if (!member) return;
+      const location = otherLocation(entryLocation(member));
+      commit(app.updateEntry(state, team.id, member.id, {location}), "Moved "+memberName(member)+" to the "+location+". Nickname, sex, and + value kept.");
+      const target = P("planner-"+member.sex+"s").querySelector('button[data-member-move="'+member.id+'"]');
+      if (target) target.focus({preventScroll: true});
     } else if (edit) {
       const member = team.entries.find(e => e.id === edit.dataset.memberEdit);
       if (!member) return;
@@ -707,6 +769,7 @@
       P("planner-add-search").value = ""; P("planner-add-family").value = "";
       refreshAddSpecies(member.speciesIndex);
       P("planner-sex-"+member.sex).checked = true;
+      P("planner-location-"+entryLocation(member)).checked = true;
       P("planner-add-plus").value = member.plus;
       P("planner-add-nickname").value = member.nickname;
       P("planner-add-button").textContent = "Save changes";
@@ -836,7 +899,7 @@
       const speciesIndex = Number(P("planner-add-species").value);
       if (P("planner-add-species").disabled || !rosterSpecies.some(s => s.index === speciesIndex)) throw new Error("Choose a monster from the list.");
       const team = activeTeam();
-      const entry = {speciesIndex, sex: P("planner-sex-female").checked ? "female" : "male", plus: readPlus("planner-add-plus"), nickname: P("planner-add-nickname").value};
+      const entry = {speciesIndex, sex: P("planner-sex-female").checked ? "female" : "male", location: P("planner-location-farm").checked ? "farm" : "party", plus: readPlus("planner-add-plus"), nickname: P("planner-add-nickname").value};
       let next, message;
       if (editing) {
         next = app.updateEntry(state, team.id, editing, entry);
@@ -847,6 +910,7 @@
       }
       commit(next, message);
       P("planner-add-nickname").value = "";
+      P("planner-location-party").checked = true;
     } catch (error) { notice(error.message); }
   });
   P("planner-cancel-edit").addEventListener("click", () => { cancelEdit(); notice("Edit cancelled."); });
@@ -902,6 +966,29 @@
     try {
       const next = app.setActiveTeam(state, teamId);
       commit(next, 'Switched to team "'+app.findTeam(next, teamId).name+'".');
+    } catch (error) {
+      notice(error.message);
+      renderTeams();
+    }
+  });
+  for (const game of DQMAppState.TEAM_GAMES) {
+    P("planner-game-"+game).addEventListener("click", () => {
+      if (state.activeGame === game) return;
+      try {
+        commit(app.setActiveGame(state, game), "Viewing "+gameLabel(game)+".");
+      } catch (error) {
+        notice(error.message);
+        renderGameSwitch();
+      }
+    });
+  }
+  P("planner-team-game").addEventListener("change", () => {
+    const team = activeTeam();
+    if (!team) return;
+    const value = P("planner-team-game").value;
+    try {
+      commit(app.setTeamGame(state, team.id, value === "" ? null : value),
+        value === "" ? 'Team "'+team.name+'" is unassigned.' : 'Team "'+team.name+'" filed under '+gameLabel(value)+'.');
     } catch (error) {
       notice(error.message);
       renderTeams();
@@ -1003,21 +1090,25 @@
     currentSpriteStyle = style;
     commit(app.setSpriteStyle(state, style), "Sprite style: "+style+".");
   });
-  for (const mode of ["roster","breeding","everything"]) {
+  for (const mode of PLANNER_TABS) {
     const tab = P("planner-tab-"+mode);
     tab.addEventListener("click", () => setPlannerTab(mode));
     tab.addEventListener("keydown", event => {
-      const modes = ["roster","breeding","everything"], index = modes.indexOf(mode);
+      const last = PLANNER_TABS.length - 1, index = PLANNER_TABS.indexOf(mode);
       let next;
-      if (event.key === "ArrowRight") next = (index+1)%3;
-      if (event.key === "ArrowLeft") next = (index+2)%3;
+      if (event.key === "ArrowRight") next = (index+1)%PLANNER_TABS.length;
+      if (event.key === "ArrowLeft") next = (index+PLANNER_TABS.length-1)%PLANNER_TABS.length;
       if (event.key === "Home") next = 0;
-      if (event.key === "End") next = 2;
-      if (next !== undefined) { event.preventDefault(); setPlannerTab(modes[next], true); }
+      if (event.key === "End") next = last;
+      if (next !== undefined) { event.preventDefault(); setPlannerTab(PLANNER_TABS[next], true); }
     });
   }
   P("planner-context").addEventListener("change", () => { P("planner-pair-detail").hidden = true; renderBreeding(); });
   P("planner-result-search").addEventListener("input", renderBreeding);
+  P("planner-breeding-include-farm").addEventListener("change", () => {
+    P("planner-pair-detail").hidden = true;
+    renderBreeding();
+  });
   P("planner-male-prev").addEventListener("click", () => { malePage--; renderBreeding(); });
   P("planner-male-next").addEventListener("click", () => { malePage++; renderBreeding(); });
   P("planner-female-prev").addEventListener("click", () => { femalePage--; renderBreeding(); });
@@ -1034,8 +1125,10 @@
   for (const id of ["planner-male-grid","planner-female-grid","planner-all-grid"]) P(id).addEventListener("click", showDetail);
   P("planner-inspect-reference").addEventListener("click", () => {
     if (!detail) return;
-    choosePair(detail.a, detail.b); location.hash = "pair-finder"; route();
-    P("pair-finder").scrollIntoView({behavior:"smooth"}); P("pedigree").focus({preventScroll: true});
+    // Set the pair first, then hand off; go() also works when Find a pairing
+    // is already open, where no hashchange would follow.
+    choosePair(detail.a, detail.b);
+    DQMViews.go("pair-finder", { focusId: "result-name" });
   });
   P("target-pin").addEventListener("click", () => {
     const index = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
@@ -1044,12 +1137,12 @@
     if (!species || !isPlayable(species) || !team) return;
     try {
       const next = app.addTarget(state, team.id, index);
-      const targetId = next.teams.find(t => t.id === team.id).targets.find(t => t.speciesIndex === index).id;
       commit(next, "Pinned " + displayName(species) + " as a breeding target.");
       if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(index);
       renderTargets();
-      const item = P("target-list").querySelector('li[data-target-id="' + targetId + '"] button[data-target-switch]');
-      if (item) item.focus({preventScroll: true});
+      // The saved list is in another view, so focus takes the new path to the
+      // plan rather than a row that is not on screen.
+      P("target-view-plan").focus({preventScroll: true});
     } catch (error) {
       notice(error.message);
     }
@@ -1079,30 +1172,40 @@
         const next = app.removeTarget(state, team.id, targetId);
         commit(next, "Removed the target.");
         renderTargets();
-        P("target-pin").focus({preventScroll: true});
+        // The pin control is in Find parents, so focus stays in this tab: the
+        // next saved target, or the path back when the list is empty.
+        const nextItem = P("target-list").querySelector("button[data-target-switch]");
+        const fallback = nextItem || P("planner-open-target");
+        if (fallback && !fallback.hidden) fallback.focus({preventScroll: true});
+        else P("planner-tab-targets").focus({preventScroll: true});
       } catch (error) {
         notice(error.message);
       }
     }
   });
+  P("target-view-plan").addEventListener("click", () => {
+    if (!activeTarget()) return;
+    // Switch the tab first: the router re-applies the current tab when it
+    // reveals the planner, so the plan is on screen before it is focused.
+    setPlannerTab("targets");
+    DQMViews.go("team-planner", { focusId: "plan-heading" });
+  });
   P("target").addEventListener("change", renderTargets);
   P("target-search").addEventListener("input", renderTargets);
-  P("planner-open-target").addEventListener("click", () => {
+  P("planner-open-target").addEventListener("click", event => {
+    // The href stays for a plain link, but go() owns the navigation so the
+    // focus and the already-open destination behave the same as a nav click.
+    event.preventDefault();
     const team = activeTeam();
     const activeTargetId = team ? team.activeTargetId : null;
     const activeTarget = team ? team.targets.find(t => t.id === activeTargetId) : null;
     const activeSpecies = activeTarget ? byId.get(activeTarget.speciesIndex) : null;
     if (!activeSpecies) return;
-    const select = () => {
-      if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(activeSpecies.index);
-      renderTargets();
-    };
-    if (location.hash === "#offspring-finder") { select(); return; }
-    const onHashChange = () => {
-      window.removeEventListener("hashchange", onHashChange);
-      select();
-    };
-    window.addEventListener("hashchange", onHashChange);
+    // Select the target first, then hand off: go() also works when Find
+    // parents is already open, where no hashchange would follow the link.
+    if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(activeSpecies.index);
+    renderTargets();
+    DQMViews.go("offspring-finder", { focusId: "target" });
   });
   // ---- breeding plan events ----
   P("plan-context").addEventListener("change", () => {
@@ -1327,20 +1430,15 @@
     replaceConfirmedForNode = null;
     applySuggestion(nodeId, suggestionId);
   });
-  window.addEventListener("hashchange", route);
-  document.querySelectorAll('.nav a[href^="#"]').forEach(link => link.addEventListener("click", () => {
-    const isPlanner = link.hash === "#team-planner";
-    P("team-planner").hidden = !isPlanner;
-    for (const id of referenceIds) P(id).hidden = isPlanner || (id === "conditional-rules" && !RULES.length);
-    if (link.hash === location.hash) route();
-  }));
-
   // ---- controller contract for reference.js and later modules ----
   window.DQMApp = Object.freeze({
     state: () => state,
     activeTeam,
     activeTarget,
     savePlan,
+    // Called by js/router.js once this view is displayed, so the active tab
+    // and its panels are current whenever the planner comes back into view.
+    viewShown: id => { if (id === "team-planner") setPlannerTab(activeTab); },
     isSpeciesFavorite: index => state.favoriteSpeciesIndices.includes(index),
     toggleSpeciesFavorite: index => {
       try {
@@ -1360,6 +1458,5 @@
   });
 
   setPlannerTab("roster");
-  route();
   renderAll();
 })();
