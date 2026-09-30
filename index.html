@@ -63,6 +63,24 @@
     <div class="planner-game-group"><div class="planner-game-switch" role="group" aria-label="Game"><span>Game</span><div class="planner-game-options"><button id="planner-game-dqm1" type="button" data-game="dqm1" aria-pressed="true">DQM1</button><button id="planner-game-dqm2" type="button" data-game="dqm2" aria-pressed="false">DQM2</button></div></div><button id="planner-file-game" type="button" class="planner-file-game" hidden>File under DQM1</button></div>
     <div class="sprite-style-picker" role="group" aria-label="Monster sprite style"><span>Sprites</span><div class="sprite-style-options"><button type="button" data-sprite-style="portrait" aria-pressed="true">Portrait</button><button type="button" data-sprite-style="overworld" aria-pressed="false">Overworld</button></div></div>
   </div>
+  <div class="panel planner-teams-panel">
+    <div class="planner-panel-heading"><h3>Your teams</h3><p class="hint">Each team keeps its own roster and breeding targets. Everything is stored only in this browser.</p></div>
+    <div class="planner-team-bar">
+      <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
+      <div class="field planner-team-game-field"><label for="planner-team-game">Team game</label><select id="planner-team-game"><option value="">Unassigned</option><option value="dqm1">DQM1</option><option value="dqm2">DQM2</option></select></div>
+      <div class="planner-actions">
+        <button id="planner-team-new" type="button">New team</button>
+        <button id="planner-team-rename" type="button">Rename</button>
+        <button id="planner-team-delete" type="button">Delete</button>
+      </div>
+      <form id="planner-team-name-form" class="planner-team-name" hidden>
+        <div class="field"><label for="planner-team-name">Team name</label><input id="planner-team-name" maxlength="40" autocomplete="off" required></div>
+        <button id="planner-team-name-save" type="submit" class="planner-primary">Save name</button>
+        <button id="planner-team-name-cancel" type="button">Cancel</button>
+      </form>
+    </div>
+    <p id="planner-team-game-hint" class="hint planner-team-game-hint" hidden>This team is not assigned to a game. Choose DQM1 or DQM2 to file it under a game.</p>
+  </div>
   <div class="planner-tabs" role="tablist" aria-label="My game views">
     <button id="planner-tab-roster" type="button" role="tab" aria-selected="true" aria-controls="planner-roster" data-planner-tab="roster">My monsters</button>
     <button id="planner-tab-targets" type="button" role="tab" aria-selected="false" aria-controls="planner-targets" tabindex="-1" data-planner-tab="targets">Targets &amp; plans</button>
@@ -71,24 +89,6 @@
   </div>
 
   <div id="planner-roster" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-roster">
-    <div class="panel planner-teams-panel">
-      <div class="planner-panel-heading"><h3>Your teams</h3><p class="hint">Each team keeps its own roster and breeding targets. Everything is stored only in this browser.</p></div>
-      <div class="planner-team-bar">
-        <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
-        <div class="field planner-team-game-field"><label for="planner-team-game">Team game</label><select id="planner-team-game"><option value="">Unassigned</option><option value="dqm1">DQM1</option><option value="dqm2">DQM2</option></select></div>
-        <div class="planner-actions">
-          <button id="planner-team-new" type="button">New team</button>
-          <button id="planner-team-rename" type="button">Rename</button>
-          <button id="planner-team-delete" type="button">Delete</button>
-        </div>
-        <form id="planner-team-name-form" class="planner-team-name" hidden>
-          <div class="field"><label for="planner-team-name">Team name</label><input id="planner-team-name" maxlength="40" autocomplete="off" required></div>
-          <button id="planner-team-name-save" type="submit" class="planner-primary">Save name</button>
-          <button id="planner-team-name-cancel" type="button">Cancel</button>
-        </form>
-      </div>
-      <p id="planner-team-game-hint" class="hint planner-team-game-hint" hidden>This team is not assigned to a game. Choose DQM1 or DQM2 to file it under a game.</p>
-    </div>
     <div class="panel planner-entry">
       <div class="planner-panel-heading"><h3>Add a monster</h3><p class="hint">Keep separate entries for individual monsters, including duplicates.</p></div>
       <form id="planner-entry-form" class="planner-entry-form">
@@ -106,27 +106,9 @@
       <div class="planner-actions">
         <button id="planner-demo" type="button">Load example team</button>
         <button id="planner-undo" type="button" disabled>Undo last change</button>
-        <button id="planner-export" type="button">Export team</button>
-        <div class="planner-import"><label for="planner-import">Import team</label><input id="planner-import" type="file" accept="application/json,.json"></div>
         <label class="planner-toggle"><input id="planner-roster-favorites" type="checkbox"> Favorites only</label>
       </div>
       <p id="planner-save-status" class="hint" role="status"></p>
-    </div>
-    <p class="hint">Importing a team adds it as a new team. A full backup replaces everything — “Undo last change” restores your previous data.</p>
-    <div class="panel planner-backup-panel">
-      <div class="planner-panel-heading"><h3>Backup</h3><p class="hint">Saved in this browser only. Export a full backup to keep or move everything: teams, rosters, favorites, targets, and plans.</p></div>
-      <div class="planner-actions">
-        <button id="planner-backup-export" type="button">Export full backup</button>
-        <div class="planner-import"><label for="planner-backup-import">Import full backup</label><input id="planner-backup-import" type="file" accept="application/json,.json"></div>
-      </div>
-      <div id="planner-import-preview" class="planner-import-preview" role="region" aria-label="Import preview" hidden>
-        <p id="planner-import-preview-text" role="status"></p>
-        <div class="planner-actions">
-          <button id="planner-import-confirm" type="button" class="planner-primary">Replace my saved data</button>
-          <button id="planner-import-cancel" type="button">Cancel</button>
-        </div>
-      </div>
-      <p id="planner-backup-message" class="planner-message" role="status"></p>
     </div>
     <p id="planner-message" class="planner-message" role="status"></p>
     <p id="planner-team-summary" class="planner-summary" role="status"></p>
@@ -140,6 +122,29 @@
         <div id="planner-females"></div>
       </section>
     </div>
+    <details id="planner-data-tools" class="planner-data-tools">
+      <summary>Import, export &amp; backup</summary>
+      <div class="planner-actions planner-transfer-actions">
+        <button id="planner-export" type="button">Export team</button>
+        <div class="planner-import"><label for="planner-import">Import team</label><input id="planner-import" type="file" accept="application/json,.json"></div>
+      </div>
+      <p class="hint">Import a team to add it to your teams. Import a full backup to replace all saved data after reviewing the preview. Undo last change restores your previous data.</p>
+      <div class="panel planner-backup-panel">
+        <div class="planner-panel-heading"><h3>Backup</h3><p class="hint">Saved in this browser only. Export a full backup to keep or move everything: teams, rosters, favorites, targets, and plans.</p></div>
+        <div class="planner-actions">
+          <button id="planner-backup-export" type="button">Export full backup</button>
+          <div class="planner-import"><label for="planner-backup-import">Import full backup</label><input id="planner-backup-import" type="file" accept="application/json,.json"></div>
+        </div>
+        <div id="planner-import-preview" class="planner-import-preview" role="region" aria-label="Import preview" hidden>
+          <p id="planner-import-preview-text" role="status"></p>
+          <div class="planner-actions">
+            <button id="planner-import-confirm" type="button" class="planner-primary">Replace my saved data</button>
+            <button id="planner-import-cancel" type="button">Cancel</button>
+          </div>
+        </div>
+        <p id="planner-backup-message" class="planner-message" role="status"></p>
+      </div>
+    </details>
   </div>
 
   <div id="planner-targets" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-targets" hidden>

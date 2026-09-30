@@ -405,6 +405,9 @@ for (const name of ['file', 'server']) {
       // Export the full backup from the My monsters tab of the team planner.
       await page.click('#planner-nav-link');
       await page.click('#planner-tab-roster');
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       const [download] = await Promise.all([
         page.waitForEvent('download'),
         page.click('#planner-backup-export'),
@@ -423,6 +426,9 @@ for (const name of ['file', 'server']) {
       // Reimport the backup.
       const tmp = path.join(os.tmpdir(), 'dqm-guide-backup-plan-test.json');
       fs.writeFileSync(tmp, JSON.stringify(exported));
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
       await expect(page.locator('#planner-import-preview')).toBeVisible();
       await page.click('#planner-import-confirm');
@@ -585,6 +591,9 @@ for (const name of ['file', 'server']) {
       };
       const tmp = path.join(os.tmpdir(), 'dqm-guide-bad-plan-test.json');
       fs.writeFileSync(tmp, JSON.stringify(bad));
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
 
       await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
@@ -750,6 +759,9 @@ for (const name of ['file', 'server']) {
       };
       const tmp = path.join(os.tmpdir(), 'dqm-guide-bad-flagged-plan-test.json');
       fs.writeFileSync(tmp, JSON.stringify(bad));
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
 
       await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
@@ -778,6 +790,9 @@ for (const name of ['file', 'server']) {
       };
       const tmp = path.join(os.tmpdir(), 'dqm-guide-wrong-target-plan-test.json');
       fs.writeFileSync(tmp, JSON.stringify(doc));
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
 
       await expect(page.locator('#planner-backup-message')).toContainText('Import failed');

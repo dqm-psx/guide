@@ -58,6 +58,9 @@ for (const name of ['file', 'server']) {
         localStorage.setItem('dqm-guide-team-v61-v1', JSON.stringify(seed));
       }, team);
       await page.goto(url() + '#team-planner');
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       const [download] = await Promise.all([
         page.waitForEvent('download'),
         page.click('#planner-export'),
@@ -82,6 +85,9 @@ for (const name of ['file', 'server']) {
       const tmp = path.join(os.tmpdir(), 'dqm-guide-import-test.json');
       fs.writeFileSync(tmp, JSON.stringify(team));
       await page.goto(url() + '#team-planner');
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-import', tmp);
       await expect(page.locator('#planner-team-select option')).toHaveCount(2);
       await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'dqm-guide-import-test']);

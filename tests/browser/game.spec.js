@@ -331,6 +331,9 @@ for (const name of ['file', 'server']) {
       await page.check('#planner-sex-female');
       await addMonster(page, 99, 'farm');
 
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       const [download] = await Promise.all([
         page.waitForEvent('download'),
         page.click('#planner-backup-export'),
@@ -354,6 +357,9 @@ for (const name of ['file', 'server']) {
 
       const tmp = path.join(os.tmpdir(), 'dqm-guide-game-backup.json');
       fs.writeFileSync(tmp, JSON.stringify(exported));
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
       await expect(page.locator('#planner-import-preview')).toBeVisible();
       await page.click('#planner-import-confirm');

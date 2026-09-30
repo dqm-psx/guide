@@ -40,6 +40,12 @@ selections, and planner tab when you come back to it, and printing the page
 prints only the view you are looking at. The older `#conditional-rules` and
 `#about` links still open their headings inside Rules & guide.
 
+In **My game**, the team selector and team management controls appear above
+the tabs. You can switch, create, rename, or delete a team while viewing its
+roster, targets, or breeding results. Switching teams keeps the current tab.
+Team import, export, and full backup controls live in the collapsed
+**Import, export & backup** section below the roster in **My monsters**.
+
 ## Share a pairing and keep your place
 
 Find a pairing writes the selected parents into the URL with stable species

@@ -176,6 +176,9 @@ for (const name of ['file', 'server']) {
       await addMonster(page, 99);
 
       // Export the full backup.
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       const [download] = await Promise.all([
         page.waitForEvent('download'),
         page.click('#planner-backup-export'),
@@ -202,6 +205,9 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#planner-females .planner-card-name')).toHaveText(['Dracky', 'Healer Slime']);
 
       // Import the backup and confirm the preview counts.
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
       await expect(page.locator('#planner-import-preview')).toBeVisible();
       await expect(page.locator('#planner-import-preview-text')).toContainText('2 teams and 1 targets (0 favorites, 2 monsters)');
@@ -217,6 +223,9 @@ for (const name of ['file', 'server']) {
       // A malformed file shows an error and leaves the document intact.
       const storedBefore = await readStored(page, STATE_KEY);
       fs.writeFileSync(tmp, 'not json{{{');
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
       await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
       await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
@@ -294,6 +303,9 @@ for (const name of ['file', 'server']) {
       };
       const tmp = path.join(os.tmpdir(), 'dqm-guide-newer-backup.json');
       fs.writeFileSync(tmp, JSON.stringify(newer));
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
       await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
 
@@ -335,6 +347,9 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
 
       // Export works from the in-memory document.
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       const [download] = await Promise.all([
         page.waitForEvent('download'),
         page.click('#planner-backup-export'),
@@ -395,6 +410,9 @@ for (const name of ['file', 'server']) {
         activeTeamId: 't-other',
         teams: [{ id: 't-other', name: 'Other', entries: [], activeTargetId: null, targets: [] }],
       }));
+      if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
+        await page.locator('#planner-data-tools > summary').click();
+      }
       await page.setInputFiles('#planner-backup-import', tmp);
       await expect(page.locator('#planner-import-preview')).toBeVisible();
       await expect(page.locator('#planner-import-preview-text')).toContainText('1 teams and 0 targets (0 favorites, 0 monsters)');

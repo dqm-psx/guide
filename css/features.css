@@ -135,3 +135,6 @@ html{scroll-padding-top:76px}
 .planner-file-game{font-size:12px;font-weight:650;padding:6px 11px;white-space:nowrap;align-self:center}
 @media(max-width:800px){.planner-game-group{margin-top:12px}.planner-game-group .planner-game-switch{margin-top:0}}
 @media print{.planner-file-game{display:none}}
+.planner-data-tools{margin-top:20px}
+.planner-transfer-actions{margin-top:16px}
+.planner-data-tools .planner-backup-panel{box-shadow:none}
