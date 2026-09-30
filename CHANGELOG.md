@@ -7,26 +7,6 @@ unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
 
 ## [Unreleased]
 
-### Added — installable, offline copy
-
-- New `sw.js` service worker and `manifest.webmanifest`. On GitHub Pages the
-  page is now installable (**Add to Home Screen** / **Install app**) and an
-  installed or previously visited copy opens with no network. The worker caches
-  every shipped asset on first load and serves network-first, cache-fallback, so
-  online loads stay current and offline loads come from the cache. `CACHE_NAME`
-  is bumped only when `sw.js` changes; content-only edits refresh on the next
-  online load.
-- New `js/offline.js` registers the worker. It is guarded and skipped on
-  `file://`, so the page still opens straight from disk with no worker.
-- App icons in `icons/` built from the shipped Slime sprite, plus a
-  `theme-color` that follows the chosen theme (Light/Dark) and the
-  `apple-mobile-web-app-*` metadata for iOS.
-- New `scripts/make-icons.js` regenerates the icons from the data (test
-  tooling, not a build step).
-- New suite `tests/browser/service-worker.spec.js` (offline reload and served
-  manifest/worker) and `tests/unit/offline-assets.test.js` (precache list
-  matches the files on disk and every asset `index.html` loads).
-
 ### Added — task views (Phase 1)
 
 - Five hash-routed task views: Find a pairing (`#pair-finder`), Find parents
@@ -72,8 +52,10 @@ unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
   picker (`button[data-theme-choice]`). The choice is persisted under
   `dqm-guide-theme-v1`, applied by an inline head bootstrap before first paint
   so a dark choice never flashes light, and re-resolved when the system
-  preference changes while System is selected. It is separate from the saved
-  document, so backups are unchanged.
+  preference changes while System is selected. `<meta name="theme-color">`
+  follows the resolved theme, so the browser chrome and an installed copy match
+  Light or Dark. It is separate from the saved document, so backups are
+  unchanged.
 - **Shareable pairings.** Find a pairing mirrors its selected parents into the
   URL with stable species IDs (`#pair-finder?a=11&b=99`). A shared URL takes
   precedence over the saved session, so a link opens the same result even in a
@@ -110,6 +92,30 @@ unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
   **File under DQM1/DQM2** action appears beside the switch. One click files
   the team and its party and stabled (farm) monsters under the viewed game.
 
+### Added — installable, offline copy
+
+- New `sw.js` service worker and `manifest.webmanifest`. On GitHub Pages the
+  page is now installable (**Add to Home Screen** / **Install app**) and an
+  installed or previously visited copy opens with no network. The worker caches
+  every shipped asset on first load and serves network-first, cache-fallback, so
+  online loads stay current and offline loads come from the cache. `CACHE_NAME`
+  is bumped only when `sw.js` changes; content-only edits refresh on the next
+  online load. Every path is scope-relative, so an install under a repo subpath
+  scopes to that subpath.
+- New `js/offline.js` registers the worker. It is guarded and skipped on
+  `file://` and insecure contexts, so the page still opens straight from disk
+  with no worker.
+- App icons in `icons/` built from the shipped Slime portrait sprite (looked up
+  by name, not a hardcoded index) on the guide's teal, nearest-neighbor scaled
+  to keep the pixel art crisp, plus the `apple-mobile-web-app-*` metadata for
+  iOS.
+- New `scripts/make-icons.js` regenerates the icons from `data/monster-sprites.js`
+  (test tooling, not a build step; the PNGs are committed).
+- New suite `tests/browser/service-worker.spec.js` (served manifest/worker, and
+  a reload with the network cut that asserts `response.fromServiceWorker()`)
+  and `tests/unit/offline-assets.test.js` (precache list matches the files on
+  disk and every asset `index.html` loads).
+
 ### Changed
 
 - Saved document and team files are now version 2 (`APP_VERSION`,
@@ -129,8 +135,10 @@ unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
   “Games and farm” section.
 - `index.html` loads `css/features.css` and then `css/dark-mode.css` after
   `css/guide.css`, and `js/storage.js` + `js/session.js` before
-  `js/reference.js`; `js/theme.js` loads last. An inline head script applies
-  the saved theme before first paint.
+  `js/reference.js`; `js/theme.js` loads after the page scripts and
+  `js/offline.js` loads last. An inline head script applies the saved theme
+  before first paint. The head also links `manifest.webmanifest`, the PNG
+  icons, and a `theme-color` meta.
 - `DQMViews.go` normalizes a handoff to the bare view id, so a parameterised
   hash for the same view does not read as “already here”.
 - The keyboard tab-order assertion in `views.spec.js` now tabs through the
@@ -153,8 +161,9 @@ unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
 
 ### Verification
 
-- `npm run test:unit` — 90 passed.
-- `npx playwright test` — 246 passed (`file://` + server dual-mode),
-  including `views.spec.js`, `game.spec.js`, the new `theme.spec.js`,
-  `layout.spec.js`, and `reference-tools.spec.js`.
+- `npm run test:unit` — 95 passed, including `offline-assets.test.js`.
+- `npx playwright test` — 256 passed (`file://` + server dual-mode),
+  including `views.spec.js`, `game.spec.js`, `theme.spec.js`,
+  `layout.spec.js`, `reference-tools.spec.js`, and `service-worker.spec.js`
+  (offline reload served by the worker).
 - Breeding reference (`data/`, matrix, rules, bundle `GAME_ID`) unchanged.
