@@ -50,6 +50,16 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('button[data-theme-choice="dark"]')).toHaveAttribute('aria-pressed', 'true');
     });
 
+    test('the theme-color meta follows the chosen theme', async ({ page }) => {
+      const themeColor = () => page.evaluate(() => document.querySelector('meta[name="theme-color"]').content);
+      await page.goto(url());
+      expect(await themeColor()).toBe('#163143');
+      await page.click('button[data-theme-choice="dark"]');
+      expect(await themeColor()).toBe('#0a1013');
+      await page.click('button[data-theme-choice="light"]');
+      expect(await themeColor()).toBe('#163143');
+    });
+
     test('choosing System follows the emulated system', async ({ page }) => {
       await page.goto(url());
       await page.click('button[data-theme-choice="system"]');

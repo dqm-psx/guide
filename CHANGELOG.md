@@ -3,9 +3,29 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 No released versions yet (`package.json` remains `1.0.0`); everything below is
-unreleased work-in-progress validated with `npm test` (90 unit + 246 browser).
+unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
 
 ## [Unreleased]
+
+### Added — installable, offline copy
+
+- New `sw.js` service worker and `manifest.webmanifest`. On GitHub Pages the
+  page is now installable (**Add to Home Screen** / **Install app**) and an
+  installed or previously visited copy opens with no network. The worker caches
+  every shipped asset on first load and serves network-first, cache-fallback, so
+  online loads stay current and offline loads come from the cache. `CACHE_NAME`
+  is bumped only when `sw.js` changes; content-only edits refresh on the next
+  online load.
+- New `js/offline.js` registers the worker. It is guarded and skipped on
+  `file://`, so the page still opens straight from disk with no worker.
+- App icons in `icons/` built from the shipped Slime sprite, plus a
+  `theme-color` that follows the chosen theme (Light/Dark) and the
+  `apple-mobile-web-app-*` metadata for iOS.
+- New `scripts/make-icons.js` regenerates the icons from the data (test
+  tooling, not a build step).
+- New suite `tests/browser/service-worker.spec.js` (offline reload and served
+  manifest/worker) and `tests/unit/offline-assets.test.js` (precache list
+  matches the files on disk and every asset `index.html` loads).
 
 ### Added — task views (Phase 1)
 

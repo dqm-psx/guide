@@ -10,10 +10,32 @@ single page that also works as plain files.
   server. Every asset path is relative, so the page works from a subpath such
   as `https://example.com/guide/` as well as from the site root.
 
+## Install it and use it offline
+
+On GitHub Pages the page is installable and works offline. Open it once while
+online, then either keep using it (a reload without a network still opens it)
+or **Add to Home Screen** / **Install app** to get an icon and a full-screen
+copy. The installed copy starts offline, so it is usable on a plane or on a
+dead connection.
+
+This works because `sw.js` caches every shipped asset on first load and serves
+it network-first, cache-fallback: online loads stay current, offline loads come
+from the cache. It is a classic worker with no service worker on `file://`,
+where the page already needs no network once open.
+
+After editing any shipped file, bump `CACHE_NAME` in `sw.js` only if you
+changed `sw.js` itself; a content-only edit is picked up on the next online
+load. The generated icons under `icons/` come from the shipped Slime sprite;
+regenerate them with `node scripts/make-icons.js` (test tooling, not a build
+step).
+
 ## Layout
 
 ```
 index.html              page markup, <link> and <script src> only
+manifest.webmanifest    install metadata (name, icons, start_url, scope)
+sw.js                   service worker: offline cache (network-first)
+icons/                  app, tab, and home-screen icons (generated)
 css/guide.css           base styles
 css/features.css        reference tools, sticky nav, and layout styles
 css/dark-mode.css       dark theme overrides
@@ -24,11 +46,14 @@ data/                   breeding data and sprite maps as classic scripts
 js/                     page scripts, loaded in order by index.html
   sprites.js  storage.js  session.js  reference.js  planner-core.js
   recipe-planner.js  app-state.js  planner-ui.js  router.js  theme.js
+  offline.js            registers the service worker (no-op off http/https)
+scripts/                one-off icon generator (not part of the page)
 tests/                  test tooling (not part of the shipped page)
 ```
 
 The data and scripts are plain classic scripts, so the page runs from `file://`
-with no build step, no service worker, and no `fetch()` for its own data.
+with no build step and no `fetch()` for its own data. The service worker is the
+only background piece, and it is skipped on `file://`.
 
 ## Views
 
@@ -157,6 +182,7 @@ npm test
 
 `npm test` runs the unit tests (`npm run test:unit`) and the browser flows
 (`npm run test:browser`). The browser suite opens `index.html` both as a local
-`file://` file and from a static server mounted at `/guide/`, and checks that
-the page makes no external requests. Test dependencies and test output stay out
-of the shipped page.
+`file://` file and from a static server mounted at `/guide/`, checks that
+the page makes no external requests, and reloads the served copy with the
+network cut to prove the service worker cache serves it offline. Test
+dependencies and test output stay out of the shipped page.

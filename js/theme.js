@@ -10,6 +10,9 @@
   var STORAGE_KEY = "dqm-guide-theme-v1";
   var CHOICES = ["system", "light", "dark"];
   var DARK_QUERY = "(prefers-color-scheme: dark)";
+  // Masthead band per theme; also the browser/OS chrome color for the
+  // installable copy. Mirror of .masthead in guide.css and dark-mode.css.
+  var THEME_COLORS = { light: "#163143", dark: "#0a1013" };
 
   var currentChoice = "system";
   var resolvedTheme = "light";
@@ -65,6 +68,16 @@
     });
   }
 
+  // Keep the browser and installed-app chrome in step with the chosen theme.
+  // Guarded so a missing document or meta tag is a no-op.
+  function syncThemeColor() {
+    var document = root.document;
+    if (!document || typeof document.querySelector !== "function") return;
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    meta.setAttribute("content", THEME_COLORS[resolvedTheme] || THEME_COLORS.light);
+  }
+
   // apply() re-applies the theme. Pass a choice to set it explicitly; omit it
   // to re-read what is stored (the load path). An explicit choice still wins
   // when storage is unavailable, so a click is never swallowed.
@@ -77,6 +90,7 @@
       document.documentElement.setAttribute("data-theme-choice", currentChoice);
     }
     syncControls();
+    syncThemeColor();
   }
 
   function onPick(choice) {
