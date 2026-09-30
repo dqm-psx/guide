@@ -14,13 +14,16 @@ single page that also works as plain files.
 
 ```
 index.html              page markup, <link> and <script src> only
-css/guide.css           all styles
+css/guide.css           base styles
+css/features.css        reference tools, sticky nav, and layout styles
+css/dark-mode.css       dark theme overrides
 data/                   breeding data and sprite maps as classic scripts
   breeding-data.js        assigns globalThis.DATA
   monster-sprites.js      assigns globalThis.MONSTER_SPRITES
   overworld-sprites.js    assigns globalThis.OVERWORLD_SPRITES
 js/                     page scripts, loaded in order by index.html
-  sprites.js  reference.js  planner-core.js  recipe-planner.js  app-state.js  storage.js  planner-ui.js  router.js
+  sprites.js  storage.js  session.js  reference.js  planner-core.js
+  recipe-planner.js  app-state.js  planner-ui.js  router.js  theme.js
 tests/                  test tooling (not part of the shipped page)
 ```
 
@@ -37,13 +40,34 @@ selections, and planner tab when you come back to it, and printing the page
 prints only the view you are looking at. The older `#conditional-rules` and
 `#about` links still open their headings inside Rules & guide.
 
+## Share a pairing and keep your place
+
+Find a pairing writes the selected parents into the URL with stable species
+IDs, so a link such as `#pair-finder?a=11&b=99` opens the same result. A shared
+URL takes precedence over anything saved locally. The guide also remembers the
+pair finder's parents, name filters, desired offspring, and a short list of
+recently inspected pairs across reloads, so closing the tab does not lose your
+place. The name index can send a species straight to either parent slot or to
+Find parents, and a pairing result links to the offspring's other parent
+combinations.
+
+## Night mode
+
+The page follows your system light/dark preference by default. A **Theme**
+picker in the masthead chooses **System**, **Light**, or **Dark**; the choice
+is remembered and applied before the first paint, so a dark choice never
+flashes light.
+
 ## Saved data
 
-Teams, rosters, favorites, targets, plans, the game switch, and the sprite
-style are stored **only in this browser** (localStorage). They never leave the
-device unless you export them. If browser storage is unavailable or full, the
-page keeps working for the session and shows a banner; use the backup export to
-keep your data.
+Teams, rosters, favorites, targets, plans, the game switch, the sprite style,
+the theme choice, and the reference session (pair finder parents, filters,
+desired offspring, and recent pairings) are stored **only in this browser**
+(localStorage). They never leave the device unless you export them. Teams,
+plans, favorites, and targets live in the version-2 document below; the theme
+and reference session use their own small keys. If browser storage is
+unavailable or full, the page keeps working for the session and shows a
+banner; use the backup export to keep your data.
 
 The saved document is **version 2**. It records which game you are viewing, and
 each team carries its own game plus a location (`party` or `farm`) on every

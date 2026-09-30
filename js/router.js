@@ -116,7 +116,10 @@
   function go(viewId, options) {
     if (!known.has(viewId)) return;
     const focusId = (options && options.focusId) || null;
-    if (viewFor(location.hash) === viewId) {
+    // A handoff always lands on the bare view id. A parameterised hash for the
+    // same view (a shared pairing, say) must not read as "already here", or its
+    // parameters would linger after a "Try pair" / "Use as pedigree" jump.
+    if (location.hash === "#" + viewId) {
       render(viewId, { focus: true, focusId });
       return;
     }

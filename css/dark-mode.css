@@ -1,0 +1,82 @@
+/* Dark theme for the DQM guide.
+
+   The light theme is the :root custom properties in css/guide.css. This file
+   is linked last, so its rules win on equal specificity without !important.
+   Only the theme switch and the hardcoded light surfaces live here: anything
+   already painted with a variable needs no override.
+
+   --ink is used as text in most places but as a background in a few, so those
+   selectors get explicit colors instead of reusing the variable. */
+
+:root[data-theme=light]{color-scheme:light}
+
+:root[data-theme=dark]{
+  color-scheme:dark;
+  --ink:#e7eef1;
+  --muted:#9db0b8;
+  --paper:#0d1316;
+  --white:#162025;
+  --line:#2a3a41;
+  --teal:#5ad7c6;
+  --light:#1d2c32;
+  --gold:#d9ab52;
+}
+
+/* The masthead paints its band with --ink, which would vanish on dark. */
+:root[data-theme=dark] .masthead{background:#0a1013;color:#eef4f3}
+:root[data-theme=dark] .eyebrow,
+:root[data-theme=dark] .title-line,
+:root[data-theme=dark] .masthead .offline{color:#9fc4c0}
+:root[data-theme=dark] .masthead .offline{border-color:#3c5a60}
+
+/* Skip link */
+:root[data-theme=dark] .skip{background:var(--white);color:var(--ink)}
+
+/* Form controls */
+:root[data-theme=dark] button,
+:root[data-theme=dark] input,
+:root[data-theme=dark] select{border-color:#33474e}
+
+/* The active planner tab is filled with --ink in guide.css. */
+:root[data-theme=dark] .planner-tabs button[aria-selected=true]{background:#24343b;border-color:#3a5058;color:var(--ink)}
+
+/* Hardcoded light surfaces */
+:root[data-theme=dark] .scope{background:#182428}
+:root[data-theme=dark] .panel{box-shadow:0 3px 12px #00000066}
+:root[data-theme=dark] .result{border-top-color:#2f4a46}
+:root[data-theme=dark] .reverse-result{border-left-color:#2f4a46}
+:root[data-theme=dark] .table-info{background:#182428}
+:root[data-theme=dark] th{background:#1b262b}
+:root[data-theme=dark] td{border-top-color:#26343a}
+:root[data-theme=dark] tbody tr:hover{background:#1b262b}
+:root[data-theme=dark] .tag{border-color:#2f4a46}
+:root[data-theme=dark] .internal{color:#f0d9a0;background:#3a2f16;border-color:#5c4a22}
+:root[data-theme=dark] .note-card{border-top-color:#2f4a46}
+:root[data-theme=dark] .source-body pre{background:#111b1f}
+:root[data-theme=dark] .noscript{background:#3a2f16}
+:root[data-theme=dark] .offline{border-color:#3c5a60}
+
+/* On narrow screens the reversed result drops its left border for a top one. */
+@media(max-width:800px){
+  :root[data-theme=dark] .reverse-result{border-top-color:#2f4a46}
+}
+
+/* Planner tables and roster headings */
+:root[data-theme=dark] .planner-roster-heading{background:#1b262b}
+:root[data-theme=dark] .planner-matrix th,
+:root[data-theme=dark] .planner-matrix thead th,
+:root[data-theme=dark] .planner-matrix tbody th{background:#1b262b}
+:root[data-theme=dark] .planner-matrix th,
+:root[data-theme=dark] .planner-matrix td{border-color:#26343a}
+:root[data-theme=dark] .planner-farm-tag{border-color:#26343a}
+:root[data-theme=dark] .planner-matrix tbody th,
+:root[data-theme=dark] .planner-matrix thead th:first-child{box-shadow:1px 0 0 #26343a}
+
+/* Warnings keep the gold accent edge; only the pale fill changes. */
+:root[data-theme=dark] .app-error,
+:root[data-theme=dark] .plan-inline-error{background:#2c2413;border-color:#5c4a22;color:#f0d9a0}
+:root[data-theme=dark] .plan-node.is-incompatible{border-color:#5c4a22;background:#241f12}
+:root[data-theme=dark] .plan-node-incompatible{color:#e6c07a}
+
+/* Sprites are pixel art. A blanket invert would ruin them, so keep them as-is. */
+:root[data-theme=dark] .monster-sprite img{filter:none}

@@ -173,7 +173,15 @@
     P("planner-team-delete").disabled = state.teams.length <= 1;
     const active = activeTeam();
     P("planner-team-game").value = active && active.game ? active.game : "";
-    P("planner-team-game-hint").hidden = Boolean(active && active.game);
+    const unassigned = Boolean(active && !active.game);
+    P("planner-team-game-hint").hidden = !unassigned;
+    // The switch separates teams (and with them party and stabled monsters).
+    // An unassigned team stays visible under both games, so offer one click to
+    // file it under the game currently being viewed instead of appearing to do
+    // nothing.
+    const fileGame = P("planner-file-game");
+    fileGame.hidden = !unassigned;
+    fileGame.textContent = "File under " + gameLabel(state.activeGame);
   }
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
@@ -705,6 +713,8 @@
     detail = {a: Number(cell.dataset.a), b: Number(cell.dataset.b), ap: Number(cell.dataset.ap), bp: Number(cell.dataset.bp), context: cell.dataset.context};
     const forward = core.result(detail.a, detail.b, detail.ap, detail.bp, detail.context);
     const reverse = core.result(detail.b, detail.a, detail.bp, detail.ap, detail.context);
+    const pairingText = "Pedigree " + named(detail.a) + " +" + detail.ap + " + Mate " + named(detail.b) + " +" + detail.bp + " → " + named(forward.resultIndex) + " (" + contextLabel(detail.context) + (forward.ruleKind === "base" ? "; base result" : "; " + ruleLabel(forward)) + ")";
+    P("planner-copy-pairing").dataset.copyText = pairingText;
     P("planner-pair-detail-body").innerHTML = '<p class="kicker">'+safe(contextLabel(detail.context))+'</p><h3>'+safe(named(detail.a))+" +"+detail.ap+" + "+safe(named(detail.b))+" +"+detail.bp+' → '+spriteLabel(forward.resultIndex, named(forward.resultIndex))+'</h3><p>'+safe(forward.detail||forward.condition)+" Base table: "+safe(named(forward.baseIndex))+'.</p><p><strong>Reversed parents:</strong> '+spriteLabel(reverse.resultIndex, named(reverse.resultIndex))+" · "+safe(ruleLabel(reverse))+'.</p>';
     P("planner-pair-detail").hidden = false;
     P("planner-pair-detail").scrollIntoView({behavior:"smooth", block:"nearest"});
@@ -994,6 +1004,17 @@
       renderTeams();
     }
   });
+  P("planner-file-game").addEventListener("click", () => {
+    const team = activeTeam();
+    if (!team || team.game) return;
+    try {
+      commit(app.setTeamGame(state, team.id, state.activeGame),
+        'Team "'+team.name+'" filed under '+gameLabel(state.activeGame)+'. Party and stabled monsters moved with it.');
+    } catch (error) {
+      notice(error.message);
+      renderTeams();
+    }
+  });
   P("planner-team-new").addEventListener("click", () => openTeamForm("new"));
   P("planner-team-rename").addEventListener("click", () => openTeamForm("rename"));
   P("planner-team-name-cancel").addEventListener("click", () => { closeTeamForm(); P("planner-team-rename").focus({preventScroll: true}); notice("Team name cancelled."); });
@@ -1123,6 +1144,20 @@
   }
   P("planner-all-context").addEventListener("change", () => { P("planner-pair-detail").hidden = true; renderEverything(); });
   for (const id of ["planner-male-grid","planner-female-grid","planner-all-grid"]) P(id).addEventListener("click", showDetail);
+  P("planner-copy-pairing").addEventListener("click", () => {
+    const text = P("planner-copy-pairing").dataset.copyText || "";
+    if (!text) return;
+    const done = () => notice("Copied: " + text);
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(text).then(done, () => notice(text));
+    } else {
+      try {
+        const area = document.createElement("textarea");
+        area.value = text; area.setAttribute("readonly", ""); area.style.position = "fixed"; area.style.opacity = "0";
+        document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); done();
+      } catch (error) { notice(text); }
+    }
+  });
   P("planner-inspect-reference").addEventListener("click", () => {
     if (!detail) return;
     // Set the pair first, then hand off; go() also works when Find a pairing

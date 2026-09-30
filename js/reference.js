@@ -6,6 +6,9 @@ const $ = id => document.getElementById(id);
 const PAGE_SIZE = 40;
 let reversePage = 0, speciesPage = 0;
 let reverseMatches = [], speciesMatches = [];
+let reverseConditional = { plus: [], room: [] };
+let sessionReady = false;
+let lastForwardIndex = null, lastReverseIndex = null;
 const normalize = value => String(value ?? "").toLocaleLowerCase().normalize("NFKC").replace(/[\s’'·-]+/g, "");
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const isPlayable = s => s.playable !== false;
@@ -18,6 +21,226 @@ const nameLabel = s => displayName(s) + (s.short_name && s.short_name !== s.name
 const matchesName = (s, query) => !query || normalize([s.name,s.display_name,s.short_name,s.japanese].join(" ")).includes(normalize(query));
 const familyMatches = (s, family) => family === "" || String(s.family_id) === family;
 const current = id => $(id).value === "" ? undefined : byId.get(Number($(id).value));
+const familyName = id => { const family = DATA.families.find(f => f.id === id); return family ? (family.display_name || family.name) : "that"; };
+
+// ---- saved session (item 10) and shared URL (item 6) ----
+// The session remembers pair finder selections and filters across reloads. A
+// shared URL wins over the saved selections, so a link opens the same result
+// even in a browser that has a different pair saved.
+const session = typeof DQMSession !== "undefined" ? DQMSession.load() : {
+  version: 1,
+  pair: { a: null, b: null },
+  pedigree: { family: "", search: "" },
+  mate: { family: "", search: "" },
+  target: null,
+  reverse: { pedigreeFamily: "", mateFamily: "", search: "" },
+  species: { search: "", family: "", favoritesOnly: false },
+  showInternal: false,
+  recent: [],
+};
+const RECENT_LIMIT = (typeof DQMSession !== "undefined" && DQMSession.MAX_RECENT) || 6;
+function persistSession() { if (typeof DQMSession !== "undefined") DQMSession.save(session); }
+function hashParams() {
+  const raw = location.hash.replace(/^#/, "");
+  const cut = raw.indexOf("?");
+  return new URLSearchParams(cut === -1 ? "" : raw.slice(cut + 1));
+}
+function paramIndex(params, key) {
+  if (!params.has(key)) return null;
+  const raw = params.get(key);
+  if (raw === null || raw === "") return null;
+  const value = Number(raw);
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+const urlParams = hashParams();
+const viewId = location.hash.replace(/^#/, "").split(/[?&/]/)[0].toLowerCase();
+const sharedA = paramIndex(urlParams, "a");
+const sharedB = paramIndex(urlParams, "b");
+const sharedTarget = paramIndex(urlParams, "target");
+
+function resetParentFilters() { for (const id of ["pedigree","mate"]) { $(id + "-family").value = ""; $(id + "-search").value = ""; } }
+function saveSession() {
+  const a = current("pedigree"), b = current("mate"), target = current("target");
+  session.pair = { a: a ? a.index : null, b: b ? b.index : null };
+  session.pedigree = { family: $("pedigree-family").value, search: $("pedigree-search").value };
+  session.mate = { family: $("mate-family").value, search: $("mate-search").value };
+  session.target = target ? target.index : null;
+  session.reverse = { pedigreeFamily: $("reverse-pedigree-family").value, mateFamily: $("reverse-mate-family").value, search: $("reverse-search").value };
+  session.species = { search: $("species-search").value, family: $("species-family").value, favoritesOnly: $("species-favorites-only").checked };
+  session.showInternal = $("show-internal").checked;
+  persistSession();
+}
+function applySessionFilters() {
+  $("show-internal").checked = session.showInternal === true;
+  $("pedigree-family").value = session.pedigree.family;
+  $("pedigree-search").value = session.pedigree.search;
+  $("mate-family").value = session.mate.family;
+  $("mate-search").value = session.mate.search;
+  $("reverse-pedigree-family").value = session.reverse.pedigreeFamily;
+  $("reverse-mate-family").value = session.reverse.mateFamily;
+  $("reverse-search").value = session.reverse.search;
+  $("species-search").value = session.species.search;
+  $("species-family").value = session.species.family;
+  $("species-favorites-only").checked = session.species.favoritesOnly === true;
+}
+// The URL only mirrors the pair while Find a pairing is the open view, so a
+// handoff from Find parents / My game still lands on a bare "#pair-finder".
+function currentViewId() { return location.hash.replace(/^#/, "").split(/[?&/]/)[0].toLowerCase(); }
+function syncPairUrl() {
+  if (!sessionReady || currentViewId() !== "pair-finder") return;
+  const a = current("pedigree"), b = current("mate");
+  const parts = [];
+  if (a) parts.push("a=" + a.index);
+  if (b) parts.push("b=" + b.index);
+  const hash = "pair-finder" + (parts.length ? "?" + parts.join("&") : "");
+  if (location.hash === "#" + hash) return;
+  try { history.replaceState(null, "", "#" + hash); } catch (error) { /* file:// may refuse; the pair still works. */ }
+}
+
+// ---- empty-result recovery (item 11) ----
+function chip(text) { return '<span class="filter-chip">' + escapeHTML(text) + '</span>'; }
+function filterEmptyMarkup(message, chips, scope) {
+  return '<div class="filter-empty"><p class="filter-empty-message">' + escapeHTML(message) + "</p>" +
+    (chips.length ? '<p class="filter-empty-active">Active filters:</p><p class="filter-chips">' + chips.join("") + "</p>" : "") +
+    '<button class="filter-clear" type="button" data-clear-filters="' + scope + '">Clear filters</button></div>';
+}
+function filterEmptyInlineMarkup(message, chips, scope) {
+  return '<span class="filter-empty-inline">' + escapeHTML(message) +
+    (chips.length ? ' <span class="filter-chips">' + chips.join("") + "</span>" : "") +
+    ' <button class="filter-clear" type="button" data-clear-filters="' + scope + '">Clear filters</button></span>';
+}
+function selectChip(select, label) {
+  return select.value ? chip(label + ": " + select.options[select.selectedIndex].textContent) : "";
+}
+function parentChips(id) {
+  const chips = [];
+  const family = selectChip($(id + "-family"), "Family");
+  const search = $(id + "-search").value.trim();
+  if (family) chips.push(family);
+  if (search) chips.push(chip("Name: " + search));
+  return chips;
+}
+function reverseChips() {
+  const chips = [];
+  const pedigree = selectChip($("reverse-pedigree-family"), "Pedigree family");
+  const mate = selectChip($("reverse-mate-family"), "Mate family");
+  if (pedigree) chips.push(pedigree);
+  if (mate) chips.push(mate);
+  const search = $("reverse-search").value.trim();
+  if (search) chips.push(chip("Parent name: " + search));
+  return chips;
+}
+function speciesChips() {
+  const chips = [];
+  const family = selectChip($("species-family"), "Family");
+  const search = $("species-search").value.trim();
+  if (search) chips.push(chip("Name: " + search));
+  if (family) chips.push(family);
+  if (favoritesOnly()) chips.push(chip("Favorites only"));
+  return chips;
+}
+function clearFilters(scope) {
+  if (scope === "species") {
+    $("species-search").value = ""; $("species-family").value = ""; $("species-favorites-only").checked = false;
+    renderSpecies();
+  } else if (scope === "reverse") {
+    $("reverse-pedigree-family").value = ""; $("reverse-mate-family").value = ""; $("reverse-search").value = "";
+    renderReverse();
+  } else if (scope === "target") {
+    $("target-search").value = ""; updateTarget();
+  } else if (scope === "pedigree" || scope === "mate") {
+    $(scope + "-family").value = ""; $(scope + "-search").value = "";
+    updateParent(scope); renderPair();
+  }
+  saveSession();
+}
+
+// ---- recent pairings (item 9) ----
+function renderRecent() {
+  const container = $("recent-pairs"), list = $("recent-pairs-list");
+  const items = session.recent.filter(item => byId.has(item.a) && byId.has(item.b));
+  container.hidden = items.length === 0;
+  list.innerHTML = items.map(item => {
+    const a = byId.get(item.a), b = byId.get(item.b), result = offspring(a, b);
+    const label = displayName(a) + " + " + displayName(b) + " → " + (result ? displayName(result) : "Unmapped result");
+    return '<li><button class="recent-pair" type="button" data-recent-a="' + item.a + '" data-recent-b="' + item.b + '">' + escapeHTML(label) + "</button></li>";
+  }).join("");
+}
+function recordRecent() {
+  const a = current("pedigree"), b = current("mate");
+  if (!a || !b) return;
+  const list = session.recent.filter(item => !(item.a === a.index && item.b === b.index));
+  list.unshift({ a: a.index, b: b.index });
+  session.recent = list.slice(0, RECENT_LIMIT);
+  persistSession();
+  renderRecent();
+}
+
+// ---- copy pairing (item 17) ----
+function matchedConditional(a, b) {
+  const plus = RULES.find(r => r.kind === "plus_threshold" && r.pedigree_index === a.index && r.mate_index === b.index);
+  const room = RULES.find(r => r.kind === "flag_gated" && r.pedigree_index === a.index && (r.mate_index === b.index || (r.mate_index == null && r.mate_family_index === b.family_id)));
+  return { plus, room };
+}
+// A readable one-liner for chat or a forum. It says "base result" because a
+// documented + value or Breeding room rule may change the outcome.
+function pairingText() {
+  const a = current("pedigree"), b = current("mate");
+  if (!a || !b) return "";
+  const result = offspring(a, b);
+  const name = result ? displayName(result) : "Unmapped table result";
+  const { plus, room } = matchedConditional(a, b);
+  const notes = [];
+  if (plus) notes.push("+ rule gives " + displayName(byId.get(plus.offspring_index)) + " at +" + plus.minimum_parent_plus);
+  if (room) notes.push("Breeding room rule gives " + displayName(byId.get(room.offspring_index)));
+  const suffix = notes.length ? "(base result; " + notes.join("; ") + ")" : "(base result)";
+  return "Pedigree " + displayName(a) + " + Mate " + displayName(b) + " → " + name + " " + suffix;
+}
+function fallbackCopy(text, done) {
+  try {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.append(area);
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+    done();
+  } catch (error) {
+    $("copy-pairing-status").textContent = text;
+  }
+}
+function copyPairing() {
+  const text = pairingText();
+  if (!text) return;
+  $("copy-pairing").dataset.copyText = text;
+  const done = () => { $("copy-pairing-status").textContent = "Copied: " + text; };
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+
+// ---- cross-tool actions (item 7) ----
+function useSpeciesAs(role, index) {
+  const species = byId.get(index);
+  if (!species) return;
+  const partner = role === "pedigree" ? current("mate") : current("pedigree");
+  const a = role === "pedigree" ? index : (partner ? partner.index : index);
+  const b = role === "mate" ? index : (partner ? partner.index : index);
+  choosePair(a, b);
+  DQMViews.go("pair-finder", { focusId: "result-name" });
+}
+function openParents(index) {
+  if (!byId.has(index)) return;
+  selectTarget(index);
+  saveSession();
+  DQMViews.go("offspring-finder", { focusId: "target" });
+}
+
 function setOptions(id, species, selected) {
   const select = $(id), old = selected ?? select.value;
   select.replaceChildren();
@@ -36,7 +259,9 @@ function setFamilies(id) {
 function updateParent(id, selected) {
   const species = allSpecies().filter(s => familyMatches(s, $(id + "-family").value) && matchesName(s, $(id + "-search").value));
   setOptions(id, species, selected);
-  $(id + "-hint").textContent = species.length.toLocaleString() + " matching species";
+  const hint = $(id + "-hint");
+  if (species.length) hint.textContent = species.length.toLocaleString() + " matching species";
+  else hint.innerHTML = filterEmptyInlineMarkup("No monsters match these filters.", parentChips(id), id);
 }
 function offspring(a, b) {
   if (!a || !b) return undefined;
@@ -66,10 +291,42 @@ function renderPair() {
   $("reverse-room-note").hidden = !reverseRoomRule;
   $("reverse-room-note").textContent = reverseRoomRule ? "Title-screen Breeding room (between two saves): " + displayName(byId.get(reverseRoomRule.offspring_index)) + ". This room rule takes precedence over the reversed base result and any + rule." : "";
   $("swap").disabled = !a || !b;
+  // The result feeds the two other tools: copy it, or jump to its other
+  // parent combinations in Find parents (item 7).
+  lastForwardIndex = a && b && forward ? forward.index : null;
+  lastReverseIndex = a && b && reverse ? reverse.index : null;
+  const findForward = $("result-find-parents");
+  findForward.hidden = !(lastForwardIndex !== null && isPlayable(byId.get(lastForwardIndex)));
+  findForward.textContent = lastForwardIndex !== null ? "Find parents for " + displayName(byId.get(lastForwardIndex)) + " ↗" : "Find parents ↗";
+  const findReverse = $("reverse-find-parents");
+  findReverse.hidden = !(lastReverseIndex !== null && isPlayable(byId.get(lastReverseIndex)));
+  findReverse.textContent = lastReverseIndex !== null ? "Find parents for " + displayName(byId.get(lastReverseIndex)) + " ↗" : "Find parents ↗";
+  const copyButton = $("copy-pairing");
+  copyButton.disabled = !a || !b;
+  copyButton.dataset.copyText = a && b ? pairingText() : "";
+  if (!a || !b) $("copy-pairing-status").textContent = "";
+  if (sessionReady) { recordRecent(); saveSession(); syncPairUrl(); }
 }
-function resetParentFilters() { for (const id of ["pedigree","mate"]) { $(id + "-family").value = ""; $(id + "-search").value = ""; } }
 function choosePair(a, b) {
   resetParentFilters(); updateParent("pedigree", a); updateParent("mate", b); renderPair();
+}
+function selectParentWithFallback(id, index) {
+  if (index === null || !byId.has(index)) { updateParent(id); return; }
+  updateParent(id, index);
+  const selected = current(id);
+  if (!selected || selected.index !== index) {
+    // The saved filter hid the saved species; show every name for that parent.
+    $(id + "-family").value = ""; $(id + "-search").value = "";
+    updateParent(id, index);
+  }
+}
+function selectTargetWithFallback(index) {
+  updateTarget(index);
+  const selected = current("target");
+  if (!selected || selected.index !== index) {
+    $("target-search").value = "";
+    updateTarget(index);
+  }
 }
 function renderMonster(s) { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon">' + escapeHTML(displayName(s)) + '</span><span class="detail">' + escapeHTML(s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
 function pageControls(prefix, page, length) {
@@ -78,8 +335,40 @@ function pageControls(prefix, page, length) {
   $(prefix + "-page").textContent = "Page " + (page + 1) + " / " + pages.toLocaleString();
   $(prefix + "-prev").disabled = page === 0; $(prefix + "-next").disabled = page + 1 >= pages;
 }
+// Conditional recipes that produce the desired offspring, shown in their own
+// labeled groups beside the base table rows (item 8).
+function conditionalGroups(target) {
+  if (!target) return { plus: [], room: [] };
+  return {
+    plus: RULES.filter(r => r.kind === "plus_threshold" && r.offspring_index === target.index),
+    room: RULES.filter(r => r.kind === "flag_gated" && r.offspring_index === target.index),
+  };
+}
+function conditionalRowHtml(rule, isRoom) {
+  const pedigree = byId.get(rule.pedigree_index);
+  if (!pedigree) return "";
+  const condition = isRoom ? rule.condition : "Either parent +" + rule.minimum_parent_plus + " or higher.";
+  if (isRoom && rule.mate_index == null) {
+    const label = "Any " + familyName(rule.mate_family_index) + "-family monster";
+    return "<tr><td>" + renderMonster(pedigree) + "</td><td>" + escapeHTML(label) +
+      '</td><td><p class="reverse-condition">' + escapeHTML(condition) + '</p><button class="pair-action" type="button" data-recipe-pedigree="' + pedigree.index + '" aria-label="Use ' + escapeHTML(displayName(pedigree)) + ' as pedigree">Use as pedigree ↗</button></td></tr>';
+  }
+  const mate = byId.get(rule.mate_index);
+  if (!mate) return "";
+  return "<tr><td>" + renderMonster(pedigree) + "</td><td>" + renderMonster(mate) +
+    '</td><td><p class="reverse-condition">' + escapeHTML(condition) + '</p><button class="pair-action" type="button" data-recipe-a="' + pedigree.index + '" data-recipe-b="' + mate.index +
+    '" aria-label="Try ' + escapeHTML(displayName(pedigree)) + " as pedigree and " + escapeHTML(displayName(mate)) + ' as mate">Try pair ↗</button></td></tr>';
+}
 function renderReversePage() {
-  $("reverse-rows").innerHTML = reverseMatches.slice(reversePage * PAGE_SIZE, (reversePage + 1) * PAGE_SIZE).map(([a,b]) => "<tr><td>" + renderMonster(a) + "</td><td>" + renderMonster(b) + '</td><td><button class="pair-action" type="button" data-a="' + a.index + '" data-b="' + b.index + '" aria-label="Try ' + escapeHTML(displayName(a) + " as pedigree and " + displayName(b) + " as mate") + '">Try pair ↗</button></td></tr>').join("") || '<tr><td colspan="3" class="empty">No ordered pairs match these filters. Conditional breeding recipes are outside this table.</td></tr>';
+  const baseRows = reverseMatches.slice(reversePage * PAGE_SIZE, (reversePage + 1) * PAGE_SIZE).map(([a,b]) => "<tr><td>" + renderMonster(a) + "</td><td>" + renderMonster(b) + '</td><td><button class="pair-action" type="button" data-a="' + a.index + '" data-b="' + b.index + '" aria-label="Try ' + escapeHTML(displayName(a) + " as pedigree and " + displayName(b) + " as mate") + '">Try pair ↗</button></td></tr>').join("");
+  const groups = [{ label: "Base table pairs", count: reverseMatches.length, body: baseRows, empty: current("target") ? filterEmptyMarkup("No base table pairs match these filters.", reverseChips(), "reverse") : "Choose a desired offspring to list parent pairs." }];
+  if (reverseConditional.plus.length) groups.push({ label: "Confirmed + value recipes", count: reverseConditional.plus.length, body: reverseConditional.plus.map(r => conditionalRowHtml(r, false)).join(""), empty: "No + value recipes." });
+  if (reverseConditional.room.length) groups.push({ label: "Breeding room recipes", count: reverseConditional.room.length, body: reverseConditional.room.map(r => conditionalRowHtml(r, true)).join(""), empty: "No Breeding room recipes." });
+  $("reverse-rows").innerHTML = groups.map(group => {
+    const header = '<tr class="reverse-group"><th colspan="3" scope="colgroup">' + escapeHTML(group.label) + " · " + group.count.toLocaleString() + "</th></tr>";
+    const body = group.body || '<tr><td colspan="3" class="empty">' + group.empty + "</td></tr>";
+    return header + body;
+  }).join("");
   pageControls("reverse", reversePage, reverseMatches.length);
 }
 function renderReverse() {
@@ -89,8 +378,10 @@ function renderReverse() {
   $("target-sprite").innerHTML = spriteMarkup(target?.index);
   reverseMatches = [];
   if (target) for (const a of pedigrees) for (const b of mates) if (DATA.matrix[a.index]?.[b.index] === target.index && (matchesName(a,query) || matchesName(b,query))) reverseMatches.push([a,b]);
+  reverseConditional = conditionalGroups(target);
   reversePage = 0;
-  $("reverse-count").textContent = reverseMatches.length.toLocaleString() + " ordered pair" + (reverseMatches.length === 1 ? "" : "s") + (target ? " for " + displayName(target) : "");
+  const conditionalTotal = reverseConditional.plus.length + reverseConditional.room.length;
+  $("reverse-count").textContent = reverseMatches.length.toLocaleString() + " base ordered pair" + (reverseMatches.length === 1 ? "" : "s") + (target ? " for " + displayName(target) : "") + (conditionalTotal ? " · " + conditionalTotal + " conditional recipe" + (conditionalTotal === 1 ? "" : "s") : "");
   renderReversePage();
 }
 function updateTarget(selected) { setOptions("target", allSpecies().filter(s => matchesName(s, $("target-search").value)), selected); renderReverse(); }
@@ -117,8 +408,13 @@ function renderSpeciesPage() {
   $("species-rows").innerHTML = speciesMatches.slice(speciesPage * PAGE_SIZE, (speciesPage + 1) * PAGE_SIZE).map(s => {
     const favorite = isFavorite(s.index);
     const star = '<td class="species-favorite-cell"><button type="button" class="species-star" data-species-favorite="' + s.index + '" aria-pressed="' + favorite + '" aria-label="' + (favorite ? "Unfavorite " : "Favorite ") + escapeHTML(displayName(s)) + '"' + (isPlayable(s) && hasApp() ? "" : " disabled") + '>' + (favorite ? "★" : "☆") + "</button></td>";
-    return "<tr>" + star + "<td>" + spriteLabel(s.index,displayName(s)) + (!isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + escapeHTML(s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td></tr>";
-  }).join("") || '<tr><td colspan="5" class="empty">No species match these filters.</td></tr>';
+    const actions = '<td class="species-actions-cell"><div class="species-actions">' +
+      '<button type="button" data-species-pedigree="' + s.index + '">Use as pedigree</button>' +
+      '<button type="button" data-species-mate="' + s.index + '">Use as mate</button>' +
+      '<button type="button" data-species-parents="' + s.index + '"' + (isPlayable(s) ? "" : " disabled") + ">Find parents</button>" +
+      "</div></td>";
+    return "<tr>" + star + "<td>" + spriteLabel(s.index,displayName(s)) + (!isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + escapeHTML(s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td>" + actions + "</tr>";
+  }).join("") || '<tr><td colspan="6" class="empty">' + filterEmptyMarkup("No species match these filters.", speciesChips(), "species") + "</td></tr>";
   pageControls("species", speciesPage, speciesMatches.length);
 }
 function renderSpecies() {
@@ -132,33 +428,92 @@ for (const id of ["pedigree","mate"]) {
   $(id + "-search").addEventListener("input", () => { updateParent(id); renderPair(); });
 }
 $("swap").addEventListener("click", () => choosePair(current("mate").index, current("pedigree").index));
-$("target").addEventListener("change", renderReverse);
-$("target-search").addEventListener("input", () => updateTarget());
-for (const id of ["reverse-pedigree-family","reverse-mate-family"]) $(id).addEventListener("change", renderReverse);
-$("reverse-search").addEventListener("input", renderReverse);
+$("target").addEventListener("change", () => { renderReverse(); saveSession(); });
+$("target-search").addEventListener("input", () => { updateTarget(); saveSession(); });
+for (const id of ["reverse-pedigree-family","reverse-mate-family"]) $(id).addEventListener("change", () => { renderReverse(); saveSession(); });
+$("reverse-search").addEventListener("input", () => { renderReverse(); saveSession(); });
 $("reverse-prev").addEventListener("click", () => { reversePage--; renderReversePage(); });
 $("reverse-next").addEventListener("click", () => { reversePage++; renderReversePage(); });
 $("species-prev").addEventListener("click", () => { speciesPage--; renderSpeciesPage(); });
 $("species-next").addEventListener("click", () => { speciesPage++; renderSpeciesPage(); });
-$("species-search").addEventListener("input", renderSpecies);
-$("species-family").addEventListener("change", renderSpecies);
+$("species-search").addEventListener("input", () => { renderSpecies(); saveSession(); });
+$("species-family").addEventListener("change", () => { renderSpecies(); saveSession(); });
 // "Try pair" fills Find a pairing, which is a separate view. The selections are
 // set first, then the router reveals and focuses the result, so the handoff
 // also works when Find a pairing is already open.
-$("reverse-rows").addEventListener("click", event => { const button = event.target.closest("button[data-a]"); if (!button) return; choosePair(Number(button.dataset.a), Number(button.dataset.b)); DQMViews.go("pair-finder", { focusId: "result-name" }); });
-$("show-internal").addEventListener("change", () => { updateParent("pedigree"); updateParent("mate"); renderPair(); updateTarget(); renderSpecies(); });
-$("species-favorites-only").addEventListener("change", renderSpecies);
+$("reverse-rows").addEventListener("click", event => {
+  const recipe = event.target.closest("button[data-recipe-a]");
+  if (recipe) { choosePair(Number(recipe.dataset.recipeA), Number(recipe.dataset.recipeB)); DQMViews.go("pair-finder", { focusId: "result-name" }); return; }
+  const pedigreeOnly = event.target.closest("button[data-recipe-pedigree]");
+  if (pedigreeOnly) {
+    const pedigree = Number(pedigreeOnly.dataset.recipePedigree);
+    const mate = current("mate");
+    choosePair(pedigree, mate ? mate.index : pedigree);
+    DQMViews.go("pair-finder", { focusId: "result-name" });
+    return;
+  }
+  const button = event.target.closest("button[data-a]");
+  if (!button) return;
+  choosePair(Number(button.dataset.a), Number(button.dataset.b));
+  DQMViews.go("pair-finder", { focusId: "result-name" });
+});
+$("show-internal").addEventListener("change", () => { updateParent("pedigree"); updateParent("mate"); renderPair(); updateTarget(); renderSpecies(); saveSession(); });
+$("species-favorites-only").addEventListener("change", () => { renderSpecies(); saveSession(); });
 $("species-rows").addEventListener("click", event => {
   const star = event.target.closest("button[data-species-favorite]");
   if (!star || !hasApp()) return;
   const message = DQMApp.toggleSpeciesFavorite(Number(star.dataset.speciesFavorite));
   if (typeof message === "string") $("species-message").textContent = message;
 });
-const initialSpecies = allSpecies();
-const initialA = initialSpecies.find(s => normalize(s.name) === "slime") ?? initialSpecies[0];
-const initialB = initialSpecies.find(s => normalize(s.name) === "dracky") ?? initialSpecies[1] ?? initialSpecies[0];
-choosePair(initialA.index, initialB.index);
-updateTarget(offspring(initialA,initialB)?.index); renderSpecies();
+// Name-index actions (item 7) and the recovery / recent / copy controls
+// (items 9, 11, 17) all route through one delegated listener.
+document.addEventListener("click", event => {
+  const clear = event.target.closest("button[data-clear-filters]");
+  if (clear) { clearFilters(clear.dataset.clearFilters); return; }
+  const pedigree = event.target.closest("button[data-species-pedigree]");
+  if (pedigree) { useSpeciesAs("pedigree", Number(pedigree.dataset.speciesPedigree)); return; }
+  const mate = event.target.closest("button[data-species-mate]");
+  if (mate) { useSpeciesAs("mate", Number(mate.dataset.speciesMate)); return; }
+  const parents = event.target.closest("button[data-species-parents]");
+  if (parents) { openParents(Number(parents.dataset.speciesParents)); return; }
+  const recent = event.target.closest("button[data-recent-a]");
+  if (recent) { choosePair(Number(recent.dataset.recentA), Number(recent.dataset.recentB)); saveSession(); return; }
+  if (event.target.closest("#recent-pairs-clear")) { session.recent = []; persistSession(); renderRecent(); return; }
+  if (event.target.closest("#copy-pairing")) { copyPairing(); return; }
+  if (event.target.closest("#result-find-parents")) { if (lastForwardIndex !== null) openParents(lastForwardIndex); return; }
+  if (event.target.closest("#reverse-find-parents")) { if (lastReverseIndex !== null) openParents(lastReverseIndex); return; }
+});
+
+// ---- first render: a shared URL wins over the saved session ----
+applySessionFilters();
+const hasSessionPair = session.pair.a !== null || session.pair.b !== null;
+if (sharedA !== null || sharedB !== null) {
+  const base = allSpecies();
+  const pick = (index, fallbackName, fallbackPosition) => (index !== null && byId.has(index)) ? byId.get(index) : (base.find(s => normalize(s.name) === fallbackName) || base[fallbackPosition] || base[0]);
+  const a = pick(sharedA, "slime", 0);
+  const b = pick(sharedB, "dracky", 1);
+  resetParentFilters();
+  updateParent("pedigree", a.index);
+  updateParent("mate", b.index);
+} else if (hasSessionPair) {
+  selectParentWithFallback("pedigree", session.pair.a);
+  selectParentWithFallback("mate", session.pair.b);
+} else {
+  const base = allSpecies();
+  const a = base.find(s => normalize(s.name) === "slime") || base[0];
+  const b = base.find(s => normalize(s.name) === "dracky") || base[1] || base[0];
+  resetParentFilters();
+  updateParent("pedigree", a.index);
+  updateParent("mate", b.index);
+}
+renderPair();
+const chosenA = current("pedigree"), chosenB = current("mate");
+const wantedTarget = (viewId === "offspring-finder" && sharedTarget !== null) ? sharedTarget : session.target;
+if (wantedTarget !== null && byId.has(wantedTarget)) selectTargetWithFallback(wantedTarget);
+else updateTarget(offspring(chosenA, chosenB)?.index);
+renderSpecies();
+sessionReady = true;
+renderRecent();
 $("coverage-summary").textContent = DATA.species.length.toLocaleString() + " table slots; " + DATA.species.filter(isPlayable).length.toLocaleString() + " standard roster entries; " + DATA.families.length + " families; " + DATA.matrix.reduce((n,row) => n + row.length, 0).toLocaleString() + " ordered base entries.";
 $("source-metadata").textContent = JSON.stringify(DATA.metadata, null, 2);
 function ruleName(rule, role) { const species = byId.get(rule[role + "_index"]); return species ? displayName(species) : rule[role + "_name"]; }
@@ -175,4 +530,7 @@ window.DQMReference = Object.freeze({
   refresh,
   selectTarget,
   currentTargetIndex,
+  useSpeciesAs,
+  openParents,
+  pairingText,
 });

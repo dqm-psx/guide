@@ -174,9 +174,14 @@ for (const name of ['file', 'server']) {
       await page.goto(url());
       await page.keyboard.press('Tab');
       await expect(page.locator('a.skip')).toBeFocused();
-      // Skip link, then one tab per nav link, reaches Name index.
-      for (let i = 0; i < 3; i++) await page.keyboard.press('Tab');
-      await expect(page.locator('.nav a[href="#species-index"]')).toBeFocused();
+      // Tab forward through any controls above the nav (the theme picker) and
+      // the links, stopping when Name index takes focus.
+      let reached = false;
+      for (let i = 0; i < 12 && !reached; i++) {
+        await page.keyboard.press('Tab');
+        reached = await page.evaluate(() => document.activeElement && document.activeElement.matches('.nav a[href="#species-index"]'));
+      }
+      expect(reached).toBe(true);
       await page.keyboard.press('Enter');
       await expectSingleView(page, 'species-index');
       await expect(page.locator('#species-heading')).toBeFocused();
