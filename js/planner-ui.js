@@ -32,6 +32,7 @@
   let activeTab = "roster";
   let storageBlocked = false;
   let storageHealthy = storage.available();
+  let documentTooLarge = false;
   let storedRawText = null;
   let pendingImport = null;
   let teamFormMode = null;
@@ -83,12 +84,25 @@
 
   function persist() {
     if (storageBlocked) { updateSaveStatus(); return false; }
-    const ok = storage.write(app.STORAGE_KEY, app.toJSON(state));
+    let text;
+    try {
+      text = app.toJSON(state);
+    } catch (error) {
+      if (app.errorCode(error) === "limit") {
+        documentTooLarge = true;
+        showStorageBanner("too-large");
+        updateSaveStatus();
+        return false;
+      }
+      throw error;
+    }
+    const ok = storage.write(app.STORAGE_KEY, text);
     if (!ok) {
       storageHealthy = false;
       showStorageBanner("unavailable");
-    } else if (!storageHealthy) {
+    } else if (!storageHealthy || documentTooLarge) {
       storageHealthy = true;
+      documentTooLarge = false;
       hideStorageBanner();
     }
     updateSaveStatus();
@@ -114,6 +128,10 @@
       fresh.hidden = false;
       freshConfirm = false;
       fresh.textContent = "Start fresh (replaces saved data)";
+    } else if (kind === "too-large") {
+      text.textContent = "This document is too large for the browser to save or export. Remove some teams, monsters, plans, or notes.";
+      download.hidden = true;
+      fresh.hidden = true;
     } else {
       text.textContent = "Browser saving is unavailable. Your changes still work for this session — export a full backup to keep them.";
       download.hidden = true;
@@ -122,8 +140,10 @@
     banner.hidden = false;
   }
   function updateSaveStatus() {
-    P("planner-save-status").textContent = (storageBlocked || !storageHealthy)
-      ? "Browser saving is unavailable. Your changes work for this session; export a full backup to keep them."
+    P("planner-save-status").textContent = (storageBlocked || !storageHealthy || documentTooLarge)
+      ? (documentTooLarge
+        ? "This document is too large to save or export in the browser. Remove some teams, monsters, plans, or notes."
+        : "Browser saving is unavailable. Your changes work for this session; export a full backup to keep them.")
       : "Saved in this browser only. Export a full backup to keep or move everything.";
   }
   function commit(nextState, message) {
@@ -1050,7 +1070,14 @@
   });
   P("planner-backup-export").addEventListener("click", () => {
     const s = app.summarize(state);
-    downloadText(app.toJSON(state), "DQM-guide-backup-v61.json");
+    let text;
+    try {
+      text = app.toJSON(state);
+    } catch (error) {
+      P("planner-backup-message").textContent = "Export failed: " + error.message;
+      return;
+    }
+    downloadText(text, "DQM-guide-backup-v61.json");
     P("planner-backup-message").textContent = "Exported a full backup: "+s.teams+" teams, "+s.entries+" monsters, "+s.targets+" targets.";
   });
   P("planner-backup-import").addEventListener("change", async event => {

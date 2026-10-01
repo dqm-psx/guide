@@ -40,10 +40,11 @@ const session = typeof DQMSession !== "undefined" ? DQMSession.load() : {
 };
 const RECENT_LIMIT = (typeof DQMSession !== "undefined" && DQMSession.MAX_RECENT) || 6;
 function persistSession() { if (typeof DQMSession !== "undefined") DQMSession.save(session); }
-function hashParams() {
+function parseHash() {
   const raw = location.hash.replace(/^#/, "");
   const cut = raw.indexOf("?");
-  return new URLSearchParams(cut === -1 ? "" : raw.slice(cut + 1));
+  const id = (cut === -1 ? raw : raw.slice(0, cut)).split(/[&/]/)[0].toLowerCase();
+  return { id, params: new URLSearchParams(cut === -1 ? "" : raw.slice(cut + 1)) };
 }
 function paramIndex(params, key) {
   if (!params.has(key)) return null;
@@ -52,11 +53,6 @@ function paramIndex(params, key) {
   const value = Number(raw);
   return Number.isInteger(value) && value >= 0 ? value : null;
 }
-const urlParams = hashParams();
-const viewId = location.hash.replace(/^#/, "").split(/[?&/]/)[0].toLowerCase();
-const sharedA = paramIndex(urlParams, "a");
-const sharedB = paramIndex(urlParams, "b");
-const sharedTarget = paramIndex(urlParams, "target");
 
 function resetParentFilters() { for (const id of ["pedigree","mate"]) { $(id + "-family").value = ""; $(id + "-search").value = ""; } }
 function saveSession() {
@@ -84,8 +80,13 @@ function applySessionFilters() {
   $("species-favorites-only").checked = session.species.favoritesOnly === true;
 }
 // The URL only mirrors the pair while Find a pairing is the open view, so a
-// handoff from Find parents / My game still lands on a bare "#pair-finder".
-function currentViewId() { return location.hash.replace(/^#/, "").split(/[?&/]/)[0].toLowerCase(); }
+// handoff from Find parents / My game still lands on a bare "#pair-finder". The
+// router resolves the default (bare) and legacy hashes, so ask it before
+// treating an empty hash as "not Find a pairing".
+function currentViewId() {
+  if (typeof DQMViews !== "undefined") return DQMViews.viewFor(location.hash);
+  return parseHash().id;
+}
 function syncPairUrl() {
   if (!sessionReady || currentViewId() !== "pair-finder") return;
   const a = current("pedigree"), b = current("mate");
@@ -484,17 +485,49 @@ document.addEventListener("click", event => {
   if (event.target.closest("#reverse-find-parents")) { if (lastReverseIndex !== null) openParents(lastReverseIndex); return; }
 });
 
+// A shared link may name a species the recipient's saved filter hides, including
+// an internal slot behind the show-internal toggle. The URL wins, so reveal the
+// species when it is needed; compatible saved filters stay untouched.
+function ensureSpeciesSelectable(index) {
+  const species = byId.get(index);
+  if (species && !isPlayable(species) && !$("show-internal").checked) {
+    $("show-internal").checked = true;
+    session.showInternal = true;
+  }
+}
+function sharedSpecies(index, fallbackName, fallbackPosition) {
+  if (index !== null && byId.has(index)) return byId.get(index);
+  const base = allSpecies();
+  return base.find(s => normalize(s.name) === fallbackName) || base[fallbackPosition] || base[0];
+}
+// Apply a shared pairing without discarding saved filters the requested species
+// still satisfies; selectParentWithFallback clears only the filter that actually
+// hides it. Returns false when the route names no pair to apply.
+function applyPairParams(params) {
+  const a = paramIndex(params, "a");
+  const b = paramIndex(params, "b");
+  if (a === null && b === null) return false;
+  if (a !== null) ensureSpeciesSelectable(a);
+  if (b !== null) ensureSpeciesSelectable(b);
+  const pedigree = sharedSpecies(a, "slime", 0);
+  const mate = sharedSpecies(b, "dracky", 1);
+  selectParentWithFallback("pedigree", pedigree.index);
+  selectParentWithFallback("mate", mate.index);
+  return true;
+}
+function applyTargetParam(params) {
+  const target = paramIndex(params, "target");
+  if (target === null || !byId.has(target)) return false;
+  selectTargetWithFallback(target);
+  return true;
+}
+
 // ---- first render: a shared URL wins over the saved session ----
 applySessionFilters();
+const initialRoute = parseHash();
 const hasSessionPair = session.pair.a !== null || session.pair.b !== null;
-if (sharedA !== null || sharedB !== null) {
-  const base = allSpecies();
-  const pick = (index, fallbackName, fallbackPosition) => (index !== null && byId.has(index)) ? byId.get(index) : (base.find(s => normalize(s.name) === fallbackName) || base[fallbackPosition] || base[0]);
-  const a = pick(sharedA, "slime", 0);
-  const b = pick(sharedB, "dracky", 1);
-  resetParentFilters();
-  updateParent("pedigree", a.index);
-  updateParent("mate", b.index);
+if (applyPairParams(initialRoute.params)) {
+  // The shared URL supplied the pair.
 } else if (hasSessionPair) {
   selectParentWithFallback("pedigree", session.pair.a);
   selectParentWithFallback("mate", session.pair.b);
@@ -508,11 +541,22 @@ if (sharedA !== null || sharedB !== null) {
 }
 renderPair();
 const chosenA = current("pedigree"), chosenB = current("mate");
-const wantedTarget = (viewId === "offspring-finder" && sharedTarget !== null) ? sharedTarget : session.target;
+const sharedTarget = paramIndex(initialRoute.params, "target");
+const wantedTarget = (initialRoute.id === "offspring-finder" && sharedTarget !== null) ? sharedTarget : session.target;
 if (wantedTarget !== null && byId.has(wantedTarget)) selectTargetWithFallback(wantedTarget);
 else updateTarget(offspring(chosenA, chosenB)?.index);
 renderSpecies();
 sessionReady = true;
+// Startup is not the only source of parameters: a same-document link, Back, or
+// Forward changes the hash without reloading, so re-apply the route's pair or
+// offspring target here too. A bare view hash carries no parameters and leaves
+// the current in-memory selections alone.
+window.addEventListener("hashchange", () => {
+  if (!sessionReady) return;
+  const route = parseHash();
+  if (route.id === "offspring-finder") { if (applyTargetParam(route.params)) saveSession(); return; }
+  if (applyPairParams(route.params)) renderPair();
+});
 renderRecent();
 $("coverage-summary").textContent = DATA.species.length.toLocaleString() + " table slots; " + DATA.species.filter(isPlayable).length.toLocaleString() + " standard roster entries; " + DATA.families.length + " families; " + DATA.matrix.reduce((n,row) => n + row.length, 0).toLocaleString() + " ordered base entries.";
 $("source-metadata").textContent = JSON.stringify(DATA.metadata, null, 2);

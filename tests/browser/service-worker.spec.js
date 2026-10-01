@@ -46,6 +46,36 @@ test('a visited copy reloads and works with the network offline', async ({ page,
   }
 });
 
+test('activation deletes only caches this installation owns', async ({ page }) => {
+  await page.goto(serverUrl);
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
+
+  // Drop the current registration, then seed a stale cache this installation
+  // owns, a guide nested under this path, and an unrelated project's cache
+  // before a fresh install/activate cycle.
+  const seeded = await page.evaluate(async () => {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map(registration => registration.unregister()));
+    const prefix = 'dqm-guide:' + new URL('./', location.href).pathname;
+    const stale = prefix + 'v0-stale';
+    const nested = prefix + 'other/v1';
+    await caches.open(stale);
+    await caches.open(nested);
+    await caches.open('other-project-cache');
+    return { stale, nested };
+  });
+  await page.reload();
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
+  await page.waitForFunction(name => caches.keys().then(keys => !keys.includes(name)), seeded.stale, { timeout: 20000 });
+
+  const keys = await page.evaluate(() => caches.keys());
+  // The stale cache this installation owns is gone; the nested guide and the
+  // unrelated project are untouched.
+  expect(keys).not.toContain(seeded.stale);
+  expect(keys).toContain(seeded.nested);
+  expect(keys).toContain('other-project-cache');
+});
+
 test('the manifest and worker are served from the site', async ({ request }) => {
   const manifest = await request.get(new URL('manifest.webmanifest', serverUrl).href);
   expect(manifest.ok()).toBeTruthy();

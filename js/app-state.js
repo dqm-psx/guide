@@ -280,7 +280,14 @@
     }
 
     function toJSON(state) {
-      return JSON.stringify(normalizeDocument(state), null, 2) + '\n';
+      const text = JSON.stringify(normalizeDocument(state), null, 2) + '\n';
+      // The writer must never produce a document the reader would reject, or a
+      // successful save could become unreadable on reload and its export would
+      // be refused on import.
+      if (text.length > MAX_IMPORT_LENGTH) {
+        fail('limit', 'This document is too large to save. Remove some teams, monsters, plans, or notes.');
+      }
+      return text;
     }
 
     function findTeam(state, teamId) {
@@ -410,17 +417,21 @@
       const index = teamIndex(state, teamId);
       if (index === -1) fail('invalid', 'The team was not found.');
       const teams = state.teams.filter(team => team.id !== teamId);
-      let activeTeamId = state.activeTeamId;
-      if (activeTeamId === teamId) {
-        // Prefer a team the player can still see under the game they are viewing.
-        const fallback = teams.find(team => team.game === state.activeGame || team.game === null) || teams[0];
-        activeTeamId = fallback ? fallback.id : null;
-      }
       if (!teams.length) {
         const fresh = { id: makeId('t-'), name: DEFAULT_TEAM_NAME, game: state.activeGame, entries: [], activeTargetId: null, targets: [] };
         return { ...state, teams: [fresh], activeTeamId: fresh.id };
       }
-      return { ...state, teams, activeTeamId };
+      let activeGame = state.activeGame;
+      let activeTeamId = state.activeTeamId;
+      if (activeTeamId === teamId) {
+        // Prefer a team the player can still see under the game they are viewing.
+        const fallback = teams.find(team => team.game === state.activeGame || team.game === null) || teams[0];
+        activeTeamId = fallback.id;
+        // If nothing survives under the viewed game, follow the team that becomes
+        // active so the switch and the dropdown never disagree about the game.
+        if (fallback.game !== null && fallback.game !== state.activeGame) activeGame = fallback.game;
+      }
+      return { ...state, activeGame, teams, activeTeamId };
     }
 
     function setActiveTeam(state, teamId) {

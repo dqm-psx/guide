@@ -12,11 +12,19 @@
 
    Bump CACHE_NAME only when this file changes; activate() then drops the
    previous cache. Content-only edits need no bump, because network-first
-   refreshes the cache on the next online load. */
+   refreshes the cache on the next online load. Deletion is limited to caches
+   this installation owns (its path-scoped prefix), because CacheStorage names
+   are origin-wide and another project on the same origin may own other caches. */
 
 "use strict";
 
-const CACHE_NAME = "dqm-guide-v1.0.61-1";
+// CacheStorage names are origin-wide, so scope the prefix to this
+// installation's path. Two copies of the guide on one origin (say, two GitHub
+// Pages project paths) then own separate caches and never delete each other's;
+// an unrelated project's caches are never touched at all.
+const CACHE_PREFIX = "dqm-guide:" + new URL("./", self.location.href).pathname;
+const CACHE_VERSION = "v1.0.61-1";
+const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 
 // Every asset the page loads. Kept as a plain JSON array so
 // tests/unit/offline-assets.test.js can check it without running the worker.
@@ -61,7 +69,13 @@ self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+        keys.filter(key =>
+          key !== CACHE_NAME &&
+          key.startsWith(CACHE_PREFIX) &&
+          // A single version token only: a guide nested under this path keeps
+          // its own caches, because its name continues with a slash.
+          !key.slice(CACHE_PREFIX.length).includes("/")
+        ).map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );

@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 No released versions yet (`package.json` remains `1.0.0`); everything below is
-unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
+unreleased work-in-progress validated with `npm test` (98 unit + 265 browser).
 
 ## [Unreleased]
 
@@ -159,11 +159,32 @@ unreleased work-in-progress validated with `npm test` (95 unit + 256 browser).
 - The DQM1/DQM2 switch is no longer a dead end for an unassigned team: the
   hint stays, and one click files the team and its stabled monsters.
 
+### Fixed — review follow-ups (review of `e0d7038`)
+
+- Deleting a game's last team now follows the surviving team's game, so the
+  game switch and team dropdown never disagree about the active roster.
+- Service-worker activation deletes only caches this installation owns (a
+  prefix scoped to the worker's path), leaving another project on the same
+  origin untouched.
+- Parameterised routes (`#pair-finder?a=&b=`, `#offspring-finder?target=`) are
+  re-applied on same-document navigation, Back, and Forward, not only at load.
+- Pairings chosen on the bare homepage now mirror into a shareable URL.
+- A shared link can select an internal-slot monster even when the recipient's
+  saved visibility filter would hide it.
+- Reload preserves compatible saved parent-search filters instead of resetting
+  them, while a shared link still selects its requested monsters.
+- `toJSON` refuses a document larger than the import limit, so an accepted save
+  can always be read back; persistence and export surface the failure.
+- Storage acquisition tolerates a `localStorage` property that throws, keeping
+  the documented usable, unsaved session.
+
 ### Verification
 
-- `npm run test:unit` — 95 passed, including `offline-assets.test.js`.
-- `npx playwright test` — 256 passed (`file://` + server dual-mode),
+- `npm run test:unit` — 98 passed, including `offline-assets.test.js`.
+- `npx playwright test` — 265 passed (`file://` + server dual-mode),
   including `views.spec.js`, `game.spec.js`, `theme.spec.js`,
-  `layout.spec.js`, `reference-tools.spec.js`, and `service-worker.spec.js`
-  (offline reload served by the worker).
+  `layout.spec.js`, `reference-tools.spec.js` (adds shareable bare-homepage
+  pairings, hash/Back/Forward parameters, a shared internal-slot pairing, and a
+  reload that keeps saved filters), and `service-worker.spec.js` (offline
+  reload served by the worker, plus activation leaving other caches alone).
 - Breeding reference (`data/`, matrix, rules, bundle `GAME_ID`) unchanged.

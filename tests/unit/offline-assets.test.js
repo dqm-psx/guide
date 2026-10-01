@@ -24,10 +24,19 @@ function toFile(entry) {
   return path.join(REPO_ROOT, entry.replace(/^\.\//, ''));
 }
 
-test('the service worker is versioned', () => {
-  const match = readWorker().match(/const CACHE_NAME = "([^"]+)"/);
-  assert.ok(match, 'sw.js must declare const CACHE_NAME');
-  assert.ok(match[1].trim().length > 0, 'CACHE_NAME must not be empty');
+test('the service worker versions and scopes its caches to this installation', () => {
+  const worker = readWorker();
+  const prefix = worker.match(/const CACHE_PREFIX = ([^;]+);/);
+  assert.ok(prefix, 'sw.js must declare const CACHE_PREFIX');
+  // Scope the prefix to the worker's own path, not a name every copy shares.
+  assert.match(prefix[1], /self\.(location|registration)/, 'CACHE_PREFIX must be scoped to this installation');
+  const version = worker.match(/const CACHE_NAME = CACHE_PREFIX \+ ([^;]+);/);
+  assert.ok(version, 'sw.js must build CACHE_NAME from CACHE_PREFIX');
+  assert.ok(version[1].trim().length > 0, 'CACHE_NAME must not be empty');
+  // CacheStorage names are origin-wide, so activation must not delete a cache
+  // another project on the same origin owns, nor a guide nested under this path.
+  assert.match(worker, /key\.startsWith\(CACHE_PREFIX\)/, 'activate must delete only caches this installation owns');
+  assert.match(worker, /!key\.slice\(CACHE_PREFIX\.length\)\.includes\("\/"\)/, 'a guide nested under this path must keep its own caches');
 });
 
 test('the precache list points at files that exist', () => {

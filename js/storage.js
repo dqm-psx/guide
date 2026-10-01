@@ -7,7 +7,17 @@
   const PROBE_KEY = 'dqm-guide-storage-probe';
 
   function create(options = {}) {
-    const storage = options.storage !== undefined ? options.storage : root.localStorage;
+    // Reading the localStorage property itself can throw (a SecurityError when
+    // the document is denied storage access), so acquire it defensively. A
+    // missing adapter leaves the session usable but unsaved, as documented.
+    let storage = options.storage;
+    if (storage === undefined) {
+      try {
+        storage = root.localStorage;
+      } catch {
+        storage = null;
+      }
+    }
     const eventTarget = options.eventTarget !== undefined ? options.eventTarget : root.window;
 
     function available() {

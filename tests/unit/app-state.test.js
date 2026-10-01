@@ -659,10 +659,12 @@ test('addTeam inherits the active game and deleteTeam falls back to a visible te
   assert.equal(state.teams.length, 3);
   assert.equal(state.activeTeamId, dqm2SpareId);
 
-  // With no dqm2 or unassigned team left, the first team overall becomes active.
+  // With no dqm2 or unassigned team left, the viewed game follows the team
+  // that becomes active so the switch and the dropdown never disagree.
   state = api.deleteTeam(state, dqm2SpareId);
   assert.equal(state.teams.length, 2);
   assert.equal(state.activeTeamId, unassignedId);
+  assert.equal(state.activeGame, 'dqm1');
 
   // Deleting the last team leaves a fresh one under the active game.
   const solo = api.defaultState();
@@ -672,6 +674,46 @@ test('addTeam inherits the active game and deleteTeam falls back to a visible te
   assert.equal(fresh.teams[0].game, 'dqm1');
   assert.equal(fresh.activeTeamId, fresh.teams[0].id);
   assert.deepEqual(plain(api.normalizeDocument(fresh)), plain(fresh));
+});
+
+test("deleting a game's last team follows the surviving team's game", () => {
+  // One assigned team per game: delete the active DQM1 team and the active team
+  // must stay visible under the game the switch and dropdown still show.
+  let state = api.defaultState();
+  const dqm1Id = state.teams[0].id;
+  state = api.setTeamGame(state, dqm1Id, 'dqm1');
+  state = api.setActiveGame(state, 'dqm2');
+  const dqm2Id = state.activeTeamId;
+  state = api.deleteTeam(state, dqm2Id);
+
+  assert.equal(state.teams.length, 1);
+  assert.equal(state.activeTeamId, dqm1Id);
+  assert.equal(state.activeGame, 'dqm1');
+  const active = api.findTeam(state, state.activeTeamId);
+  assert.ok(active.game === state.activeGame || active.game === null,
+    'the active team must be visible under the active game');
+  assert.deepEqual(plain(api.normalizeDocument(state)), plain(state));
+});
+
+test('toJSON refuses a document the reader would reject', () => {
+  const filler = 'x'.repeat(500);
+  const planFor = () => ({
+    nodes: Array.from({ length: 99 }, (_, i) => ({ id: 'n' + i, parent: null, a: filler, b: filler, c: filler })),
+  });
+  const teams = [];
+  for (let t = 0; t < 20; t += 1) {
+    const id = 't-team' + t;
+    teams.push({
+      id, name: 'Team ' + t, game: 'dqm1', entries: [], activeTargetId: 't-target' + t,
+      targets: [{ id: 't-target' + t, speciesIndex: 11, plan: planFor() }],
+    });
+  }
+  const state = { ...api.defaultState(), teams, activeTeamId: teams[0].id };
+  // Every plan stays within the per-plan bound the writer enforces, but the
+  // whole document exceeds the import limit: toJSON must refuse it rather than
+  // persist a save that parseDocument would reject on reload.
+  assert.ok(JSON.stringify(planFor()).length < api.MAX_IMPORT_LENGTH);
+  assertCode(() => api.toJSON(state), 'limit');
 });
 
 test('moving a monster to the farm keeps nickname, sex, + value, and favorite', () => {
@@ -881,6 +923,22 @@ test('the storage adapter survives a throwing storage', () => {
     removeItem() { throw new Error('blocked'); },
   };
   const adapter = DQMStorage.create({ storage: throwing, eventTarget: fakeEventTarget() });
+  assert.equal(adapter.available(), false);
+  assert.equal(adapter.write('k', 'v'), false);
+  assert.equal(adapter.read('k'), null);
+  assert.doesNotThrow(() => adapter.remove('k'));
+});
+
+test('the storage adapter survives a localStorage getter that throws', () => {
+  // A denied document can throw from the property itself, not only from its
+  // methods. create() must still return a usable, unsaved adapter.
+  const blocked = loadScripts([path.join(REPO_ROOT, 'js', 'storage.js')]);
+  Object.defineProperty(blocked, 'localStorage', {
+    configurable: true,
+    get() { const error = new Error('SecurityError'); error.name = 'SecurityError'; throw error; },
+  });
+  let adapter = null;
+  assert.doesNotThrow(() => { adapter = blocked.DQMStorage.create(); });
   assert.equal(adapter.available(), false);
   assert.equal(adapter.write('k', 'v'), false);
   assert.equal(adapter.read('k'), null);

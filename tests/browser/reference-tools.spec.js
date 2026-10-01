@@ -59,6 +59,57 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#pedigree-search')).toHaveValue('Spotted');
     });
 
+    test('pairings chosen on the bare homepage become shareable URLs (item 6)', async ({ page }) => {
+      await page.goto(url());
+      await page.selectOption('#pedigree', '1');
+      await page.selectOption('#mate', '13');
+      await expect.poll(() => page.evaluate(() => location.hash)).toBe('#pair-finder?a=1&b=13');
+      // A recipient opening that URL sees the same pair.
+      const recipient = await page.context().newPage();
+      await recipient.goto(url() + '#pair-finder?a=1&b=13');
+      await expect(recipient.locator('#pedigree')).toHaveValue('1');
+      await expect(recipient.locator('#mate')).toHaveValue('13');
+      await recipient.close();
+    });
+
+    test('hash navigation and Back/Forward re-apply shared parameters (item 6)', async ({ page }) => {
+      await page.goto(url() + '#pair-finder?a=1&b=13');
+      await expect(page.locator('#pedigree')).toHaveValue('1');
+      await page.evaluate(() => { location.hash = '#pair-finder?a=11&b=99'; });
+      await expect(page.locator('#pedigree')).toHaveValue('11');
+      await expect(page.locator('#mate')).toHaveValue('99');
+      await page.goBack();
+      await expect(page.locator('#pedigree')).toHaveValue('1');
+      await expect(page.locator('#mate')).toHaveValue('13');
+
+      await page.evaluate(() => { location.hash = '#offspring-finder?target=17'; });
+      await expect(page.locator('#offspring-finder')).toBeVisible();
+      await expect(page.locator('#target')).toHaveValue('17');
+      await page.evaluate(() => { location.hash = '#offspring-finder?target=11'; });
+      await expect(page.locator('#target')).toHaveValue('11');
+    });
+
+    test('a shared internal-slot pairing ignores the saved visibility filter (item 6)', async ({ page }) => {
+      await page.addInitScript(({ key, saved }) => {
+        localStorage.setItem(key, JSON.stringify(saved));
+      }, { key: SESSION_KEY, saved: { version: 1, showInternal: false } });
+      await page.goto(url() + '#pair-finder?a=315&b=13');
+      await expect(page.locator('#show-internal')).toBeChecked();
+      await expect(page.locator('#pedigree')).toHaveValue('315');
+      await expect(page.locator('#mate')).toHaveValue('13');
+    });
+
+    test('reload keeps saved parent-search filters while applying the saved pair (item 10)', async ({ page }) => {
+      await page.goto(url() + '#pair-finder');
+      await page.fill('#pedigree-search', 'Spotted');
+      // The pairing mirrors itself into the URL; a reload must honor that pair
+      // without wiping the compatible saved search filter.
+      await expect.poll(() => page.evaluate(() => location.hash)).toContain('a=');
+      await page.reload();
+      await expect(page.locator('#pedigree-search')).toHaveValue('Spotted');
+      await expect(page.locator('#pedigree-search')).toBeVisible();
+    });
+
     test('the name index drives the pair finder and Find parents (item 7)', async ({ page }) => {
       await page.goto(url() + '#species-index');
       await page.fill('#species-search', 'Healer Slime');
