@@ -3,9 +3,21 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 No released versions yet (`package.json` remains `1.0.0`); everything below is
-unreleased work-in-progress validated with `npm test` (98 unit + 265 browser).
+unreleased work-in-progress validated with `npm test` (98 unit + 271 browser).
 
 ## [Unreleased]
+
+### Fixed — offline upgrades and shared-link controls
+
+- Offline fallback reads only this installation's current cache, so an older
+  guide cache cannot override newly installed HTML or scripts.
+- Following an offspring link refreshes the Pin button and target summary,
+  including restoring the button after viewing an internal species.
+- Pairing links that reveal internal species also refresh the name index and
+  offspring options to match the visibility setting.
+- Adopting a valid save from another tab clears an earlier document-size warning.
+- Browser regressions cover legacy-cache upgrades, target navigation, internal
+  species lists, and recovery from an oversized document through another tab.
 
 ### Added — task views (Phase 1)
 
@@ -181,7 +193,7 @@ unreleased work-in-progress validated with `npm test` (98 unit + 265 browser).
 ### Verification
 
 - `npm run test:unit` — 98 passed, including `offline-assets.test.js`.
-- `npx playwright test` — 265 passed (`file://` + server dual-mode),
+- `npx playwright test` — 271 passed (`file://` + server dual-mode),
   including `views.spec.js`, `game.spec.js`, `theme.spec.js`,
   `layout.spec.js`, `reference-tools.spec.js` (adds shareable bare-homepage
   pairings, hash/Back/Forward parameters, a shared internal-slot pairing, and a

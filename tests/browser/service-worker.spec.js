@@ -46,6 +46,60 @@ test('a visited copy reloads and works with the network offline', async ({ page,
   }
 });
 
+test('offline updates ignore retained legacy and unrelated cache entries', async ({ page, context, request }) => {
+  // Seed the origin before the guide can register its worker. These caches
+  // therefore precede the new installation in CacheStorage's lookup order.
+  const seedUrl = new URL('cache-upgrade-seed.html', serverUrl).href;
+  await page.route(seedUrl, route => route.fulfill({
+    contentType: 'text/html',
+    body: '<html><body>Cache upgrade setup</body></html>',
+  }));
+  await page.goto(seedUrl);
+  const cacheNames = ['dqm-guide-v1.0.61-1', 'other-project-cache'];
+  await page.evaluate(async ({ names, guideUrl }) => {
+    for (const name of names) {
+      const cache = await caches.open(name);
+      await cache.put(guideUrl, new Response('Stale HTML from ' + name, {
+        headers: { 'Content-Type': 'text/html' },
+      }));
+      await cache.put(new URL('js/app-state.js', guideUrl).href, new Response('Stale script from ' + name, {
+        headers: { 'Content-Type': 'application/javascript' },
+      }));
+    }
+  }, { names: cacheNames, guideUrl: serverUrl });
+
+  const scriptUrl = new URL('js/app-state.js', serverUrl).href;
+  const currentScript = await request.get(scriptUrl);
+  expect(currentScript.ok()).toBeTruthy();
+  const expectedScript = await currentScript.text();
+  await page.goto(serverUrl);
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
+
+  await context.setOffline(true);
+  try {
+    const reloaded = await page.reload();
+    expect(reloaded.fromServiceWorker()).toBeTruthy();
+    await expect(page.locator('.version')).toContainText('v1.0.61');
+    await expect(page.locator('#coverage-summary')).toContainText('326 table slots');
+    const offlineScript = await page.evaluate(url => fetch(url).then(response => response.text()), scriptUrl);
+    expect(offlineScript).toBe(expectedScript);
+
+    // Read isolation must not rely on destroying caches this installation
+    // cannot own, including the ambiguous legacy cache from earlier releases.
+    const retained = await page.evaluate(async ({ names, guideUrl }) => {
+      const keys = await caches.keys();
+      return Promise.all(names.map(async name => ({
+        name,
+        exists: keys.includes(name),
+        html: await (await (await caches.open(name)).match(guideUrl)).text(),
+      })));
+    }, { names: cacheNames, guideUrl: serverUrl });
+    expect(retained).toEqual(cacheNames.map(name => ({ name, exists: true, html: 'Stale HTML from ' + name })));
+  } finally {
+    await context.setOffline(false);
+  }
+});
+
 test('activation deletes only caches this installation owns', async ({ page }) => {
   await page.goto(serverUrl);
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });

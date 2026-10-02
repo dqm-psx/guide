@@ -23,7 +23,7 @@
 // Pages project paths) then own separate caches and never delete each other's;
 // an unrelated project's caches are never touched at all.
 const CACHE_PREFIX = "dqm-guide:" + new URL("./", self.location.href).pathname;
-const CACHE_VERSION = "v1.0.61-1";
+const CACHE_VERSION = "v1.0.61-2";
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 
 // Every asset the page loads. Kept as a plain JSON array so
@@ -109,9 +109,13 @@ self.addEventListener("fetch", event => {
         return response;
       })
       .catch(() =>
-        caches.match(cacheKey)
-          .then(cached => cached || caches.match(INDEX_URL))
-          .then(cached => cached || Response.error())
+        // CacheStorage.match searches every origin cache in creation order.
+        // Retained legacy or unrelated caches must not override this version.
+        caches.open(CACHE_NAME).then(cache =>
+          cache.match(cacheKey)
+            .then(cached => cached || cache.match(INDEX_URL))
+            .then(cached => cached || Response.error())
+        )
       )
   );
 });

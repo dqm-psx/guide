@@ -493,7 +493,9 @@ function ensureSpeciesSelectable(index) {
   if (species && !isPlayable(species) && !$("show-internal").checked) {
     $("show-internal").checked = true;
     session.showInternal = true;
+    return true;
   }
+  return false;
 }
 function sharedSpecies(index, fallbackName, fallbackPosition) {
   if (index !== null && byId.has(index)) return byId.get(index);
@@ -507,18 +509,28 @@ function applyPairParams(params) {
   const a = paramIndex(params, "a");
   const b = paramIndex(params, "b");
   if (a === null && b === null) return false;
-  if (a !== null) ensureSpeciesSelectable(a);
-  if (b !== null) ensureSpeciesSelectable(b);
+  const revealedA = a !== null && ensureSpeciesSelectable(a);
+  const revealedB = b !== null && ensureSpeciesSelectable(b);
   const pedigree = sharedSpecies(a, "slime", 0);
   const mate = sharedSpecies(b, "dracky", 1);
   selectParentWithFallback("pedigree", pedigree.index);
   selectParentWithFallback("mate", mate.index);
+  if (sessionReady && (revealedA || revealedB)) {
+    // Other mounted views also use the shared visibility setting. Startup
+    // builds them below, but a same-document route needs to refresh them here.
+    updateTarget();
+    $("target").dispatchEvent(new Event("change", { bubbles: true }));
+    renderSpecies();
+  }
   return true;
 }
 function applyTargetParam(params) {
   const target = paramIndex(params, "target");
   if (target === null || !byId.has(target)) return false;
   selectTargetWithFallback(target);
+  // Notify the same listeners as an ordinary selection, including the planner's
+  // pin label, availability, and target summary, and the saved reference session.
+  $("target").dispatchEvent(new Event("change", { bubbles: true }));
   return true;
 }
 
@@ -554,7 +566,7 @@ sessionReady = true;
 window.addEventListener("hashchange", () => {
   if (!sessionReady) return;
   const route = parseHash();
-  if (route.id === "offspring-finder") { if (applyTargetParam(route.params)) saveSession(); return; }
+  if (route.id === "offspring-finder") { applyTargetParam(route.params); return; }
   if (applyPairParams(route.params)) renderPair();
 });
 renderRecent();

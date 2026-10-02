@@ -902,6 +902,7 @@
       currentSpriteStyle = state.spriteStyle;
       storageBlocked = false;
       storageHealthy = true;
+      documentTooLarge = false;
       hideStorageBanner();
       updateSaveStatus();
       renderAll();

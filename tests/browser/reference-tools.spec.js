@@ -99,6 +99,50 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#mate')).toHaveValue('13');
     });
 
+    test('offspring hash navigation refreshes the pin action and summary', async ({ page }) => {
+      await page.addInitScript(({ key }) => {
+        localStorage.setItem(key, JSON.stringify({ version: 1, showInternal: true }));
+      }, { key: SESSION_KEY });
+      await page.goto(url() + '#offspring-finder?target=315');
+      await expect(page.locator('#target')).toHaveValue('315');
+      await expect(page.locator('#target-pin')).toBeDisabled();
+
+      await page.evaluate(() => { location.hash = '#offspring-finder?target=11'; });
+      await expect(page.locator('#target')).toHaveValue('11');
+      await expect(page.locator('#target-pin')).toBeEnabled();
+      await expect(page.locator('#target-pin')).toHaveText('Pin Slime');
+      await expect(page.locator('#target-active-summary')).toContainText('Viewing Slime');
+      await page.click('#target-pin');
+      await expect(page.locator('#target-active-summary')).toHaveText('Active target: Slime');
+      await expect(page.locator('#target-view-plan')).toContainText('View plan for Slime');
+
+      await page.goBack();
+      await expect(page.locator('#target')).toHaveValue('315');
+      await expect(page.locator('#target-pin')).toBeDisabled();
+      await expect(page.locator('#target-pin')).toHaveText('Pin current offspring');
+      await page.goForward();
+      await expect(page.locator('#target')).toHaveValue('11');
+      await expect(page.locator('#target-pin')).toBeEnabled();
+      await expect(page.locator('#target-pin')).toHaveText('Pin Slime');
+    });
+
+    test('an internal pairing hash refreshes the name index and offspring options', async ({ page }) => {
+      await page.goto(url() + '#offspring-finder');
+      await expect(page.locator('#show-internal')).not.toBeChecked();
+      await page.fill('#target-search', 'Tattsu');
+      await expect(page.locator('#target')).toHaveValue('');
+      await expect(page.locator('#target option[value="315"]')).toHaveCount(0);
+      const fullCount = await page.evaluate(() => DATA.species.length);
+
+      await page.evaluate(() => { location.hash = '#pair-finder?a=315&b=13'; });
+      await expect(page.locator('#show-internal')).toBeChecked();
+      await expect(page.locator('#pedigree')).toHaveValue('315');
+      await expect(page.locator('#target option[value="315"]')).toHaveCount(1);
+      await expect(page.locator('#target-active-summary')).toContainText('Viewing Tattsu');
+      await page.click('.nav a[href="#species-index"]');
+      await expect(page.locator('#species-count')).toHaveText(fullCount + ' matching species');
+    });
+
     test('reload keeps saved parent-search filters while applying the saved pair (item 10)', async ({ page }) => {
       await page.goto(url() + '#pair-finder');
       await page.fill('#pedigree-search', 'Spotted');

@@ -444,6 +444,80 @@ for (const name of ['file', 'server']) {
         await pageB.close();
       });
 
+      test('cross-tab: a valid save clears an oversized-document warning and restores export', async ({ page }) => {
+        await page.goto(url() + '#team-planner');
+        await addMonster(page, 11);
+        const pageB = await page.context().newPage();
+        await pageB.goto(url() + '#team-planner');
+        const savedBefore = await readStored(page, STATE_KEY);
+
+        // Build real, validated plans within the per-plan bounds. The compact
+        // import fits the reader limit, but formatting the whole collection for
+        // storage exceeds it, leaving page A with an unsaved oversized document.
+        const fixture = await page.evaluate(() => {
+          const core = DQMPlannerCore.create(DATA);
+          const app = DQMAppState.create(DATA, core);
+          const planner = DQMRecipePlanner.create(DATA, core);
+          let plan = planner.createPlan(300, 'shrine');
+          const tried = new Set();
+          while (plan.nodes.length < 99) {
+            const node = plan.nodes.find(item => !item.children && !tried.has(item.id) && item.speciesIndex !== null);
+            if (!node) break;
+            tried.add(node.id);
+            for (const recipe of planner.suggestions(node.speciesIndex, { context: 'shrine', pageSize: 100 }).items) {
+              try {
+                plan = planner.expand(plan, node.id, recipe);
+                break;
+              } catch {
+                // Skip recipes that repeat an ancestor or exceed the depth bound.
+              }
+            }
+          }
+          for (const node of plan.nodes) plan = planner.setNote(plan, node.id, 'x'.repeat(500));
+          planner.validate(plan);
+          const state = app.defaultState();
+          state.teams = Array.from({ length: 20 }, (_, index) => ({
+            id: 't-large-' + index, name: 'Large team ' + index, game: 'dqm1', entries: [],
+            activeTargetId: 'goal', targets: [{ id: 'goal', speciesIndex: 300, plan }],
+          }));
+          state.activeTeamId = state.teams[0].id;
+          const normalized = app.normalizeDocument(state);
+          return {
+            text: JSON.stringify(normalized),
+            formattedLength: (JSON.stringify(normalized, null, 2) + '\n').length,
+            limit: app.MAX_IMPORT_LENGTH,
+          };
+        });
+        assert.ok(fixture.text.length < fixture.limit);
+        assert.ok(fixture.formattedLength > fixture.limit);
+        await page.locator('#planner-data-tools > summary').click();
+        await page.setInputFiles('#planner-backup-import', {
+          name: 'large-backup.json', mimeType: 'application/json', buffer: Buffer.from(fixture.text),
+        });
+        await expect(page.locator('#planner-import-preview')).toBeVisible();
+        await page.click('#planner-import-confirm');
+        await expect(page.locator('#app-storage-error-text')).toContainText('too large');
+        await expect(page.locator('#planner-save-status')).toContainText('too large');
+        assert.equal(await readStored(page, STATE_KEY), savedBefore);
+        await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
+
+        // Page B still has the previous saved roster. Its normal save must
+        // replace page A's oversized session and clear every stale warning.
+        await addMonster(pageB, 99);
+        await expect(page.locator('#planner-message')).toContainText('Updated from another tab');
+        await expect(page.locator('#planner-males .planner-card-name')).toHaveText(['Slime', 'Dracky']);
+        await expect(page.locator('#app-storage-error')).toBeHidden();
+        await expect(page.locator('#planner-save-status')).toContainText('Saved in this browser only');
+        const recovered = await readStored(page, STATE_KEY);
+        const [download] = await Promise.all([
+          page.waitForEvent('download'),
+          page.click('#planner-backup-export'),
+        ]);
+        assert.equal(download.suggestedFilename(), 'DQM-guide-backup-v61.json');
+        assert.deepEqual(JSON.parse(fs.readFileSync(await download.path(), 'utf8')), JSON.parse(recovered));
+        await pageB.close();
+      });
+
       test('cross-tab: a valid document clears a newer-document block', async ({ page }) => {
         const context = page.context();
         const pageB = await context.newPage();
