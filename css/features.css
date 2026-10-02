@@ -1,0 +1,140 @@
+/* Feature layer for the Task views. It loads after guide.css and before
+   dark-mode.css, so every surface here is expressed with the shared variables
+   (--ink, --muted, --paper, --white, --line, --teal, --light, --gold,
+   --radius). dark-mode.css repaints those variables and these rules follow.
+   The only literals are translucent shadows, which read on either theme.
+
+   This file touches no markup and changes no measured widths: the nav links
+   stay direct flex children of .nav nav, and the matrix sticky offsets stay
+   exactly as guide.css sets them. */
+
+/* -------------------------------------------------------------------------
+   Sticky main navigation
+
+   The bar is a layer of chrome, not another scrollable section: it pins to
+   the top of the viewport so a reader deep in a view can switch views, and
+   the shadow gives it depth over the panels that scroll underneath. The
+   z-index clears the panels and the matrix's own sticky headers (whose top
+   value is guide.css's 3). Background and bottom border are still guide.css's
+   --white and --line. */
+.nav{position:sticky;top:0;z-index:40;box-shadow:0 1px 0 var(--line),0 8px 18px rgba(23,60,67,.08)}
+
+/* A jump to contextual guidance must not bury the text under the
+   pinned bar. scroll-padding-top handles programmatic and hash scrolling on
+   the document scroller; scroll-margin-top handles the named elements
+   directly. Both use the same 76px, a little more than the bar's height so
+   the target keeps breathing room. This deliberately overrides guide.css's
+   smaller .section value. */
+html{scroll-padding-top:76px}
+.section,.view>h2,.section h2[tabindex],#breeding-conditions,#name-guide,.planner-matrix-panel{scroll-margin-top:76px}
+
+/* On paper the bar is hidden by guide.css; the sticky position is reset here
+   as well so print never inherits a viewport-pinned layer. */
+@media print{.nav{position:static;box-shadow:none}}
+
+/* -------------------------------------------------------------------------
+   Theme picker
+
+   Same shape as the sprite-style picker: a muted label beside a bordered
+   segmented group. The colours come from variables so dark-mode.css carries
+   the picker with the rest of the page. It lives in the masthead, where it
+   may wrap onto its own row. */
+.theme-picker{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex-shrink:0;align-self:center;color:var(--muted);font-size:12px}
+.theme-options{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--white)}
+.theme-options button{border:0;border-radius:0;font-size:12px;padding:7px 11px;font-weight:650;color:var(--muted);background:transparent}
+.theme-options button+button{border-left:1px solid var(--line)}
+.theme-options button[aria-pressed=true]{background:var(--teal);color:var(--white)}
+.theme-options button:focus-visible{outline-offset:-3px;position:relative;z-index:1}
+@media print{.theme-picker{display:none}}
+
+/* -------------------------------------------------------------------------
+   Pair result actions and the copy status line
+
+   Two secondary buttons under the forward result. They are smaller than the
+   page's default controls so they read as supporting actions, and wrap rather
+   than overflow. A find-parents button is hidden until a result is known, and
+   the hidden attribute must beat the display:flex rule above it. */
+.pair-result-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pair-result-actions button,#reverse-find-parents,#result-find-parents{font-size:12px;padding:5px 11px}
+#result-find-parents[hidden],#reverse-find-parents[hidden]{display:none!important}
+
+/* The copy status line only renders once it has a message. */
+.hint:empty{display:none}
+
+/* -------------------------------------------------------------------------
+   Recent pairings
+
+   A small history under the pair panel. Each pairing is one chip-shaped
+   button; the list wraps as a row of chips. The section is hidden until the
+   history has entries, and that hidden state wins over its panel display. */
+.recent-pairs{margin-top:20px}
+.recent-pairs-list{list-style:none;margin:0;padding:0 23px 8px;display:flex;flex-wrap:wrap;gap:8px}
+.recent-pair{border:1px solid var(--line);background:var(--white);border-radius:20px;padding:6px 12px;font-size:12px}
+.recent-pairs-actions{padding:6px 23px 18px}
+#recent-pairs[hidden]{display:none!important}
+
+/* -------------------------------------------------------------------------
+   Empty-filter recovery
+
+   When a filter leaves no rows, the browser swaps in this block in place of
+   the table body: a centred message, the active filters as chips, and one
+   button that clears them. The chips reuse the small pill used elsewhere. */
+.filter-empty{padding:24px 12px;color:var(--muted);text-align:center}
+.filter-empty-message{font-weight:650;color:var(--ink);margin:0 0 6px}
+.filter-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0 10px}
+.filter-chip{border:1px solid var(--line);background:var(--light);color:var(--ink);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:650}
+.filter-clear{font-size:12px;font-weight:650}
+.filter-empty-inline{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
+.filter-empty-inline .filter-chips{display:inline-flex;flex-wrap:wrap;justify-content:center;margin:0}
+
+/* -------------------------------------------------------------------------
+   Conditional recipe groups in Find parents
+
+   Rows for one recipe group sit under a full-width header row that names the
+   group and its count. The condition cell explains the + requirement in
+   quieter type than the pair names. */
+.reverse-group th{background:var(--light);color:var(--teal);font-size:11px;letter-spacing:.07em;text-transform:uppercase;text-align:left;padding:10px 23px;border-top:1px solid var(--line)}
+.reverse-condition{color:var(--muted);font-size:12px}
+
+/* -------------------------------------------------------------------------
+   Name-index row actions
+
+   The species table gains a final cell of three small buttons. The cell keeps
+   room for all three so a long species name wraps rather than crushing them. */
+.species-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:190px}
+.species-actions button{font-size:11px;padding:4px 9px;white-space:nowrap}
+
+/* -------------------------------------------------------------------------
+   Breeding matrix label reinforcement
+
+   The sticky labels ARE the point: the matrix is wider and taller than its
+   window, and once the row and column headers scroll away the 145px cells
+   become an unlabelled grid of numbers. guide.css already makes thead th
+   sticky-top and tbody th sticky-left; this file only guarantees the header
+   cells are opaque and stacked above the body cells, so scrolled content
+   cannot show through a pinned label. dark-mode.css repaints the surface.
+   The sticky offsets and every width stay exactly as guide.css sets them. */
+.planner-matrix thead th{background:var(--light);z-index:4}
+.planner-matrix tbody th{background:var(--light);z-index:3}
+.planner-matrix thead th:first-child{z-index:5}
+
+/* A cell focused by keyboard scrolls itself into the grid's own viewport. The
+   grid is a scroll container under the pinned nav, so it reserves the same
+   76px at the top that a hash jump reserves on the page. */
+.planner-grid{scroll-padding-top:76px}
+
+/* -------------------------------------------------------------------------
+   Game switch: one-click filing for an unassigned team
+
+   An unassigned team is visible under both games, so switching alone looks
+   inert. The switch and this button form one compact control group; while the
+   active team is unassigned the button files the team (and every party and
+   stabled monster on it) under the game being viewed. It is hidden once the
+   team belongs to a game. */
+.planner-game-group{display:flex;align-items:center;gap:9px;flex-wrap:wrap;flex-shrink:0;align-self:center}
+.planner-file-game{font-size:12px;font-weight:650;padding:6px 11px;white-space:nowrap;align-self:center}
+@media(max-width:800px){.planner-game-group{margin-top:12px}.planner-game-group .planner-game-switch{margin-top:0}}
+@media print{.planner-file-game{display:none}}
+.planner-data-tools{margin-top:20px}
+.planner-transfer-actions{margin-top:16px}
+.planner-data-tools .planner-backup-panel{box-shadow:none}
