@@ -16,7 +16,9 @@ test.afterAll(async () => {
 // tests/browser/offline.spec.js covers the file:// copy, where the worker
 // stays out of the way on purpose.
 test('a visited copy reloads and works with the network offline', async ({ page, context }) => {
-  await page.goto(serverUrl);
+  const online = await page.goto(serverUrl);
+  expect(online.ok()).toBeTruthy();
+  const expectedHtml = await online.text();
 
   // The worker registers on load; controller is set once it has activated and
   // claimed this page, which happens after the install cache is filled.
@@ -31,8 +33,9 @@ test('a visited copy reloads and works with the network offline', async ({ page,
     expect(reloaded).not.toBeNull();
     expect(reloaded.fromServiceWorker()).toBeTruthy();
 
-    // The shell came from the cache and the data-driven tools still populate.
-    await expect(page.locator('.version')).toContainText('v1.0.61');
+    // Preserve the actual served shell, regardless of editable header wording.
+    expect(await reloaded.text()).toBe(expectedHtml);
+    // The data-driven tools still populate after the offline reload.
     await expect(page.locator('#coverage-summary')).toContainText('326 table slots');
     await expect(page.locator('#pedigree option').first()).toBeAttached();
     await expect(page.locator('#mate option').first()).toBeAttached();
@@ -72,6 +75,9 @@ test('offline updates ignore retained legacy and unrelated cache entries', async
   const currentScript = await request.get(scriptUrl);
   expect(currentScript.ok()).toBeTruthy();
   const expectedScript = await currentScript.text();
+  const currentPage = await request.get(serverUrl);
+  expect(currentPage.ok()).toBeTruthy();
+  const expectedHtml = await currentPage.text();
   await page.goto(serverUrl);
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
 
@@ -79,7 +85,7 @@ test('offline updates ignore retained legacy and unrelated cache entries', async
   try {
     const reloaded = await page.reload();
     expect(reloaded.fromServiceWorker()).toBeTruthy();
-    await expect(page.locator('.version')).toContainText('v1.0.61');
+    expect(await reloaded.text()).toBe(expectedHtml);
     await expect(page.locator('#coverage-summary')).toContainText('326 table slots');
     const offlineScript = await page.evaluate(url => fetch(url).then(response => response.text()), scriptUrl);
     expect(offlineScript).toBe(expectedScript);
