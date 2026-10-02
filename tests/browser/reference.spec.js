@@ -52,7 +52,7 @@ for (const name of ['file', 'server']) {
       await expect(page).toHaveURL(/#pair-finder$/);
       const note = page.locator('#pair-plus-note');
       await expect(note).toBeVisible();
-      await expect(note).toHaveText('Confirmed + rule: Spotted King if either parent is +4 or higher. See conditional results in Rules & guide.');
+      await expect(note).toHaveText('Ordinary breeding: both parents below +4 yield Spotted Slime; either parent at +4 or higher yields Spotted King. Check each parent separately; do not add their + values.');
       await expect(page.locator('#result-name')).toHaveText('Spotted Slime');
       const noteStyle = await note.evaluate(el => {
         const style = getComputedStyle(el);
@@ -63,11 +63,38 @@ for (const name of ['file', 'server']) {
       expect(noteStyle.fontWeight).toBe('650');
     });
 
-    test('conditional results render the plus table and the room rules details block', async ({ page }) => {
-      await page.goto(url());
-      await expect(page.locator('#plus-rules tr')).toHaveCount(10);
-      await expect(page.locator('#flag-rules tr')).toHaveCount(26);
-      await expect(page.locator('#flag-rules-title')).toContainText('26 title-screen Breeding room rules');
+    test('Dragon Kid recipes show the exact plus boundary on both parents', async ({ page }) => {
+      await page.goto(url() + '#offspring-finder?target=45');
+      await page.selectOption('#reverse-pedigree-family', '1');
+      await page.selectOption('#reverse-mate-family', '1');
+      const baseRow = page.locator('#reverse-rows tr').filter({ has: page.locator('button[data-a="26"][data-b="26"]') });
+      await expect(baseRow.locator('.breeding-rule-marker [aria-hidden="true"]')).toHaveText(['<+4', '<+4']);
+      await expect(baseRow.locator('.breeding-rule-marker .sr-only')).toHaveText([' (below +4 for the base result)', ' (below +4 for the base result)']);
+      const boundary = 'Ordinary breeding: both parents below +4 yield Dragon; either parent at +4 or higher yields Great Dragon. Check each parent separately; do not add their + values.';
+      await expect(baseRow.locator('.breeding-rule-note')).toHaveText('Ordinary shrine: both below +4 give Dragon; either +4 or higher gives Great Dragon.');
+      // Dragon + Dragon Kid has no exact + rule: a family match must not add one.
+      const ordinaryRow = page.locator('#reverse-rows tr').filter({ has: page.locator('button[data-a="45"][data-b="26"]') });
+      await expect(ordinaryRow).toHaveCount(1);
+      await expect(ordinaryRow.locator('.breeding-rule-marker')).toHaveCount(0);
+      await expect(ordinaryRow.locator('.breeding-rule-note')).toHaveCount(0);
+
+      await baseRow.getByRole('button').click();
+      await expect(page.locator('#result-name')).toHaveText('Dragon');
+      await expect(page.locator('#pair-plus-note')).toHaveText(boundary);
+
+      await page.goto(url() + '#offspring-finder?target=50');
+      const upgradedRow = page.locator('#reverse-rows tr').filter({ has: page.locator('button[data-recipe-a="26"][data-recipe-b="26"]') });
+      await expect(upgradedRow.locator('.breeding-rule-marker [aria-hidden="true"]')).toHaveText(['+4', '+4']);
+      await expect(upgradedRow.locator('.breeding-rule-note')).toHaveText('Ordinary breeding: either parent +4 or higher; do not add their + values.');
+    });
+
+    test('Find parents explains Breeding room conditions beside the recipe', async ({ page }) => {
+      await page.goto(url() + '#offspring-finder?target=25');
+      await expect(page.locator('#reverse-rows')).toContainText('Breeding room recipes');
+      const roomRow = page.locator('#reverse-rows tr').filter({ has: page.locator('button[data-recipe-a="11"][data-recipe-b="101"]') });
+      await expect(roomRow.locator('.reverse-condition')).toContainText('Title-screen Breeding room between two saved games.');
+      await expect(roomRow.locator('.reverse-condition')).toContainText('ordinary shrine breeding does not use this override');
+      await expect(roomRow.locator('.breeding-rule-marker')).toHaveCount(0);
     });
 
     test('species index filters by name query and family', async ({ page }) => {
@@ -116,17 +143,21 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#team-planner')).toBeHidden();
       await page.click('#planner-nav-link');
       await expect(page.locator('#team-planner')).toBeVisible();
-      for (const id of ['pair-finder', 'offspring-finder', 'conditional-rules', 'species-index', 'about']) {
+      for (const id of ['pair-finder', 'offspring-finder', 'species-index', 'breeding-table']) {
         await expect(page.locator('#' + id)).toBeHidden();
       }
       await page.focus('#planner-tab-roster');
       // The arrow keys walk every tab, Targets & plans included.
-      for (const tab of ['targets', 'breeding', 'everything']) {
+      for (const tab of ['targets', 'breeding']) {
         await page.keyboard.press('ArrowRight');
         await expect(page.locator('#planner-tab-' + tab)).toHaveAttribute('aria-selected', 'true');
         await expect(page.locator('#planner-' + tab)).toBeVisible();
         await expect(page.locator('#planner-roster')).toBeHidden();
       }
+      await expect(page.locator('#planner-tab-everything')).toHaveCount(0);
+      await page.click('.nav a[href="#breeding-table"]');
+      await expect(page.locator('#breeding-table')).toBeVisible();
+      await expect(page.locator('#team-planner')).toBeHidden();
     });
   });
 }

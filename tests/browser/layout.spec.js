@@ -29,14 +29,14 @@ test.describe('sticky chrome and feature surfaces', () => {
   });
 
   test('anchor targets clear the sticky bar', async ({ page }) => {
-    await page.goto(FILE_URL + '#rules-guide');
-    await expect(page.locator('#rules-guide')).toBeVisible();
+    await page.goto(FILE_URL + '#conditional-rules');
+    await expect(page.locator('#offspring-finder')).toBeVisible();
 
     const spacing = await page.evaluate(() => ({
-      conditional: getComputedStyle(document.querySelector('#conditional-rules')).scrollMarginTop,
-      about: getComputedStyle(document.querySelector('#about')).scrollMarginTop,
+      conditional: getComputedStyle(document.querySelector('#breeding-conditions')).scrollMarginTop,
+      names: getComputedStyle(document.querySelector('#name-guide')).scrollMarginTop,
       section: getComputedStyle(document.querySelector('.section')).scrollMarginTop,
-      viewHeading: getComputedStyle(document.querySelector('.view > h2')).scrollMarginTop,
+      viewHeading: getComputedStyle(document.querySelector('#breeding-table-heading')).scrollMarginTop,
       matrixPanel: getComputedStyle(document.querySelector('.planner-matrix-panel')).scrollMarginTop,
       html: getComputedStyle(document.documentElement).scrollPaddingTop,
     }));
@@ -63,9 +63,9 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(shape.hrefs).toEqual([
       '#pair-finder',
       '#offspring-finder',
+      '#breeding-table',
       '#species-index',
       '#team-planner',
-      '#rules-guide',
     ]);
     expect(shape.gap).toBeGreaterThan(0);
   });

@@ -179,7 +179,7 @@ function recordRecent() {
 
 // ---- copy pairing (item 17) ----
 function matchedConditional(a, b) {
-  const plus = RULES.find(r => r.kind === "plus_threshold" && r.pedigree_index === a.index && r.mate_index === b.index);
+  const plus = plusRuleFor(a, b);
   const room = RULES.find(r => r.kind === "flag_gated" && r.pedigree_index === a.index && (r.mate_index === b.index || (r.mate_index == null && r.mate_family_index === b.family_id)));
   return { plus, room };
 }
@@ -282,9 +282,9 @@ function renderPair() {
   $("reverse-detail").textContent = a && b ? resultDetail(reverse) : "";
   $("pair-description").textContent = a && b ? displayName(a) + " + " + displayName(b) : "";
   $("reverse-comparison").textContent = a && b ? (forward && reverse && forward.index === reverse.index ? "Both orders have the same base result." : "Reversed: " + displayName(b) + " + " + displayName(a)) : "";
-  const plusRule = a && b ? RULES.find(r => r.kind === "plus_threshold" && r.pedigree_index === a.index && r.mate_index === b.index) : undefined;
+  const plusRule = a && b ? plusRuleFor(a, b) : undefined;
   $("pair-plus-note").hidden = !plusRule;
-  $("pair-plus-note").textContent = plusRule ? "Confirmed + rule: " + displayName(byId.get(plusRule.offspring_index)) + " if either parent is +" + plusRule.minimum_parent_plus + " or higher. See conditional results in Rules & guide." : "";
+  $("pair-plus-note").textContent = plusRule ? plusRuleCondition(plusRule, true) : "";
   const roomRule = a && b ? RULES.find(r => r.kind === "flag_gated" && r.pedigree_index === a.index && (r.mate_index === b.index || (r.mate_index == null && r.mate_family_index === b.family_id))) : undefined;
   $("pair-room-note").hidden = !roomRule;
   $("pair-room-note").textContent = roomRule ? "Title-screen Breeding room (between two saves): " + displayName(byId.get(roomRule.offspring_index)) + ". This room rule takes precedence over the base result and any + rule." : "";
@@ -329,7 +329,28 @@ function selectTargetWithFallback(index) {
     updateTarget(index);
   }
 }
-function renderMonster(s) { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon">' + escapeHTML(displayName(s)) + '</span><span class="detail">' + escapeHTML(s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
+function renderMonster(s, marker = "") { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon">' + escapeHTML(displayName(s)) + marker + '</span><span class="detail">' + escapeHTML(s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
+function plusRuleFor(a, b) {
+  return RULES.find(rule => rule.kind === "plus_threshold" && rule.pedigree_index === a.index && rule.mate_index === b.index);
+}
+function plusRuleCondition(rule, includeBase) {
+  const threshold = "+" + rule.minimum_parent_plus;
+  const upgraded = displayName(byId.get(rule.offspring_index));
+  const base = byId.get(DATA.matrix[rule.pedigree_index]?.[rule.mate_index]);
+  const low = includeBase && base ? "both parents below " + threshold + " yield " + displayName(base) + "; " : "";
+  return "Ordinary breeding: " + low + "either parent at " + threshold + " or higher yields " + upgraded + ". Check each parent separately; do not add their + values.";
+}
+function plusRuleSummary(rule, forBase) {
+  const threshold = "+" + rule.minimum_parent_plus;
+  if (!forBase) return "Ordinary breeding: either parent " + threshold + " or higher; do not add their + values.";
+  const base = byId.get(DATA.matrix[rule.pedigree_index]?.[rule.mate_index]);
+  return "Ordinary shrine: both below " + threshold + " give " + displayName(base) + "; either " + threshold + " or higher gives " + displayName(byId.get(rule.offspring_index)) + ".";
+}
+function plusRuleMarker(rule, forBase) {
+  const threshold = "+" + rule.minimum_parent_plus;
+  const label = forBase ? "below " + threshold + " for the base result" : "either parent at " + threshold + " or higher";
+  return ' <sup class="breeding-rule-marker"><span aria-hidden="true">' + escapeHTML((forBase ? "<" : "") + threshold) + '</span><span class="sr-only"> (' + escapeHTML(label) + ")</span></sup>";
+}
 function pageControls(prefix, page, length) {
   const pages = Math.max(1, Math.ceil(length / PAGE_SIZE));
   $(prefix + "-range").textContent = length ? "Showing " + (page * PAGE_SIZE + 1).toLocaleString() + "–" + Math.min((page + 1) * PAGE_SIZE, length).toLocaleString() + " of " + length.toLocaleString() : "No entries to show";
@@ -348,7 +369,8 @@ function conditionalGroups(target) {
 function conditionalRowHtml(rule, isRoom) {
   const pedigree = byId.get(rule.pedigree_index);
   if (!pedigree) return "";
-  const condition = isRoom ? rule.condition : "Either parent +" + rule.minimum_parent_plus + " or higher.";
+  const condition = isRoom ? rule.condition : plusRuleSummary(rule, false);
+  const marker = isRoom ? "" : plusRuleMarker(rule, false);
   if (isRoom && rule.mate_index == null) {
     const label = "Any " + familyName(rule.mate_family_index) + "-family monster";
     return "<tr><td>" + renderMonster(pedigree) + "</td><td>" + escapeHTML(label) +
@@ -356,12 +378,18 @@ function conditionalRowHtml(rule, isRoom) {
   }
   const mate = byId.get(rule.mate_index);
   if (!mate) return "";
-  return "<tr><td>" + renderMonster(pedigree) + "</td><td>" + renderMonster(mate) +
-    '</td><td><p class="reverse-condition">' + escapeHTML(condition) + '</p><button class="pair-action" type="button" data-recipe-a="' + pedigree.index + '" data-recipe-b="' + mate.index +
+  return "<tr><td>" + renderMonster(pedigree, marker) + "</td><td>" + renderMonster(mate, marker) +
+    '</td><td><p class="reverse-condition breeding-rule-note">' + escapeHTML(condition) + '</p><button class="pair-action" type="button" data-recipe-a="' + pedigree.index + '" data-recipe-b="' + mate.index +
     '" aria-label="Try ' + escapeHTML(displayName(pedigree)) + " as pedigree and " + escapeHTML(displayName(mate)) + ' as mate">Try pair ↗</button></td></tr>';
 }
+function baseRowHtml(a, b) {
+  const rule = plusRuleFor(a, b);
+  const marker = rule ? plusRuleMarker(rule, true) : "";
+  const condition = rule ? '<p class="reverse-condition breeding-rule-note">' + escapeHTML(plusRuleSummary(rule, true)) + "</p>" : "";
+  return "<tr><td>" + renderMonster(a, marker) + "</td><td>" + renderMonster(b, marker) + '</td><td>' + condition + '<button class="pair-action" type="button" data-a="' + a.index + '" data-b="' + b.index + '" aria-label="Try ' + escapeHTML(displayName(a) + " as pedigree and " + displayName(b) + " as mate") + '">Try pair ↗</button></td></tr>';
+}
 function renderReversePage() {
-  const baseRows = reverseMatches.slice(reversePage * PAGE_SIZE, (reversePage + 1) * PAGE_SIZE).map(([a,b]) => "<tr><td>" + renderMonster(a) + "</td><td>" + renderMonster(b) + '</td><td><button class="pair-action" type="button" data-a="' + a.index + '" data-b="' + b.index + '" aria-label="Try ' + escapeHTML(displayName(a) + " as pedigree and " + displayName(b) + " as mate") + '">Try pair ↗</button></td></tr>').join("");
+  const baseRows = reverseMatches.slice(reversePage * PAGE_SIZE, (reversePage + 1) * PAGE_SIZE).map(([a,b]) => baseRowHtml(a, b)).join("");
   const groups = [{ label: "Base table pairs", count: reverseMatches.length, body: baseRows, empty: current("target") ? filterEmptyMarkup("No base table pairs match these filters.", reverseChips(), "reverse") : "Choose a desired offspring to list parent pairs." }];
   if (reverseConditional.plus.length) groups.push({ label: "Confirmed + value recipes", count: reverseConditional.plus.length, body: reverseConditional.plus.map(r => conditionalRowHtml(r, false)).join(""), empty: "No + value recipes." });
   if (reverseConditional.room.length) groups.push({ label: "Breeding room recipes", count: reverseConditional.room.length, body: reverseConditional.room.map(r => conditionalRowHtml(r, true)).join(""), empty: "No Breeding room recipes." });
@@ -571,17 +599,7 @@ window.addEventListener("hashchange", () => {
 });
 renderRecent();
 $("coverage-summary").textContent = DATA.species.length.toLocaleString() + " table slots; " + DATA.species.filter(isPlayable).length.toLocaleString() + " standard roster entries; " + DATA.families.length + " families; " + DATA.matrix.reduce((n,row) => n + row.length, 0).toLocaleString() + " ordered base entries.";
-$("source-metadata").textContent = JSON.stringify(DATA.metadata, null, 2);
-function ruleName(rule, role) { const species = byId.get(rule[role + "_index"]); return species ? displayName(species) : rule[role + "_name"]; }
-function renderRules() {
-  const plus = RULES.filter(r => r.kind === "plus_threshold"), flagged = RULES.filter(r => r.kind === "flag_gated");
-  $("conditional-rules").hidden = !RULES.length;
-  $("plus-rules").innerHTML = plus.map(r => "<tr><td>" + spriteLabel(r.pedigree_index,ruleName(r,"pedigree")) + "</td><td>" + spriteLabel(r.mate_index,ruleName(r,"mate")) + '</td><td><span class="mon">' + spriteLabel(r.offspring_index,ruleName(r,"offspring")) + '</span></td><td>Either parent <strong>+' + r.minimum_parent_plus + " or higher</strong></td></tr>").join("");
-  $("flag-rules").innerHTML = flagged.map(r => "<tr><td>" + spriteLabel(r.pedigree_index,ruleName(r,"pedigree")) + "</td><td>" + spriteLabel(r.mate_index,ruleName(r,"mate")) + "</td><td>" + spriteLabel(r.offspring_index,ruleName(r,"offspring")) + "</td></tr>").join("");
-  $("flag-rules-title").textContent = flagged.length + " title-screen Breeding room rules (between two saves)";
-  $("source-metadata").textContent = JSON.stringify({table:DATA.metadata,runtime_rules:DATA.runtime_rules}, null, 2);
-}
-renderRules();
+$("source-metadata").textContent = JSON.stringify({ table: DATA.metadata, runtime_rules: DATA.runtime_rules }, null, 2);
 window.DQMReference = Object.freeze({
   refresh,
   selectTarget,

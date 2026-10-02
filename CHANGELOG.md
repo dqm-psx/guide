@@ -3,9 +3,23 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 No released versions yet (`package.json` remains `1.0.0`); everything below is
-unreleased work-in-progress validated with `npm test` (98 unit + 271 browser).
+unreleased work-in-progress validated with `npm test` (98 unit + 277 browser).
 
 ## [Unreleased]
+
+### Changed — breeding table and contextual guidance
+
+- Moved the all-species Everything matrix out of My game into a dedicated
+  Breeding table view, using the available page width and natural page height.
+- Kept row and column filters, + values, breeding contexts, pagination, and
+  pair details together in the new view.
+- Replaced Rules & guide with guidance beside pairing results and recipes;
+  naming notes and source verification now live in Name index.
+- Added superscript thresholds beside both parents of affected recipes, with
+  an inline explanation of the base and conditional offspring. For Dragon Kid
+  × Dragon Kid, both below +4 produce Dragon; either +4 or higher produces
+  Great Dragon. The two parent values are never added together.
+- Preserved older guide links by routing them to the relevant contextual help.
 
 ### Fixed — offline upgrades and shared-link controls
 

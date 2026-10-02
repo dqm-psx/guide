@@ -13,7 +13,7 @@
   const rosterSpecies = DATA.species.filter(s => s.index < 315 && isPlayable(s));
   const PAGE = 12;
   // The planner's tabs, in the order the arrow keys walk them.
-  const PLANNER_TABS = ["roster", "targets", "breeding", "everything"];
+  const PLANNER_TABS = ["roster", "targets", "breeding"];
   const named = index => displayName(byId.get(index));
   const copy = value => JSON.parse(JSON.stringify(value));
   const memberName = entry => entry.nickname || named(entry.speciesIndex);
@@ -209,7 +209,7 @@
     return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+safe(memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button><button type="button" data-member-move="'+safe(entry.id)+'" aria-label="Move '+safe(fullName(entry))+' to the '+otherLocation(entryLocation(entry))+'">Move to '+otherLocation(entryLocation(entry))+'</button></div></article>';
   }
   function renderRoster() {
-    malePage = femalePage = rowPage = columnPage = 0;
+    malePage = femalePage = 0;
     const team = activeTeam();
     const favoritesOnly = P("planner-roster-favorites").checked;
     for (const sex of ["male","female"]) {
@@ -688,7 +688,7 @@
       P(targetId).innerHTML = '<p class="planner-empty">'+safe(targetId === "planner-all-grid" ? "No species match these filters." : "Add at least one male and one female monster to compare their offspring.")+'</p>';
       return;
     }
-    // Synthetic entries from the Everything tab carry no location, so the tag never shows there.
+    // Synthetic entries from the breeding table carry no location, so the tag never shows there.
     const farmTag = e => entryLocation(e) === "farm" ? ' <small class="planner-farm-tag">Farm</small>' : "";
     let html = '<table class="planner-matrix"><caption class="sr-only">'+safe(caption)+'</caption><thead><tr><th scope="col" class="planner-corner">Pedigree ↓<br>Mate →</th>';
     html += columns.map(e => '<th scope="col">'+spriteMarkup(e.speciesIndex)+'<span>'+safe(memberName(e))+'</span>'+farmTag(e)+'<small>+'+e.plus+'</small></th>').join("");
@@ -727,14 +727,21 @@
     pageRange("planner-row", rowPage, rows.length, "Rows");
     pageRange("planner-column", columnPage, columns.length, "Columns");
   }
+  function movePairDetail(hostId) {
+    const host = P(hostId);
+    const panel = P("planner-pair-detail");
+    if (panel.parentElement !== host) host.append(panel);
+  }
   function showDetail(event) {
     const cell = event.target.closest("button[data-planner-pair]");
     if (!cell) return;
+    movePairDetail(cell.closest("#planner-all-grid") ? "planner-all-detail-host" : "planner-team-detail-host");
     detail = {a: Number(cell.dataset.a), b: Number(cell.dataset.b), ap: Number(cell.dataset.ap), bp: Number(cell.dataset.bp), context: cell.dataset.context};
     const forward = core.result(detail.a, detail.b, detail.ap, detail.bp, detail.context);
     const reverse = core.result(detail.b, detail.a, detail.bp, detail.ap, detail.context);
     const pairingText = "Pedigree " + named(detail.a) + " +" + detail.ap + " + Mate " + named(detail.b) + " +" + detail.bp + " → " + named(forward.resultIndex) + " (" + contextLabel(detail.context) + (forward.ruleKind === "base" ? "; base result" : "; " + ruleLabel(forward)) + ")";
     P("planner-copy-pairing").dataset.copyText = pairingText;
+    P("planner-pair-copy-status").textContent = "";
     P("planner-pair-detail-body").innerHTML = '<p class="kicker">'+safe(contextLabel(detail.context))+'</p><h3>'+safe(named(detail.a))+" +"+detail.ap+" + "+safe(named(detail.b))+" +"+detail.bp+' → '+spriteLabel(forward.resultIndex, named(forward.resultIndex))+'</h3><p>'+safe(forward.detail||forward.condition)+" Base table: "+safe(named(forward.baseIndex))+'.</p><p><strong>Reversed parents:</strong> '+spriteLabel(reverse.resultIndex, named(reverse.resultIndex))+" · "+safe(ruleLabel(reverse))+'.</p>';
     P("planner-pair-detail").hidden = false;
     P("planner-pair-detail").scrollIntoView({behavior:"smooth", block:"nearest"});
@@ -749,7 +756,6 @@
     P("planner-pair-detail").hidden = true;
     if (name === "targets") { renderTargets(); renderPlan(); }
     if (name === "breeding") renderBreeding();
-    if (name === "everything") renderEverything();
     if (focus) P("planner-tab-"+name).focus();
   }
   // Visibility, the active nav link, the page title, scroll position, and
@@ -1175,15 +1181,19 @@
   P("planner-copy-pairing").addEventListener("click", () => {
     const text = P("planner-copy-pairing").dataset.copyText || "";
     if (!text) return;
-    const done = () => notice("Copied: " + text);
+    const feedback = message => {
+      P("planner-pair-copy-status").textContent = message;
+      notice(message);
+    };
+    const done = () => feedback("Copied: " + text);
     if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-      navigator.clipboard.writeText(text).then(done, () => notice(text));
+      navigator.clipboard.writeText(text).then(done, () => feedback(text));
     } else {
       try {
         const area = document.createElement("textarea");
         area.value = text; area.setAttribute("readonly", ""); area.style.position = "fixed"; area.style.opacity = "0";
         document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); done();
-      } catch (error) { notice(text); }
+      } catch (error) { feedback(text); }
     }
   });
   P("planner-inspect-reference").addEventListener("click", () => {
@@ -1501,7 +1511,16 @@
     savePlan,
     // Called by js/router.js once this view is displayed, so the active tab
     // and its panels are current whenever the planner comes back into view.
-    viewShown: id => { if (id === "team-planner") setPlannerTab(activeTab); },
+    viewShown: id => {
+      if (id === "team-planner") {
+        movePairDetail("planner-team-detail-host");
+        setPlannerTab(activeTab);
+      } else if (id === "breeding-table") {
+        movePairDetail("planner-all-detail-host");
+        P("planner-pair-detail").hidden = true;
+        renderEverything();
+      }
+    },
     isSpeciesFavorite: index => state.favoriteSpeciesIndices.includes(index),
     toggleSpeciesFavorite: index => {
       try {

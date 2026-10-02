@@ -58,12 +58,16 @@ only background piece, and it is skipped on `file://`.
 ## Views
 
 The page is five task views behind a hash route, and the URL says which one is
-open: `#pair-finder` (the default), `#offspring-finder`, `#species-index`,
-`#team-planner` (My game), and `#rules-guide`. An empty or unknown hash opens
+open: `#pair-finder` (the default), `#offspring-finder`, `#breeding-table`,
+`#species-index`, and `#team-planner` (My game). An empty or unknown hash opens
 Find a pairing. All five views stay in the page, so a view keeps its filters,
 selections, and planner tab when you come back to it, and printing the page
-prints only the view you are looking at. The older `#conditional-rules` and
-`#about` links still open their headings inside Rules & guide.
+prints only the view you are looking at. Breeding table spans the available
+page width, with row and column filters and no fixed-height scroll box.
+Rules appear beside the relevant results: superscript + markers in Find
+parents point to each pair's threshold and alternative offspring. The older
+`#rules-guide` and `#conditional-rules` links open Find parents; `#about` opens
+the naming guidance and source information in Name index.
 
 In **My game**, the team selector and team management controls appear above
 the tabs. You can switch, create, rename, or delete a team while viewing its

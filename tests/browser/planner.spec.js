@@ -138,7 +138,86 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slimo');
     });
 
-    test('planner tabs and pagination controls work', async ({ page }) => {
+    test('breeding table opens directly at full width and preserves filters through Back', async ({ page }) => {
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      await page.goto(url() + '#breeding-table');
+      await expect(page.locator('#breeding-table')).toBeVisible();
+      await expect(page.locator('#planner-all-grid tbody tr')).toHaveCount(12);
+      await expect(page.locator('#planner-all-grid thead th')).toHaveCount(13);
+      await expect(page.locator('.view:visible')).toHaveCount(1);
+      const dimensions = await page.locator('#planner-all-grid').evaluate(grid => ({
+        width: grid.getBoundingClientRect().width,
+        maxHeight: getComputedStyle(grid).maxHeight,
+        clientHeight: grid.clientHeight,
+        scrollHeight: grid.scrollHeight,
+        boxed: Boolean(grid.closest('.panel')),
+        documentWidth: document.documentElement.scrollWidth,
+      }));
+      expect(dimensions.width).toBeGreaterThan(1500);
+      expect(dimensions.maxHeight).toBe('none');
+      expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight + 1);
+      expect(dimensions.boxed).toBe(false);
+      expect(dimensions.documentWidth).toBeLessThanOrEqual(1600);
+
+      await page.fill('#planner-row-search', 'Slime');
+      await page.fill('#planner-column-plus', '4');
+      await page.click('#planner-row-next');
+      const rowRange = await page.locator('#planner-row-range').textContent();
+      const cell = page.locator('#planner-all-grid button[data-planner-pair]').first();
+      const pedigree = await cell.getAttribute('data-a');
+      const mate = await cell.getAttribute('data-b');
+      await cell.click();
+      await expect(page.locator('#planner-all-detail-host #planner-pair-detail')).toBeVisible();
+      await page.click('#planner-copy-pairing');
+      await expect(page.locator('#planner-pair-copy-status')).toBeVisible();
+      await expect(page.locator('#planner-pair-copy-status')).toContainText('Pedigree');
+      await page.click('#planner-inspect-reference');
+      await expect(page.locator('#pair-finder')).toBeVisible();
+      await expect(page.locator('#pedigree')).toHaveValue(pedigree);
+      await expect(page.locator('#mate')).toHaveValue(mate);
+      await page.goBack();
+      await expect(page.locator('#breeding-table')).toBeVisible();
+      await expect(page.locator('#planner-row-search')).toHaveValue('Slime');
+      await expect(page.locator('#planner-column-plus')).toHaveValue('4');
+      await expect(page.locator('#planner-row-range')).toHaveText(rowRange);
+
+      // The same detail controls must still work after returning to a team grid.
+      await page.click('.nav a[href="#team-planner"]');
+      await page.click('#planner-demo');
+      await page.click('#planner-tab-breeding');
+      await page.locator('#planner-male-grid button[data-planner-pair]').first().click();
+      await expect(page.locator('#planner-team-detail-host #planner-pair-detail')).toBeVisible();
+      await expect(page.locator('#breeding-table')).toBeHidden();
+      await page.click('.nav a[href="#breeding-table"]');
+      await expect(page.locator('#planner-row-range')).toHaveText(rowRange);
+      await page.locator('#planner-all-grid button[data-planner-pair]').first().click();
+      await expect(page.locator('#planner-all-detail-host #planner-pair-detail')).toBeVisible();
+      await expect(page.locator('#team-planner')).toBeHidden();
+    });
+
+    test('breeding table scrolls columns without clipping rows on a narrow screen', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(url() + '#breeding-table');
+      const grid = page.locator('#planner-all-grid');
+      await expect(grid.locator('tbody tr')).toHaveCount(12);
+      const dimensions = await grid.evaluate(element => ({
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        clientHeight: element.clientHeight,
+        scrollHeight: element.scrollHeight,
+        maxHeight: getComputedStyle(element).maxHeight,
+        documentWidth: document.documentElement.scrollWidth,
+      }));
+      expect(dimensions.documentWidth).toBeLessThanOrEqual(390);
+      expect(dimensions.scrollWidth).toBeGreaterThan(dimensions.clientWidth);
+      expect(dimensions.maxHeight).toBe('none');
+      expect(dimensions.scrollHeight).toBeLessThanOrEqual(dimensions.clientHeight + 1);
+      await grid.locator('tbody tr').first().locator('button').last().click();
+      await expect(page.locator('#planner-all-detail-host #planner-pair-detail')).toBeVisible();
+      expect(await grid.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+    });
+
+    test('team breeding and breeding table pagination work', async ({ page }) => {
       await page.goto(url() + '#team-planner');
       await page.click('#planner-demo');
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(2);
@@ -150,8 +229,9 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#planner-male-grid tbody tr')).toHaveCount(2);
       await expect(page.locator('#planner-female-grid tbody tr')).toHaveCount(3);
 
-      await page.click('#planner-tab-everything');
-      await expect(page.locator('#planner-everything')).toBeVisible();
+      await page.click('.nav a[href="#breeding-table"]');
+      await expect(page.locator('#breeding-table')).toBeVisible();
+      await expect(page.locator('#team-planner')).toBeHidden();
       await expect(page.locator('#planner-row-range')).toHaveText('Rows 1–12 of 315');
       await expect(page.locator('#planner-row-prev')).toBeDisabled();
       await page.click('#planner-row-next');

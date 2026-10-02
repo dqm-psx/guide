@@ -33,7 +33,12 @@ for (const mode of ['file', 'server']) {
     await expect(page.locator('#target-list')).toContainText('Slime');
     await page.click('#planner-tab-breeding');
     await expect(page.locator('#planner-team-select')).toBeVisible();
-    await page.click('#planner-tab-everything');
+    await expect(page.locator('#team-planner [role="tab"]')).toHaveText(['My monsters', 'Targets & plans', 'Team breeding']);
+    await page.click('.nav a[href="#breeding-table"]');
+    await expect(page.locator('#breeding-table')).toBeVisible();
+    await expect(page.locator('#planner-team-select')).toBeHidden();
+    await page.goBack();
+    await expect(page.locator('#planner-breeding')).toBeVisible();
     await expect(page.locator('#planner-team-select')).toBeVisible();
   });
 

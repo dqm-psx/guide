@@ -6,8 +6,7 @@
    The URL hash is the source of truth. The view id is the hash up to its first
    separator, so room is left for route parameters after it. A hash that names
    no view — empty, unknown, or a future parameterised route — falls back to
-   Find a pairing, and two legacy anchors still address their headings inside
-   Rules & guide.
+   Find a pairing. Legacy guide anchors open the relevant contextual guidance.
 
    The router does not own species selections, team data, or planner tabs. A
    view reacts to being revealed by implementing window.DQMApp.viewShown(id),
@@ -24,12 +23,12 @@
   const views = [
     { id: "pair-finder", heading: "pair-heading" },
     { id: "offspring-finder", heading: "offspring-heading" },
+    { id: "breeding-table", heading: "breeding-table-heading" },
     { id: "species-index", heading: "species-heading" },
     { id: "team-planner", heading: "planner-heading" },
-    { id: "rules-guide", heading: "rules-guide-heading" },
   ];
-  // Legacy anchors still address their headings inside Rules & guide.
-  const aliases = { "conditional-rules": "rules-guide", "about": "rules-guide" };
+  const aliases = { "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "species-index" };
+  const aliasTargets = { "rules-guide": "offspring-heading", "conditional-rules": "breeding-conditions", "about": "name-guide" };
   const known = new Set(views.map(view => view.id));
   const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
   const skipLink = document.querySelector("a.skip");
@@ -57,6 +56,7 @@
     return view ? P(view.heading) : null;
   }
   function reveal(viewId) {
+    document.querySelector("main").classList.toggle("wide-view", viewId === "breeding-table");
     for (const view of views) {
       const element = P(view.id);
       if (element) element.hidden = view.id !== viewId;
@@ -79,7 +79,8 @@
   // A hash that names an element inside the revealed view keeps the browser's
   // own scroll to that element, so a legacy anchor lands on its heading.
   function fragmentIn(view) {
-    const fragment = P(parse(location.hash).id);
+    const id = parse(location.hash).id;
+    const fragment = P(aliasTargets[id] || id);
     return fragment && view.contains(fragment) ? fragment : null;
   }
   // A focus target that is not focusable by default — a result heading, say —
@@ -160,8 +161,8 @@
 
   window.DQMViews = Object.freeze({ go, current: () => activeView, viewFor, parse });
 
-  // On first load the browser owns the position: revealing the only visible
-  // view leaves it at the top of the document, and scrolling here would move
-  // the starting point for the first Tab away from the skip link.
-  render(viewFor(location.hash), { focus: false, scroll: false });
+  // Normal loads leave position and focus to the browser. Old guide fragments
+  // no longer name DOM elements, so scroll their replacement help into view
+  // explicitly without moving keyboard focus.
+  render(viewFor(location.hash), { focus: false, scroll: Boolean(aliasTargets[parse(location.hash).id]) });
 })();

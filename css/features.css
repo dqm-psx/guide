@@ -19,14 +19,14 @@
    --white and --line. */
 .nav{position:sticky;top:0;z-index:40;box-shadow:0 1px 0 var(--line),0 8px 18px rgba(23,60,67,.08)}
 
-/* A jump to #conditional-rules or #about must not bury the heading under the
+/* A jump to contextual guidance must not bury the text under the
    pinned bar. scroll-padding-top handles programmatic and hash scrolling on
    the document scroller; scroll-margin-top handles the named elements
    directly. Both use the same 76px, a little more than the bar's height so
    the target keeps breathing room. This deliberately overrides guide.css's
    smaller .section value. */
 html{scroll-padding-top:76px}
-.section,.view>h2,#conditional-rules,#about,.planner-matrix-panel{scroll-margin-top:76px}
+.section,.view>h2,.section h2[tabindex],#breeding-conditions,#name-guide,.planner-matrix-panel{scroll-margin-top:76px}
 
 /* On paper the bar is hidden by guide.css; the sticky position is reset here
    as well so print never inherits a viewport-pinned layer. */

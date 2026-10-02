@@ -19,9 +19,9 @@ test.afterAll(async () => {
 const VIEWS = [
   { hash: '#pair-finder', id: 'pair-finder' },
   { hash: '#offspring-finder', id: 'offspring-finder' },
+  { hash: '#breeding-table', id: 'breeding-table' },
   { hash: '#species-index', id: 'species-index' },
   { hash: '#team-planner', id: 'team-planner' },
-  { hash: '#rules-guide', id: 'rules-guide' },
 ];
 
 // Every view id must be one of the view wrappers, and exactly one is displayed.
@@ -51,18 +51,29 @@ for (const name of ['file', 'server']) {
       }
       await expect(page.locator('#offspring-finder')).toBeHidden();
       await expect(page.locator('#species-index')).toBeHidden();
-      await expect(page.locator('#rules-guide')).toBeHidden();
+      await expect(page.locator('#breeding-table')).toBeHidden();
       await expect(page.locator('#team-planner')).toBeHidden();
     });
 
-    test('Rules & guide keeps the conditional rules and table explanation', async ({ page }) => {
+    test('guidance appears beside the tool it explains and source details remain available', async ({ page }) => {
       await page.goto(url());
-      await expect(page.locator('#rules-guide #conditional-rules')).toHaveCount(1);
-      await expect(page.locator('#rules-guide #about')).toHaveCount(1);
-      await page.goto(url() + '#rules-guide');
-      await expect(page.locator('#rules-guide')).toBeVisible();
-      await expect(page.locator('#conditional-rules')).toBeVisible();
-      await expect(page.locator('#about')).toBeVisible();
+      await expect(page.locator('#pair-finder #pair-guidance')).toBeVisible();
+      await expect(page.locator('#pair-guidance')).toContainText(/pedigree|parent|order/i);
+      await expect(page.locator('#rules-guide, #plus-rules, #flag-rules')).toHaveCount(0);
+
+      await page.click('.nav a[href="#offspring-finder"]');
+      await expect(page.locator('#offspring-finder #breeding-conditions')).toBeVisible();
+      await expect(page.locator('#breeding-conditions')).toContainText('+');
+      await expect(page.locator('#breeding-conditions')).toContainText(/Breeding room/i);
+
+      await page.click('.nav a[href="#species-index"]');
+      await expect(page.locator('#species-index #name-guide')).toBeVisible();
+      const sources = page.locator('#species-index details').filter({ has: page.locator('#coverage-summary') });
+      await sources.locator('summary').click();
+      await expect(page.locator('#coverage-summary')).toBeVisible();
+      await expect(page.locator('#coverage-summary')).toContainText('326 table slots');
+      await expect(page.locator('#source-metadata')).toBeVisible();
+      await expect(page.locator('#source-metadata')).toContainText('v1.0.61');
     });
 
     test('each nav link opens its own view and marks itself current', async ({ page }) => {
@@ -87,9 +98,9 @@ for (const name of ['file', 'server']) {
       const expected = {
         '#pair-finder': 'Find a pairing',
         '#offspring-finder': 'Find parents',
+        '#breeding-table': 'Breeding table',
         '#species-index': 'Name index',
         '#team-planner': 'My game',
-        '#rules-guide': 'Rules & guide',
       };
       for (const view of VIEWS) {
         await page.goto(url() + view.hash);
@@ -135,11 +146,11 @@ for (const name of ['file', 'server']) {
       await expectSingleView(page, 'species-index');
       // An alias with a parameter still resolves through the same rule.
       await page.goto(url() + '#about');
-      await expectSingleView(page, 'rules-guide');
+      await expectSingleView(page, 'species-index');
       expect(await page.evaluate(() => DQMViews.parse('#team-planner?tab=roster')))
         .toEqual({ id: 'team-planner', params: '?tab=roster' });
       expect(await page.evaluate(() => DQMViews.viewFor('#about')))
-        .toBe('rules-guide');
+        .toBe('species-index');
       expect(await page.evaluate(() => DQMViews.viewFor('#nope')))
         .toBe('pair-finder');
     });
@@ -211,16 +222,31 @@ for (const name of ['file', 'server']) {
       await expectLanded('species-index');
     });
 
-    test('the legacy conditional-rules and about hashes still open Rules & guide', async ({ page }) => {
+    test('legacy guide hashes reach the matching contextual help and keep navigation focus', async ({ page }) => {
       await page.goto(url());
-      const rules = page.locator('.nav a[href="#rules-guide"]');
-      for (const hash of ['#conditional-rules', '#about']) {
-        await page.goto(url() + hash);
-        await expectSingleView(page, 'rules-guide');
-        // The active style follows the resolved view, not the typed hash.
-        await expect(rules).toHaveClass(/\bnav-link-active\b/);
-        await expect(rules).toHaveAttribute('aria-current', 'page');
-        await expect(page).toHaveTitle(/^Rules & guide · /);
+      const aliases = [
+        { hash: '#rules-guide', view: 'offspring-finder', target: 'offspring-heading', heading: 'offspring-heading', title: 'Find parents' },
+        { hash: '#conditional-rules', view: 'offspring-finder', target: 'breeding-conditions', heading: 'offspring-heading', title: 'Find parents' },
+        { hash: '#about', view: 'species-index', target: 'name-guide', heading: 'species-heading', title: 'Name index' },
+      ];
+      for (const alias of aliases) {
+        await page.evaluate(hash => { location.hash = hash; }, alias.hash);
+        await expectSingleView(page, alias.view);
+        const link = page.locator('.nav a[href="#' + alias.view + '"]');
+        await expect(link).toHaveClass(/\bnav-link-active\b/);
+        await expect(link).toHaveAttribute('aria-current', 'page');
+        await expect(page).toHaveTitle(new RegExp('^' + alias.title + ' · '));
+        await expect(page.locator('#' + alias.target)).toBeVisible();
+        await expect(page.locator('#' + alias.heading)).toBeFocused();
+      }
+      // A bookmark or reload must also land on the relocated help, even though
+      // the browser cannot natively scroll to the removed legacy element ID.
+      for (const alias of aliases) {
+        await page.goto(url() + alias.hash);
+        await page.reload();
+        await expectSingleView(page, alias.view);
+        await expect(page.locator('#' + alias.target)).toBeInViewport();
+        await expect(page.locator('#' + alias.heading)).not.toBeFocused();
       }
     });
 
@@ -296,9 +322,8 @@ for (const name of ['file', 'server']) {
       expect(sheet).toMatch(/\.view\[hidden\]\{display:none!important\}/);
     });
 
-    test('Rules & guide opens with the explanation when there are no conditional rules', async ({ page }) => {
-      // The shipped data has rules, so the empty case the renderer guards is
-      // forced here: the rule list is emptied before reference.js reads it.
+    test('contextual guidance and ordinary pair results remain usable without conditional rules', async ({ page }) => {
+      // Remove only the optional rules before the reference renderer starts.
       await page.addInitScript(() => {
         let value;
         Object.defineProperty(globalThis, 'DATA', {
@@ -311,22 +336,22 @@ for (const name of ['file', 'server']) {
         });
       });
       await page.goto(url());
-      await expect(page.locator('#plus-rules tr')).toHaveCount(0);
-      await page.click('.nav a[href="#rules-guide"]');
-      await expectSingleView(page, 'rules-guide');
-      // The conditional section is gone, the explanation is not: the view
-      // still opens with content rather than an empty page.
-      await expect(page.locator('#conditional-rules')).toBeHidden();
-      await expect(page.locator('#about')).toBeVisible();
-      await expect(page.locator('#about .note-card')).toHaveCount(4);
-      await expect(page.locator('#rules-guide-heading')).toBeFocused();
-      await expect(page).toHaveTitle(/^Rules & guide · /);
+      await expect(page.locator('#pair-guidance')).toBeVisible();
+      await page.click('.nav a[href="#offspring-finder"]');
+      await expectSingleView(page, 'offspring-finder');
+      await expect(page.locator('#breeding-conditions')).toBeVisible();
+      await expect(page.locator('#reverse-rows tr').first()).toBeVisible();
+      await expect(page.locator('#reverse-rows')).toContainText('Base table pairs');
+      await expect(page.locator('#reverse-rows')).not.toContainText('Confirmed + value recipes');
+      await expect(page.locator('#offspring-heading')).toBeFocused();
+      await page.click('.nav a[href="#species-index"]');
+      await expect(page.locator('#name-guide')).toBeVisible();
     });
 
     test('the nav separates its links with CSS, not spacer text', async ({ page }) => {
       await page.goto(url());
       const nav = page.locator('.nav nav');
-      await expect(nav).toHaveText(/^Find a pairing\s*Find parents\s*Name index\s*My game\s*Rules & guide$/);
+      await expect(nav).toHaveText(/^Find a pairing\s*Find parents\s*Breeding table\s*Name index\s*My game$/);
       // Only element children: no spacer text nodes left between the links.
       const childTypes = await page.evaluate(() => [...document.querySelector('.nav nav').childNodes].map(n => n.nodeType));
       expect(childTypes).toEqual(childTypes.map(() => 1));
@@ -395,7 +420,7 @@ test.describe('narrow screens and print', () => {
       expect(link.labelFits, link.text + ' label is clipped').toBe(true);
     }
     // A wrapped link still navigates, and the active style follows it.
-    await links.nth(3).click();
+    await page.locator('.nav a[href="#team-planner"]').click();
     await expectSingleView(page, 'team-planner');
     await expect(page.locator('.nav a[href="#team-planner"]')).toHaveClass(/\bnav-link-active\b/);
   });
@@ -434,19 +459,19 @@ test.describe('narrow screens and print', () => {
     }
     // The nav is not part of the printed page.
     expect(await page.evaluate(() => getComputedStyle(document.querySelector('.nav')).display)).toBe('none');
-    // Rules & guide has no visible section heading on screen, so print
-    // restores it and the page names the view it shows.
-    await page.goto(FILE_URL + '#rules-guide');
-    await page.emulateMedia({ media: 'print' });
-    const heading = () => page.evaluate(() => {
-      const style = getComputedStyle(document.getElementById('rules-guide-heading'));
-      return { position: style.position, width: parseFloat(style.width) };
-    });
-    expect((await heading()).position).toBe('static');
-    expect((await heading()).width).toBeGreaterThan(100);
+    // The full-width matrix has a normal visible heading on screen and in
+    // print, and printing it still excludes the other mounted views.
+    await page.goto(FILE_URL + '#breeding-table');
     await page.emulateMedia({ media: 'screen' });
-    expect((await heading()).position).toBe('absolute');
-    expect((await heading()).width).toBeLessThanOrEqual(1);
+    const heading = page.locator('#breeding-table-heading');
+    await expect(heading).toBeVisible();
+    await expect(heading).toContainText('Breeding table');
+    expect((await heading.boundingBox()).width).toBeGreaterThan(100);
+    await page.emulateMedia({ media: 'print' });
+    await expectSingleView(page, 'breeding-table');
+    await expect(heading).toBeVisible();
+    await expect(page.locator('#planner-all-grid tbody tr').first()).toBeVisible();
+    expect((await heading.boundingBox()).width).toBeGreaterThan(100);
   });
 
   test('tabbing never lands inside a hidden view', async ({ page }) => {

@@ -10,7 +10,7 @@
 
    A hidden view is display:none, not merely out of the way: no part of it can
    take space, catch a click, or reach the printed page. The router owns the
-   hidden attribute on the five view wrappers and nothing else may undo it, so
+   hidden attribute on the view wrappers and nothing else may undo it, so
    the !important stays. */
 .view[hidden]{display:none!important}
 
@@ -21,18 +21,13 @@
    link names the visible view and clears both everywhere else. */
 .nav a.nav-link-active{color:var(--teal);box-shadow:inset 0 -3px var(--teal);text-decoration:none}
 
-/* Five labels on a phone: the nav wraps onto as many rows as it needs instead
+/* View labels on a phone: the nav wraps onto as many rows as it needs instead
    of running off the side, and a label may break across lines rather than push
    the page wider. Wrapped rows get tighter padding so the links do not eat the
    view's screen. */
 .nav nav{flex-wrap:wrap;row-gap:0}
 @media(max-width:430px){.nav a{padding:11px 0}}
 
-/* Print the active view only. The hidden views are already display:none, and
-   the rule is repeated here so the printed page states the rule it follows.
-   Every view but Rules & guide prints a visible section heading; that view's
-   heading is screen-reader only, so it is restored for paper. */
-@media print{.view[hidden]{display:none!important}#rules-guide-heading{position:static;width:auto;height:auto;margin:0 0 14px;padding:0;overflow:visible;clip:auto;white-space:normal}}
 .planner-matrix .planner-nonmatch .planner-cell{opacity:.28}
 .planner{min-width:0}
 .planner h3{font-size:17px;line-height:1.4;margin:0}
@@ -96,6 +91,17 @@
 .planner-matrix-panel>.planner-panel-heading{padding-bottom:17px;border-bottom:1px solid var(--line)}
 .planner-grid{max-width:100%;overflow:auto;max-height:640px;overscroll-behavior-x:contain;scrollbar-color:#9fb8ad #f0f3ec}
 .planner-grid:focus-visible{outline-offset:-3px}
+/* The standalone table uses the page width and page scrolling. Only its
+   horizontal axis scrolls separately when columns exceed a narrow viewport. */
+main.wrap.wide-view{max-width:none}
+.breeding-table-view .planner-controls-panel{padding:0}
+.breeding-table-view .planner-axis-controls fieldset{padding:0;border:0;border-radius:0}
+.breeding-table-view .planner-axis-controls legend{padding:0}
+.breeding-table-view .planner-matrix-panel{border:0;border-radius:0;box-shadow:none}
+.breeding-table-view .planner-grid{max-height:none}
+.breeding-table-view .planner-all-pagination{padding-left:0;padding-right:0;background:transparent}
+.breeding-rule-marker{margin-left:.2em;vertical-align:super;font-size:.72em;font-weight:700;line-height:0;color:var(--teal);white-space:nowrap}
+.breeding-rule-note{max-width:220px;line-height:1.5}
 .planner-matrix{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12px}
 .planner-matrix th,.planner-matrix td{padding:0;width:145px;min-width:145px;max-width:145px;border:0;border-right:1px solid #e0e7df;border-bottom:1px solid #e0e7df;vertical-align:middle;white-space:normal;overflow-wrap:anywhere;line-height:1.45;text-align:left}
 .planner-matrix tr>:last-child{border-right:0}
@@ -132,6 +138,7 @@
 .planner-pair-detail h3{font:500 26px/1.25 Georgia,serif;margin:0 0 8px}
 .planner-pair-detail p{font-size:13px;color:var(--muted);margin:5px 0 0}
 .planner-pair-detail button{flex-shrink:0;font-size:13px}
+#planner-pair-copy-status:empty{display:none}
 @media(max-width:950px){.planner-entry-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}.planner-entry-search,.planner-entry-family,.planner-entry-species{grid-column:span 1}.planner-entry-nickname{grid-column:span 1}.planner-entry-actions{grid-column:1/-1}.planner-card{align-items:flex-start;flex-direction:column;gap:10px}.planner-card-actions{justify-content:flex-start}}
 @media(max-width:650px){.planner-entry-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:8px 18px 19px}.planner-entry-species,.planner-entry-nickname{grid-column:1/-1}.planner-panel-heading{padding:19px 18px 0}.planner-entry-form .planner-add-button{width:100%}.planner-roster-columns,.planner-controls,.planner-axis-controls{grid-template-columns:1fr}.planner-card{flex-direction:row}.planner-card-actions{flex-direction:column}.planner-roster-columns{gap:16px}.planner-controls-panel{padding:17px 18px}.planner-controls{gap:12px}.planner-axis-controls{gap:17px}.planner-axis-controls fieldset{padding:10px 13px 15px}.planner-tabs{gap:3px}.planner-tabs button{font-size:12px;padding:9px 12px}.planner-pagination{flex-wrap:wrap;padding:14px 16px;gap:10px}.planner-all-pagination{gap:18px}.planner-all-pagination>div{width:100%}.planner-page-actions{margin-left:auto}.planner-all-pagination .planner-page-actions{margin-left:0}.planner-matrix th,.planner-matrix td{width:132px;min-width:132px;max-width:132px}.planner-pair-detail{flex-direction:column;align-items:flex-start;gap:16px;padding:20px}.planner-import label{padding:9px 12px}.planner-actions>button{padding:9px 12px}}
 @media print{.planner-tabs,.planner-entry,.planner-team-tools,.planner-controls-panel,.planner-page-actions,.planner-pair-detail>button,.planner-card-actions{display:none}.planner-grid{max-height:none}.planner-matrix th,.planner-matrix thead th,.planner-matrix tbody th{position:static}.planner-matrix-panel{break-inside:auto}.planner-matrix button.planner-cell{font-size:9pt}.planner-pair-detail{break-inside:avoid}}
