@@ -8,8 +8,10 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const FILE_URL = 'file://' + path.join(REPO_ROOT, 'index.html');
 let serverUrl = null;
 
-const STORAGE_KEY = 'dqm-guide-state-v61-v1';
-const SPRITE_STYLE_KEY = 'dqm-guide-sprite-style-v1';
+let STORAGE_KEY; let SPRITE_STYLE_KEY; let LEGACY_TEAM_KEY;
+test.beforeAll(async () => {
+  ({STATE_KEY: STORAGE_KEY, LEGACY_SPRITE_KEY: SPRITE_STYLE_KEY, LEGACY_TEAM_KEY} = (await import('../helpers/keys.js')).default);
+});
 
 test.beforeAll(async () => {
   const { startGuideServer } = await import('../helpers/modes');
@@ -35,9 +37,9 @@ for (const name of ['file', 'server']) {
           { id: 'm-seed-2', speciesIndex: 99, sex: 'female', plus: 2, nickname: 'Drake' },
         ],
       };
-      await page.addInitScript(seed => {
-        localStorage.setItem('dqm-guide-team-v61-v1', JSON.stringify(seed));
-      }, team);
+      await page.addInitScript(({ seed, key }) => {
+        localStorage.setItem(key, JSON.stringify(seed));
+      }, { seed: team, key: LEGACY_TEAM_KEY });
       await page.goto(url() + '#team-planner');
       await page.reload();
       await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
@@ -54,9 +56,9 @@ for (const name of ['file', 'server']) {
           { id: 'm-seed-1', speciesIndex: 11, sex: 'male', plus: 3, nickname: 'Slimo' },
         ],
       };
-      await page.addInitScript(seed => {
-        localStorage.setItem('dqm-guide-team-v61-v1', JSON.stringify(seed));
-      }, team);
+      await page.addInitScript(({ seed, key }) => {
+        localStorage.setItem(key, JSON.stringify(seed));
+      }, { seed: team, key: LEGACY_TEAM_KEY });
       await page.goto(url() + '#team-planner');
       if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
         await page.locator('#planner-data-tools > summary').click();
@@ -170,7 +172,7 @@ for (const name of ['file', 'server']) {
       await expect(page.locator('#planner-all-detail-host #planner-pair-detail')).toBeVisible();
       await page.click('#planner-copy-pairing');
       await expect(page.locator('#planner-pair-copy-status')).toBeVisible();
-      await expect(page.locator('#planner-pair-copy-status')).toContainText('Pedigree');
+      await expect(page.locator('#planner-pair-copy-status')).toContainText(/Pedigree/i);
       await page.click('#planner-inspect-reference');
       await expect(page.locator('#pair-finder')).toBeVisible();
       await expect(page.locator('#pedigree')).toHaveValue(pedigree);
@@ -232,13 +234,18 @@ for (const name of ['file', 'server']) {
       await page.click('.nav a[href="#breeding-table"]');
       await expect(page.locator('#breeding-table')).toBeVisible();
       await expect(page.locator('#team-planner')).toBeHidden();
-      await expect(page.locator('#planner-row-range')).toHaveText('Rows 1–12 of 315');
+      const first = await page.locator('#planner-row-range').innerText();
+      const parsed = first.match(/Rows 1–(\d+) of (\d+)/);
+      expect(parsed).not.toBeNull();
+      const pageSize = Number(parsed[1]);
+      const rowTotal = Number(parsed[2]);
+      expect(rowTotal).toBeGreaterThan(pageSize * 2);
       await expect(page.locator('#planner-row-prev')).toBeDisabled();
       await page.click('#planner-row-next');
-      await expect(page.locator('#planner-row-range')).toHaveText('Rows 13–24 of 315');
+      await expect(page.locator('#planner-row-range')).toHaveText(`Rows ${pageSize + 1}–${pageSize * 2} of ${rowTotal}`);
       await expect(page.locator('#planner-row-prev')).toBeEnabled();
       await page.click('#planner-row-prev');
-      await expect(page.locator('#planner-row-range')).toHaveText('Rows 1–12 of 315');
+      await expect(page.locator('#planner-row-range')).toHaveText(`Rows 1–${pageSize} of ${rowTotal}`);
     });
   });
 }

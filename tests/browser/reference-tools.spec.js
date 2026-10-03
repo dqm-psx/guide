@@ -6,8 +6,11 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const FILE_URL = 'file://' + path.join(REPO_ROOT, 'index.html');
 let serverUrl = null;
 
-const STATE_KEY = 'dqm-guide-state-v61-v1';
-const SESSION_KEY = 'dqm-guide-reference-session-v1';
+let STATE_KEY; let SESSION_KEY;
+test.beforeAll(async () => {
+  ({STATE_KEY, SESSION_KEY} = (await import('../helpers/keys.js')).default);
+});
+
 
 test.beforeAll(async () => {
   const { startGuideServer } = await import('../helpers/modes');

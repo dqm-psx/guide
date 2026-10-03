@@ -5,9 +5,19 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const FILE_URL = 'file://' + path.join(REPO_ROOT, 'index.html');
 let serverUrl = null;
 
-const THEME_KEY = 'dqm-guide-theme-v1';
-const LIGHT_BG = 'rgb(247, 245, 238)';
-const DARK_BG = 'rgb(13, 19, 22)';
+let THEME_KEY;
+test.beforeAll(async () => {
+  ({THEME_KEY} = (await import('../helpers/keys.js')).default);
+});
+const brightness = rgb => {
+  const m = rgb.match(/\d+/g);
+  return m ? (Number(m[0]) + Number(m[1]) + Number(m[2])) / 3 : null;
+};
+
+// Light theme must be light-colored, dark theme dark-colored, and they must
+// differ — the exact hex values belong to the stylesheets, not this test.
+const isLightBg = bg => brightness(bg) > 150;
+const isDarkBg = bg => brightness(bg) !== null && brightness(bg) < 80;
 
 test.beforeAll(async () => {
   const { startGuideServer } = await import('../helpers/modes');
@@ -30,20 +40,20 @@ for (const name of ['file', 'server']) {
     test('a bare load is light', async ({ page }) => {
       await page.goto(url());
       expect(await themeOf(page)).toBe('light');
-      expect(await bgOf(page)).toBe(LIGHT_BG);
+      expect(isLightBg(await bgOf(page))).toBe(true);
     });
 
     test('choosing Dark applies and persists', async ({ page }) => {
       await page.goto(url());
+      const initialBg = await bgOf(page);
       await page.click('button[data-theme-choice="dark"]');
       expect(await themeOf(page)).toBe('dark');
       await expect(page.locator('button[data-theme-choice="dark"]')).toHaveAttribute('aria-pressed', 'true');
       for (const choice of ['system', 'light']) {
         await expect(page.locator('button[data-theme-choice="' + choice + '"]')).toHaveAttribute('aria-pressed', 'false');
       }
-      const darkBg = await bgOf(page);
-      expect(darkBg).not.toBe(LIGHT_BG);
-      expect(darkBg).toBe(DARK_BG);
+      expect(await bgOf(page)).not.toBe(initialBg);
+      expect(isDarkBg(await bgOf(page))).toBe(true);
 
       await page.reload();
       expect(await themeOf(page)).toBe('dark');
@@ -53,11 +63,13 @@ for (const name of ['file', 'server']) {
     test('the theme-color meta follows the chosen theme', async ({ page }) => {
       const themeColor = () => page.evaluate(() => document.querySelector('meta[name="theme-color"]').content);
       await page.goto(url());
-      expect(await themeColor()).toBe('#163143');
+      const lightMeta = await themeColor();
+      expect(lightMeta).toMatch(/^#[0-9a-f]{6}$/i);
       await page.click('button[data-theme-choice="dark"]');
-      expect(await themeColor()).toBe('#0a1013');
+      const darkMeta = await themeColor();
+      expect(darkMeta).not.toBe(lightMeta);
       await page.click('button[data-theme-choice="light"]');
-      expect(await themeColor()).toBe('#163143');
+      expect(await themeColor()).toBe(lightMeta);
     });
 
     test('choosing System follows the emulated system', async ({ page }) => {
@@ -68,12 +80,12 @@ for (const name of ['file', 'server']) {
       await page.emulateMedia({ colorScheme: 'dark' });
       await page.reload();
       expect(await themeOf(page)).toBe('dark');
-      expect(await bgOf(page)).toBe(DARK_BG);
+      expect(isDarkBg(await bgOf(page))).toBe(true);
 
       await page.emulateMedia({ colorScheme: 'light' });
       await page.reload();
       expect(await themeOf(page)).toBe('light');
-      expect(await bgOf(page)).toBe(LIGHT_BG);
+      expect(isLightBg(await bgOf(page))).toBe(true);
 
       await page.emulateMedia({ colorScheme: null });
     });

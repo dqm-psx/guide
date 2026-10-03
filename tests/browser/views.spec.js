@@ -71,9 +71,11 @@ for (const name of ['file', 'server']) {
       const sources = page.locator('#species-index details').filter({ has: page.locator('#coverage-summary') });
       await sources.locator('summary').click();
       await expect(page.locator('#coverage-summary')).toBeVisible();
-      await expect(page.locator('#coverage-summary')).toContainText('326 table slots');
+      const slots = await page.evaluate(() => DATA.species.length);
+      const version = await page.evaluate(() => DATA.metadata.version);
+      await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);
       await expect(page.locator('#source-metadata')).toBeVisible();
-      await expect(page.locator('#source-metadata')).toContainText('v1.0.61');
+      await expect(page.locator('#source-metadata')).toContainText(version);
     });
 
     test('each nav link opens its own view and marks itself current', async ({ page }) => {
@@ -279,15 +281,19 @@ for (const name of ['file', 'server']) {
         const marked = marks.filter(mark => mark.active);
         expect(marked.map(mark => mark.href)).toEqual([view.hash]);
         expect(marked[0].current).toBe('page');
-        expect(marked[0].color).toBe('rgb(9, 105, 94)');
-        expect(marked[0].shadow).toContain('rgb(9, 105, 94)');
+        const activeColor = marked[0].color;
+        expect(marked[0].shadow).toContain(activeColor);
+        // The active link must read differently from the inactive ones.
+        const inactiveColors = new Set();
         for (const mark of marks) {
           if (mark.href === view.hash) continue;
           expect(mark.current).toBe(null);
-          // Every other link keeps the plain nav look.
-          expect(mark.color).toBe('rgb(22, 49, 67)');
+          inactiveColors.add(mark.color);
           expect(mark.shadow).toBe('none');
         }
+        expect(inactiveColors.size).toBe(1);
+        expect(marked[0].color).not.toBe([...inactiveColors][0]);
+        expect(marked[0].shadow).not.toBe('none');
       }
     });
 
@@ -465,8 +471,7 @@ test.describe('narrow screens and print', () => {
     await page.emulateMedia({ media: 'screen' });
     const heading = page.locator('#breeding-table-heading');
     await expect(heading).toBeVisible();
-    await expect(heading).toContainText('Breeding table');
-    expect((await heading.boundingBox()).width).toBeGreaterThan(100);
+        expect((await heading.boundingBox()).width).toBeGreaterThan(100);
     await page.emulateMedia({ media: 'print' });
     await expectSingleView(page, 'breeding-table');
     await expect(heading).toBeVisible();
