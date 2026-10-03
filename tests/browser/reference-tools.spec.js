@@ -11,7 +11,6 @@ test.beforeAll(async () => {
   ({STATE_KEY, SESSION_KEY} = (await import('../helpers/keys.js')).default);
 });
 
-
 test.beforeAll(async () => {
   const { startGuideServer } = await import('../helpers/modes');
   serverUrl = await startGuideServer();

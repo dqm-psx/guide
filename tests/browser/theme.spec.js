@@ -16,7 +16,7 @@ const brightness = rgb => {
 
 // Light theme must be light-colored, dark theme dark-colored, and they must
 // differ — the exact hex values belong to the stylesheets, not this test.
-const isLightBg = bg => brightness(bg) > 150;
+const isLightBg = bg => brightness(bg) !== null && brightness(bg) > 150;
 const isDarkBg = bg => brightness(bg) !== null && brightness(bg) < 80;
 
 test.beforeAll(async () => {
@@ -68,6 +68,10 @@ for (const name of ['file', 'server']) {
       await page.click('button[data-theme-choice="dark"]');
       const darkMeta = await themeColor();
       expect(darkMeta).not.toBe(lightMeta);
+      // The dark theme's chrome color must itself read as dark.
+      const hexChannels = s => [1, 3, 5].map(i => parseInt(s.slice(i, i + 2), 16));
+      const [r, g, b] = hexChannels(darkMeta);
+      expect((r + g + b) / 3).toBeLessThan(80);
       await page.click('button[data-theme-choice="light"]');
       expect(await themeColor()).toBe(lightMeta);
     });

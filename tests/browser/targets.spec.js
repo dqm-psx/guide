@@ -184,9 +184,9 @@ for (const name of ['file', 'server']) {
       await page.goto(url() + '#offspring-finder');
       await page.selectOption('#target', '11');
       await page.click('#target-pin');
-      await expect(page.locator('#target-pin')).toHaveText(/Pin/);
+      await expect(page.locator('#target-pin')).toHaveText(/^Pin .+/);
       await page.selectOption('#target', '99');
-      await expect(page.locator('#target-pin')).toHaveText(/Pin/);
+      await expect(page.locator('#target-pin')).toHaveText(/^Pin .+/);
       await expect(page.locator('#target-active-summary')).toContainText('Slime');
     });
 

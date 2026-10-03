@@ -43,8 +43,8 @@ test('a visited copy reloads and works with the network offline', async ({ page,
 
     // A hash route resolves offline too, because only the shell is fetched.
     await page.goto(serverUrl + '#species-index');
-      await expect(page.locator('#species-index')).toBeVisible();
-      await expect(page.locator('#species-rows tr').first()).toBeAttached();
+    await expect(page.locator('#species-index')).toBeVisible();
+    await expect(page.locator('#species-rows tr').first()).toBeAttached();
   } finally {
     await context.setOffline(false);
   }
@@ -59,7 +59,10 @@ test('offline updates ignore retained legacy and unrelated cache entries', async
     body: '<html><body>Cache upgrade setup</body></html>',
   }));
   await page.goto(seedUrl);
-  const cacheNames = ['legacy-guide-cache', 'other-project-cache'];
+  // The first name deliberately resembles a past install of this same guide
+  // but must NOT match the worker's current prefix ('dqm-guide:/guide/');
+  // it should only be deleted if someone broadens the match to 'dqm-guide'.
+  const cacheNames = ['dqm-guide:v1.0.60', 'other-project-cache'];
   await page.evaluate(async ({ names, guideUrl }) => {
     for (const name of names) {
       const cache = await caches.open(name);

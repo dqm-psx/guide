@@ -61,7 +61,7 @@ for (const name of ['file', 'server']) {
       });
       expect(noteStyle.color).not.toBe('rgb(0, 0, 0)');
       expect(parseFloat(noteStyle.marginTop)).toBeGreaterThan(0);
-      expect(Number(noteStyle.fontWeight)).toBeGreaterThanOrEqual(600);
+      expect(Number(noteStyle.fontWeight) >= 600 || noteStyle.fontWeight === 'bold').toBe(true);
     });
 
     test('Dragon Kid recipes show the exact plus boundary on both parents', async ({ page }) => {

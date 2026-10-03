@@ -55,7 +55,7 @@ for (const name of ['file', 'server']) {
       expect(applied.bodyBackground).not.toBe('rgba(0, 0, 0, 0)');
       expect(applied.bodyBackground).not.toBe('rgb(255, 255, 255)');
       expect(applied.wrapMaxWidth).not.toBe('none');
-      expect(parseFloat(applied.wrapMaxWidth)).toBeGreaterThan(0);
+      expect(parseFloat(applied.wrapMaxWidth)).toBeGreaterThanOrEqual(600);
     });
   });
 }

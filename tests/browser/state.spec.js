@@ -342,6 +342,9 @@ for (const name of ['file', 'server']) {
       await page.goto(url() + '#team-planner');
       await expect(page.locator('#app-storage-error')).toBeVisible();
       await expect(page.locator('#app-storage-error-text')).not.toHaveText('');
+      // Unavailable storage offers no in-banner rescue buttons.
+      await expect(page.locator('#app-storage-error-download')).toBeHidden();
+      await expect(page.locator('#app-storage-error-fresh')).toBeHidden();
 
       // The page is still usable.
       await addMonster(page, 11);
@@ -499,6 +502,9 @@ for (const name of ['file', 'server']) {
         await page.click('#planner-import-confirm');
         await expect(page.locator('#app-storage-error-text')).not.toHaveText('');
         await expect(page.locator('#planner-save-status')).not.toHaveText('');
+        // Too-large offers no in-banner rescue buttons.
+        await expect(page.locator('#app-storage-error-download')).toBeHidden();
+        await expect(page.locator('#app-storage-error-fresh')).toBeHidden();
         assert.equal(await readStored(page, STATE_KEY), savedBefore);
         await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
 
@@ -508,7 +514,7 @@ for (const name of ['file', 'server']) {
         await expect(page.locator('#planner-message')).not.toHaveText('');
         await expect(page.locator('#planner-males .planner-card-name')).toHaveText(['Slime', 'Dracky']);
         await expect(page.locator('#app-storage-error')).toBeHidden();
-        await expect(page.locator('#planner-save-status')).not.toHaveText('');
+        await expect(page.locator('#planner-save-status')).toContainText(/[Ss]aved/);
         const recovered = await readStored(page, STATE_KEY);
         const [download] = await Promise.all([
           page.waitForEvent('download'),

@@ -319,7 +319,7 @@ for (const name of ['file', 'server']) {
       const drake2 = nodeCard(page, 'Drake Slime');
       await drake2.locator('button[data-node-replace]').click();
       await expect(page.locator('#plan-replace-warning')).toBeVisible();
-      await expect(page.locator('#plan-replace-warning-text')).not.toHaveText('');
+      await expect(page.locator('#plan-replace-warning-text')).toContainText(/remove|depend/i);
       await page.click('#plan-replace-cancel');
       await expect(page.locator('#plan-replace-warning')).toBeHidden();
       await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
