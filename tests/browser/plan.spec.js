@@ -562,13 +562,7 @@ test.describe('served', () => {
     await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > textarea[data-node-note]')).toHaveValue('keep me');
   });
 
-  test('full backups with broken plans are rejected and leave the document intact', async ({ page }) => {
-    await page.goto(url() + '#team-planner');
-    await page.selectOption('#planner-add-species', '11');
-    await page.click('#planner-add-button');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    const before = await readStored(page, STORAGE_KEY);
-
+  test.describe('broken-plan backup imports', () => {
     const base = () => ({
       version: 1, game: 'dqm1-2-ps1-v61', spriteStyle: 'portrait',
       favoriteSpeciesIndices: [], activeTeamId: 't-1',
@@ -632,18 +626,30 @@ test.describe('served', () => {
       }],
     };
 
-    const tmp = path.join(os.tmpdir(), 'dqm-guide-bad-plan-test.json');
-    if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
-      await page.locator('#planner-data-tools > summary').click();
-    }
+    // Each case needs a fresh page so an earlier rejection cannot satisfy
+    // its assertions while this file is still being read.
     for (const [name, bad] of [['duplicate-ids', duplicateIds], ['flagged', flaggedAndBroken], ['wrong-species', wrongSpecies]]) {
-      fs.writeFileSync(tmp, JSON.stringify(bad));
-      await page.setInputFiles('#planner-backup-import', tmp);
+      test(`${name} is rejected and leaves the document intact`, async ({ page }) => {
+        await page.goto(url() + '#team-planner');
+        await page.selectOption('#planner-add-species', '11');
+        await page.click('#planner-add-button');
+        await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+        const before = await readStored(page, STORAGE_KEY);
 
-      await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
-      await expect(page.locator('#planner-import-preview')).toBeHidden();
-      assert.equal(await readStored(page, STORAGE_KEY), before, 'after ' + name);
-      await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+        await page.locator('#planner-data-tools > summary').click();
+        await expect(page.locator('#planner-backup-message')).toHaveText('');
+        await page.setInputFiles('#planner-backup-import', {
+          name: `${name}.json`,
+          mimeType: 'application/json',
+          buffer: Buffer.from(JSON.stringify(bad)),
+        });
+
+        await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
+        await expect(page.locator('#planner-backup-import')).toHaveValue('');
+        await expect(page.locator('#planner-import-preview')).toBeHidden();
+        assert.equal(await readStored(page, STORAGE_KEY), before);
+        await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+      });
     }
   });
 

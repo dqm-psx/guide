@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 No released versions yet (`package.json` remains `1.0.0`); everything below is
-unreleased work-in-progress validated with `npm test` (98 unit + 149 browser).
+unreleased work-in-progress validated with `npm test` (98 unit + 151 browser).
 
 ## [Unreleased]
 
@@ -19,8 +19,10 @@ unreleased work-in-progress validated with `npm test` (98 unit + 149 browser).
   about six minutes locally and seven in CI. A new `file-mode.spec.js` smoke
   suite (5 tests) pins the `file://` contract instead: bare load, no external
   requests, stylesheet applied, theme persistence, planner flows.
-- Merged the three broken-backup import rejection tests in `plan.spec.js`
-  into one test that tries each bad document in sequence.
+- The three broken-backup import rejection tests in `plan.spec.js` share
+  fixtures but each uses a fresh page, so a previous error cannot satisfy
+  the next case. The malformed-backup check also waits for an import error
+  instead of accepting the earlier export message.
 - The shared test server is now reference counted, so parallel files can
   start and stop it without racing.
 

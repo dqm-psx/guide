@@ -226,7 +226,10 @@ test.describe('served', () => {
       await page.locator('#planner-data-tools > summary').click();
     }
     await page.setInputFiles('#planner-backup-import', tmp);
-    await expect(page.locator('#planner-backup-message')).not.toHaveText('');
+    // The earlier export left a message; wait for this import's rejection.
+    await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
+    await expect(page.locator('#planner-backup-import')).toHaveValue('');
+    await expect(page.locator('#planner-import-preview')).toBeHidden();
     await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
     assert.equal(await readStored(page, STATE_KEY), storedBefore);
   });
