@@ -1,8 +1,17 @@
 name: CI
 
+# Every push to an open pull request otherwise ran the same job twice: once
+# for the push event and once for the pull_request event. Push runs are for
+# main only; pull requests get their own run.
 on:
   push:
+    branches: [main]
   pull_request:
+
+# Superseded runs on the same branch are cancelled instead of queueing.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -12,6 +21,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - name: Cache Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:unit

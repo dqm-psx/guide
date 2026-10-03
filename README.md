@@ -185,8 +185,11 @@ npm test
 ```
 
 `npm test` runs the unit tests (`npm run test:unit`) and the browser flows
-(`npm run test:browser`). The browser suite opens `index.html` both as a local
-`file://` file and from a static server mounted at `/guide/`, checks that
-the page makes no external requests, and reloads the served copy with the
-network cut to prove the service worker cache serves it offline. Test
-dependencies and test output stay out of the shipped page.
+(`npm run test:browser`). The unit tests load the shipped classic scripts in
+a `node:vm` context, so the pure logic runs in plain Node with no browser.
+The browser suite runs in parallel against a static server mounted at
+`/guide/` (the way GitHub Pages mounts the page); a small smoke suite pins
+the `file://` contract — the page loads from disk with no external requests —
+and a served reload with the network cut proves the service worker cache
+serves it offline. Test dependencies and test output stay out of the shipped
+page.

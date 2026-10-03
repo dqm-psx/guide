@@ -1,4 +1,3 @@
-const path = require('node:path');
 const { test, expect } = require('@playwright/test');
 
 let serverUrl;
@@ -11,11 +10,13 @@ test.afterAll(async () => {
   await stopGuideServer();
 });
 
-for (const mode of ['file', 'server']) {
-  const url = () => mode === 'file'
-    ? 'file://' + path.resolve(__dirname, '../../index.html') : serverUrl;
+// Served mode: these exercise the My game tab under /guide/, the way the
+// GitHub Pages copy is reached. The file:// contract is pinned by the
+// file-mode smoke tests.
+test.describe('served', () => {
+  const url = () => serverUrl;
 
-  test(`${mode}: switch teams while staying in Targets & plans`, async ({ page }) => {
+  test('switch teams while staying in Targets & plans', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await page.selectOption('#target', '11');
     await page.click('#target-pin');
@@ -42,7 +43,7 @@ for (const mode of ['file', 'server']) {
     await expect(page.locator('#planner-team-select')).toBeVisible();
   });
 
-  test(`${mode}: backup tools sit below the roster and open with the keyboard`, async ({ page }) => {
+  test('backup tools sit below the roster and open with the keyboard', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await expect(page.locator('#planner-backup-export')).toBeHidden();
     const afterRoster = await page.evaluate(() => Boolean(
@@ -58,7 +59,7 @@ for (const mode of ['file', 'server']) {
     expect((await download).suggestedFilename()).toBe('DQM-guide-backup-v61.json');
   });
 
-  test(`${mode}: manage teams and data on a narrow screen`, async ({ page }, testInfo) => {
+  test('manage teams and data on a narrow screen', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url() + '#team-planner');
     await page.click('#planner-team-new');
@@ -74,4 +75,4 @@ for (const mode of ['file', 'server']) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     await page.screenshot({ path: testInfo.outputPath('my-game-mobile.png'), fullPage: true });
   });
-}
+});

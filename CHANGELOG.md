@@ -3,9 +3,26 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 No released versions yet (`package.json` remains `1.0.0`); everything below is
-unreleased work-in-progress validated with `npm test` (98 unit + 277 browser).
+unreleased work-in-progress validated with `npm test` (98 unit + 149 browser).
 
 ## [Unreleased]
+
+### Changed — CI and test suite shape
+
+- CI runs once per change: the workflow triggered on both `push` and
+  `pull_request`, so every commit to a pull request ran the same job twice.
+  Push runs now cover `main` only, a concurrency group cancels superseded
+  runs, and npm downloads plus the Playwright browser are cached.
+- The browser suite runs each test once against a served copy mounted at
+  `/guide/`, in parallel on four workers. Previously every test ran twice
+  (once against `file://`, once served) and strictly serially, which took
+  about six minutes locally and seven in CI. A new `file-mode.spec.js` smoke
+  suite (5 tests) pins the `file://` contract instead: bare load, no external
+  requests, stylesheet applied, theme persistence, planner flows.
+- Merged the three broken-backup import rejection tests in `plan.spec.js`
+  into one test that tries each bad document in sequence.
+- The shared test server is now reference counted, so parallel files can
+  start and stop it without racing.
 
 ### Changed — breeding table and contextual guidance
 
