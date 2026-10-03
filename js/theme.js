@@ -131,6 +131,7 @@
   root.DQMTheme = Object.freeze({
     apply: apply,
     choice: function () { return currentChoice; },
-    resolved: function () { return resolvedTheme; }
+    resolved: function () { return resolvedTheme; },
+    STORAGE_KEY: STORAGE_KEY
   });
 })(globalThis);

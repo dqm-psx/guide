@@ -36,7 +36,8 @@ test('a visited copy reloads and works with the network offline', async ({ page,
     // Preserve the actual served shell, regardless of editable header wording.
     expect(await reloaded.text()).toBe(expectedHtml);
     // The data-driven tools still populate after the offline reload.
-    await expect(page.locator('#coverage-summary')).toContainText('326 table slots');
+    const slots = await page.evaluate(() => DATA.species.length);
+    await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);
     await expect(page.locator('#pedigree option').first()).toBeAttached();
     await expect(page.locator('#mate option').first()).toBeAttached();
 
@@ -58,7 +59,10 @@ test('offline updates ignore retained legacy and unrelated cache entries', async
     body: '<html><body>Cache upgrade setup</body></html>',
   }));
   await page.goto(seedUrl);
-  const cacheNames = ['dqm-guide-v1.0.61-1', 'other-project-cache'];
+  // The first name deliberately resembles a past install of this same guide
+  // but must NOT match the worker's current prefix ('dqm-guide:/guide/');
+  // it should only be deleted if someone broadens the match to 'dqm-guide'.
+  const cacheNames = ['dqm-guide:v1.0.60', 'other-project-cache'];
   await page.evaluate(async ({ names, guideUrl }) => {
     for (const name of names) {
       const cache = await caches.open(name);
@@ -86,7 +90,8 @@ test('offline updates ignore retained legacy and unrelated cache entries', async
     const reloaded = await page.reload();
     expect(reloaded.fromServiceWorker()).toBeTruthy();
     expect(await reloaded.text()).toBe(expectedHtml);
-    await expect(page.locator('#coverage-summary')).toContainText('326 table slots');
+    const slots = await page.evaluate(() => DATA.species.length);
+    await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);
     const offlineScript = await page.evaluate(url => fetch(url).then(response => response.text()), scriptUrl);
     expect(offlineScript).toBe(expectedScript);
 
