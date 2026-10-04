@@ -46,7 +46,7 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(new Set(offsets).size).toBe(1);
   });
 
-  test('the nav still holds only element children, as five direct links', async ({ page }) => {
+  test('the nav holds direct links to the guide views and translation tool', async ({ page }) => {
     await page.goto(FILE_URL);
 
     const shape = await page.evaluate(() => {
@@ -60,7 +60,6 @@ test.describe('sticky chrome and feature surfaces', () => {
       };
     });
     // Only element children: no spacer text nodes between the links.
-    expect(shape.childTypes.length).toBe(5);
     expect(shape.childTypes).toEqual(shape.childTypes.map(() => 1));
     expect(shape.allLinks).toBe(true);
     expect(shape.hrefs).toEqual([
@@ -69,6 +68,7 @@ test.describe('sticky chrome and feature surfaces', () => {
       '#breeding-table',
       '#species-index',
       '#team-planner',
+      'https://dqm-psx.github.io/translations/',
     ]);
     expect(shape.gap).toBeGreaterThan(0);
   });
