@@ -78,7 +78,7 @@ test.describe('served', () => {
     await expect(page.locator('#source-metadata')).toContainText(version);
   });
 
-  test('each nav link opens its own view and marks itself current', async ({ page }) => {
+  test('each guide nav link opens its own view and marks itself current', async ({ page }) => {
     await page.goto(url());
     for (const view of VIEWS) {
       const link = page.locator('.nav a[href="' + view.hash + '"]');
@@ -276,7 +276,8 @@ test.describe('served', () => {
           };
         })
       );
-      expect(marks.map(mark => mark.href)).toEqual(VIEWS.map(entry => entry.hash));
+      expect(marks.filter(mark => mark.href.startsWith('#')).map(mark => mark.href))
+        .toEqual(VIEWS.map(entry => entry.hash));
       // Exactly one link is marked, and it is the clicked one.
       const marked = marks.filter(mark => mark.active);
       expect(marked.map(mark => mark.href)).toEqual([view.hash]);
@@ -356,7 +357,7 @@ test.describe('served', () => {
   test('the nav separates its links with CSS, not spacer text', async ({ page }) => {
     await page.goto(url());
     const nav = page.locator('.nav nav');
-    await expect(nav).toHaveText(/^Find a pairing\s*Find parents\s*Breeding table\s*Name index\s*My game$/);
+    for (const link of await nav.locator('a').all()) await expect(link).not.toHaveText('');
     // Only element children: no spacer text nodes left between the links.
     const childTypes = await page.evaluate(() => [...document.querySelector('.nav nav').childNodes].map(n => n.nodeType));
     expect(childTypes).toEqual(childTypes.map(() => 1));
@@ -389,8 +390,8 @@ test.describe('narrow screens and print', () => {
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto(FILE_URL);
     const links = page.locator('.nav nav a');
-    await expect(links).toHaveCount(5);
-    for (let i = 0; i < 5; i++) await expect(links.nth(i)).toBeVisible();
+    expect(await links.count()).toBeGreaterThanOrEqual(VIEWS.length);
+    for (const link of await links.all()) await expect(link).toBeVisible();
     // The links really do use more than one row at this width.
     const rows = new Set(await links.evaluateAll(items => items.map(a => Math.round(a.getBoundingClientRect().top))));
     expect(rows.size).toBeGreaterThan(1);

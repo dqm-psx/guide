@@ -10,6 +10,10 @@ single page that also works as plain files.
   server. Every asset path is relative, so the page works from a subpath such
   as `https://example.com/guide/` as well as from the site root.
 
+The **Translations** navigation link opens the separate
+[translation comparison tool](https://dqm-psx.github.io/translations/), where
+you can compare Japanese and English wording across editions.
+
 ## Install it and use it offline
 
 On GitHub Pages the page is installable and works offline. Open it once while
