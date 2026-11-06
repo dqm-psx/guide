@@ -38,11 +38,6 @@ async function expectSingleView(page, id) {
 test.describe('served', () => {
   const url = () => serverUrl;
 
-  test('a bare page load shows only Find a pairing', async ({ page }) => {
-    await page.goto(url());
-    await expectSingleView(page, 'pair-finder');
-  });
-
   test('every view id mounts a wrapper and only Find a pairing starts visible', async ({ page }) => {
     await page.goto(url());
     for (const view of VIEWS) {
@@ -50,10 +45,7 @@ test.describe('served', () => {
       await expect(page.locator('#' + view.id)).toHaveAttribute('data-view', view.id);
       await expect(page.locator('#' + view.id)).toHaveClass(/\bview\b/);
     }
-    await expect(page.locator('#offspring-finder')).toBeHidden();
-    await expect(page.locator('#species-index')).toBeHidden();
-    await expect(page.locator('#breeding-table')).toBeHidden();
-    await expect(page.locator('#team-planner')).toBeHidden();
+    await expectSingleView(page, 'pair-finder');
   });
 
   test('guidance appears beside the tool it explains and source details remain available', async ({ page }) => {
@@ -82,24 +74,7 @@ test.describe('served', () => {
     await expect(page.locator('#source-metadata')).toContainText(version);
   });
 
-  test('each guide nav link opens its own view and marks itself current', async ({ page }) => {
-    await page.goto(url());
-    for (const view of VIEWS) {
-      const link = page.locator('.nav a[href="' + view.hash + '"]');
-      await expect(link).toBeVisible();
-      await link.click();
-      await expectSingleView(page, view.id);
-      await expect(link).toHaveAttribute('aria-current', 'page');
-      await expect(page).toHaveURL(new RegExp(view.hash + '$'));
-      // Exactly one link is current, and it is the one that was clicked.
-      const current = await page
-        .locator('.nav a[aria-current="page"]')
-        .evaluateAll(links => links.map(a => a.getAttribute('href')));
-      expect(current).toEqual([view.hash]);
-    }
-  });
-
-  test('each view sets the page title from its nav label', async ({ page }) => {
+  test('each guide nav link opens, titles and distinctly marks its own view', async ({ page }) => {
     await page.goto(url());
     const expected = {
       '#pair-finder': 'Find a pairing',
@@ -110,8 +85,43 @@ test.describe('served', () => {
       '#team-planner': 'My game',
     };
     for (const view of VIEWS) {
-      await page.goto(url() + view.hash);
-      await expect(page).toHaveTitle(new RegExp('^' + expected[view.hash] + ' · '));
+      await test.step(view.id, async () => {
+        const link = page.locator('.nav a[href="' + view.hash + '"]');
+        await expect(link).toBeVisible();
+        await link.click();
+        await expectSingleView(page, view.id);
+        await expect(page).toHaveURL(new RegExp(view.hash + '$'));
+        await expect(page).toHaveTitle(new RegExp('^' + expected[view.hash] + ' · '));
+        const marks = await page.evaluate(() =>
+          [...document.querySelectorAll('.nav a')].map(a => {
+            const style = getComputedStyle(a);
+            return {
+              href: a.getAttribute('href'),
+              active: a.classList.contains('nav-link-active'),
+              current: a.getAttribute('aria-current'),
+              color: style.color,
+              shadow: style.boxShadow,
+            };
+          })
+        );
+        expect(marks.filter(mark => mark.href.startsWith('#')).map(mark => mark.href))
+          .toEqual(VIEWS.map(entry => entry.hash));
+        // The clicked link alone owns both the semantic and visual marks.
+        expect(marks.filter(mark => mark.current === 'page').map(mark => mark.href)).toEqual([view.hash]);
+        const marked = marks.filter(mark => mark.active);
+        expect(marked.map(mark => mark.href)).toEqual([view.hash]);
+        expect(marked[0].current).toBe('page');
+        expect(marked[0].shadow).not.toBe('none');
+        const inactiveColors = new Set();
+        for (const mark of marks) {
+          if (mark.href === view.hash) continue;
+          expect(mark.current).toBe(null);
+          if (mark.href.startsWith('#')) inactiveColors.add(mark.color);
+          expect(mark.shadow).toBe('none');
+        }
+        expect(inactiveColors.size).toBe(1);
+        expect(marked[0].color).not.toBe([...inactiveColors][0]);
+      });
     }
   });
 
@@ -262,44 +272,6 @@ test.describe('served', () => {
     await page.goto(url() + '#not-a-view');
     await expectSingleView(page, 'pair-finder');
     await expect(page.locator('.nav a[href="#pair-finder"]')).toHaveClass(/\bnav-link-active\b/);
-  });
-
-  test('the active style marks whichever link is current, not one fixed link', async ({ page }) => {
-    await page.goto(url());
-    for (const view of VIEWS) {
-      await page.locator('.nav a[href="' + view.hash + '"]').click();
-      await expectSingleView(page, view.id);
-      const marks = await page.evaluate(() =>
-        [...document.querySelectorAll('.nav a')].map(a => {
-          const style = getComputedStyle(a);
-          return {
-            href: a.getAttribute('href'),
-            active: a.classList.contains('nav-link-active'),
-            current: a.getAttribute('aria-current'),
-            color: style.color,
-            shadow: style.boxShadow,
-          };
-        })
-      );
-      expect(marks.filter(mark => mark.href.startsWith('#')).map(mark => mark.href))
-        .toEqual(VIEWS.map(entry => entry.hash));
-      // Exactly one link is marked, and it is the clicked one.
-      const marked = marks.filter(mark => mark.active);
-      expect(marked.map(mark => mark.href)).toEqual([view.hash]);
-      expect(marked[0].current).toBe('page');
-      expect(marked[0].shadow).not.toBe('none');
-      // The active link must read differently from the inactive ones.
-      const inactiveColors = new Set();
-      for (const mark of marks) {
-        if (mark.href === view.hash) continue;
-        expect(mark.current).toBe(null);
-        if (mark.href.startsWith('#')) inactiveColors.add(mark.color);
-        expect(mark.shadow).toBe('none');
-      }
-      expect(inactiveColors.size).toBe(1);
-      expect(marked[0].color).not.toBe([...inactiveColors][0]);
-      expect(marked[0].shadow).not.toBe('none');
-    }
   });
 
   test('a hidden view is display:none and has no box at all', async ({ page }) => {

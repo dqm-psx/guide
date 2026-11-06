@@ -164,11 +164,13 @@ meanings. Future automatic wording and release updates leave the last gameplay
 verification unchanged until another reviewed disc check succeeds. See the
 [data provenance documentation](docs/translation-sync.md) for evidence and limits.
 
-Scheduled builds publish the generated browser artifact without committing the
-refreshed bundle to Git. The live guide can therefore have newer wording and
-release metadata than a downloaded source checkout. Failed validation stops
-publication and preserves the previous deployment. Upstream publication and
-GitHub scheduling delays can extend the nominal four-hour interval.
+Scheduled builds compare their inputs and packaged contents with the last
+successful deployment and skip publication when nothing changed. Updated
+artifacts are published without committing the refreshed bundle to Git. The live
+guide can therefore have newer wording and release metadata than a downloaded
+source checkout. Failed validation stops publication and preserves the previous
+deployment. Upstream publication and GitHub scheduling delays can extend the
+nominal four-hour interval.
 
 ## Development and publication
 
@@ -188,13 +190,21 @@ and service-worker behavior. The publication-upgrade regression exercises a
 returning browser with fresh cached assets and an older active worker, followed
 by an offline reload.
 
+Use the relevant local tests while iterating, then let PR CI perform the complete
+suite. Documentation-only PRs keep a successful required `test` check without
+starting a browser job. Other PRs run the complete suite once; main-branch
+validation belongs to the publication workflow. CI uses the official Playwright
+container with its browsers and system dependencies already installed. Keep its
+version aligned with `@playwright/test` in `package.json` and the lockfile.
+
 To refresh the checked-in wording and release-metadata snapshot and prepare a
 deployment:
 
 ```sh
 node scripts/sync-monster-reference.js
-npm test
+npm run test:unit
 node scripts/sync-stage-site.js
+npm run test:publication
 ```
 
 For a reproducible public import, supply `--public-revision` with a full public
@@ -214,10 +224,14 @@ When adding a runtime asset, add its page reference and matching `sw.js`
 disk; packaging produces the versioned hosted copy.
 
 GitHub Pages must use **GitHub Actions** as its deployment source, with the
-`github-pages` environment permitting `main`. The publication workflow runs
-application tests, refreshes wording and release metadata, validates the refreshed data, packages
-`site-dist/`, and deploys that artifact. Scripts, test output, local inputs, Git
-history, and the native extraction baseline are excluded from the hosted files.
+`github-pages` environment permitting `main`. Publication checks for changes
+before starting a browser job. A public translation update runs the unit checks
+and focused browser checks against the packaged site; application, tooling, or
+test changes also run the complete suite. Missing or invalid previous-deployment
+metadata selects the complete suite. The exact guide commit and public source
+revision are pinned throughout validation, and the tested artifact is deployed.
+Scripts, test output, local inputs, Git history, and the native extraction
+baseline are excluded from the hosted files.
 
 ### Repository map
 
@@ -234,6 +248,7 @@ history, and the native extraction baseline are excluded from the hosted files.
 | `scripts/sync-verify-native.py` | Optional read-only native-disc verification |
 | `scripts/verify-patch-gameplay.py` | Read-only comparison against a release-matched patched disc; emits the gameplay proof |
 | `scripts/sync-stage-site.js` | Browser-only publication packaging and cache identities |
+| `scripts/update-guide.js` | Change classification, deployment comparison, and pinned publication verification |
 | `tests/`, `.github/workflows/` | Automated checks and publication |
 
 ## Interface references

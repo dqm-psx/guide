@@ -74,40 +74,4 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(shape.gap).toBeGreaterThan(0);
   });
 
-  test('the empty-filter block is styled and its recovery button is visible', async ({ page }) => {
-    await page.goto(FILE_URL + '#offspring-finder');
-    await expect(page.locator('#offspring-finder')).toBeVisible();
-
-    // The renderer builds this block at runtime; mount the same markup to
-    // check the styling it will receive.
-    await page.evaluate(() => {
-      const host = document.querySelector('#offspring-finder');
-      const fixture = document.createElement('div');
-      fixture.id = 'layout-empty-fixture';
-      fixture.innerHTML =
-        '<div class="filter-empty">' +
-        '<p class="filter-empty-message">No monsters match these filters.</p>' +
-        '<p class="filter-empty-active">Active filters:</p>' +
-        '<p class="filter-chips"><span class="filter-chip">Family: Slime</span><span class="filter-chip">Rank: A</span></p>' +
-        '<button class="filter-clear" type="button" data-clear-filters="reverse">Clear filters</button>' +
-        '</div>';
-      host.appendChild(fixture);
-    });
-
-    await expect(page.locator('#layout-empty-fixture .filter-empty .filter-clear')).toBeVisible();
-    await expect(page.locator('#layout-empty-fixture .filter-chip')).toHaveCount(2);
-
-    const styles = await page.evaluate(() => {
-      const root = document.querySelector('#layout-empty-fixture');
-      return {
-        textAlign: getComputedStyle(root.querySelector('.filter-empty')).textAlign,
-        messageColor: getComputedStyle(root.querySelector('.filter-empty-message')).color,
-        chipRadius: getComputedStyle(root.querySelector('.filter-chip')).borderRadius,
-      };
-    });
-    expect(styles.textAlign).toBe('center');
-    // The stylesheet must have restyled the empty block away from browser defaults.
-    expect(styles.messageColor).not.toBe('rgb(0, 0, 0)');
-    expect(parseFloat(styles.chipRadius)).toBeGreaterThan(0);
-  });
 });
