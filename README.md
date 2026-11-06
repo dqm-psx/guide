@@ -116,9 +116,10 @@ Completing a step does not automatically consume its parents or add an offspring
 Each team's targets and plans are included in its full backup.
 
 The guide also remembers reference filters, recent pairings, sprite style, and
-the System/Light/Dark theme choice. These preferences are separate from team
-backups. If browser storage is unavailable, the tools remain usable for the
-session; export progress or copy the tree link to retain it.
+the System/Light/Dark theme choice. Full backups include sprite style; reference
+filters, recent pairings, and theme stay in the browser. If browser storage is
+unavailable, the tools remain usable for the session; export progress or copy
+the tree link to retain it.
 
 ## Offline use
 
