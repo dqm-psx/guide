@@ -17,7 +17,7 @@ const isDocumentation = file => ['README.md', 'LICENSE', 'LICENSE.md', 'LICENSE.
 const docsOnly = files => files.every(isDocumentation);
 
 function git(...args) {
-  return execFileSync('git', ['-c', `safe.directory=${ROOT}`, ...args], {cwd: ROOT, encoding: 'utf8'}).trimEnd();
+  return execFileSync('git', ['-c', `safe.directory=${ROOT.replaceAll('\\', '/')}`, ...args], {cwd: ROOT, encoding: 'utf8'}).trimEnd();
 }
 
 function fingerprintTree(tree) {
