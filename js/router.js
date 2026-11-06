@@ -23,6 +23,8 @@
   const views = [
     { id: "pair-finder", heading: "pair-heading" },
     { id: "offspring-finder", heading: "offspring-heading" },
+    { id: "breeding-tree", heading: "tree-heading" },
+    { id: "monster", heading: "monster-heading" },
     { id: "breeding-table", heading: "breeding-table-heading" },
     { id: "species-index", heading: "species-heading" },
     { id: "team-planner", heading: "planner-heading" },
@@ -64,8 +66,15 @@
   }
   function markNav(viewId) {
     for (const link of navLinks) {
-      const active = viewFor(link.hash) === viewId;
-      if (active) link.setAttribute("aria-current", "page");
+      const active = viewFor(link.hash) === (viewId === "monster" ? "species-index" : viewId);
+      if (active) {
+        link.setAttribute("aria-current", "page");
+        const nav = link.parentElement;
+        if (nav.scrollWidth > nav.clientWidth) {
+          const left = link.getBoundingClientRect().left - nav.getBoundingClientRect().left;
+          if (left < 0 || left + link.offsetWidth > nav.clientWidth) nav.scrollLeft += left - (nav.clientWidth-link.offsetWidth)/2;
+        }
+      }
       else link.removeAttribute("aria-current");
       link.classList.toggle("nav-link-active", active);
     }
@@ -102,6 +111,8 @@
     if (window.DQMApp && typeof window.DQMApp.viewShown === "function") window.DQMApp.viewShown(viewId);
     markNav(viewId);
     setTitle(viewId);
+    if (viewId === "monster" && window.DQMMonsters) { window.DQMMonsters.renderRoute(); document.title = window.DQMMonsters.title() + " · " + TITLE_SUFFIX; }
+    if (viewId === "breeding-tree" && window.DQMBreedingTree) window.DQMBreedingTree.viewShown();
     activeView = viewId;
     if (settings.scroll === false) return;
     const heading = headingFor(viewId);

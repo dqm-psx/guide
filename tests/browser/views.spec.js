@@ -19,6 +19,7 @@ test.afterAll(async () => {
 const VIEWS = [
   { hash: '#pair-finder', id: 'pair-finder' },
   { hash: '#offspring-finder', id: 'offspring-finder' },
+  { hash: '#breeding-tree', id: 'breeding-tree' },
   { hash: '#breeding-table', id: 'breeding-table' },
   { hash: '#species-index', id: 'species-index' },
   { hash: '#team-planner', id: 'team-planner' },
@@ -100,8 +101,9 @@ test.describe('served', () => {
     const expected = {
       '#pair-finder': 'Find a pairing',
       '#offspring-finder': 'Find parents',
+      '#breeding-tree': 'Breeding tree',
       '#breeding-table': 'Breeding table',
-      '#species-index': 'Name index',
+      '#species-index': 'Monster library',
       '#team-planner': 'My game',
     };
     for (const view of VIEWS) {
@@ -203,7 +205,7 @@ test.describe('served', () => {
   test('a direct hash, a reload, and Back/Forward each show the intended view', async ({ page }) => {
     const titles = {
       'pair-finder': 'Find a pairing',
-      'species-index': 'Name index',
+      'species-index': 'Monster library',
     };
     // Every step lands on the same view, marked the same way, under the same
     // title: the URL is the only state a reload and a history move carry.
@@ -229,7 +231,7 @@ test.describe('served', () => {
     const aliases = [
       { hash: '#rules-guide', view: 'offspring-finder', target: 'offspring-heading', heading: 'offspring-heading', title: 'Find parents' },
       { hash: '#conditional-rules', view: 'offspring-finder', target: 'breeding-conditions', heading: 'offspring-heading', title: 'Find parents' },
-      { hash: '#about', view: 'species-index', target: 'name-guide', heading: 'species-heading', title: 'Name index' },
+      { hash: '#about', view: 'species-index', target: 'name-guide', heading: 'species-heading', title: 'Monster library' },
     ];
     for (const alias of aliases) {
       await page.evaluate(hash => { location.hash = hash; }, alias.hash);
@@ -288,7 +290,7 @@ test.describe('served', () => {
       for (const mark of marks) {
         if (mark.href === view.hash) continue;
         expect(mark.current).toBe(null);
-        inactiveColors.add(mark.color);
+        if (mark.href.startsWith('#')) inactiveColors.add(mark.color);
         expect(mark.shadow).toBe('none');
       }
       expect(inactiveColors.size).toBe(1);
@@ -386,15 +388,15 @@ test.describe('served', () => {
 // Layout and media queries. These rules are the same whether the page was
 // opened from disk or served, so they run once, against the shipped file.
 test.describe('narrow screens and print', () => {
-  test('the nav wraps at 320px instead of overflowing the page', async ({ page }) => {
+  test('the compact nav scrolls at 320px without overflowing the page', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto(FILE_URL);
     const links = page.locator('.nav nav a');
     expect(await links.count()).toBeGreaterThanOrEqual(VIEWS.length);
     for (const link of await links.all()) await expect(link).toBeVisible();
-    // The links really do use more than one row at this width.
+    // One scrollable row preserves space for the reference on phones.
     const rows = new Set(await links.evaluateAll(items => items.map(a => Math.round(a.getBoundingClientRect().top))));
-    expect(rows.size).toBeGreaterThan(1);
+    expect(rows.size).toBe(1);
     const box = await page.evaluate(() => {
       const nav = document.querySelector('.nav nav');
       const navBox = nav.getBoundingClientRect();
@@ -416,15 +418,13 @@ test.describe('narrow screens and print', () => {
         }),
       };
     });
-    // No horizontal scrollbar anywhere: the nav fits its box and so does the
-    // document.
-    expect(box.navScroll).toBeLessThanOrEqual(box.navClient);
+    // Only the navigation scrolls horizontally; the document stays within the viewport.
+    expect(box.navScroll).toBeGreaterThan(box.navClient);
     expect(box.docScroll).toBeLessThanOrEqual(box.docClient + 1);
     for (const link of box.links) {
-      expect(link.inside, link.text + ' runs outside the nav').toBe(true);
       expect(link.labelFits, link.text + ' label is clipped').toBe(true);
     }
-    // A wrapped link still navigates, and the active style follows it.
+    // An offscreen link scrolls into view when activated and remains usable.
     await page.locator('.nav a[href="#team-planner"]').click();
     await expectSingleView(page, 'team-planner');
     await expect(page.locator('.nav a[href="#team-planner"]')).toHaveClass(/\bnav-link-active\b/);

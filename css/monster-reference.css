@@ -1,0 +1,83 @@
+/* Compact species pages, sharing the guide's light and dark theme tokens. */
+.monster-link{color:var(--teal);text-underline-offset:3px;text-decoration-thickness:1px}
+.monster-link:hover{text-decoration:underline}
+a.monster-label{text-decoration:none;font-weight:650}
+a.monster-label:hover span:last-child{text-decoration:underline}
+.monster-breadcrumb{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;font-size:12px}
+.monster-breadcrumb nav{display:flex;gap:20px;align-items:center}
+.monster-breadcrumb a{color:var(--muted);text-decoration:none}
+.monster-breadcrumb a:hover{color:var(--teal);text-decoration:underline}
+.monster-profile-header{display:grid;grid-template-columns:100px minmax(0,1fr) auto;gap:22px;align-items:center;padding:22px;border:1px solid var(--line);background:var(--white);border-radius:var(--radius) var(--radius) 0 0}
+.monster-profile-art{display:grid;place-items:center;align-self:stretch;background:var(--light);border-radius:12px;min-height:100px}
+.monster-profile-art .monster-sprite{width:80px;height:80px;flex-basis:80px;max-width:80px}
+.monster-profile-art .monster-sprite img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated}
+.monster-eyebrow{color:var(--teal);font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin:0 0 4px}
+.monster-eyebrow span{color:var(--muted)}
+.monster-profile-identity h2{margin:0;font:600 32px/1.15 Georgia,serif;letter-spacing:-.025em;overflow-wrap:anywhere}
+.monster-japanese{font-size:13px;color:var(--muted);margin:7px 0}
+.monster-aliases{font-size:11px;display:flex;align-items:center;flex-wrap:wrap;gap:5px;color:var(--muted);margin-top:8px}
+.monster-alias{border:1px solid var(--line);border-radius:4px;padding:2px 6px;color:var(--ink);background:var(--paper)}
+.monster-profile-actions{display:flex;flex-direction:column;gap:6px;max-width:250px}
+.monster-profile-actions button,.monster-profile-actions a{font-size:12px;min-height:34px;padding:7px 12px;text-align:center;line-height:1.4}
+.monster-profile-actions>div{display:flex;gap:6px}
+.monster-primary{color:var(--white);background:var(--teal);border:1px solid var(--teal);text-decoration:none;font-weight:750;border-radius:7px}
+:root[data-theme=dark] .monster-primary{color:var(--paper)}
+.monster-primary:hover{filter:brightness(.92)}
+.monster-library-quote{padding:15px 22px;border:1px solid var(--line);border-top:0;border-radius:0 0 var(--radius) var(--radius);background:var(--light);margin-bottom:18px}
+.monster-library-quote p{font:italic 18px/1.55 Georgia,serif;margin:3px 0 0;white-space:pre-line}
+.monster-profile-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}
+.monster-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.monster-card-heading{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:16px}
+.monster-card h3{font-size:16px;line-height:1.3;margin:0;letter-spacing:-.015em}
+.monster-card-heading select{min-height:32px;width:auto;font-size:12px;padding:5px 28px 5px 9px;max-width:55%}
+.monster-badge{border:1px solid var(--line);border-radius:5px;color:var(--muted);font-size:10px;font-weight:700;white-space:nowrap;padding:3px 7px}
+.monster-facts{display:flex;gap:30px;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.monster-facts>div{display:flex;flex-direction:column;gap:3px}
+.monster-facts span{font-size:11px;color:var(--muted)}
+.monster-facts strong{font-size:19px;font-variant-numeric:tabular-nums}
+.monster-level-controls{display:flex;gap:10px;align-items:center;margin:12px 0 18px;font-size:11px}
+.monster-level-controls label{max-width:100px;color:var(--muted)}
+.monster-level-controls input{padding:0;min-height:24px;height:24px;min-width:60px;flex:1;accent-color:var(--teal);width:100%}
+.monster-level-controls output{min-width:28px;font-size:14px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.monster-growth-bars{display:grid;gap:9px}
+.monster-growth-row{display:grid;grid-template-columns:76px minmax(0,1fr) 40px;align-items:center;gap:10px;font-size:12px}
+.monster-growth-row strong{text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+.monster-growth-track{height:8px;background:var(--light);border-radius:3px;overflow:hidden}
+.monster-growth-track i{height:100%;display:block;background:var(--teal);border-radius:3px}
+.monster-growth-table{margin-top:14px;padding:10px 12px;border-radius:7px}
+.monster-growth-table summary{font-size:12px}
+.monster-growth-table .table-scroll{max-height:320px;margin-top:10px}
+.monster-growth-table th,.monster-growth-table td{padding:5px 8px;font-size:11px;text-align:right;letter-spacing:0}
+.monster-growth-table thead th{position:sticky;top:0;z-index:1;background:var(--light)}
+.monster-skill-list{display:flex;flex-wrap:wrap;list-style:none;gap:7px;padding:0;margin:0}
+.monster-skill-list li{padding:6px 10px;font-size:12px;font-weight:650;border:1px solid var(--line);border-radius:5px;background:var(--light)}
+.monster-subheading{font-size:13px;margin:22px 0 8px}
+.monster-locations th,.monster-locations td{padding:7px 9px;font-size:11px;letter-spacing:0;text-transform:none;white-space:normal}
+.monster-locations th{background:var(--light)}
+.monster-locations tbody th{background:transparent;color:var(--ink);font-weight:600;border-top:1px solid var(--line)}
+.monster-locations td{border-color:var(--line)}
+.monster-locations tbody tr:hover{background:var(--light)}
+.monster-breeding{margin-top:18px}
+.monster-breeding .monster-card-heading{margin-bottom:8px}
+.monster-role-tabs{display:flex;gap:4px;flex-shrink:0}
+.monster-role-tabs button{font-size:11px;padding:7px 10px;min-height:32px}
+.monster-role-tabs [aria-pressed=true]{background:var(--light);border-color:var(--teal);color:var(--teal)}
+.monster-offspring-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px;margin-top:10px;max-height:420px;overflow-y:auto;padding-right:5px}
+.monster-offspring-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0;font-size:12px}
+.monster-offspring-row>.monster-label{min-width:0;gap:7px}
+.monster-offspring-row .monster-sprite{width:30px;height:30px;flex-basis:30px}
+.monster-offspring-row>span{font-size:10px;color:var(--muted);white-space:nowrap}
+.monster-example{font-size:10px;white-space:nowrap;color:var(--teal);text-underline-offset:3px}
+.monster-conditions{margin:15px 0 0;padding:12px 14px;border-radius:7px}
+.monster-conditions summary{font-size:12px}
+.monster-conditions ul{padding-left:20px;font-size:12px}
+.monster-conditions li{margin:10px 0}
+.monster-conditions small{display:block;color:var(--muted);margin-top:3px}
+.monster-source{margin-top:18px;font-size:12px}
+.monster-source summary{font-size:12px}
+.monster-source p{color:var(--muted)}
+.monster-empty{font-size:12px;color:var(--muted);margin:10px 0;line-height:1.6}
+.monster-internal{font-size:12px;padding:12px 18px;border-left:3px solid var(--gold);background:var(--light);margin:0}
+@media(max-width:850px){.monster-profile-header{grid-template-columns:80px minmax(0,1fr);gap:16px;padding:16px}.monster-profile-art{min-height:80px}.monster-profile-art .monster-sprite{width:65px;height:65px;flex-basis:65px}.monster-profile-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;max-width:none}.monster-profile-grid{grid-template-columns:1fr}.monster-offspring-list{column-gap:18px}.monster-profile-identity h2{font-size:29px}}
+@media(max-width:600px){.monster-breadcrumb{align-items:flex-start}.monster-breadcrumb nav{gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:62%}.monster-breadcrumb nav a{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.monster-card{padding:14px}.monster-card-heading{gap:8px}.monster-offspring-list{grid-template-columns:1fr}.monster-profile-header{gap:12px}.monster-library-quote{padding:12px 16px}.monster-library-quote p{font-size:16px}.monster-breeding .monster-card-heading{flex-wrap:wrap}.monster-role-tabs{width:100%;margin-top:6px}.monster-role-tabs button{flex:1}.monster-profile-actions{gap:6px}.monster-profile-actions>div{flex:1}.monster-profile-actions>div button{flex:1}.monster-profile-actions>a,.monster-profile-actions>button{flex:1;white-space:nowrap}.monster-profile-identity h2{font-size:26px}}
+@media print{.monster-breadcrumb,.monster-profile-actions,.monster-level-controls,.monster-role-tabs{display:none}.monster-profile-grid{grid-template-columns:1fr 1fr}.monster-offspring-list{max-height:none;overflow:visible}.monster-card,.monster-profile-header,.monster-library-quote{break-inside:avoid}.monster-source{display:none}.monster-example{display:none}}

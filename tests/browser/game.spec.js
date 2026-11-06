@@ -255,7 +255,7 @@ test.describe('served', () => {
     // The form resets to party for the next monster.
     await expect(page.locator('#planner-location-party')).toBeChecked();
     await addMonster(page, 13, 'party');
-    await expect(page.locator('#planner-females > .planner-card-list').first().locator('.planner-card-name')).toHaveText('Healer Slime');
+    await expect(page.locator('#planner-females > .planner-card-list').first().locator('.planner-card-name')).toHaveText(await page.evaluate(() => displayName(byId.get(13))));
     await expect(page.locator('#planner-team-summary')).toContainText('1 party · 1 farm');
   });
 
@@ -280,11 +280,11 @@ test.describe('served', () => {
     await expect(page.locator('#planner-breeding-summary')).toContainText(/ordered pairings/);
     await expect(page.locator('#planner-male-grid tbody tr')).toHaveCount(2);
     const farmRow = page.locator('#planner-male-grid tbody tr').nth(1).locator('th');
-    await expect(farmRow).toContainText('Healer Slime');
+    await expect(farmRow).toContainText(await page.evaluate(() => displayName(byId.get(13))));
     await expect(farmRow.locator('.planner-farm-tag')).toHaveText(/Farm/);
     // The farm male is now also a column in the female-pedigree grid, tagged there too.
     const farmColumn = page.locator('#planner-female-grid thead th').nth(2);
-    await expect(farmColumn).toContainText('Healer Slime');
+    await expect(farmColumn).toContainText(await page.evaluate(() => displayName(byId.get(13))));
     await expect(farmColumn.locator('.planner-farm-tag')).toHaveText(/Farm/);
     await expect(page.locator('.planner-farm-tag')).toHaveCount(2);
 

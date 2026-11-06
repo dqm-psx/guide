@@ -18,7 +18,7 @@ const isFavorite = index => hasApp() && DQMApp.isSpeciesFavorite(index);
 const favoritesOnly = () => hasApp() && $("species-favorites-only").checked;
 const displayName = s => s.display_name || s.name;
 const nameLabel = s => displayName(s) + (s.short_name && s.short_name !== s.name ? " (" + s.short_name + ")" : "") + (!isPlayable(s) ? " [extra / internal]" : "");
-const matchesName = (s, query) => !query || normalize([s.name,s.display_name,s.short_name,s.japanese].join(" ")).includes(normalize(query));
+const matchesName = (s, query) => !query || normalize([s.name,s.display_name,s.short_name,s.japanese,...(s.aliases || [])].join(" ")).includes(normalize(query));
 const familyMatches = (s, family) => family === "" || String(s.family_id) === family;
 const current = id => $(id).value === "" ? undefined : byId.get(Number($(id).value));
 const familyName = id => { const family = DATA.families.find(f => f.id === id); return family ? (family.display_name || family.name) : "that"; };
@@ -278,6 +278,14 @@ function renderPair() {
   $("reverse-sprite").innerHTML = spriteMarkup(reverse?.index);
   $("result-name").textContent = a && b ? (forward ? displayName(forward) : null) ?? "Unmapped table result" : "Choose two parents";
   $("reverse-name").textContent = a && b ? (reverse ? displayName(reverse) : null) ?? "Unmapped table result" : "—";
+  for (const [id, species] of [["result-name", forward], ["reverse-name", reverse]]) {
+    if (!a || !b || !species) continue;
+    const link = document.createElement("a");
+    link.className = "monster-link";
+    link.href = "#monster?id=" + species.index;
+    link.textContent = displayName(species);
+    $(id).replaceChildren(link);
+  }
   $("result-detail").textContent = a && b ? resultDetail(forward) : "Adjust the name or family filters to select two species.";
   $("reverse-detail").textContent = a && b ? resultDetail(reverse) : "";
   $("pair-description").textContent = a && b ? displayName(a) + " + " + displayName(b) : "";
@@ -329,7 +337,7 @@ function selectTargetWithFallback(index) {
     updateTarget(index);
   }
 }
-function renderMonster(s, marker = "") { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon">' + escapeHTML(displayName(s)) + marker + '</span><span class="detail">' + escapeHTML(s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
+function renderMonster(s, marker = "") { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon"><a class="monster-link" href="#monster?id=' + s.index + '">' + escapeHTML(displayName(s)) + '</a>' + marker + '</span><span class="detail">' + escapeHTML(s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
 function plusRuleFor(a, b) {
   return RULES.find(rule => rule.kind === "plus_threshold" && rule.pedigree_index === a.index && rule.mate_index === b.index);
 }
@@ -448,6 +456,8 @@ function renderSpeciesPage() {
 }
 function renderSpecies() {
   speciesMatches = allSpecies().filter(s => familyMatches(s, $("species-family").value) && matchesName(s, $("species-search").value) && (!favoritesOnly() || isFavorite(s.index)));
+  const sort = $("species-sort")?.value || "id";
+  if (sort !== "id") speciesMatches.sort((a,b) => (sort === "family" ? Number(a.family_id)-Number(b.family_id) : 0) || displayName(a).localeCompare(displayName(b)) || a.index-b.index);
   speciesPage = 0; $("species-count").textContent = speciesMatches.length + " matching species"; renderSpeciesPage();
 }
 for (const id of ["pedigree-family","mate-family","reverse-pedigree-family","reverse-mate-family","species-family"]) setFamilies(id);
@@ -463,6 +473,7 @@ for (const id of ["reverse-pedigree-family","reverse-mate-family"]) $(id).addEve
 $("reverse-search").addEventListener("input", () => { renderReverse(); saveSession(); });
 $("reverse-prev").addEventListener("click", () => { reversePage--; renderReversePage(); });
 $("reverse-next").addEventListener("click", () => { reversePage++; renderReversePage(); });
+$("species-sort").addEventListener("change", renderSpecies);
 $("species-prev").addEventListener("click", () => { speciesPage--; renderSpeciesPage(); });
 $("species-next").addEventListener("click", () => { speciesPage++; renderSpeciesPage(); });
 $("species-search").addEventListener("input", () => { renderSpecies(); saveSession(); });

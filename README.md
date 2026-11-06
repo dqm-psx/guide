@@ -1,7 +1,29 @@
-# DQM Breeding Guide
+# DQM1 & 2 PSX · Breeding & Monster Reference
 
-Interactive breeding reference for Dragon Quest Monsters 1 & 2 (PS1), built as a
-single page that also works as plain files.
+Interactive reference for the English patch of Dragon Quest Monsters 1 & 2
+(PlayStation). A buildless, offline-capable application with stable monster IDs,
+verified PSX mechanics, and current translation names.
+
+- **Breeding tree:** choose a recipe at each branch, expand either ordered
+  parent, compare alternatives, switch breeding context, undo changes, and share
+  the entire tree. No team setup is required. Circular routes are excluded.
+- **Breeding table:** compact matrix or searchable recipe list, independent
+  parent filters and + values, 8/12/24 row/column pages, axis swap, result
+  highlighting, keyboard movement, and clickable monster profiles. List search
+  covers every filtered pairing, not just the visible matrix page.
+- **Monster library:** searchable alternate names, family/name sorting,
+  favorites, and profiles with native six-stat growth, base level limits,
+  translated library descriptions, campaign-specific natural skills and
+  encounters, and breeding uses in both parent roles.
+- **Current names:** a public-only workflow refreshes names, captions, skills,
+  and encounter labels every four hours. See [setup and provenance](docs/translation-sync.md).
+  Gameplay remains the authenticated PSX snapshot; a wording update does not
+  claim to reverify gameplay changes in a new patch.
+
+All 315 standard species have native growth data. The native library contains
+312 descriptions; missing descriptions, unverified resistance meanings, and
+incomplete acquisition coverage are clearly identified. No Game Boy or Dark
+Prince rules are substituted for PSX mechanics.
 
 ## Open it
 
@@ -41,17 +63,23 @@ manifest.webmanifest    install metadata (name, icons, start_url, scope)
 sw.js                   service worker: offline cache (network-first)
 icons/                  app, tab, and home-screen icons (generated)
 css/guide.css           base styles
-css/features.css        reference tools, sticky nav, and layout styles
+css/features.css        reference tools and sticky navigation
+css/workbench.css       compact responsive workspace
+css/breeding-tree.css   independent tree explorer
+css/monster-reference.css monster profiles
 css/dark-mode.css       dark theme overrides
 data/                   breeding data and sprite maps as classic scripts
-  breeding-data.js        assigns globalThis.DATA
+  breeding-data.js        verified PSX breeding snapshot, assigns globalThis.DATA
+  monster-reference.js    current naming overlay and native monster details
+  monster-baseline.json  native extraction evidence; not a browser asset
   monster-sprites.js      assigns globalThis.MONSTER_SPRITES
   overworld-sprites.js    assigns globalThis.OVERWORLD_SPRITES
 js/                     page scripts, loaded in order by index.html
   sprites.js  storage.js  session.js  reference.js  planner-core.js
-  recipe-planner.js  app-state.js  planner-ui.js  router.js  theme.js
+  recipe-planner.js  app-state.js  planner-ui.js
+  breeding-tree.js  monster-reference.js  matrix-tools.js  router.js  theme.js
   offline.js            registers the service worker (no-op off http/https)
-scripts/                one-off icon generator (not part of the page)
+scripts/                public wording sync, native verifier, publication packaging, icon generator
 tests/                  test tooling (not part of the shipped page)
 ```
 
@@ -61,17 +89,17 @@ only background piece, and it is skipped on `file://`.
 
 ## Views
 
-The page is five task views behind a hash route, and the URL says which one is
-open: `#pair-finder` (the default), `#offspring-finder`, `#breeding-table`,
-`#species-index`, and `#team-planner` (My game). An empty or unknown hash opens
-Find a pairing. All five views stay in the page, so a view keeps its filters,
+The page uses hash routes so links work both on disk and on GitHub Pages. The main views are `#pair-finder` (the default), `#offspring-finder`, `#breeding-table`,
+`#species-index` (Monster library), `#breeding-tree`, and `#team-planner` (My game).
+Individual profiles use `#monster?id=11`; the tree uses `#breeding-tree?target=290&context=shrine`. An empty or unknown hash opens
+Find a pairing. All views stay in the page, so a view keeps its filters,
 selections, and planner tab when you come back to it, and printing the page
 prints only the view you are looking at. Breeding table spans the available
 page width, with row and column filters and no fixed-height scroll box.
 Rules appear beside the relevant results: superscript + markers in Find
 parents point to each pair's threshold and alternative offspring. The older
 `#rules-guide` and `#conditional-rules` links open Find parents; `#about` opens
-the naming guidance and source information in Name index.
+the naming guidance and source information in Monster library.
 
 In **My game**, the team selector and team management controls appear above
 the tabs. You can switch, create, rename, or delete a team while viewing its
@@ -86,7 +114,7 @@ IDs, so a link such as `#pair-finder?a=11&b=99` opens the same result. A shared
 URL takes precedence over anything saved locally. The guide also remembers the
 pair finder's parents, name filters, desired offspring, and a short list of
 recently inspected pairs across reloads, so closing the tab does not lose your
-place. The name index can send a species straight to either parent slot or to
+place. The monster library can send a species straight to either parent slot or to
 Find parents, and a pairing result links to the offspring's other parent
 combinations.
 
@@ -100,7 +128,7 @@ flashes light.
 ## Saved data
 
 Teams, rosters, favorites, targets, plans, the game switch, the sprite style,
-the theme choice, and the reference session (pair finder parents, filters,
+the theme choice, the independent breeding tree, and the reference session (pair finder parents, filters,
 desired offspring, and recent pairings) are stored **only in this browser**
 (localStorage). They never leave the device unless you export them. Teams,
 plans, favorites, and targets live in the version-2 document below; the theme
@@ -184,7 +212,8 @@ data bundle are shared between the two games; only your saved data is split.
 ## Test
 
 ```
-npm install
+npm ci
+npx playwright install chromium
 npm test
 ```
 
@@ -197,3 +226,16 @@ the `file://` contract — the page loads from disk with no external requests �
 and a served reload with the network cut proves the service worker cache
 serves it offline. Test dependencies and test output stay out of the shipped
 page.
+
+
+## Interface references
+
+The guide adopts useful navigation patterns from the community tools requested
+for this project: the target-first synthesis flow in [Game8](https://game8.co/games/DQM-Dark-Prince/archives/435994),
+branch exploration in [Wizebin](https://dwm2.wizebin.com/), interconnected monster
+and family browsing in [DWM2 Breed](https://darksair.org/dwm2-breed/), parent and
+offspring lookup in [Monster Database](https://www.monster-db.com/about.php),
+and dense family recipe tables in [Dragon's Den](https://www.woodus.com/den/games/dwm1gbc/breeding-details.php?fam=dragon).
+These are interface references, not sources for this guide's gameplay data.
+The planner exposes explicit choices and conditions rather than claiming a
+minimum-cost route without established acquisition and eligibility data.

@@ -1,0 +1,66 @@
+name: Refresh translation names and publish guide
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 */4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Keep deployments ordered. The build always reads today's main, including
+# scheduled events queued before a newer commit reached the default branch.
+concurrency:
+  group: publish-guide
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'dqm-psx/guide' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Cache Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npx playwright install --with-deps chromium
+      # Browser fixtures refer to the checked-in name snapshot. Exercise the
+      # application first, then validate the refreshed data independently.
+      - run: npm test
+      - name: Refresh current patch wording from verified public snapshot
+        run: node scripts/sync-monster-reference.js
+      - name: Validate refreshed data and application invariants
+        run: npm run test:unit
+      - name: Package browser assets only
+        run: node scripts/sync-stage-site.js
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site-dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

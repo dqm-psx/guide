@@ -15,6 +15,7 @@
   // The planner's tabs, in the order the arrow keys walk them.
   const PLANNER_TABS = ["roster", "targets", "breeding"];
   const named = index => displayName(byId.get(index));
+  const profileLink = (index, label) => index === null ? safe(label) : '<a href="#monster?id='+Number(index)+'">'+safe(label ?? named(index))+'</a>';
   const copy = value => JSON.parse(JSON.stringify(value));
   const memberName = entry => entry.nickname || named(entry.speciesIndex);
   const fullName = entry => (entry.nickname ? entry.nickname + " · " : "") + named(entry.speciesIndex) + " +" + entry.plus;
@@ -206,7 +207,7 @@
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
     const star = '<button type="button" data-member-favorite="'+safe(entry.id)+'" aria-pressed="'+entry.favorite+'" aria-label="Favorite '+safe(memberName(entry))+'">★</button>';
-    return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+safe(memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button><button type="button" data-member-move="'+safe(entry.id)+'" aria-label="Move '+safe(fullName(entry))+' to the '+otherLocation(entryLocation(entry))+'">Move to '+otherLocation(entryLocation(entry))+'</button></div></article>';
+    return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button><button type="button" data-member-move="'+safe(entry.id)+'" aria-label="Move '+safe(fullName(entry))+' to the '+otherLocation(entryLocation(entry))+'">Move to '+otherLocation(entryLocation(entry))+'</button></div></article>';
   }
   function renderRoster() {
     malePage = femalePage = 0;
@@ -457,7 +458,7 @@
     const header = document.createElement("div");
     header.className = "plan-node-header";
     header.innerHTML = spriteMarkup(node.speciesIndex) +
-      '<span class="plan-node-name">' + safe(name) + "</span>" +
+      '<span class="plan-node-name">' + profileLink(node.speciesIndex,name) + "</span>" +
       '<span class="plan-node-role">' + safe(role) + "</span>";
     card.appendChild(header);
     const status = document.createElement("select");
@@ -488,7 +489,7 @@
         (planFlagged.has(node.id)
           ? '<p class="plan-node-incompatible">This stored recipe does not apply in the ' + safe(contextLabel(plan.context)) + " context. Choose another recipe or switch the breeding context.</p>"
           : "") +
-        '<p class="plan-node-parents">Pedigree ' + safe(pedigreeName) + " + Mate " + safe(mateName) + "</p>" +
+        '<p class="plan-node-parents">Pedigree ' + profileLink(recipe.parents[0],pedigreeName) + " + Mate " + profileLink(recipe.parents[1],mateName) + "</p>" +
         '<span class="plan-node-kind">' + safe(kindLabel) + "</span>" +
         '<p class="plan-node-context">' + safe(contextLabel(plan.context)) + "</p>";
       if (recipe.kind === "plus_threshold" && recipe.minPlus !== null) {
@@ -676,9 +677,9 @@
   function ruleLabel(result) {
     return result.ruleKind === "flag_gated" ? "Room rule" : result.ruleKind === "plus_threshold" ? "+ rule" : "Base result";
   }
-  function pageRange(id, page, total, label) {
-    const pages = Math.max(1, Math.ceil(total/PAGE));
-    const text = total ? label+" "+(page*PAGE+1)+"–"+Math.min((page+1)*PAGE, total)+" of "+total : "No matching "+label.toLowerCase();
+  function pageRange(id, page, total, label, size = PAGE) {
+    const pages = Math.max(1, Math.ceil(total/size));
+    const text = total ? label+" "+(page*size+1)+"–"+Math.min((page+1)*size, total)+" of "+total : "No matching "+label.toLowerCase();
     P(id+"-range").textContent = text;
     P(id+"-prev").disabled = page === 0;
     P(id+"-next").disabled = page+1 >= pages;
@@ -691,10 +692,10 @@
     // Synthetic entries from the breeding table carry no location, so the tag never shows there.
     const farmTag = e => entryLocation(e) === "farm" ? ' <small class="planner-farm-tag">Farm</small>' : "";
     let html = '<table class="planner-matrix"><caption class="sr-only">'+safe(caption)+'</caption><thead><tr><th scope="col" class="planner-corner">Pedigree ↓<br>Mate →</th>';
-    html += columns.map(e => '<th scope="col">'+spriteMarkup(e.speciesIndex)+'<span>'+safe(memberName(e))+'</span>'+farmTag(e)+'<small>+'+e.plus+'</small></th>').join("");
+    html += columns.map(e => '<th scope="col">'+spriteMarkup(e.speciesIndex)+'<a href="#monster?id='+e.speciesIndex+'">'+safe(memberName(e))+'</a>'+farmTag(e)+'<small>+'+e.plus+'</small></th>').join("");
     html += '</tr></thead><tbody>';
     for (const row of rows) {
-      html += '<tr><th scope="row">'+spriteMarkup(row.speciesIndex)+'<span>'+safe(memberName(row))+'</span>'+farmTag(row)+'<small>+'+row.plus+'</small></th>';
+      html += '<tr><th scope="row">'+spriteMarkup(row.speciesIndex)+'<a href="#monster?id='+row.speciesIndex+'">'+safe(memberName(row))+'</a>'+farmTag(row)+'<small>+'+row.plus+'</small></th>';
       for (const column of columns) {
         const outcome = core.result(row.speciesIndex, column.speciesIndex, row.plus, column.plus, context);
         const visible = matchesName(byId.get(outcome.resultIndex), query);
@@ -709,7 +710,7 @@
     let rowPlus, columnPlus;
     try { rowPlus = readPlus("planner-row-plus"); columnPlus = readPlus("planner-column-plus"); }
     catch (error) {
-      P("planner-all-summary").textContent = error.message; P("planner-all-grid").replaceChildren();
+      P("planner-all-summary").textContent = error.message; P("planner-all-grid").replaceChildren(); P("matrix-filter-status").textContent = "";
       for (const axis of ["row","column"]) {
         P("planner-"+axis+"-prev").disabled = true; P("planner-"+axis+"-next").disabled = true;
         P("planner-"+axis+"-range").textContent = "Enter valid + values to browse.";
@@ -718,15 +719,44 @@
     }
     const rows = filterSpecies("planner-row-search", "planner-row-family");
     const columns = filterSpecies("planner-column-search", "planner-column-family");
-    rowPage = Math.max(0, Math.min(rowPage, Math.max(0, Math.ceil(rows.length/PAGE)-1)));
-    columnPage = Math.max(0, Math.min(columnPage, Math.max(0, Math.ceil(columns.length/PAGE)-1)));
-    const entries = (species, plus) => species.map(s => ({speciesIndex: s.index, plus, nickname: ""}));
+    const size = Number(P("matrix-page-size").value) || PAGE;
+    const query = P("matrix-result-search").value;
     const context = P("planner-all-context").value;
-    P("planner-all-summary").textContent = rows.length+" pedigrees × "+columns.length+" mates · "+(rows.length*columns.length).toLocaleString()+" ordered pairings · "+contextLabel(context)+". Use the row and column pages to explore the full grid.";
-    renderMatrix("planner-all-grid", entries(rows.slice(rowPage*PAGE, (rowPage+1)*PAGE), rowPlus), entries(columns.slice(columnPage*PAGE, (columnPage+1)*PAGE), columnPlus), context, "", "All species breeding grid: pedigree rows and mate columns");
-    pageRange("planner-row", rowPage, rows.length, "Rows");
-    pageRange("planner-column", columnPage, columns.length, "Columns");
+    const listMode = P("matrix-view").value === "list";
+    P("planner-column-range").parentElement.hidden = listMode;
+    P("planner-row-range").parentElement.querySelector(".planner-page-label").textContent = listMode ? "Recipes" : "Pedigrees";
+    for (const direction of ["prev","next"]) {
+      const word = direction === "prev" ? "Previous" : "Next", button = P("planner-row-"+direction);
+      button.textContent = (direction === "prev" ? "← " : "") + word + (listMode ? " recipes" : " rows") + (direction === "next" ? " →" : "");
+      button.setAttribute("aria-label",word+(listMode ? " recipes" : " pedigree rows"));
+    }
+    P("planner-all-grid").classList.toggle("matrix-list", listMode);
+    P("planner-all-summary").textContent = rows.length+" pedigrees × "+columns.length+" mates · "+(rows.length*columns.length).toLocaleString()+" ordered pairings · "+contextLabel(context)+".";
+    const entries = (species, plus) => species.map(s => ({speciesIndex:s.index,plus,nickname:""}));
+    if (listMode) {
+      const recipes = [];
+      for (const a of rows) for (const b of columns) {
+        const result = core.result(a.index,b.index,rowPlus,columnPlus,context);
+        if (matchesName(byId.get(result.resultIndex),query)) recipes.push({a,b,result});
+      }
+      const listSize = size * 4;
+      rowPage = Math.max(0,Math.min(rowPage,Math.max(0,Math.ceil(recipes.length/listSize)-1)));
+      const displayed = recipes.slice(rowPage*listSize,(rowPage+1)*listSize);
+      P("matrix-filter-status").textContent = recipes.length.toLocaleString()+" matching recipes across all filtered parents";
+      P("planner-all-grid").innerHTML = displayed.length ? '<table><caption>Ordered recipes · '+safe(contextLabel(context))+'</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Offspring</th><th scope="col">Rule / actions</th></tr></thead><tbody>'+displayed.map(({a,b,result}) => '<tr><td>'+spriteLabel(a.index,named(a.index))+' <small>+'+rowPlus+'</small></td><td>'+spriteLabel(b.index,named(b.index))+' <small>+'+columnPlus+'</small></td><td>'+spriteLabel(result.resultIndex,named(result.resultIndex))+'</td><td class="matrix-list-actions"><span class="detail">'+safe(ruleLabel(result))+'</span><button type="button" data-planner-pair data-a="'+a.index+'" data-b="'+b.index+'" data-ap="'+rowPlus+'" data-bp="'+columnPlus+'" data-context="'+context+'">Inspect</button><a href="#breeding-tree?target='+result.resultIndex+'&context='+context+'">Tree ↗</a></td></tr>').join('')+'</tbody></table>' : '<p class="planner-empty">No recipes match. Clear the offspring search or reset the parent filters.</p>';
+      pageRange("planner-row",rowPage,recipes.length,"Recipes",listSize);
+    } else {
+      rowPage = Math.max(0,Math.min(rowPage,Math.max(0,Math.ceil(rows.length/size)-1)));
+      columnPage = Math.max(0,Math.min(columnPage,Math.max(0,Math.ceil(columns.length/size)-1)));
+      const pageRows = rows.slice(rowPage*size,(rowPage+1)*size), pageColumns = columns.slice(columnPage*size,(columnPage+1)*size);
+      renderMatrix("planner-all-grid",entries(pageRows,rowPlus),entries(pageColumns,columnPlus),context,query,"All species breeding grid: pedigree rows and mate columns");
+      const matching = P("planner-all-grid").querySelectorAll('td:not(.planner-nonmatch)').length;
+      P("matrix-filter-status").textContent = query ? matching+" matching results on this page · use Recipe list to search all filtered parents." : "Tip: use arrow keys to move between results. Select a result for both parent orders.";
+      pageRange("planner-row",rowPage,rows.length,"Rows",size);
+      pageRange("planner-column",columnPage,columns.length,"Columns",size);
+    }
   }
+
   function movePairDetail(hostId) {
     const host = P(hostId);
     const panel = P("planner-pair-detail");
@@ -742,7 +772,7 @@
     const pairingText = "Pedigree " + named(detail.a) + " +" + detail.ap + " + Mate " + named(detail.b) + " +" + detail.bp + " → " + named(forward.resultIndex) + " (" + contextLabel(detail.context) + (forward.ruleKind === "base" ? "; base result" : "; " + ruleLabel(forward)) + ")";
     P("planner-copy-pairing").dataset.copyText = pairingText;
     P("planner-pair-copy-status").textContent = "";
-    P("planner-pair-detail-body").innerHTML = '<p class="kicker">'+safe(contextLabel(detail.context))+'</p><h3>'+safe(named(detail.a))+" +"+detail.ap+" + "+safe(named(detail.b))+" +"+detail.bp+' → '+spriteLabel(forward.resultIndex, named(forward.resultIndex))+'</h3><p>'+safe(forward.detail||forward.condition)+" Base table: "+safe(named(forward.baseIndex))+'.</p><p><strong>Reversed parents:</strong> '+spriteLabel(reverse.resultIndex, named(reverse.resultIndex))+" · "+safe(ruleLabel(reverse))+'.</p>';
+    P("planner-pair-detail-body").innerHTML = '<p class="kicker">'+safe(contextLabel(detail.context))+'</p><h3>'+profileLink(detail.a)+" +"+detail.ap+" + "+profileLink(detail.b)+" +"+detail.bp+' → '+spriteLabel(forward.resultIndex, named(forward.resultIndex))+'</h3><p>'+safe(forward.detail||forward.condition)+" Base table: "+safe(named(forward.baseIndex))+'.</p><p><strong>Reversed parents:</strong> '+spriteLabel(reverse.resultIndex, named(reverse.resultIndex))+" · "+safe(ruleLabel(reverse))+'.</p>';
     P("planner-pair-detail").hidden = false;
     P("planner-pair-detail").scrollIntoView({behavior:"smooth", block:"nearest"});
   }
@@ -1170,12 +1200,26 @@
   P("planner-female-next").addEventListener("click", () => { femalePage++; renderBreeding(); });
   for (const prefix of ["row","column"]) {
     for (const suffix of ["search","family","plus"]) P("planner-"+prefix+"-"+suffix).addEventListener(suffix === "family" ? "change" : "input", () => {
-      if (prefix === "row") rowPage = 0; else columnPage = 0;
+      if (prefix === "row" || P("matrix-view").value === "list") rowPage = 0; else columnPage = 0;
       P("planner-pair-detail").hidden = true; renderEverything();
     });
     P("planner-"+prefix+"-prev").addEventListener("click", () => { if (prefix === "row") rowPage--; else columnPage--; renderEverything(); });
     P("planner-"+prefix+"-next").addEventListener("click", () => { if (prefix === "row") rowPage++; else columnPage++; renderEverything(); });
   }
+  for (const id of ["matrix-result-search","matrix-view","matrix-page-size"]) P(id).addEventListener(id === "matrix-result-search" ? "input" : "change", () => {
+    rowPage = 0; columnPage = 0; P("planner-pair-detail").hidden = true; renderEverything();
+  });
+  P("matrix-reset").addEventListener("click", () => {
+    for (const axis of ["row","column"]) for (const field of ["search","family","plus"]) P("planner-"+axis+"-"+field).value = field === "plus" ? "0" : "";
+    P("matrix-result-search").value = ""; rowPage = columnPage = 0; P("planner-pair-detail").hidden = true; renderEverything();
+  });
+  P("matrix-swap-axes").addEventListener("click", () => {
+    for (const field of ["search","family","plus"]) {
+      const row = P("planner-row-"+field), col = P("planner-column-"+field), value = row.value;
+      row.value = col.value; col.value = value;
+    }
+    rowPage = columnPage = 0; P("planner-pair-detail").hidden = true; renderEverything();
+  });
   P("planner-all-context").addEventListener("change", () => { P("planner-pair-detail").hidden = true; renderEverything(); });
   for (const id of ["planner-male-grid","planner-female-grid","planner-all-grid"]) P(id).addEventListener("click", showDetail);
   P("planner-copy-pairing").addEventListener("click", () => {

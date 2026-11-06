@@ -1,3 +1,15 @@
+## Breeding workspace and current patch reference
+
+- Add an independent, shareable breeding tree with per-branch alternatives,
+  ordered parents, family requirements, cycle protection, context, and Undo.
+- Add linked monster profiles with native stats/growth, translated library text,
+  skills, campaign encounters, alternate names, and breeding uses.
+- Add a compact responsive workspace, sortable monster index, recipe-list view,
+  matrix result search, variable page size, axis swap, and keyboard navigation.
+- Add verified public translation synchronization and scheduled GitHub Pages
+  publishing without private repository access; preserve native gameplay provenance.
+- Keep existing teams, targets, backups, offline operation, and plain-file loading.
+
 # Changelog
 
 All notable changes to this project are documented here.
