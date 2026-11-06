@@ -59,6 +59,7 @@ test('every asset index.html loads is precached', () => {
   const precache = new Set(readPrecache());
   const refs = new Set();
   for (const match of html.matchAll(/<script[^>]+src="([^"]+)"/g)) refs.add(match[1]);
+  for (const match of html.matchAll(/<img[^>]+src="([^"]+)"/g)) refs.add(match[1]);
   for (const match of html.matchAll(/<link[^>]+href="([^"]+)"/g)) refs.add(match[1]);
   assert.ok(refs.size > 0, 'expected index.html to reference local assets');
   for (const ref of refs) {

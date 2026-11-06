@@ -51,6 +51,30 @@ test('profiles keep stable links across navigation and hand off selected species
   await expect(page.locator('#monster')).toBeVisible();
 });
 
+test('both pairing result headings link to the correct profiles and update after swapping', async ({ page }) => {
+  await page.goto(serverUrl + '#pair-finder?a=11&b=99');
+  const results = await page.evaluate(() => ({
+    forward: DATA.matrix[11][99],
+    reverse: DATA.matrix[99][11],
+  }));
+  expect(results.forward).not.toBe(results.reverse);
+  for (const [heading, index] of [['result-name', results.forward], ['reverse-name', results.reverse]]) {
+    const link = page.locator('#' + heading + ' > a.monster-link');
+    await expect(link).toHaveAttribute('href', '#monster?id=' + index);
+    const name = await link.textContent();
+    await link.focus();
+    await link.press('Enter');
+    await expect(page.locator('#monster')).toBeVisible();
+    await expect(page.locator('#monster-heading')).toHaveText(name);
+    await expect(page).toHaveURL(new RegExp('#monster\\?id=' + index + '$'));
+    await page.goBack();
+    await expect(page.locator('#pair-finder')).toBeVisible();
+  }
+  await page.locator('#swap').click();
+  await expect(page.locator('#result-name > a.monster-link')).toHaveAttribute('href', '#monster?id=' + results.reverse);
+  await expect(page.locator('#reverse-name > a.monster-link')).toHaveAttribute('href', '#monster?id=' + results.forward);
+});
+
 test('unknown profiles recover and narrow screens keep the reference within the viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(serverUrl + '#monster?id=99999');
