@@ -3,6 +3,12 @@ name: Refresh translation names and publish guide
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - README.md
+      - 'docs/**/*.md'
+      - LICENSE
+      - LICENSE.md
+      - LICENSE.txt
   schedule:
     - cron: '17 */4 * * *'
   workflow_dispatch:
@@ -10,17 +16,22 @@ on:
 permissions:
   contents: read
 
-# Keep deployments ordered. The build always reads today's main, including
-# scheduled events queued before a newer commit reached the default branch.
+# Queued events resolve current main once. Later jobs use that exact SHA.
 concurrency:
   group: publish-guide
   cancel-in-progress: false
 
 jobs:
-  build:
+  prepare:
     if: github.repository == 'dqm-psx/guide' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+      guide_revision: ${{ steps.plan.outputs.guide_revision }}
+      public_revision: ${{ steps.plan.outputs.public_revision }}
+      source_fingerprint: ${{ steps.plan.outputs.source_fingerprint }}
+      content_sha256: ${{ steps.plan.outputs.content_sha256 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,29 +40,57 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Refresh data and compare with the last successful deployment
+        id: plan
+        run: node scripts/update-guide.js prepare
+
+  validate:
+    needs: prepare
+    if: needs.prepare.outputs.mode != 'none'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-noble
+      options: --init --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.guide_revision }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
           cache: npm
       - run: npm ci
-      - name: Cache Playwright browser
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - run: npx playwright install --with-deps chromium
-      # Browser fixtures refer to the checked-in name snapshot. Exercise the
-      # application first, then validate the refreshed data independently.
-      - run: npm test
-      - name: Refresh wording and current patch metadata from verified public snapshot
-        run: node scripts/sync-monster-reference.js
+      # Fixed-name fixtures exercise the committed application only when its
+      # application/tooling inputs differ from the last deployed version.
+      - name: Validate changed application code
+        if: needs.prepare.outputs.mode == 'full'
+        run: npm test
+      - name: Reproduce the exact prepared publication
+        env:
+          GUIDE_REVISION: ${{ needs.prepare.outputs.guide_revision }}
+          PUBLIC_REVISION: ${{ needs.prepare.outputs.public_revision }}
+          SOURCE_FINGERPRINT: ${{ needs.prepare.outputs.source_fingerprint }}
+          CONTENT_SHA256: ${{ needs.prepare.outputs.content_sha256 }}
+          VALIDATION_MODE: ${{ needs.prepare.outputs.mode }}
+        run: >-
+          node scripts/update-guide.js verify
+          --guide-revision "$GUIDE_REVISION"
+          --public-revision "$PUBLIC_REVISION"
+          --source-fingerprint "$SOURCE_FINGERPRINT"
+          --content-sha256 "$CONTENT_SHA256"
+          --mode "$VALIDATION_MODE"
       - name: Validate refreshed data and application invariants
         run: npm run test:unit
-      - name: Package browser assets only
-        run: node scripts/sync-stage-site.js
+      - name: Exercise the actual refreshed publication
+        run: npm run test:publication
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site-dist
 
   deploy:
-    needs: build
+    needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

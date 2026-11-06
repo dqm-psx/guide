@@ -26,14 +26,37 @@ selects explicit public wording fields; it never copies the full comparison,
 source evidence, filesystem paths, user information, or arbitrary metadata into
 the guide. It does not execute any code from the translation repository.
 
-The build tests the checked-in application, refreshes names, captions, natural
-skill names, fixed-encounter labels, and the current patch summary, then runs the
-unit/data checks again.
-Only the browser assets are uploaded. A failed download, changed schema,
-incomplete catalog, or failing check stops publication and leaves the previous
-Pages deployment intact. GitHub schedule delays and the upstream translation
-publication delay can extend the four-hour interval. Inactive repositories may
-have scheduled workflows disabled by GitHub; a manual run resumes publication.
+The workflow first refreshes names, captions, natural skill names, fixed-encounter
+labels, and the current patch summary, then packages the site on a lightweight
+runner. Before starting a browser job, it compares the result with the last
+successful deployment:
+
+| Change | Publication checks |
+| --- | --- |
+| No changed source, public revision, or packaged contents | Skip the browser job and deployment |
+| Updated public wording or release metadata | Unit/data checks and focused browser checks against the packaged site |
+| Changed application, tooling, or tests; unavailable or invalid previous-deployment metadata | Complete suite against the checked-in snapshot, then unit/data and packaged browser checks after refresh |
+
+The browser job checks out the exact guide commit selected during preparation
+and refreshes from the same pinned public revision. Both source and packaged
+content fingerprints must match preparation before that artifact can deploy.
+The small public `deployment-manifest.json` records only the schema, guide and
+public revisions, and source/content hashes. It is published with the artifact,
+so comparison uses a successful deployment rather than the checked-in generated
+bundle. The manifest itself is excluded from the content hash.
+
+Documentation-only PRs retain the required successful `test` check without
+running browsers; documentation-only main pushes do not trigger publication.
+Other PRs run the complete suite, with no duplicate main-branch CI workflow.
+Browser jobs use the official Playwright container; its version must match the
+repository's pinned Playwright dependency.
+
+Only browser assets and the public deployment manifest are uploaded. A failed
+translation download, changed schema, incomplete catalog, or failing check stops
+publication and leaves the previous Pages deployment intact. GitHub schedule
+delays and the upstream translation publication delay can extend the four-hour
+interval. Inactive repositories may have scheduled workflows disabled by GitHub;
+a manual run resumes publication.
 
 Publication gives each script, stylesheet, and icon a URL containing its content
 hash, and records the same URLs in the offline cache. Changed data therefore
@@ -50,8 +73,15 @@ refresh it when preparing a source release:
 
 ```sh
 node scripts/sync-monster-reference.js
-node --test tests/unit/translation-sync.test.js
+npm run test:unit
+node scripts/sync-stage-site.js
+npm run test:publication
 ```
+
+The publication checks use the staged copy and its refreshed data. For code
+changes, run the relevant local tests while iterating and let PR CI run the
+complete suite; repeated full local runs are unnecessary after unchanged checks
+pass.
 
 To reproduce a specific public snapshot:
 

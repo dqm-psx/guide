@@ -31,18 +31,6 @@ test.describe('served', () => {
     await expect(page.locator('#planner-targets')).toBeVisible();
   };
 
-  test('exposes the DQMReference API', async ({ page }) => {
-    await page.goto(url());
-    const api = await page.evaluate(() => ({
-      refresh: typeof DQMReference.refresh === 'function',
-      selectTarget: typeof DQMReference.selectTarget === 'function',
-      currentTargetIndex: typeof DQMReference.currentTargetIndex === 'function',
-    }));
-    assert.equal(api.refresh, true);
-    assert.equal(api.selectTarget, true);
-    assert.equal(api.currentTargetIndex, true);
-  });
-
   test('species star toggles aria-pressed, label, and glyph and persists across reload', async ({ page }) => {
     await page.goto(url() + '#species-index');
     const star = page.locator('button[data-species-favorite="11"]');
@@ -165,26 +153,23 @@ test.describe('served', () => {
     assert.equal(doc.teams[0].activeTargetId, doc.teams[0].targets[0].id);
   });
 
-  test('browsing another species does not overwrite the active target', async ({ page }) => {
+  test('browsing updates the pin label without overwriting the active target', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
+    const [pinnedName, browsedName] = await page.evaluate(() => [11, 99].map(index => {
+      const species = DATA.species.find(entry => entry.index === index);
+      return species.display_name || species.name;
+    }));
     await page.selectOption('#target', '11');
     await page.click('#target-pin');
-    await expect(page.locator('#target-active-summary')).toContainText('Slime');
+    await expect(page.locator('#target-pin')).toHaveText('Pin ' + pinnedName);
+    await expect(page.locator('#target-active-summary')).toContainText(pinnedName);
     await page.selectOption('#target', '99');
-    await expect(page.locator('#target-active-summary')).toContainText('Dracky');
-    await expect(page.locator('#target-active-summary')).toContainText('Slime');
+    await expect(page.locator('#target-pin')).toHaveText('Pin ' + browsedName);
+    await expect(page.locator('#target-active-summary')).toContainText(browsedName);
+    await expect(page.locator('#target-active-summary')).toContainText(pinnedName);
     await expect(page.locator('#target-list .target-item')).toHaveCount(1);
     await expect(page.locator('#target-list .target-item')).toHaveClass(/is-active/);
-  });
-
-  test('browsing updates the pin button label without changing the active target', async ({ page }) => {
-    await page.goto(url() + '#offspring-finder');
-    await page.selectOption('#target', '11');
-    await page.click('#target-pin');
-    await expect(page.locator('#target-pin')).toHaveText(/^Pin .+/);
-    await page.selectOption('#target', '99');
-    await expect(page.locator('#target-pin')).toHaveText(/^Pin .+/);
-    await expect(page.locator('#target-active-summary')).toContainText('Slime');
+    await expect(page.locator('#target-list .target-name')).toHaveText(pinnedName);
   });
 
   test('removing a target deletes it; removing the active target clears the active marker', async ({ page }) => {

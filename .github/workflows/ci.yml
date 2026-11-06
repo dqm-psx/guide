@@ -1,33 +1,75 @@
 name: CI
 
-# Every push to an open pull request otherwise ran the same job twice: once
-# for the push event and once for the pull_request event. Push runs are for
-# main only; pull requests get their own run.
+# Main is validated by publication. Keep CI / test successful for docs-only PRs.
 on:
-  push:
-    branches: [main]
   pull_request:
 
-# Superseded runs on the same branch are cancelled instead of queueing.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
+  plan:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      docs_only: ${{ steps.changes.outputs.docs_only }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/update-guide.js pr-plan "$BASE_SHA" "$HEAD_SHA"
+
+  validate:
+    needs: plan
+    if: needs.plan.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.0-noble
+      options: --init --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - name: Cache Playwright browser
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:unit
-      - run: npm run test:browser
+      - run: npm test
+      - name: Check the packaged application
+        run: |
+          node scripts/sync-stage-site.js
+          npm run test:publication
+
+  test:
+    needs: [plan, validate]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report required check
+        env:
+          PLAN: ${{ needs.plan.result }}
+          DOCS_ONLY: ${{ needs.plan.outputs.docs_only }}
+          VALIDATION: ${{ needs.validate.result }}
+        run: |
+          test "$PLAN" = success
+          if [ "$DOCS_ONLY" = true ]; then
+            test "$VALIDATION" = skipped
+            echo "Documentation-only change: browser validation is unnecessary."
+          else
+            test "$VALIDATION" = success
+          fi

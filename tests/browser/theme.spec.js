@@ -51,6 +51,7 @@ test.describe('served', () => {
     }
     expect(await bgOf(page)).not.toBe(initialBg);
     expect(isDarkBg(await bgOf(page))).toBe(true);
+    expect(await page.evaluate(key => localStorage.getItem(key), THEME_KEY)).toBe('dark');
 
     await page.reload();
     expect(await themeOf(page)).toBe('dark');
@@ -91,10 +92,4 @@ test.describe('served', () => {
     await page.emulateMedia({ colorScheme: null });
   });
 
-  test('the stored choice survives reload', async ({ page }) => {
-    await page.addInitScript(key => localStorage.setItem(key, 'dark'), THEME_KEY);
-    await page.goto(url());
-    expect(await themeOf(page)).toBe('dark');
-    await expect(page.locator('button[data-theme-choice="dark"]')).toHaveAttribute('aria-pressed', 'true');
-  });
 });
