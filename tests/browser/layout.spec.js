@@ -10,7 +10,7 @@ const FILE_URL = 'file://' + path.join(REPO_ROOT, 'index.html');
 // the static server, so it runs once against the shipped file, fast.
 test.describe('sticky chrome and feature surfaces', () => {
   test('the main navigation sticks to the top of the viewport', async ({ page }) => {
-    await page.goto(FILE_URL);
+    await page.goto(FILE_URL + '#species-index');
 
     const bar = await page.evaluate(() => {
       const style = getComputedStyle(document.querySelector('.nav'));
@@ -65,6 +65,7 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(shape.hrefs).toEqual([
       '#pair-finder',
       '#offspring-finder',
+      '#breeding-tree',
       '#breeding-table',
       '#species-index',
       '#team-planner',

@@ -13,7 +13,9 @@ function spriteMarkup(index) {
   return src ? '<span class="monster-sprite" aria-hidden="true"><img data-monster-index="'+Number(index)+'" data-sprite-kind="'+spriteKind(index)+'" src="'+src+'" alt="" decoding="async"></span>' : '';
 }
 function spriteLabel(index, text) {
-  return '<span class="monster-label">'+spriteMarkup(index)+'<span>'+escapeHTML(text)+'</span></span>';
+  const id = Number(index);
+  if (!Number.isInteger(id) || id < 0) return '<span class="monster-label">'+escapeHTML(text)+'</span>';
+  return '<a class="monster-label monster-link" href="#monster?id='+id+'">'+spriteMarkup(id)+'<span>'+escapeHTML(text)+'</span></a>';
 }
 function updateSpriteControls() {
   document.querySelectorAll("button[data-sprite-style]").forEach(button => {

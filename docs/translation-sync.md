@@ -1,0 +1,95 @@
+# Current patch names and PSX monster reference
+
+`data/monster-reference.js` adds the monster encyclopedia and overlays the guide's
+names before the application starts. Native species indices stay unchanged, so
+saved teams, breeding matrices, form identities, and shared links survive a name
+change. Search aliases retain the original guide name and the public snapshot's
+Current, Game Boy, Delocalized, and Vibecoded spellings. These aliases do not
+change the gameplay rules to those of another game.
+
+## Automatic publication
+
+The **Refresh translation names and publish guide** workflow runs on `main`
+pushes, every four hours, and manually. For this workflow to publish, set the
+repository's **Settings → Pages → Build and deployment → Source** to
+**GitHub Actions**, and allow the `github-pages` environment to deploy `main`.
+No private repository checkout, private token, or new repository secret is
+required. The workflow uses the existing public
+[translation export](https://github.com/dqm-psx/translations) after it receives
+updates from the patch project.
+
+Each build resolves the public translation repository's full commit SHA and
+downloads `comparison-data.json` and `source-manifest.json` from that same commit.
+The comparison's SHA-256, revision, schema, row count, source identity, and
+required coverage are validated before any output is replaced. The exporter
+selects explicit public wording fields; it never copies the full comparison,
+source evidence, filesystem paths, user information, or arbitrary metadata into
+the guide. It does not execute any code from the translation repository.
+
+The build tests the checked-in application, refreshes names, captions, natural
+skill names, and fixed-encounter labels, then runs the unit/data checks again.
+Only the browser assets are uploaded. A failed download, changed schema,
+incomplete catalog, or failing check stops publication and leaves the previous
+Pages deployment intact. GitHub schedule delays and the upstream translation
+publication delay can extend the four-hour interval. Inactive repositories may
+have scheduled workflows disabled by GitHub; a manual run resumes publication.
+
+The generated runtime bundle is part of each deployed artifact. Scheduled runs
+do not make Git commits or pull requests, and do not require write access to
+repository contents. The checked-in bundle remains a usable offline snapshot;
+refresh it when preparing a source release:
+
+```sh
+node scripts/sync-monster-reference.js
+node --test tests/unit/translation-sync.test.js
+```
+
+To reproduce a specific public snapshot:
+
+```sh
+node scripts/sync-monster-reference.js --public-revision FULL_40_CHARACTER_COMMIT
+```
+
+For a downloaded pair of source files, use `--source-dir PATH` together with
+`--public-revision`. `--check` compares without writing, and `--output PATH`
+selects a different generated bundle. The source revision and date shown in the
+guide describe the translation export, not when a player last opened the page.
+
+## Gameplay and wording are separate
+
+`data/monster-baseline.json` retains the authenticated PSX v1.0.61 native
+extraction, with stable species IDs and source hashes. It includes all 315
+standard species' base level limits, six growth arrays, and natural skill IDs.
+Every growth array has 99 entries: a level-up to level **N** uses entry **N−1**.
+Total base gain from level 1 to N is `gains.slice(1, N)` summed. These are species
+gains, not an individual monster's final stats. Starting/inherited stats,
+accessories, and individual level limits affect actual results. Recruitment can
+vary the base level limit by ±2, and breeding also changes it.
+
+The native library has 312 entries. Ramia, Dimension Dragon, and Hide-and-seek
+have no entry in that table. The guide keeps that absence explicit. Species
+resistance meanings remain unverified and are not filled with Game Boy values.
+Locations cover named fixed gate/world encounters and wandering-master teams;
+an empty list does not establish that a monster is breeding-only. Bosses, gifts,
+random magic-key worlds, and other special encounters are not comprehensively
+cataloged.
+
+The current wording sync does **not** claim to re-extract gameplay from each new
+patch. A native rule/layout change needs a reviewed baseline update. The source
+hashes and native addresses in the baseline document its evidence; translation
+dates never relabel old gameplay facts as freshly verified.
+
+The optional verifier checks all native growth values, natural skill IDs, base
+limits, and 312 caption-to-species mappings against the authenticated original
+Japanese SLPM-87050 disc. It uses only local read-only input and writes no game
+assets:
+
+```sh
+python scripts/sync-verify-native.py --bin /path/to/original-japanese.bin
+```
+
+The accepted original image has SHA-256
+`a1217657786430ac1c3ad71f16cdadb65d47b0df9a7e30278900651c1f1eec29`.
+Its native parameter code/table guards match the extraction's source evidence.
+There are 317 verified parameter rows including two additional internal slots;
+315 belong to the standard roster. Internal placeholders remain distinct.

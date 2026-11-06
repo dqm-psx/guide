@@ -23,7 +23,7 @@
 // Pages project paths) then own separate caches and never delete each other's;
 // an unrelated project's caches are never touched at all.
 const CACHE_PREFIX = "dqm-guide:" + new URL("./", self.location.href).pathname;
-const CACHE_VERSION = "v1.0.61-2";
+const CACHE_VERSION = "reference-2026-11-06";
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 
 // Every asset the page loads. Kept as a plain JSON array so
@@ -33,9 +33,13 @@ const PRECACHE = [
   "./index.html",
   "./manifest.webmanifest",
   "./css/guide.css",
+  "./css/workbench.css",
+  "./css/breeding-tree.css",
+  "./css/monster-reference.css",
   "./css/features.css",
   "./css/dark-mode.css",
   "./data/breeding-data.js",
+  "./data/monster-reference.js",
   "./data/monster-sprites.js",
   "./data/overworld-sprites.js",
   "./js/sprites.js",
@@ -47,6 +51,9 @@ const PRECACHE = [
   "./js/app-state.js",
   "./js/planner-ui.js",
   "./js/router.js",
+  "./js/breeding-tree.js",
+  "./js/monster-reference.js",
+  "./js/matrix-tools.js",
   "./js/theme.js",
   "./js/offline.js",
   "./icons/icon-32.png",

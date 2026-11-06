@@ -201,7 +201,7 @@ test.describe('served', () => {
     // Change the current document so the replace is observable.
     await addMonster(page, 13);
     await expect(page.locator('#planner-females .planner-card')).toHaveCount(2);
-    await expect(page.locator('#planner-females .planner-card-name')).toHaveText(['Dracky', 'Healer Slime']);
+    await expect(page.locator('#planner-females .planner-card-name')).toHaveText(['Dracky', await page.evaluate(() => displayName(byId.get(13)))]);
 
     // Import the backup and confirm the preview counts.
     if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
@@ -333,7 +333,7 @@ test.describe('served', () => {
     await stars.nth(2).click();
     await page.check('#planner-roster-favorites');
     await expect(page.locator('#planner-males .planner-card')).toHaveCount(2);
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText(['Slime', 'Healer Slime']);
+    await expect(page.locator('#planner-males .planner-card-name')).toHaveText(['Slime', await page.evaluate(() => displayName(byId.get(13)))]);
   });
 
   test('storage unavailable keeps the session usable and offers export', async ({ page }) => {
