@@ -5,11 +5,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const {verifySnapshot, validateBaseline, buildReference, generateScript, readBreeding, digest} = require('../../scripts/sync-monster-reference');
+const {verifySnapshot, validateBaseline, validateCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest} = require('../../scripts/sync-monster-reference');
 const ROOT = path.resolve(__dirname, '../..');
 const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/monster-baseline.json'), 'utf8'));
 const breeding = readBreeding();
 const revision = 'a'.repeat(40), publicRevision = 'b'.repeat(40);
+const gameplayProof = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/gameplay-verification.json'), 'utf8'));
+const currentPatch = () => ({version: 'v1.0.73', edition: 'current', published_at: '2026-11-06T07:45:18Z', source_revision: 'c'.repeat(40), package_sha256: 'd'.repeat(64)});
 
 function fixture() {
   const rows = new Map();
@@ -87,6 +89,65 @@ test('a wording refresh updates names, aliases, library, skills and locations by
     if (rule.mate_index != null) assert.equal(rule.mate_name, data.species[rule.mate_index].display_name);
   }
   assert.equal(generateScript(result), generateScript(buildReference(baseline, breeding, comparison, manifest, publicRevision)));
+});
+
+test('current release metadata has a strict public-only schema and remains separate from wording', () => {
+  const f = fixture();
+  f.manifest.current_patch = currentPatch();
+  const snapshot = verifySnapshot(f.bytes, Buffer.from(JSON.stringify(f.manifest)));
+  const result = buildReference(baseline, breeding, snapshot.comparison, snapshot.manifest, publicRevision);
+  assert.equal(result.metadata.current_patch.version, 'v1.0.73');
+  assert.equal(result.metadata.current_patch.source_revision, 'c'.repeat(40));
+  assert.equal(result.metadata.translation_revision, revision);
+  assert.equal(result.metadata.gameplay_version, baseline.metadata.gameplay_version);
+  assert.equal(result.metadata.gameplay_verification, null);
+  assert.equal(validateCurrentPatch(undefined), null);
+  for (const candidate of [
+    {...currentPatch(), author: 'must not be published'},
+    {...currentPatch(), release_url: 'https://private.invalid/'},
+    {...currentPatch(), version: 'v73'},
+    {...currentPatch(), edition: 'gameboy'},
+    {...currentPatch(), published_at: '2026-02-31T07:45:18Z'},
+    {...currentPatch(), source_revision: 'main'},
+    {...currentPatch(), package_sha256: 'invalid'},
+  ]) assert.throws(() => validateCurrentPatch(candidate), /Translation sync:/);
+});
+
+test('a newer release never advances the independently verified gameplay version', () => {
+  const f = fixture();
+  f.manifest.current_patch = {...currentPatch(), version: 'v1.0.74'};
+  const result = buildReference(baseline, breeding, f.comparison, f.manifest, publicRevision, gameplayProof);
+  assert.equal(result.metadata.current_patch.version, 'v1.0.74');
+  assert.equal(result.metadata.gameplay_verification.version, gameplayProof.version);
+  assert.equal(result.metadata.gameplay_verification.patched_bin_sha256, gameplayProof.patched_bin_sha256);
+  assert.equal(result.metadata.gameplay_version, 'v1.0.61-CURRENT');
+  assert.equal(result.metadata.gameplay_verification.verified.ordered_pairings, 106276);
+  assert.equal(result.metadata.gameplay_verification.verified.standard_stat_profiles, 315);
+  for (const corrupt of [
+    p => {p.baseline_sha256 = '0'.repeat(64);},
+    p => {p.breeding_sha256 = '0'.repeat(64);},
+    p => {p.verified.library_mappings = 311;},
+    p => {p.verified.extra = 1;},
+    p => {p.local_path = '/private/path';},
+  ]) {
+    const invalid = structuredClone(gameplayProof); corrupt(invalid);
+    assert.throws(() => validateGameplayVerification(invalid, baseline, breeding), /Translation sync:/);
+  }
+  const changedBaseline = structuredClone(baseline);
+  changedBaseline.species[0].stats.growth.hp[1] += 1;
+  assert.throws(() => validateGameplayVerification(gameplayProof, changedBaseline, breeding), /does not match/);
+});
+
+test('reissuing a release version cannot reuse gameplay proof for a different package or source', () => {
+  const f = fixture();
+  f.manifest.current_patch = {...currentPatch(), version: gameplayProof.version,
+    source_revision: gameplayProof.source_revision, package_sha256: gameplayProof.package_sha256};
+  assert.equal(buildReference(baseline, breeding, f.comparison, f.manifest, publicRevision, gameplayProof).metadata.current_patch.version, gameplayProof.version);
+  for (const [field, value] of [['source_revision', 'e'.repeat(40)], ['package_sha256', 'f'.repeat(64)]]) {
+    const manifest = structuredClone(f.manifest);
+    manifest.current_patch[field] = value;
+    assert.throws(() => buildReference(baseline, breeding, f.comparison, manifest, publicRevision, gameplayProof), /does not match this version's released package/);
+  }
 });
 
 test('renaming a conditional-rule parent also updates human-readable rule labels', () => {

@@ -70,11 +70,14 @@ test.describe('served', () => {
     await page.click('.nav a[href="#species-index"]');
     await expect(page.locator('#species-index #name-guide')).toBeVisible();
     const sources = page.locator('#species-index details').filter({ has: page.locator('#coverage-summary') });
-    await sources.locator('summary').click();
+    await sources.locator(':scope > summary').click();
     await expect(page.locator('#coverage-summary')).toBeVisible();
     const slots = await page.evaluate(() => DATA.species.length);
     const version = await page.evaluate(() => DATA.metadata.version);
     await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);
+    await expect(page.locator('#source-version-summary')).toBeVisible();
+    await expect(page.locator('#source-metadata')).toBeHidden();
+    await sources.getByText('Technical provenance and original extraction', { exact: true }).click();
     await expect(page.locator('#source-metadata')).toBeVisible();
     await expect(page.locator('#source-metadata')).toContainText(version);
   });

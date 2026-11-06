@@ -97,3 +97,60 @@ test('legacy profile URLs work and internal slots omit unsupported breeding tree
   await page.goto(serverUrl + '#monster/nonsense');
   await expect(page.locator('#monster-heading')).toHaveText('Monster not found');
 });
+
+test.describe('source provenance', () => {
+  test.use({ serviceWorkers: 'block' });
+
+  test('Sources and profiles distinguish a newer release from gameplay proof and handle missing metadata', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    let omitMetadata = false;
+    const newerRelease = 'v99.0.0-unverified';
+    await page.route('**/data/monster-reference.js*', async route => {
+      const response = await route.fetch();
+      const change = omitMetadata
+        ? 'delete globalThis.MONSTER_REFERENCE.metadata;'
+        : 'globalThis.MONSTER_REFERENCE.metadata.current_patch = {version: ' + JSON.stringify(newerRelease) + '};';
+      await route.fulfill({ response, body: await response.text() + '\n' + change });
+    });
+
+    await page.goto(serverUrl + '#about');
+    const expected = await page.evaluate(() => ({
+      proof: MONSTER_REFERENCE.metadata.gameplay_verification.version,
+      snapshot: MONSTER_REFERENCE.metadata.updated_at.slice(0, 10),
+      baseline: DATA.metadata.version,
+    }));
+    expect(expected.proof).not.toBe(newerRelease);
+    await page.getByText('Source, coverage, and verification', { exact: true }).click();
+    const sources = page.locator('#source-version-summary');
+    const value = (parent, label) => parent.locator('.source-versions > div').filter({ has: page.getByText(label, { exact: true }) }).locator('dd');
+    await expect(value(sources, 'Latest English patch')).toHaveText(newerRelease);
+    await expect(value(sources, 'Names & text snapshot')).toContainText(expected.snapshot);
+    await expect(value(sources, 'Breeding & stats last verified')).toHaveText(expected.proof);
+    await expect(sources).toContainText('The latest release has not yet had a separate gameplay verification.');
+
+    await page.goto(serverUrl + '#monster?id=11');
+    await page.locator('.monster-source > summary').click();
+    const profile = page.locator('.monster-source');
+    await expect(value(profile, 'Latest English patch')).toHaveText(newerRelease);
+    await expect(value(profile, 'Breeding & stats last verified')).toHaveText(expected.proof);
+    await expect(profile).toContainText('The latest release has not yet had a separate gameplay verification.');
+
+    // Older or incomplete generated bundles must retain the original
+    // gameplay attribution instead of borrowing the current release label.
+    omitMetadata = true;
+    await page.goto(serverUrl + '#about');
+    await page.reload();
+    await page.getByText('Source, coverage, and verification', { exact: true }).click();
+    await expect(value(sources, 'Latest English patch')).toHaveText('Not supplied by this snapshot');
+    await expect(value(sources, 'Names & text snapshot')).toHaveText('Not recorded');
+    await expect(value(sources, 'Breeding & stats last verified')).toHaveText(expected.baseline);
+    await expect(sources).toContainText('Gameplay retains its original extraction.');
+    await expect(sources.locator('a')).toHaveCount(0);
+    await page.goto(serverUrl + '#monster?id=11');
+    await page.locator('.monster-source > summary').click();
+    await expect(value(profile, 'Breeding & stats last verified')).toHaveText(expected.baseline);
+    await expect(value(profile, 'Latest English patch')).toHaveText('Not supplied by this snapshot');
+    expect(errors).toEqual([]);
+  });
+});

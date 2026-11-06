@@ -52,7 +52,7 @@ function stageSite() {
   const allowedExtensions = {css: new Set(['.css']), js: new Set(['.js']), data: new Set(['.js']), icons: new Set(['.png', '.svg', '.ico'])};
   for (const [directory, extensions] of Object.entries(allowedExtensions)) {
     for (const entry of fs.readdirSync(path.join(root, directory), {withFileTypes: true})) {
-      if (directory === 'data' && entry.name === 'monster-baseline.json' && entry.isFile()) continue;
+      if (directory === 'data' && ['monster-baseline.json', 'gameplay-verification.json'].includes(entry.name) && entry.isFile()) continue;
       if (!entry.isFile() || !extensions.has(path.extname(entry.name))) throw new Error(`Unexpected publication asset: ${directory}/${entry.name}`);
       assets.set(directory + '/' + entry.name, fs.readFileSync(path.join(root, directory, entry.name)));
     }

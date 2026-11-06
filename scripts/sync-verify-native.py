@@ -61,8 +61,8 @@ def decompress(data):
     return bytes(output)
 
 
-def verify(image, baseline):
-    require(hashlib.sha256(image).hexdigest() == RETAIL_SHA256, 'Expected the supported original Japanese SLPM-87050 disc')
+def verify(image, baseline, expected_sha256=RETAIL_SHA256):
+    require(hashlib.sha256(image).hexdigest() == expected_sha256, 'Disc hash does not match the authenticated input')
     exe = extent(image, 93985, 899072)
 
     def resource(index):

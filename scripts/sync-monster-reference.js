@@ -8,6 +8,8 @@ const vm = require('node:vm');
 const ROOT = path.resolve(__dirname, '..');
 const REPOSITORY = 'dqm-psx/translations';
 const SHA = /^[a-f0-9]{40}$/;
+const SHA256 = /^[a-f0-9]{64}$/;
+const VERSION = /^v\d+\.\d+\.\d+$/;
 const STATS = ['hp', 'mp', 'attack', 'defense', 'agility', 'intelligence'];
 
 function requireValue(value, message) {
@@ -26,6 +28,40 @@ function readBreeding(file = path.join(ROOT, 'data/breeding-data.js')) {
   return JSON.parse(JSON.stringify(context.DATA));
 }
 
+function exactKeys(value, keys, label) {
+  requireValue(value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).sort().join('|') === [...keys].sort().join('|'), `${label} fields differ`);
+}
+function validateCurrentPatch(value) {
+  if (value == null) return null; // Historical public snapshots have no release summary.
+  const keys = ['version', 'edition', 'published_at', 'source_revision', 'package_sha256'];
+  exactKeys(value, keys, 'current patch');
+  requireValue(typeof value.version === 'string' && value.version.length <= 32 && VERSION.test(value.version) && value.edition === 'current', 'invalid current patch version or edition');
+  requireValue(typeof value.published_at === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value.published_at) && Number.isFinite(Date.parse(value.published_at)) && new Date(value.published_at).toISOString().replace('.000Z', 'Z') === value.published_at, 'invalid current patch publication date');
+  requireValue(typeof value.source_revision === 'string' && SHA.test(value.source_revision) && typeof value.package_sha256 === 'string' && SHA256.test(value.package_sha256), 'invalid current patch source or checksum');
+  return Object.fromEntries(keys.map(key => [key, value[key]]));
+}
+
+function validateGameplayVerification(value, baseline, breeding) {
+  if (value == null) return null;
+  const keys = ['schema_version', 'version', 'edition', 'source_revision', 'patched_bin_sha256', 'package_sha256', 'baseline_sha256', 'breeding_sha256', 'verified', 'scope'];
+  exactKeys(value, keys, 'gameplay verification');
+  requireValue(value.schema_version === 1 && typeof value.version === 'string' && value.version.length <= 32 && VERSION.test(value.version) && value.edition === 'current', 'invalid gameplay verification version');
+  requireValue(typeof value.source_revision === 'string' && SHA.test(value.source_revision), 'invalid gameplay source revision');
+  for (const key of ['patched_bin_sha256', 'package_sha256', 'baseline_sha256', 'breeding_sha256']) requireValue(typeof value[key] === 'string' && SHA256.test(value[key]), `invalid gameplay ${key}`);
+  requireValue(value.baseline_sha256 === digest(Buffer.from(JSON.stringify(baseline))) && value.breeding_sha256 === digest(Buffer.from(JSON.stringify(breeding))), 'gameplay proof does not match the shipped native data');
+  const expected = {
+    ordered_pairings: breeding.species.length ** 2,
+    stat_profiles: baseline.species.filter(s => s.stats.status === 'verified').length,
+    standard_stat_profiles: baseline.species.filter(s => breeding.species[s.index].playable && s.stats.status === 'verified').length,
+    library_mappings: baseline.species.filter(s => s.library.status === 'verified').length,
+    rule_code_spans: breeding.runtime_rules.verification.length,
+    context_code_spans: breeding.runtime_rules.context_verification.verification.length,
+  };
+  exactKeys(value.verified, Object.keys(expected), 'gameplay coverage');
+  for (const key of Object.keys(expected)) requireValue(value.verified[key] === expected[key], `gameplay ${key} coverage differs`);
+  return {...Object.fromEntries(keys.filter(key => !['verified', 'scope'].includes(key)).map(key => [key, value[key]])), verified: {...value.verified}, scope: clean(value.scope, 'gameplay verification scope', 1000)};
+}
+
 function verifySnapshot(comparisonBytes, manifestBytes) {
   const manifest = JSON.parse(manifestBytes.toString('utf8'));
   requireValue(manifest.schema_version === 2, 'unsupported source manifest schema');
@@ -35,6 +71,7 @@ function verifySnapshot(comparisonBytes, manifestBytes) {
   requireValue(SHA.test(manifest.translation_revision) && comparison.builder_revision === manifest.translation_revision, 'source revisions do not agree');
   requireValue(comparison.rows.length === manifest.row_count, 'source row count differs');
   requireValue(typeof manifest.updated_from_builder_at === 'string' && Number.isFinite(Date.parse(manifest.updated_from_builder_at)), 'missing source update date');
+  validateCurrentPatch(manifest.current_patch);
   return {comparison, manifest};
 }
 
@@ -57,9 +94,15 @@ function validateBaseline(baseline, breeding) {
   requireValue(baseline.species.filter(s => s.library.status === 'verified').length === 312, 'native library inventory differs');
 }
 
-function buildReference(baseline, breeding, comparison, manifest, publicRevision) {
+function buildReference(baseline, breeding, comparison, manifest, publicRevision, gameplayVerification = null) {
   validateBaseline(baseline, breeding);
   requireValue(SHA.test(publicRevision), 'public source must be pinned to a full commit');
+  const currentPatch = validateCurrentPatch(manifest.current_patch);
+  const verifiedGameplay = validateGameplayVerification(gameplayVerification, baseline, breeding);
+  if (currentPatch && verifiedGameplay && currentPatch.version === verifiedGameplay.version) {
+    requireValue(currentPatch.source_revision === verifiedGameplay.source_revision && currentPatch.package_sha256 === verifiedGameplay.package_sha256,
+      'gameplay verification does not match this version\'s released package');
+  }
   const rows = new Map();
   for (const row of comparison.rows) {
     if (!['text/system.json', 'text/monster_captions.json', 'menus/general.json'].includes(row.catalog)) continue;
@@ -125,6 +168,8 @@ function buildReference(baseline, breeding, comparison, manifest, publicRevision
   });
   return {schema_version: 1, metadata: {
     gameplay_version: baseline.metadata.gameplay_version,
+    current_patch: currentPatch,
+    gameplay_verification: verifiedGameplay,
     translation_revision: manifest.translation_revision,
     public_revision: publicRevision,
     updated_at: manifest.updated_from_builder_at,
@@ -180,7 +225,9 @@ async function main(argv) {
   }
   const {comparison, manifest} = verifySnapshot(comparisonBytes, manifestBytes);
   const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/monster-baseline.json'), 'utf8'));
-  const reference = buildReference(baseline, readBreeding(), comparison, manifest, publicRevision);
+  const proofPath = path.join(ROOT, 'data/gameplay-verification.json');
+  const gameplayVerification = fs.existsSync(proofPath) ? JSON.parse(fs.readFileSync(proofPath, 'utf8')) : null;
+  const reference = buildReference(baseline, readBreeding(), comparison, manifest, publicRevision, gameplayVerification);
   const script = generateScript(reference);
   const output = path.resolve(options['--output'] || path.join(ROOT, 'data/monster-reference.js'));
   if (options['--check']) {
@@ -192,5 +239,5 @@ async function main(argv) {
   console.log(`Validated ${reference.metadata.coverage.named_species} names, ${reference.metadata.coverage.library_entries} captions, and 315 native stat profiles; public source ${publicRevision}.`);
 }
 
-module.exports = {verifySnapshot, validateBaseline, buildReference, generateScript, readBreeding, digest, STATS};
+module.exports = {verifySnapshot, validateBaseline, validateCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest, STATS};
 if (require.main === module) main(process.argv.slice(2)).catch(error => { console.error(error.message); process.exitCode = 1; });

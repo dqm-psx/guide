@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "version": "v1.0.73",
+  "edition": "current",
+  "source_revision": "dbf5b12cc419268e5dda0d227ab273ba702be53d",
+  "patched_bin_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
+  "package_sha256": "652ae16c06cc2291495b592bde5a2737e68e483879b4dc684ed4d58a56e1493a",
+  "baseline_sha256": "66684326f843d298c38dfac4c094d2572c75ca0aa2b955c5410f3ed834d8f1be",
+  "breeding_sha256": "2408514af4a3d0b7861ef661410bcfabb333941ca3b73f360cd9bafce7f90fbc",
+  "verified": {
+    "ordered_pairings": 106276,
+    "stat_profiles": 317,
+    "standard_stat_profiles": 315,
+    "library_mappings": 312,
+    "rule_code_spans": 5,
+    "context_code_spans": 16
+  },
+  "scope": "Release-matched disc verification of all ordered breeding outcomes, native special-rule and breeding-context code, base level limits, six-stat growth, natural skill IDs, and library identity mappings. Encounter coverage, acquisition, and resistance meanings are not reverified by this check."
+}

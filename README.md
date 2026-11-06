@@ -1,241 +1,247 @@
 # DQM1 & 2 PSX · Breeding & Monster Reference
 
-Interactive reference for the English patch of Dragon Quest Monsters 1 & 2
-(PlayStation). A buildless, offline-capable application with stable monster IDs,
-verified PSX mechanics, and current translation names.
+**[Open the guide](https://dqm-psx.github.io/guide/)** ·
+[English translation project](https://dqm-psx.github.io/) ·
+[Compare translation editions](https://dqm-psx.github.io/translations/)
 
-- **Breeding tree:** choose a recipe at each branch, expand either ordered
-  parent, compare alternatives, switch breeding context, undo changes, and share
-  the entire tree. No team setup is required. Circular routes are excluded.
-- **Breeding table:** compact matrix or searchable recipe list, independent
-  parent filters and + values, 8/12/24 row/column pages, axis swap, result
-  highlighting, keyboard movement, and clickable monster profiles. List search
-  covers every filtered pairing, not just the visible matrix page.
-- **Monster library:** searchable alternate names, family/name sorting,
-  favorites, and profiles with native six-stat growth, base level limits,
-  translated library descriptions, campaign-specific natural skills and
-  encounters, and breeding uses in both parent roles.
-- **Current names:** a public-only workflow refreshes names, captions, skills,
-  and encounter labels every four hours. See [setup and provenance](docs/translation-sync.md).
-  Gameplay remains the authenticated PSX snapshot; a wording update does not
-  claim to reverify gameplay changes in a new patch.
+Breeding tools and a monster library for the English patch of **Dragon Quest
+Monsters 1 & 2 for PlayStation**. The guide uses PSX species identities, breeding
+data, and native monster records. Displayed names follow the public translation
+export's **Current** edition; older English and Japanese names remain searchable.
 
-All 315 standard species have native growth data. The native library contains
-312 descriptions; missing descriptions, unverified resistance meanings, and
-incomplete acquisition coverage are clearly identified. No Game Boy or Dark
-Prince rules are substituted for PSX mechanics.
+## Choose a tool
 
-## Open it
+| Tool | What it does |
+| --- | --- |
+| [Find a pairing](https://dqm-psx.github.io/guide/#pair-finder) | Look up ordered parents, compare the reversed pairing, inspect special conditions, and copy or share a pairing. |
+| [Find parents](https://dqm-psx.github.io/guide/#offspring-finder) | Choose an offspring and filter its parent combinations. Special `+` and two-save recipes appear with their conditions. |
+| [Breeding tree](https://dqm-psx.github.io/guide/#breeding-tree) | Explore branching recipes without setting up a team. Change either branch, hide or clear parents, undo edits, and share the selected tree. |
+| [Breeding table](https://dqm-psx.github.io/guide/#breeding-table) | Compare a matrix or a recipe list, filter each parent axis and the offspring, enter parent `+` values, swap axes, and inspect results. |
+| [Monster library](https://dqm-psx.github.io/guide/#species-index) | Search names and aliases, filter families and favorites, sort the index, and open each monster's profile. |
+| [My game](https://dqm-psx.github.io/guide/#team-planner) | Keep DQM1/DQM2 teams, party and farm monsters, saved targets, and breeding plans in your browser. |
 
-- **From disk:** open `index.html` in a browser. No server or network needed.
-- **From a static server:** serve the repository root with any static file
-  server. Every asset path is relative, so the page works from a subpath such
-  as `https://example.com/guide/` as well as from the site root.
+Monster links open profiles containing the current and alternate names,
+Japanese name, sprite, library text, stats and growth, natural skills,
+recorded encounters, and breeding uses. Profiles link directly to the pairing,
+parent-search, and tree tools.
 
-The **Translations** navigation link opens the separate
-[translation comparison tool](https://dqm-psx.github.io/translations/), where
-you can compare Japanese and English wording across editions.
+### Breeding order and conditions
 
-## Install it and use it offline
+**Pedigree and mate are ordered.** Reversing them can change the result.
+The table, tree, and team tools distinguish three contexts:
 
-On GitHub Pages the page is installable and works offline. Open it once while
-online, then either keep using it (a reload without a network still opens it)
-or **Add to Home Screen** / **Install app** to get an icon and a full-screen
-copy. The installed copy starts offline, so it is usable on a plane or on a
-dead connection.
+- **Ordinary shrine:** applies the verified parent `+` rules.
+- **Two-save Breeding room:** applies the title-screen room overrides, which
+  take precedence over ordinary results.
+- **Base table only:** shows the species matrix without either override.
 
-This works because `sw.js` caches every shipped asset on first load and serves
-it network-first, cache-fallback: online loads stay current, offline loads come
-from the cache. It is a classic worker with no service worker on `file://`,
-where the page already needs no network once open.
+Enter actual parent `+` values in the table. A rule requiring either parent
+to reach a threshold checks each parent separately; it does not add their
+values together. The tree displays these requirements beside the affected
+recipe. A family requirement means any member of that family.
 
-After editing any shipped file, bump `CACHE_NAME` in `sw.js` only if you
-changed `sw.js` itself; a content-only edit is picked up on the next online
-load. The generated icons under `icons/` come from the shipped Slime sprite;
-regenerate them with `node scripts/make-icons.js` (test tooling, not a build
-step).
+The matrix offers 8, 12, or 24 rows and columns per page. Arrow keys move between
+result cells; Home and End move to the first and last result in a row. Its
+offspring search highlights matches on the current page. **Recipe list** searches
+all pairings allowed by the parent filters, with its own paginated results.
 
-## Layout
+The independent tree excludes routes that loop back to an ancestor and supports
+up to eight generations and 63 monster requirements. Changing breeding context
+starts a new tree; Undo restores the previous one. Recipes are explicit choices,
+not a claim of the shortest route. Availability, parent sex and level, inherited
+stats, and other eligibility requirements still need to be checked in the game.
 
-```
-index.html              page markup, <link> and <script src> only
-manifest.webmanifest    install metadata (name, icons, start_url, scope)
-sw.js                   service worker: offline cache (network-first)
-icons/                  app, tab, and home-screen icons (generated)
-css/guide.css           base styles
-css/features.css        reference tools and sticky navigation
-css/workbench.css       compact responsive workspace
-css/breeding-tree.css   independent tree explorer
-css/monster-reference.css monster profiles
-css/dark-mode.css       dark theme overrides
-data/                   breeding data and sprite maps as classic scripts
-  breeding-data.js        verified PSX breeding snapshot, assigns globalThis.DATA
-  monster-reference.js    current naming overlay and native monster details
-  monster-baseline.json  native extraction evidence; not a browser asset
-  monster-sprites.js      assigns globalThis.MONSTER_SPRITES
-  overworld-sprites.js    assigns globalThis.OVERWORLD_SPRITES
-js/                     page scripts, loaded in order by index.html
-  sprites.js  storage.js  session.js  reference.js  planner-core.js
-  recipe-planner.js  app-state.js  planner-ui.js
-  breeding-tree.js  monster-reference.js  matrix-tools.js  router.js  theme.js
-  offline.js            registers the service worker (no-op off http/https)
-scripts/                public wording sync, native verifier, publication packaging, icon generator
-tests/                  test tooling (not part of the shipped page)
-```
+### Monster data and coverage
 
-The data and scripts are plain classic scripts, so the page runs from `file://`
-with no build step and no `fetch()` for its own data. The service worker is the
-only background piece, and it is skipped on `file://`.
+The reference contains **315 standard species**, **10 named extra/internal
+entries**, and **one unnamed internal slot**: 326 table slots in total. Standard
+species have native six-stat growth and base level-limit data. The native library
+contains **312 descriptions**; missing descriptions remain identified as missing.
 
-## Views
+The profile's level control shows accumulated **species growth from level 1**,
+with an expandable table of individual level-up gains. These are not final stats:
+starting stats, inheritance, accessories, and the monster's individual level limit
+also matter. The campaign selector separates Terry, Cobi, and Tara skill and
+encounter records.
 
-The page uses hash routes so links work both on disk and on GitHub Pages. The main views are `#pair-finder` (the default), `#offspring-finder`, `#breeding-table`,
-`#species-index` (Monster library), `#breeding-tree`, and `#team-planner` (My game).
-Individual profiles use `#monster?id=11`; the tree uses `#breeding-tree?target=290&context=shrine`. An empty or unknown hash opens
-Find a pairing. All views stay in the page, so a view keeps its filters,
-selections, and planner tab when you come back to it, and printing the page
-prints only the view you are looking at. Breeding table spans the available
-page width, with row and column filters and no fixed-height scroll box.
-Rules appear beside the relevant results: superscript + markers in Find
-parents point to each pair's threshold and alternative offspring. The older
-`#rules-guide` and `#conditional-rules` links open Find parents; `#about` opens
-the naming guidance and source information in Monster library.
+Encounter coverage is incomplete. An empty list does not establish that a monster
+can only be obtained through breeding. Unverified resistance meanings and other
+missing information are labeled rather than filled from another version of the
+game.
 
-In **My game**, the team selector and team management controls appear above
-the tabs. You can switch, create, rename, or delete a team while viewing its
-roster, targets, or breeding results. Switching teams keeps the current tab.
-Team import, export, and full backup controls live in the collapsed
-**Import, export & backup** section below the roster in **My monsters**.
+Extra/internal entries are hidden by default and can be revealed with the
+**Include extra / internal table slots** setting. They remain labeled, and their
+presence in the data does not establish normal obtainability. The independent
+tree, teams, and standard-roster breeding table use the 315 standard species.
 
-## Share a pairing and keep your place
+## Links, names, and saved progress
 
-Find a pairing writes the selected parents into the URL with stable species
-IDs, so a link such as `#pair-finder?a=11&b=99` opens the same result. A shared
-URL takes precedence over anything saved locally. The guide also remembers the
-pair finder's parents, name filters, desired offspring, and a short list of
-recently inspected pairs across reloads, so closing the tab does not lose your
-place. The monster library can send a species straight to either parent slot or to
-Find parents, and a pairing result links to the offspring's other parent
-combinations.
+Routes use stable numeric species IDs, so translation changes do not change a
+monster's identity or break saved teams and links. Examples:
 
-## Night mode
+- [A pairing](https://dqm-psx.github.io/guide/#pair-finder?a=11&b=99)
+- [A monster profile](https://dqm-psx.github.io/guide/#monster?id=11)
+- [A breeding-tree target](https://dqm-psx.github.io/guide/#breeding-tree?target=290&context=shrine)
 
-The page follows your system light/dark preference by default. A **Theme**
-picker in the masthead chooses **System**, **Light**, or **Dark**; the choice
-is remembered and applied before the first paint, so a dark choice never
-flashes light.
+**Copy tree link** includes the chosen recipes and hidden branches. The tree also
+saves automatically in this browser. Shared pairing and tree parameters take
+precedence over previously saved selections.
 
-## Saved data
+Search recognizes current names, abbreviated menu names, Japanese names, and
+aliases from the guide and the published translation editions. Numbered forms
+retain separate species identities. An alternate name is a search aid; it does
+not select that edition's gameplay rules.
 
-Teams, rosters, favorites, targets, plans, the game switch, the sprite style,
-the theme choice, the independent breeding tree, and the reference session (pair finder parents, filters,
-desired offspring, and recent pairings) are stored **only in this browser**
-(localStorage). They never leave the device unless you export them. Teams,
-plans, favorites, and targets live in the version-2 document below; the theme
-and reference session use their own small keys. If browser storage is
-unavailable or full, the page keeps working for the session and shows a
-banner; use the backup export to keep your data.
+All progress is stored locally in the browser; the guide has no account or
+server-side roster storage. Use the appropriate export before moving devices or
+clearing browser data:
 
-The saved document is **version 2**. It records which game you are viewing, and
-each team carries its own game plus a location (`party` or `farm`) on every
-monster:
+| Data | How to keep or transfer it |
+| --- | --- |
+| Teams, party/farm entries, favorites, targets, and team plans | **My game → My monsters → Import, export & backup → Export full backup** |
+| One team | **Export team**; importing adds a team rather than replacing the roster |
+| Independent breeding tree | **Copy tree link**; it is separate from the full team backup |
+| Pairing | Copy or bookmark its URL |
 
-```js
-{
-  version: 2,
-  activeGame: 'dqm1',            // which game the view is showing
-  teams: [{
-    game: 'dqm2',                // 'dqm1' | 'dqm2' | null when unassigned
-    entries: [{ speciesIndex: 11, sex: 'male', plus: 0, location: 'farm' }],
-  }],
-}
-```
+Full-backup import previews the replacement and requires confirmation. A failed
+import leaves saved data unchanged. Team storage uses document version 2 and
+can migrate supported version-1 data; unsupported newer documents are not
+overwritten. Export filenames and internal compatibility identifiers are not
+the version of the displayed gameplay evidence.
 
-A version-1 document still loads: its teams become unassigned, its monsters
-become party monsters, and the migrated document is written back on your next
-save. A team imported from a file also starts unassigned, so you choose which
-game it belongs to. A document written by a newer build is never read or
-overwritten.
+In **Targets & plans**, recipes can use roster entries or requirements marked
+available, and each step supports notes and needed/ready/completed status.
+Warnings identify an individual roster monster reused by unfinished steps.
+Completing a step does not automatically consume its parents or add an offspring.
+Each team's targets and plans are included in its full backup.
 
-- **Export team** downloads the active team in the legacy team format.
-- **Export full backup** downloads the complete document — every team, roster,
-  favorite, target, and plan — as `DQM-guide-backup-v61.json`.
-- **Import full backup** previews the team and target counts and replaces your
-  saved data only when you confirm. A failed import leaves your data unchanged.
-- **Import team** adds the file as a new named team instead of replacing your
-  roster. Dropping a full backup there also works (preview + replace).
+The guide also remembers reference filters, recent pairings, sprite style, and
+the System/Light/Dark theme choice. Full backups include sprite style; reference
+filters, recent pairings, and theme stay in the browser. If browser storage is
+unavailable, the tools remain usable for the session; export progress or copy
+the tree link to retain it.
 
-On first load, a previously saved team and sprite style are migrated into the
-new document; the old storage keys are left untouched. If the saved document
-was written by a newer version or cannot be read, it is never overwritten — the
-banner explains the situation and offers a download or a fresh start.
+## Offline use
 
-## Breeding plans
+Open the hosted guide while online and let it finish loading. Its service worker
+caches the application for later offline visits. Supported browsers also offer
+**Install app** or **Add to Home Screen**. Installation is optional.
 
-Pin an offspring in **Find parents** to save it as a target, then build its
-breeding plan in the **Targets & plans** tab of **My game**. Each team keeps
-its own targets and plans.
+Online requests revalidate cached content. Published scripts, stylesheets, and
+icons use content-hash URLs, and the offline cache uses the same URLs. A returning
+browser can therefore load a new deployment even while an older worker is still
+active. Revisit or reload an open tab to receive updates; an offline copy keeps
+its last downloaded snapshot.
 
-- **Suggested recipes** are ranked by the species already in your roster, then
-  by fewer missing parents. They are a suggestion, not a guarantee of
-  playability or of the shortest route.
-- Choose a recipe to expand an ordered **Pedigree + Mate** pair into child
-  requirements. Each requirement can link to a matching roster entry, be marked
-  available without a link, or expand through another recipe. Roster matches are
-  hints and never change a requirement's status.
-- Track each requirement as **needed**, **ready**, or **completed**, and add a
-  note. Completing a step does not consume parents or add an offspring; those
-  stay explicit. If one roster entry is needed by two unfinished steps, the plan
-  warns you that breeding consumes parents.
-- Pick the **Ordinary shrine** or **Two-save Breeding room** context. Verified
-  `+` rules apply in the shrine; title-screen Breeding room overrides appear only
-  in the room context. Switching context flags a recipe that no longer applies
-  instead of deleting your notes or progress.
-- The plan never claims to establish acquisition, offspring sex, inherited `+`
-  value, or breeding eligibility, and an unknown `+` value is not treated as
-  zero. Replacements are warned and can be undone.
+For a downloaded checkout, open `index.html` directly. Its data and scripts load
+from local files without a server, network connection, or service worker.
+Relative paths also support static hosting under a project subpath such as
+`/guide/`.
 
-Plans are saved per target and are included in the full backup.
+## Translation updates and source evidence
 
-## Games and farm
+The [publication workflow](.github/workflows/publish-guide.yml) runs on pushes to
+`main`, manually, and every four hours. It reads the public
+[translation export](https://github.com/dqm-psx/translations), pins both source
+files to one commit, validates their hashes and identities, and refreshes monster
+names, library text, skill names, encounter labels, and the latest published
+patch's release metadata. The upstream publisher updates that release metadata
+when a stable patch release is published or edited. The guide needs no
+private-repository access or additional repository secret.
 
-The **My game** view holds a DQM1/DQM2 switch. A team is filed under one game,
-and because farms, saved targets, and plans all live under a team, each game
-keeps its own of all four. Every monster is marked **Party** or **Farm**;
-moving one is a single-field change, so its nickname, sex, `+` value, and
-favorite are preserved by construction. The team breeding grid shows party
-monsters, and **Include farm monsters** adds the rest, tagged in the row and
-column headers. Suggested recipes count party and farm monsters alike as owned
-and say where each roster parent is. The breeding table, the rules, and the
-data bundle are shared between the two games; only your saved data is split.
+**Translation wording, latest patch release, gameplay verification, and site
+deployment are separate versions.** A newer release label or translation snapshot
+does not itself verify that patch's breeding rules or native stats. The original
+extraction label records where the tables came from; a separate release-matched
+disc check identifies the later patch against which they were verified.
 
-## Test
+The [gameplay verification record](data/gameplay-verification.json) binds the
+checked release to its package and patched-disc hashes and the guide's exact
+data hashes. Its coverage includes every ordered breeding outcome, relevant
+rule/context code, native stat profiles and skill IDs, and library identity
+mappings. It does not reverify encounter coverage, acquisition, or resistance
+meanings. Future automatic wording and release updates leave the last gameplay
+verification unchanged until another reviewed disc check succeeds. See the
+[data provenance documentation](docs/translation-sync.md) for evidence and limits.
 
-```
+Scheduled builds publish the generated browser artifact without committing the
+refreshed bundle to Git. The live guide can therefore have newer wording and
+release metadata than a downloaded source checkout. Failed validation stops
+publication and preserves the previous deployment. Upstream publication and
+GitHub scheduling delays can extend the nominal four-hour interval.
+
+## Development and publication
+
+The application uses plain HTML, CSS, and classic JavaScript. Runtime dependencies
+and a bundler are not required. Use Node.js 22 for the repository's test and
+publication tooling, matching CI.
+
+```sh
 npm ci
 npx playwright install chromium
 npm test
 ```
 
-`npm test` runs the unit tests (`npm run test:unit`) and the browser flows
-(`npm run test:browser`). The unit tests load the shipped classic scripts in
-a `node:vm` context, so the pure logic runs in plain Node with no browser.
-The browser suite runs in parallel against a static server mounted at
-`/guide/` (the way GitHub Pages mounts the page); a small smoke suite pins
-the `file://` contract — the page loads from disk with no external requests —
-and a served reload with the network cut proves the service worker cache
-serves it offline. Test dependencies and test output stay out of the shipped
-page.
+`npm run test:unit` tests the shipped logic and data. `npm run test:browser`
+tests routing, reference tools, saved progress, responsive layouts, file access,
+and service-worker behavior. The publication-upgrade regression exercises a
+returning browser with fresh cached assets and an older active worker, followed
+by an offline reload.
 
+To refresh the checked-in wording and release-metadata snapshot and prepare a
+deployment:
+
+```sh
+node scripts/sync-monster-reference.js
+npm test
+node scripts/sync-stage-site.js
+```
+
+For a reproducible public import, supply `--public-revision` with a full public
+commit SHA. The sync also supports local source files and a non-writing check;
+see [translation sync instructions](docs/translation-sync.md).
+
+Gameplay verification is a separate maintainer task using a local disc matched
+to its release manifest. `scripts/verify-patch-gameplay.py` writes only version
+identifiers, hashes, and coverage counts; game assets and local paths are not
+published. The scheduled workflow does not rebuild or re-extract ROM data.
+
+`sync-stage-site.js` creates **`site-dist/`**, containing only the browser
+application. It fingerprints asset URLs and derives the worker cache version
+from the packaged contents. **Do not manually bump `CACHE_NAME` for releases.**
+When adding a runtime asset, add its page reference and matching `sw.js`
+`PRECACHE` entry so it is available offline. The source HTML remains usable from
+disk; packaging produces the versioned hosted copy.
+
+GitHub Pages must use **GitHub Actions** as its deployment source, with the
+`github-pages` environment permitting `main`. The publication workflow runs
+application tests, refreshes wording and release metadata, validates the refreshed data, packages
+`site-dist/`, and deploys that artifact. Scripts, test output, local inputs, Git
+history, and the native extraction baseline are excluded from the hosted files.
+
+### Repository map
+
+| Path | Purpose |
+| --- | --- |
+| `index.html`, `css/`, `js/` | Application shell, styles, and tool logic |
+| `data/breeding-data.js` | Species identities, ordered breeding matrix, and conditional rules |
+| `data/monster-reference.js` | Generated current names and monster profile data |
+| `data/monster-baseline.json` | Native extraction records used by the sync and verifier; not a browser asset |
+| `data/gameplay-verification.json` | Release-matched gameplay proof, bound to the guide's data and source hashes |
+| `data/*sprites.js`, `icons/` | Shipped sprites and application icons |
+| `manifest.webmanifest`, `sw.js` | Installation metadata and offline behavior |
+| `scripts/sync-monster-reference.js` | Validated import of public wording and latest-release metadata |
+| `scripts/sync-verify-native.py` | Optional read-only native-disc verification |
+| `scripts/verify-patch-gameplay.py` | Read-only comparison against a release-matched patched disc; emits the gameplay proof |
+| `scripts/sync-stage-site.js` | Browser-only publication packaging and cache identities |
+| `tests/`, `.github/workflows/` | Automated checks and publication |
 
 ## Interface references
 
-The guide adopts useful navigation patterns from the community tools requested
-for this project: the target-first synthesis flow in [Game8](https://game8.co/games/DQM-Dark-Prince/archives/435994),
-branch exploration in [Wizebin](https://dwm2.wizebin.com/), interconnected monster
-and family browsing in [DWM2 Breed](https://darksair.org/dwm2-breed/), parent and
-offspring lookup in [Monster Database](https://www.monster-db.com/about.php),
-and dense family recipe tables in [Dragon's Den](https://www.woodus.com/den/games/dwm1gbc/breeding-details.php?fam=dragon).
-These are interface references, not sources for this guide's gameplay data.
-The planner exposes explicit choices and conditions rather than claiming a
-minimum-cost route without established acquisition and eligibility data.
+The design draws on target-first lookup, branching exploration, connected monster
+pages, and dense recipe tables from [Game8](https://game8.co/games/DQM-Dark-Prince/archives/435994),
+[Wizebin](https://dwm2.wizebin.com/), [DWM2 Breed](https://darksair.org/dwm2-breed/),
+[Monster Database](https://www.monster-db.com/about.php), and
+[Dragon's Den](https://www.woodus.com/den/games/dwm1gbc/breeding-details.php?fam=dragon).
+The guide's gameplay data comes from its PSX evidence, with coverage and
+verification limits kept explicit.
