@@ -5,14 +5,14 @@
    a classic worker with no imports, so it needs no build step and no bundler.
 
    Strategy: network-first, cache fallback.
-   - Online, every load fetches the current files and refreshes the cache, so a
-     deploy never strands a reader on old markup.
+   - Online, every load revalidates files and refreshes the cache. This bypasses
+     a still-fresh browser HTTP cache, which is separate from CacheStorage.
    - Offline, a load is answered from CACHE_NAME, which the install step fills
      with every shipped asset (see PRECACHE).
 
-   Bump CACHE_NAME only when this file changes; activate() then drops the
-   previous cache. Content-only edits need no bump, because network-first
-   refreshes the cache on the next online load. Deletion is limited to caches
+   Publication fingerprints asset URLs and derives CACHE_VERSION from the
+   packaged application, so old active workers also request new asset URLs.
+   Local content-only edits revalidate on the next online load. Deletion is limited to caches
    this installation owns (its path-scoped prefix), because CacheStorage names
    are origin-wide and another project on the same origin may own other caches. */
 
@@ -23,7 +23,7 @@
 // Pages project paths) then own separate caches and never delete each other's;
 // an unrelated project's caches are never touched at all.
 const CACHE_PREFIX = "dqm-guide:" + new URL("./", self.location.href).pathname;
-const CACHE_VERSION = "reference-2026-11-06";
+const CACHE_VERSION = "reference-2026-11-06-refresh";
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 
 // Every asset the page loads. Kept as a plain JSON array so
@@ -67,7 +67,9 @@ const INDEX_URL = new URL("index.html", self.location.href).href;
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE))
+      .then(cache => cache.addAll(PRECACHE.map(url =>
+        new Request(new URL(url, self.location.href), { cache: "reload" })
+      )))
       .then(() => self.skipWaiting())
   );
 });
@@ -105,13 +107,13 @@ self.addEventListener("fetch", event => {
   const cacheKey = request.mode === "navigate" ? INDEX_URL : request;
 
   event.respondWith(
-    fetch(request)
+    fetch(request, { cache: "no-cache" })
       .then(response => {
         if (response && response.ok && response.type === "basic") {
           const copy = response.clone();
-          caches.open(CACHE_NAME)
+          event.waitUntil(caches.open(CACHE_NAME)
             .then(cache => cache.put(cacheKey, copy))
-            .catch(() => {});
+            .catch(() => {}));
         }
         return response;
       })

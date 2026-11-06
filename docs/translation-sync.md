@@ -34,6 +34,14 @@ Pages deployment intact. GitHub schedule delays and the upstream translation
 publication delay can extend the four-hour interval. Inactive repositories may
 have scheduled workflows disabled by GitHub; a manual run resumes publication.
 
+Publication gives each script, stylesheet, and icon a URL containing its content
+hash, and records the same URLs in the offline cache. Changed data therefore
+gets a new URL even for a returning browser controlled by an older service
+worker. The packaged worker's cache version follows the application contents;
+online requests revalidate the HTTP cache and retain the refreshed files for
+offline visits. Open tabs receive the new version on their next navigation or
+reload.
+
 The generated runtime bundle is part of each deployed artifact. Scheduled runs
 do not make Git commits or pull requests, and do not require write access to
 repository contents. The checked-in bundle remains a usable offline snapshot;
