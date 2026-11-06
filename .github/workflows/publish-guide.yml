@@ -40,7 +40,7 @@ jobs:
       # Browser fixtures refer to the checked-in name snapshot. Exercise the
       # application first, then validate the refreshed data independently.
       - run: npm test
-      - name: Refresh current patch wording from verified public snapshot
+      - name: Refresh wording and current patch metadata from verified public snapshot
         run: node scripts/sync-monster-reference.js
       - name: Validate refreshed data and application invariants
         run: npm run test:unit

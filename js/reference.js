@@ -609,9 +609,25 @@ window.addEventListener("hashchange", () => {
   if (applyPairParams(route.params)) renderPair();
 });
 renderRecent();
+function sourceSummaryMarkup() {
+  const metadata = globalThis.MONSTER_REFERENCE?.metadata || {};
+  const patch = metadata.current_patch;
+  const proof = metadata.gameplay_verification;
+  const revision = metadata.public_revision;
+  const snapshot = metadata.updated_at ? String(metadata.updated_at).slice(0, 10) : 'Not recorded';
+  const sourceLink = /^[a-f0-9]{40}$/.test(revision || '')
+    ? ' <a href="https://github.com/dqm-psx/translations/tree/' + revision + '">View published source ↗</a>' : '';
+  return '<dl class="source-versions"><div><dt>Latest English patch</dt><dd>' + escapeHTML(patch?.version || 'Not supplied by this snapshot') + '</dd></div>' +
+    '<div><dt>Names &amp; text snapshot</dt><dd>' + escapeHTML(snapshot) + sourceLink + '</dd></div>' +
+    '<div><dt>Breeding &amp; stats last verified</dt><dd>' + escapeHTML(proof?.version || metadata.gameplay_version || DATA.metadata.version) + '</dd></div></dl>' +
+    (proof ? '<p class="hint">' + escapeHTML(proof.scope) + '</p>' : '<p class="hint">Gameplay retains its original extraction. A current wording snapshot is not a new gameplay verification.</p>') +
+    (patch && proof && patch.version !== proof.version ? '<p class="hint">The latest release has not yet had a separate gameplay verification.</p>' : '');
+}
+$("source-version-summary").innerHTML = sourceSummaryMarkup();
 $("coverage-summary").textContent = DATA.species.length.toLocaleString() + " table slots; " + DATA.species.filter(isPlayable).length.toLocaleString() + " standard roster entries; " + DATA.families.length + " families; " + DATA.matrix.reduce((n,row) => n + row.length, 0).toLocaleString() + " ordered base entries.";
-$("source-metadata").textContent = JSON.stringify({ table: DATA.metadata, runtime_rules: DATA.runtime_rules }, null, 2);
+$("source-metadata").textContent = JSON.stringify({ current_reference: globalThis.MONSTER_REFERENCE?.metadata, original_table_extraction: DATA.metadata, runtime_rules: DATA.runtime_rules }, null, 2);
 window.DQMReference = Object.freeze({
+  sourceSummaryMarkup,
   refresh,
   selectTarget,
   currentTargetIndex,

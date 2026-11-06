@@ -14,7 +14,7 @@ pushes, every four hours, and manually. For this workflow to publish, set the
 repository's **Settings → Pages → Build and deployment → Source** to
 **GitHub Actions**, and allow the `github-pages` environment to deploy `main`.
 No private repository checkout, private token, or new repository secret is
-required. The workflow uses the existing public
+required in the guide. The workflow uses the existing public
 [translation export](https://github.com/dqm-psx/translations) after it receives
 updates from the patch project.
 
@@ -27,7 +27,8 @@ source evidence, filesystem paths, user information, or arbitrary metadata into
 the guide. It does not execute any code from the translation repository.
 
 The build tests the checked-in application, refreshes names, captions, natural
-skill names, and fixed-encounter labels, then runs the unit/data checks again.
+skill names, fixed-encounter labels, and the current patch summary, then runs the
+unit/data checks again.
 Only the browser assets are uploaded. A failed download, changed schema,
 incomplete catalog, or failing check stops publication and leaves the previous
 Pages deployment intact. GitHub schedule delays and the upstream translation
@@ -63,6 +64,24 @@ For a downloaded pair of source files, use `--source-dir PATH` together with
 selects a different generated bundle. The source revision and date shown in the
 guide describe the translation export, not when a player last opened the page.
 
+## Current release metadata
+
+The private patch project's existing publisher also exports a small
+`current_patch` object in the public source manifest. It reads the latest stable
+release, validates its tag's source commit and standard Current-edition ZIP,
+and publishes only the version, edition, UTC publication date, source revision,
+and package SHA-256. Publishing or editing a stable release triggers that
+upstream workflow; no private release URL, author, description, or filesystem
+path is copied to the guide. The guide reads this object from the same pinned
+public commit as its wording snapshot, validates its exact schema, and keeps it
+separate from the translation revision and gameplay verification.
+
+The original implementation synchronized wording automatically but did not
+export a patch-version label or refresh gameplay. Historical snapshots without
+`current_patch` remain readable; the guide does not invent a release version
+from their date or commit. A failed or incomplete upstream publication cannot
+silently advance the public guide's reported version.
+
 ## Gameplay and wording are separate
 
 `data/monster-baseline.json` retains the authenticated PSX v1.0.61 native
@@ -86,6 +105,22 @@ The current wording sync does **not** claim to re-extract gameplay from each new
 patch. A native rule/layout change needs a reviewed baseline update. The source
 hashes and native addresses in the baseline document its evidence; translation
 dates never relabel old gameplay facts as freshly verified.
+
+`data/gameplay-verification.json` records a separate check against a specific
+release-matched patched disc. The v1.0.73 check covers all 106,276 ordered matrix
+outcomes, native special-rule and breeding-context code, 317 stat profiles
+(315 standard species), natural skill IDs, and 312 library identity mappings.
+The proof binds the package checksum, patched-disc checksum, source commit, and
+the exact baseline and breeding data hashes. The generator rejects a proof if
+those data hashes or coverage counts no longer match.
+If a release is reissued under the same version with a different source commit
+or package checksum, publication also stops until its proof is reviewed.
+
+This proof does not reverify encounter/acquisition coverage or resistance
+meanings. A future automatic release or wording update leaves the last gameplay
+verification version unchanged until another authenticated disc check succeeds.
+The historical extraction label remains v1.0.61; it describes where the data
+originated, while the separate verification identifies the later checked patch.
 
 The optional verifier checks all native growth values, natural skill IDs, base
 limits, and 312 caption-to-species mappings against the authenticated original

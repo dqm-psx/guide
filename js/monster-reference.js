@@ -176,7 +176,6 @@
     const next = list[position + 1];
     const library = species.library || {};
     const parents = model.parentCount(index);
-    const metadata = root.MONSTER_REFERENCE && root.MONSTER_REFERENCE.metadata || {};
     host.innerHTML = '<div class="monster-breadcrumb"><a class="monster-back" href="#species-index">← Monster library</a><nav aria-label="Adjacent monsters">' +
       (previous ? '<a href="#monster?id=' + previous.index + '" aria-label="Previous monster: ' + safe(named(previous)) + '">← ' + safe(named(previous)) + '</a>' : '') +
       (next ? '<a href="#monster?id=' + next.index + '" aria-label="Next monster: ' + safe(named(next)) + '">' + safe(named(next)) + ' →</a>' : '') + '</nav></div>' +
@@ -187,8 +186,8 @@
       '<div class="monster-profile-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3><span class="monster-badge">PSX data</span></div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
       '<section class="monster-card"><div class="monster-card-heading"><h3>Skills & encounters</h3><label class="sr-only" for="monster-campaign">Campaign</label><select id="monster-campaign">' + Object.entries(CAMPAIGNS).map(([key, label]) => '<option value="' + key + '"' + (campaign === key ? ' selected' : '') + '>' + label + '</option>').join('') + '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div><h4 class="monster-subheading">Where to find it</h4><div id="monster-locations">' + locationsMarkup(species) + '</div></section></div>' +
       '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint">' + parents.toLocaleString() + ' ordered base-table pairings produce this monster. <a href="#offspring-finder?target=' + index + '">View parents and special recipes ↗</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section>' +
-      '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' + safe(species.resistances && species.resistances.text || 'PSX resistance values have not yet been verified for this reference.') + '</p><p>Gameplay data: ' + safe(metadata.gameplay_version || 'v1.0.61-CURRENT') + '. Names and library wording follow the current English translation snapshot.</p>' +
-      (metadata.updated_at ? '<p>Translation snapshot: ' + safe(String(metadata.updated_at).slice(0, 10)) + '.</p>' : '') +
+      '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' + safe(species.resistances && species.resistances.text || 'PSX resistance values have not yet been verified for this reference.') + '</p>' +
+      (root.DQMReference?.sourceSummaryMarkup ? root.DQMReference.sourceSummaryMarkup() : '') +
       '<p>Breeding tables describe ordered species results. Parent eligibility, inheritance, and acquisition must be checked separately.</p></details>';
   }
 
