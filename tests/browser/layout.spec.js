@@ -46,8 +46,17 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(new Set(offsets).size).toBe(1);
   });
 
-  test('the nav holds direct links to the guide views and translation tool', async ({ page }) => {
+  test('the views and project navigation each expose their own destinations', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
     await page.goto(FILE_URL);
+
+    const project = page.getByRole('navigation', { name: 'DQM PSX project' });
+    await expect(project.getByRole('link', { name: 'DQM PSX home' })).toHaveAttribute('href', 'https://dqm-psx.github.io/');
+    await expect(project.getByRole('link', { name: 'Patch' })).toHaveAttribute('href', 'https://dqm-psx.github.io/#download');
+    await expect(project.getByRole('link', { name: 'Translations' })).toHaveAttribute('href', 'https://dqm-psx.github.io/translations/');
+    await expect(project.locator('[aria-current="page"]')).toHaveText('Guide');
+    // All four labels fit a single row on a small phone.
+    expect(await project.evaluate(nav => new Set([...nav.children].map(item => item.offsetTop)).size)).toBe(1);
 
     const shape = await page.evaluate(() => {
       const nav = document.querySelector('.nav nav');
@@ -69,7 +78,6 @@ test.describe('sticky chrome and feature surfaces', () => {
       '#breeding-table',
       '#species-index',
       '#team-planner',
-      'https://dqm-psx.github.io/translations/',
     ]);
     expect(shape.gap).toBeGreaterThan(0);
   });
