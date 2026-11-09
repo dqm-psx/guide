@@ -160,7 +160,7 @@ test.describe('served', () => {
     await page.check('#planner-roster-favorites');
     await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
     await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-males .planner-empty')).toBeVisible();
+    await expect(page.locator('#planner-roster-favorites')).toBeChecked();
     await page.uncheck('#planner-roster-favorites');
     await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
   });
