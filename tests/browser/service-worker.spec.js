@@ -12,6 +12,19 @@ test.afterAll(async () => {
   await stopGuideServer();
 });
 
+async function waitForVisitedScripts(page) {
+  await expect(page.locator('#sources')).toBeVisible();
+  // Capture the complete route after rendering, then poll the resolved value
+  // of the asynchronous cache lookup before cutting the connection.
+  await expect.poll(() => page.evaluate(async () => {
+    const key = (await caches.keys()).find(name => name.startsWith('dqm-guide:/guide/'));
+    if (!key) return false;
+    const cache = await caches.open(key);
+    const scripts = Array.from(document.scripts,script => script.src).filter(Boolean);
+    return (await Promise.all(scripts.map(url => cache.match(url)))).every(Boolean);
+  }), {timeout:20000}).toBe(true);
+}
+
 // Service workers need a secure context, so this is the served copy only;
 // tests/browser/offline.spec.js covers the file:// copy, where the worker
 // stays out of the way on purpose.
@@ -24,14 +37,7 @@ test('a visited copy reloads and works with the network offline', async ({ page,
   // claimed this page, which happens after the install cache is filled.
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
 
-  await expect(page.locator('#coverage-summary')).not.toBeEmpty();
-  await page.waitForFunction(async () => {
-    const cacheName = (await caches.keys()).find(key=>key.startsWith('dqm-guide:/guide/'));
-    if (!cacheName) return false;
-    const cache = await caches.open(cacheName);
-    const scripts = Array.from(document.scripts,script=>script.src).filter(Boolean);
-    return (await Promise.all(scripts.map(src=>cache.match(src)))).every(Boolean);
-  });
+  await waitForVisitedScripts(page);
   await context.setOffline(true);
   try {
     const reloaded = await page.reload();
@@ -94,14 +100,7 @@ test('offline updates ignore retained legacy and unrelated cache entries', async
   await page.goto(serverUrl + '#sources');
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
 
-  await expect(page.locator('#coverage-summary')).not.toBeEmpty();
-  await page.waitForFunction(async () => {
-    const cacheName = (await caches.keys()).find(key=>key.startsWith('dqm-guide:/guide/'));
-    if (!cacheName) return false;
-    const cache = await caches.open(cacheName);
-    const scripts = Array.from(document.scripts,script=>script.src).filter(Boolean);
-    return (await Promise.all(scripts.map(src=>cache.match(src)))).every(Boolean);
-  });
+  await waitForVisitedScripts(page);
   await context.setOffline(true);
   try {
     const reloaded = await page.reload();
