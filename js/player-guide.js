@@ -47,6 +47,7 @@
   }
   function normalized(value) { return String(value ?? '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’']/g, ''); }
   const searchIndex = new Map(rows.map(row => [row.id, normalized([row.title, row.region, row.summary, row.category,row.effect?.target,
+    ...(row.requested_species || []).map(id => GUIDE_REFERENCE.species[id].display_name),
     ...(row.nickname_rows || []).flatMap(name => name.aliases), ...(row.default_nicknames || []).flatMap(name => name.aliases),
     ...(row.details || []), ...(row.aliases || []), ...(row.places || []), ...(row.prices || []).flatMap(price=>price.locations)].join(' '))]));
   const monsters = GUIDE_REFERENCE.species.filter(row => row.current_name && (row.system_entry_id || row.playable)).map(row => ({
@@ -211,18 +212,18 @@
       (notes.length ? '<dl class="skill-facts">'+notes.map(([title,value])=>'<div><dt>'+title+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>' : '')+
       battleMarkup(data.fights,p)+(tables ? '<section class="route-section"><h3>Wild encounters</h3>'+tables+'</section>' : '');
   }
-  function linkedProse(line, row, data, p) {
+  function linkedProse(line, row, data, p, used) {
     const terms=new Map();
     const fold=label=>label.toLowerCase().replace(/[’‘]/g,"'");
-    function add(label,href) {
-      if (label?.length>=3 && !terms.has(fold(label))) terms.set(fold(label),href);
+    function add(label,href,id) {
+      if (label?.length>=3 && !terms.has(fold(label))) terms.set(fold(label),{href,id});
     }
     const destinations=[...(row.related || []),...(data?.supplies || []),data?.gate,data?.boss,
       ...(data?.skills || []).map(id=>'skill-'+FIELD_GUIDE.skill_names[id].id)];
     for (const id of destinations) {
       const dest=byId.get(id);
       if (!dest || guarded(dest)) continue;
-      for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id}));
+      for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id}),dest.id);
     }
     for (const map of window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(data?.maps || [])])) {
       add(map.title,'#atlas?map='+safe(map.id));
@@ -233,10 +234,44 @@
     const rx=new RegExp('(?<![\\p{L}\\p{N}])(?:'+pattern+')(?![\\p{L}\\p{N}])','giu');
     let text='',start=0;
     for (const m of line.matchAll(rx)) {
-      text+=safe(line.slice(start,m.index))+'<a href="'+terms.get(fold(m[0]))+'">'+safe(m[0])+'</a>';
+      const {href,id}=terms.get(fold(m[0]));
+      if (id && used) used.add(id);
+      text+=safe(line.slice(start,m.index))+'<a href="'+href+'">'+safe(m[0])+'</a>';
       start=m.index+m[0].length;
     }
     return text+safe(line.slice(start));
+  }
+  function walkthroughPath(p) {
+    const game = DQMWalkthrough.gameFor(p,byId);
+    return game ? DQMWalkthrough.paths[game]+(p.has('entry') ? '#'+p.get('entry') : '') : '';
+  }
+  function renderWalkthrough(game,p) {
+    const article = el('guide-article');
+    article.classList.remove('skill-profile');
+    const heading = games[game]+' walkthrough';
+    const sectionParams = new URLSearchParams({kind:'story',game});
+    const entryLink = (id,label) => {
+      const dest = byId.get(id);
+      return dest ? '<a href="'+linked(p,{entry:id})+'">'+safe(label || safeTitle(dest))+'</a>' : '';
+    };
+    const walk = DQMWalkthrough.render(game,{
+      byId, routes:FIELD_ROUTES.routes, escape:safe, title:safeTitle, hidden:guarded,
+      campaignLink:(key,current) => '<a href="'+linked(sectionParams,{game:key})+'"'+
+        (current ? ' aria-current="page"' : '')+'>'+safe(games[key])+'</a>',
+      sectionLink:(row,label) => '<a href="'+linked(sectionParams,{entry:row.id})+'">'+safe(label)+'</a>',
+      entryLink, prose:(line,row,data,used) => linkedProse(line,row,data,p,used),
+      places:id => entryLink(id,'Locations and encounters')
+    });
+    const back = p.has('q') ? linked(p,{entry:''}) : '#field-guide';
+    article.innerHTML = '<a class="guide-back" href="'+back+'">'+(p.has('q') ? 'Back to results' : 'Field guide')+'</a>'+
+      '<h2 id="article-title" tabindex="-1">'+safe(heading)+'</h2>'+walk;
+    for (const button of article.querySelectorAll('[data-reveal-stage]')) button.onclick = () => {
+      const id = button.dataset.revealStage;
+      individuallyRevealed.add(id);
+      renderWalkthrough(game,p);
+      el(id).focus();
+    };
+    return heading;
   }
   function renderArticle(row, p) {
     const article = el('guide-article');
@@ -245,7 +280,9 @@
       article.innerHTML=skillProfile(row,p);
       return row.title;
     }
-    const back = '<a class="guide-back" href="' + linked(p, {entry:''}) + '">Back to guide</a>';
+    const backKind = p.get('kind') || (!p.has('q') && row?.kind) || '';
+    const backLabel = p.has('q') ? 'Search results' : categories[backKind] || 'Field guide';
+    const back = '<a class="guide-back" href="' + linked(p, {entry:'',kind:backKind}) + '">← ' + safe(backLabel) + '</a>';
     if (!row) {
       article.innerHTML = back + '<h2 tabindex="-1" id="article-title">Entry unavailable</h2><p>This link does not identify an entry in this edition.</p>';
       return 'Entry unavailable';
@@ -258,6 +295,11 @@
       const routeData=FIELD_ROUTES.routes[row.id];
       const direct=new Set([routeData?.boss,routeData?.arena,routeData?.gate,...(routeData?.gates || []),...(routeData?.chapters || []),
         ...(routeData?.stages || []).flatMap(stage=>[stage.arena,...stage.gates,...stage.gates.map(id=>FIELD_ROUTES.routes[id].boss)])]);
+      const characterQuests = row.kind === 'npc' ? world.filter(quest => quest.kind === 'quest' &&
+        (quest.related?.includes(row.id) || row.related?.includes(quest.id))) : [];
+      for (const quest of characterQuests) direct.add(quest.id);
+      const questLinks = characterQuests.map(quest =>
+        '<a href="' + linked(p,{kind:'quest',entry:quest.id}) + '">' + safe(safeTitle(quest)) + '</a>');
       const related = (row.related || []).filter(id=>!direct.has(id)).map(id => byId.get(id)).filter(Boolean);
       const profileLinks = (row.species_ids || []).map(id => GUIDE_REFERENCE.species[id]).filter(Boolean);
       const mapLinks = window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(routeData?.maps || [])]);
@@ -265,20 +307,24 @@
       const otherPlaces = (row.places || []).filter(name => !linkedNames.has(normalized(name)));
       const prices = (row.prices || []).map(price=>'<tr><th scope="row">'+safe(games[price.game])+'</th><td>'+safe(price.locations.join(' · '))+
         '</td><td>'+safe(price.buy)+' G</td><td>'+safe(price.gold_pass)+' G</td></tr>').join('');
-      const nextChapter = row.kind === 'story' && world.find(other=>other.kind==='story' && other.game===row.game && other.order===row.order+1);
       const details=(row.details || []).filter(line=>!(prices && /shops sell it for \d+ G/i.test(line)) && !(routeData?.gate && /^Encounter: /u.test(line)));
+      const stepsTag = row.kind === 'quest' ? 'ol' : 'ul';
       body = artwork(row, false) +
         '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>' +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
-        (details.length ? (row.kind==='story' ? '<ol class="article-steps">' : '<ul class="article-steps">') + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + (row.kind==='story' ? '</ol>' : '</ul>') : '') +
+        (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
+        (row.arena_classes ? '<section class="route-section"><h3>Arena classes</h3><ul class="quest-ranks">' + row.arena_classes.map(id =>
+          '<li><a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a></li>').join('') + '</ul></section>' : '') +
+        (row.requested_species ? '<section class="route-section"><h3>Monsters in request order</h3><ol class="quest-species">' + row.requested_species.map(id =>
+          '<li><a href="#monster?id='+id+'">'+safe(GUIDE_REFERENCE.species[id].display_name)+'</a></li>').join('') + '</ol></section>' : '') +
         routeMarkup(row,routeData,p) +
+        (row.kind === 'npc' ? DQMCharacterDialogue.markup(row,safe,questLinks,!reveal) : '') +
         (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + otherNames(row) +
         (otherPlaces.length ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
         (mapLinks.length ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
         (profileLinks.length || related.length ? '<div class="article-related"><h3>Related entries</h3>' +
           related.map(r => '<a href="' + linked(p, {entry:r.id}) + '">' + safe(safeTitle(r)) + '</a>').join('') +
-          profileLinks.map(m => '<a href="#monster?id=' + m.index + '">' + safe(m.display_name) + '</a>').join('') + '</div>' : '') +
-      (nextChapter ? '<p class="next-chapter"><a href="'+linked(p,{entry:nextChapter.id})+'">Next chapter · '+safe(safeTitle(nextChapter))+'</a></p>' : '');
+          profileLinks.map(m => '<a href="#monster?id=' + m.index + '">' + safe(m.display_name) + '</a>').join('') + '</div>' : '');
     }
     const context = [games[row.game] && !['both','system'].includes(row.game) ? games[row.game] : '',
       row.kind === 'story' && !guarded(row) ? 'Chapter ' + row.order : ''].filter(Boolean).join(' · ');
@@ -331,23 +377,76 @@
     }
     return scored.sort((a,b)=>a.score-b.score).map(item=>item.r);
   }
+  function questDirectory(p, quests) {
+    const sections = [];
+    for (const game of ['dqm1','dqm2']) {
+      const campaign = quests.filter(row => row.game === game && row.quest_group);
+      if (!campaign.length) continue;
+      const groups = [];
+      for (const group of ['Story quests','Hidden gates and favors','Optional quests','Postgame']) {
+        const members = campaign.filter(row => row.quest_group === group).sort((a,b) => a.quest_order-b.quest_order);
+        if (!members.length) continue;
+        const items = members.map(row => {
+          const place = game === 'dqm2' && !guarded(row) ? '<small>'+safe(row.region)+'</small>' : '';
+          return '<li><a href="'+linked(p,{entry:row.id,page:''})+'">'+safe(safeTitle(row))+place+'</a></li>';
+        });
+        groups.push('<h4>'+safe(group)+'</h4><ul>'+items.join('')+'</ul>');
+      }
+      sections.push('<section><h3>'+safe(games[game])+'</h3>'+groups.join('')+'</section>');
+    }
+    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Field guide</a>' +
+      '<h2 id="directory-title" tabindex="-1">Quests</h2></div></div><div class="quest-directory">' +
+      (sections.join('') || '<p>No matching quests</p>') + '</div>';
+    return 'Quests';
+  }
+  function characterDirectory(p, characters) {
+    const regions = new Map();
+    for (const row of characters) {
+      const region = row.game === 'both' ? 'Both adventures' : row.region || games[row.game];
+      if (!regions.has(region)) regions.set(region, []);
+      regions.get(region).push(row);
+    }
+    const sections = Array.from(regions, ([region, members]) => {
+      members.sort((a,b) => safeTitle(a).localeCompare(safeTitle(b)));
+      const items = members.map(row => '<li><a href="'+linked(p,{entry:row.id,page:''})+'">'+
+        (guarded(row) ? '' : artwork(row,true))+safe(safeTitle(row))+'</a></li>');
+      return '<section><h3>'+safe(region)+'</h3><ul>'+items.join('')+'</ul></section>';
+    });
+    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Field guide</a>'+
+      '<h2 id="directory-title" tabindex="-1">Characters</h2></div></div><div class="character-directory">'+sections.join('')+'</div>';
+    return 'Characters';
+  }
   function directory(p) {
     const kind = p.get('kind'), game = p.get('game'), q = normalized(p.get('q')).trim();
     const pool = q && !kind ? rows.concat(monsters,actions) : rows;
     const filtered = pool.filter(r => (!kind || kind === r.kind) && (!game || r.game === 'both' || r.game === game));
+    if (kind === 'quest' && !q) return questDirectory(p,filtered);
+    if (kind === 'npc' && !q) return characterDirectory(p,filtered);
     const buying = /^(?:(?:where|how) (?:can i |to )?)?(buy|purchase|shop for)\b\s*/u;
     const shopQuery = buying.test(q);
-    const matches = q ? searchMatches(filtered,q.replace(buying,'').replace(/^(an?|the)\s+/u,''),shopQuery) : filtered;
+    const hunt = !kind && q.match(/^(?:where (?:can i |do i |to ))?(?:catch|recruit|find) (?:an? |the )?(.+?)(?: (?:as|for|in) (terry|cobi|tara)(?:s adventure)?)?\??$/u);
+    const speciesMatches = hunt ? searchMatches(monsters,hunt[1],false) : [];
+    const matches = speciesMatches.length ? speciesMatches : q ? searchMatches(filtered,q.replace(buying,'').replace(/^(an?|the)\s+/u,''),shopQuery) : filtered;
     const pages = Math.max(1, Math.ceil(matches.length / pageSize));
     const page = Math.min(pages, Math.max(1, parseInt(p.get('page'),10) || 1));
     const heading = [game && games[game], categories[kind] || (q ? 'Search results' : 'Reference')].filter(Boolean).join(' · ');
     const body = matches.slice((page-1)*pageSize,page*pageSize).map(r => {
       const hidden = guarded(r);
-      const href = r.href || (r.kind === 'monster' ? '#monster?id=' + r.index : linked(p, {entry:r.id}));
+      let href = r.href || (r.kind === 'monster' ? '#monster?id=' + r.index : linked(p, {entry:r.id}));
       const thumb = hidden ? '' : artwork(r, true);
       const context = [!game && ['dqm1','dqm2'].includes(r.game) ? games[r.game] : '',
         !kind ? categories[r.kind] : '', r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
-      const summary=shopQuery && r.prices?.length ? r.prices[0].locations[0]+' · '+r.prices[0].buy+' G' : r.summary;
+      let summary=shopQuery && r.prices?.length ? r.prices[0].locations[0]+' · '+r.prices[0].buy+' G' : r.summary;
+      if (speciesMatches.length) {
+        const locations = GUIDE_REFERENCE.species[r.index].locations.filter(loc=>loc.kind==='wild' &&
+          (!hunt[2] || loc.game===hunt[2]) && (!game || (loc.game==='terry' ? 'dqm1' : 'dqm2')===game));
+        if (locations.length) {
+          const first = locations[0];
+          const params = new URLSearchParams({tab:'encounters',q:r.title,game:first.game,area:first.game+'-'+first.context_id});
+          href = safe('#atlas?'+params);
+          summary = [campaigns[first.game],first.name,first.floors,'Lv. '+first.levels.join(', ')].filter(Boolean).join(' · ');
+        } else summary = 'No wild location recorded for this search. See breeding and other encounters.';
+      }
       return '<a class="guide-row" href="' + href + '">' + thumb + '<span>' + (context ? '<small>' + safe(context) + '</small>' : '') +
         '<strong>' + safe(safeTitle(r)) + '</strong>' + (!hidden && summary ? '<span>' + safe(summary) + '</span>' : '') + '</span></a>';
     }).join('');
@@ -365,6 +464,13 @@
     if (!entry && p.get('kind')==='monster') {
       location.replace('#species-index'+(p.get('q') ? '?q='+encodeURIComponent(p.get('q')) : ''));
       return 'Monster library';
+    }
+    const walkGame = DQMWalkthrough.gameFor(p,byId);
+    if (walkGame) {
+      el('guide-filters').hidden=true;
+      el('guide-browser').hidden=true;
+      el('guide-article').hidden=false;
+      return renderWalkthrough(walkGame,p);
     }
     el('guide-filters').hidden=Boolean(entry);
     el('guide-browser').hidden=Boolean(entry);
@@ -402,5 +508,5 @@
     if (!el('field-guide').hidden) document.title = show() + ' · DQM1&2 PSX Player Guide';
     if (!el('atlas').hidden) window.DQMAtlas?.show();
   }
-  window.DQMField = {show, filter, guarded, campaigns, setSpoilers, kindForEntry: id => byId.get(id)?.kind};
+  window.DQMField = {show, filter, guarded, campaigns, setSpoilers, walkthroughPath, kindForEntry: id => byId.get(id)?.kind};
 })();

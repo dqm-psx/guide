@@ -236,9 +236,11 @@
     }
     activeView = viewId;
     window.dispatchEvent(new Event('guide-view-rendered'));
-    if (settings.scroll === false) return;
+    const stageId = viewId === 'field-guide' && new URLSearchParams(parse(currentHash()).params).get('entry');
+    const stage = stageId && P(stageId)?.closest('.walk-stage') ? P(stageId) : null;
+    if (settings.scroll === false && !stage) return;
     const heading = headingFor(viewId);
-    const requested = settings.focusId ? P(settings.focusId) : null;
+    const requested = settings.focusId ? P(settings.focusId) : stage;
     const focusTarget = focusable(requested || heading);
     const scrollTarget = requested || fragmentIn(view) || heading || view;
     if (scrollTarget) scrollTarget.scrollIntoView({ block: "start", behavior: "instant" });

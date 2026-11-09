@@ -49,7 +49,9 @@
         "story-terry-early-arena",
         "story-terry-upper-arena",
         "story-terry-postgame",
-        "quest-rescue-healie"
+        "quest-rescue-healie",
+        "quest-see-the-future-in-the-mirror-gate",
+        "quest-explore-the-third-basement-floor"
       ]
     },
     {
@@ -116,7 +118,8 @@
         "story-sky-demon-lord",
         "boss-sky-impostor",
         "location-sky-world",
-        "location-world-between-worlds"
+        "location-world-between-worlds",
+        "quest-confront-darck"
       ]
     },
     {
@@ -129,7 +132,8 @@
         "story-sky-demon-lord",
         "boss-sky-impostor",
         "location-sky-world",
-        "location-world-between-worlds"
+        "location-world-between-worlds",
+        "quest-confront-darck"
       ]
     },
     {
@@ -142,7 +146,8 @@
       "affected_entries": [
         "story-sky-demon-lord",
         "story-between-worlds",
-        "location-world-between-worlds"
+        "location-world-between-worlds",
+        "quest-confront-darck"
       ]
     },
     {
@@ -256,7 +261,8 @@
       "affected_entries": [
         "story-cobi-tara-opening",
         "npc-greatlog-storage-clerk",
-        "npc-greatlog-storage-customer"
+        "npc-greatlog-storage-customer",
+        "quest-save-greatlog-the-first-keys"
       ]
     },
     {
@@ -270,7 +276,10 @@
         "story-ice-shield",
         "story-between-worlds",
         "story-greatlog-spirit-rewards",
-        "location-desert-world"
+        "location-desert-world",
+        "quest-save-greatlog-the-first-keys",
+        "quest-greatlog-spirit-recruits",
+        "quest-sky-shield-and-flight"
       ]
     },
     {
@@ -279,7 +288,9 @@
       "catalog": "dialogue/main/4000_6131.json",
       "extract": "full",
       "affected_entries": [
-        "story-terry-opening"
+        "story-terry-opening",
+        "quest-rescue-healie",
+        "quest-see-the-future-in-the-mirror-gate"
       ]
     },
     {
@@ -289,7 +300,8 @@
       "extract": "full",
       "affected_entries": [
         "story-terry-upper-arena",
-        "story-terry-collection"
+        "story-terry-collection",
+        "quest-machiko-living-statue"
       ]
     },
     {
@@ -310,7 +322,8 @@
       "extract": "full",
       "affected_entries": [
         "story-terry-optional-gates",
-        "npc-medal-man"
+        "npc-medal-man",
+        "quest-medal-gate"
       ]
     },
     {
@@ -361,7 +374,8 @@
       "extract": "full",
       "affected_entries": [
         "story-sky-ugor",
-        "location-sky-world"
+        "location-sky-world",
+        "quest-ugors-transform-staff"
       ]
     },
     {
@@ -373,7 +387,8 @@
         "story-ice-westernia",
         "boss-yuna-puppet",
         "npc-king-of-westernia",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-restore-yuna-s-soul-and-peace"
       ]
     },
     {
@@ -465,7 +480,8 @@
       "prefix": "I'm the ",
       "suffix": ". I collect tiny medals.",
       "affected_entries": [
-        "npc-medal-collector"
+        "npc-medal-collector",
+        "quest-talking-pot-key"
       ]
     },
     {
@@ -475,7 +491,8 @@
       "extract": "full",
       "affected_entries": [
         "story-pirate-mermaids",
-        "location-water-world"
+        "location-water-world",
+        "quest-mermaid-sailor-ring"
       ]
     },
     {
@@ -496,7 +513,8 @@
         "story-ice-northden",
         "boss-northden-impostor",
         "npc-king-of-northden",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-free-the-king-of-northden"
       ]
     },
     {
@@ -531,7 +549,11 @@
         "story-ice-northden",
         "story-ice-shield",
         "boss-spring-attacker",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-find-the-ice-key",
+        "quest-restore-yuna-s-soul-and-peace",
+        "quest-free-the-king-of-northden",
+        "quest-sky-shield-and-flight"
       ]
     },
     {
@@ -543,7 +565,11 @@
         "story-ice-northden",
         "story-ice-shield",
         "boss-spring-attacker",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-find-the-ice-key",
+        "quest-restore-yuna-s-soul-and-peace",
+        "quest-free-the-king-of-northden",
+        "quest-sky-shield-and-flight"
       ]
     },
     {
@@ -563,7 +589,8 @@
       "extract": "full",
       "affected_entries": [
         "story-sky-ugor",
-        "story-sky-demon-lord"
+        "story-sky-demon-lord",
+        "quest-ugors-transform-staff"
       ]
     },
     {
@@ -582,7 +609,8 @@
       "extract": "full",
       "affected_entries": [
         "boss-dead-king",
-        "boss-sky-impostor"
+        "boss-sky-impostor",
+        "quest-gather-the-three-zenithian-treasures"
       ]
     },
     {
@@ -701,7 +729,8 @@
       "extract": "full",
       "affected_entries": [
         "story-desert-mirage",
-        "location-desert-world"
+        "location-desert-world",
+        "quest-mirage-lake-and-the-sea-bell"
       ]
     },
     {
@@ -817,7 +846,8 @@
       "affected_entries": [
         "story-terry-collection",
         "boss-living-statue",
-        "npc-machiko"
+        "npc-machiko",
+        "quest-machiko-living-statue"
       ]
     },
     {
@@ -841,7 +871,9 @@
         "story-terry-mirror",
         "story-terry-collection",
         "story-terry-postgame",
-        "story-greatlog-postgame"
+        "story-greatlog-postgame",
+        "quest-open-the-queens-stairs",
+        "quest-sky-shield-and-flight"
       ]
     },
     {
@@ -855,7 +887,10 @@
         "story-terry-optional-gates",
         "story-terry-postgame",
         "npc-monster-elder",
-        "npc-queen-of-greattree"
+        "npc-queen-of-greattree",
+        "quest-the-queen-s-monster-collection-requests",
+        "quest-open-the-queens-stairs",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -889,7 +924,10 @@
         "npc-monster-elder",
         "npc-monster-professor",
         "location-water-world",
-        "quest-arena-dqm2-kids"
+        "quest-arena-dqm2-kids",
+        "quest-the-queen-s-monster-collection-requests",
+        "quest-open-the-queens-stairs",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -988,7 +1026,8 @@
       "catalog": "dialogue/main/4000_6131.json",
       "extract": "full",
       "affected_entries": [
-        "story-terry-collection"
+        "story-terry-collection",
+        "quest-the-queen-s-monster-collection-requests"
       ]
     },
     {
@@ -998,7 +1037,8 @@
       "extract": "full",
       "affected_entries": [
         "story-sky-ugor",
-        "location-sky-world"
+        "location-sky-world",
+        "quest-ugors-transform-staff"
       ]
     },
     {
@@ -1024,7 +1064,10 @@
         "quest-climb-greattree-arena-classes",
         "boss-durran",
         "npc-monster-elder",
-        "quest-arena-dqm1-s"
+        "quest-arena-dqm1-s",
+        "quest-see-the-future-in-the-mirror-gate",
+        "quest-show-the-golden-slime",
+        "quest-explore-the-third-basement-floor"
       ]
     },
     {
@@ -1034,7 +1077,8 @@
       "extract": "full",
       "affected_entries": [
         "story-pirate-mermaids",
-        "location-water-world"
+        "location-water-world",
+        "quest-recover-the-moonstone"
       ]
     },
     {
@@ -1073,7 +1117,9 @@
       "catalog": "dialogue/main/0000_1999.json",
       "extract": "full",
       "affected_entries": [
-        "story-greatlog-spirit-rewards"
+        "story-greatlog-spirit-rewards",
+        "quest-talking-pot-key",
+        "quest-sky-shield-and-flight"
       ]
     },
     {
@@ -1138,7 +1184,8 @@
       "extract": "full",
       "affected_entries": [
         "story-pirate-mermaids",
-        "npc-queen-of-the-mermaids"
+        "npc-queen-of-the-mermaids",
+        "quest-mermaid-sailor-ring"
       ]
     },
     {
@@ -1151,7 +1198,8 @@
         "story-ice-shield",
         "quest-sky-shield-and-flight",
         "boss-spring-attacker",
-        "npc-king-of-northden"
+        "npc-king-of-northden",
+        "quest-free-the-king-of-northden"
       ]
     },
     {
@@ -1168,7 +1216,8 @@
         "boss-western-cape-dancer",
         "boss-ghost-ship-pirates",
         "npc-queen-of-the-mermaids",
-        "location-water-world"
+        "location-water-world",
+        "quest-mermaid-sailor-ring"
       ]
     },
     {
@@ -1192,7 +1241,8 @@
         "boss-battle-rex",
         "npc-king-of-greattree",
         "location-anger-gate",
-        "quest-arena-dqm1-d"
+        "quest-arena-dqm1-d",
+        "quest-climb-greattree-arena-classes"
       ]
     },
     {
@@ -1234,7 +1284,8 @@
         "quest-recover-the-moonstone",
         "boss-ghost-ship-pirates",
         "npc-queen-of-the-mermaids",
-        "location-water-world"
+        "location-water-world",
+        "quest-mermaid-sailor-ring"
       ]
     },
     {
@@ -1291,7 +1342,8 @@
       "extract": "full",
       "affected_entries": [
         "story-terry-collection",
-        "boss-sky-dragon"
+        "boss-sky-dragon",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -1307,7 +1359,8 @@
         "boss-spring-attacker",
         "boss-dark-master",
         "npc-warubou",
-        "npc-king-of-greatlog"
+        "npc-king-of-greatlog",
+        "quest-eastoria-s-lost-voices"
       ]
     },
     {
@@ -1326,7 +1379,8 @@
       "extract": "full",
       "affected_entries": [
         "story-desert-assia",
-        "location-desert-world"
+        "location-desert-world",
+        "quest-assia-circus-and-water-shortage"
       ]
     },
     {
@@ -1489,7 +1543,11 @@
         "npc-greattree-storage-clerk",
         "npc-mud-hand-s-room-rock-paper-scissors-opponent",
         "npc-healie",
-        "npc-surabou"
+        "npc-surabou",
+        "quest-open-the-queens-stairs",
+        "quest-machiko-living-statue",
+        "quest-sky-dragon-egg",
+        "quest-medal-gate"
       ]
     },
     {
@@ -1515,7 +1573,8 @@
         "npc-queen-of-eastoria",
         "npc-yuna",
         "location-ice-world",
-        "npc-eastoria-botanist"
+        "npc-eastoria-botanist",
+        "quest-free-the-king-of-northden"
       ]
     },
     {
@@ -1541,7 +1600,9 @@
         "story-terry-upper-arena",
         "story-terry-optional-gates",
         "npc-medal-man",
-        "quest-arena-dqm1-s"
+        "quest-arena-dqm1-s",
+        "quest-climb-greattree-arena-classes",
+        "quest-medal-gate"
       ]
     },
     {
@@ -1554,7 +1615,8 @@
         "story-pirate-mirror",
         "quest-recover-the-moonstone",
         "boss-ghost-ship-pirates",
-        "npc-queen-of-the-mermaids"
+        "npc-queen-of-the-mermaids",
+        "quest-mermaid-sailor-ring"
       ]
     },
     {
@@ -1596,7 +1658,8 @@
         "boss-small-cave-guardian",
         "boss-sky-impostor",
         "npc-kameha",
-        "location-sky-world"
+        "location-sky-world",
+        "quest-ugors-transform-staff"
       ]
     },
     {
@@ -1612,7 +1675,8 @@
         "boss-yuna-puppet",
         "npc-king-of-westernia",
         "npc-yuna",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-free-the-king-of-northden"
       ]
     },
     {
@@ -1696,7 +1760,11 @@
         "npc-greatlog-hibernation-attendant",
         "npc-greatlog-librarian",
         "npc-greatlog-storage-clerk",
-        "npc-greatlog-storage-customer"
+        "npc-greatlog-storage-customer",
+        "quest-mirage-lake-and-the-sea-bell",
+        "quest-eastoria-s-lost-voices",
+        "quest-greatlog-spirit-recruits",
+        "quest-talking-pot-key"
       ]
     },
     {
@@ -1736,7 +1804,8 @@
       "speaker_line": 0,
       "affected_entries": [
         "story-greatlog-spirit-rewards",
-        "npc-petitbou"
+        "npc-petitbou",
+        "quest-greatlog-spirit-recruits"
       ]
     },
     {
@@ -1753,7 +1822,9 @@
         "boss-dark-master",
         "npc-warubou",
         "npc-king-of-assia",
-        "location-desert-world"
+        "location-desert-world",
+        "quest-assia-circus-and-water-shortage",
+        "quest-win-the-pirate-key"
       ]
     },
     {
@@ -1805,7 +1876,8 @@
       "affected_entries": [
         "story-terry-collection",
         "npc-machiko",
-        "quest-arena-dqm1-a"
+        "quest-arena-dqm1-a",
+        "quest-machiko-living-statue"
       ]
     },
     {
@@ -1827,7 +1899,8 @@
       "affected_entries": [
         "story-pirate-mermaids",
         "boss-western-cape-dancer",
-        "location-water-world"
+        "location-water-world",
+        "quest-recover-the-moonstone"
       ]
     },
     {
@@ -1841,7 +1914,8 @@
         "story-ice-shield",
         "quest-sky-shield-and-flight",
         "npc-king-of-greatlog",
-        "location-sky-world"
+        "location-sky-world",
+        "quest-eastoria-s-lost-voices"
       ]
     },
     {
@@ -1854,7 +1928,8 @@
         "npc-mother",
         "npc-greatlog-storage-clerk",
         "npc-greatlog-storage-customer",
-        "npc-greattree-storage-clerk"
+        "npc-greattree-storage-clerk",
+        "quest-save-greatlog-the-first-keys"
       ]
     },
     {
@@ -1889,7 +1964,9 @@
         "npc-petitbou",
         "location-greatlog",
         "location-desert-world",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-find-the-ice-key",
+        "quest-greatlog-spirit-recruits"
       ]
     },
     {
@@ -1901,7 +1978,8 @@
         "story-terry-mirror",
         "story-terry-postgame",
         "quest-recruit-watabou",
-        "npc-watabou"
+        "npc-watabou",
+        "quest-see-the-future-in-the-mirror-gate"
       ]
     },
     {
@@ -1928,7 +2006,10 @@
     {
       "spelling": "Healie",
       "nickname": "patches/boss_names.json:boss_72_0011.english",
-      "paired_in": ["story-terry-opening", "npc-healie"],
+      "paired_in": [
+        "story-terry-opening",
+        "npc-healie"
+      ],
       "source_id": "s001af000_00d3",
       "catalog": "dialogue/main/0000_1999.json",
       "extract": "speaker",
@@ -1968,7 +2049,10 @@
         "story-sky-demon-lord",
         "quest-the-mirror-of-destruction",
         "boss-sky-impostor",
-        "npc-kameha"
+        "npc-kameha",
+        "quest-save-greatlog-the-first-keys",
+        "story-ice-shield",
+        "quest-sky-shield-and-flight"
       ]
     },
     {
@@ -1978,7 +2062,8 @@
       "extract": "full",
       "affected_entries": [
         "story-terry-anger",
-        "quest-arena-dqm1-d"
+        "quest-arena-dqm1-d",
+        "quest-climb-greattree-arena-classes"
       ]
     },
     {
@@ -2000,7 +2085,8 @@
       "extract": "full",
       "affected_entries": [
         "story-ice-westernia",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-restore-yuna-s-soul-and-peace"
       ]
     },
     {
@@ -2062,7 +2148,8 @@
         "npc-pulio",
         "location-departure-gate",
         "npc-healie",
-        "npc-surabou"
+        "npc-surabou",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -2110,7 +2197,9 @@
         "location-departure-gate",
         "location-strength-gate",
         "npc-healie",
-        "npc-surabou"
+        "npc-surabou",
+        "quest-climb-greattree-arena-classes",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -2132,7 +2221,9 @@
       "affected_entries": [
         "story-ice-northden",
         "story-ice-westernia",
-        "location-ice-world"
+        "location-ice-world",
+        "quest-restore-yuna-s-soul-and-peace",
+        "quest-free-the-king-of-northden"
       ]
     },
     {
@@ -2208,7 +2299,8 @@
       "suffix": ".",
       "affected_entries": [
         "story-sky-ugor",
-        "location-sky-world"
+        "location-sky-world",
+        "quest-ugors-transform-staff"
       ]
     },
     {
@@ -2219,7 +2311,8 @@
       "prefix": "Here rests ",
       "suffix": ", the great sage who saved the world.",
       "affected_entries": [
-        "story-sky-ugor"
+        "story-sky-ugor",
+        "quest-ugors-transform-staff"
       ]
     },
     {

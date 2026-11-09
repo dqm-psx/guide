@@ -186,3 +186,13 @@ test.describe('source provenance', () => {
     expect(errors).toEqual([]);
   });
 });
+test('Metal Slime shows each campaign’s foreign-master ranks and links to their calculation', async ({page}) => {
+  await page.goto(serverUrl + '#monster?id=20');
+  const masters = page.locator('#monster-locations tr').filter({hasText:'Wandering master’s team'});
+  await page.locator('#monster-campaign').selectOption('terry');
+  await expect(masters).toContainText('Ranks 5, 9');
+  await page.locator('#monster-campaign').selectOption('tara');
+  await expect(masters).toContainText('Rank 6');
+  await masters.getByRole('link').click();
+  await expect(page.locator('#guide-article')).toContainText('Every 100 points gives one rank');
+});

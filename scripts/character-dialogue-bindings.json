@@ -1,0 +1,358 @@
+{
+  "speakers": {
+    "npc-cobi": {
+      "labels": ["Cobi"],
+      "scenes": {
+        "Aboard the sailing ship": ["s0037d000_00c8", "s0037d000_0110", "s0037d000_01dd", "s0037d000_022d", "s0037d000_0462", "s0037d000_08be", "s0037d000_08fc", "s0037d000_0970", "s0037d000_09e2"],
+        "GreatLog Castle": ["s0038d800_12eb"],
+        "Beneath GreatLog Castle": ["s003b7800_0230", "s003b7800_027a", "s003b7800_0456", "s003b7800_0969"],
+        "GreatLog farm": ["s003d6000_0599", "s003d6000_0649", "s003d6000_0983", "s003d6000_0ba5", "s003d6000_0bce", "s003d6000_0cf5", "s003d6000_0d97", "s003d6000_137c", "s003d6000_15fe", "s003d6000_16f6", "s003d6000_1982", "s003d6000_19aa", "s003d6000_1da1", "s003d6000_21a1", "s003d6000_2607", "s003d6000_2b1a", "s003d6000_2c8a", "s003d6000_3008", "s003d6000_30a7", "s003d6000_3140", "s003d6000_31b4", "s003d6000_31da", "s003d6000_32ae", "s003d6000_32ff", "s003d6000_3635", "s003d6000_3b3b", "s003d6000_3c2a", "s003d6000_3dd5"],
+        "GreatLog": ["s003f6800_1601"],
+        "GreatLog Main Street": ["s00419800_0a90"],
+        "Managing the GreatLog farm": ["v0a8770_0000", "v0a8770_0021", "v0a8770_0035", "v0a8770_0046", "v0a8770_0094", "v0a8770_00ba", "v0a8770_00ce", "v0a8770_00f6", "v0a8770_011b", "v0a8770_015a", "v0a8770_01ae", "v0a8770_01c1", "v0a8770_01dc", "v0a8770_01f5", "v0a8770_020d", "v0a8770_023c", "v0a8770_0264"]
+      }
+    },
+    "npc-eastoria-botanist": {
+      "labels": [],
+      "scenes": {
+        "Eastoria": ["s00555000_02c1", "s00555000_0413", "s00555000_04ea", "s00555000_0517", "s00555000_058c", "s00555000_06f7", "s00555000_0c84"]
+      }
+    },
+    "npc-father": {
+      "labels": [],
+      "scenes": {
+        "GreatLog farm": ["s003d6000_069f", "s003d6000_0a41", "s003d6000_0ab5", "s003d6000_0adc", "s003d6000_0b00", "s003d6000_0ca3", "s003d6000_0d1e", "s003d6000_0d45", "s003d6000_0dc5", "s003d6000_0eb9", "s003d6000_100f", "s003d6000_10ce", "s003d6000_110d", "s003d6000_1127", "s003d6000_1175", "s003d6000_1210", "s003d6000_1814", "s003d6000_1ac6", "s003d6000_1d2b", "s003d6000_214f", "s003d6000_2307", "s003d6000_2434", "s003d6000_254d", "s003d6000_25e6"]
+      }
+    },
+    "npc-greatlog-egg-appraiser": {
+      "labels": [],
+      "scenes": {
+        "GreatLog egg appraiser": ["s003f6800_2bce", "s003f6800_2dbd", "s003f6800_2f75"],
+        "Appraisals and blessings": ["v0a130c_0000", "v0a130c_003c", "v0a130c_0053", "v0a130c_0077", "v0a130c_0115", "v0a130c_013c", "v0a130c_0158", "v0a130c_017e", "v0a130c_0195", "v0a130c_01b6", "v0a130c_01f7", "v0a130c_0224", "v0a130c_023b", "v0a130c_0250", "v0a130c_025c", "v0a130c_0269", "v0a130c_0276", "v0a130c_0281", "v0a130c_028e", "v0a130c_029a", "v0a130c_02a7", "v0a130c_02b4", "v0a130c_02c6", "v0a130c_02d8", "v0a130c_02e9", "v0a130c_02fb", "v0a130c_030d", "v0a130c_031e", "v0a130c_032d", "v0a130c_033e", "v0a130c_0350", "v0a130c_035e", "v0a130c_036e", "v0a130c_037f", "v0a130c_0391", "v0a130c_03a2", "v0a130c_03b4", "v0a130c_03c7", "v0a130c_03d8", "v0a130c_03e8", "v0a130c_03fa", "v0a130c_040b", "v0a130c_041c", "v0a130c_042b", "v0a130c_043d", "v0a130c_044f", "v0a130c_045f", "v0a130c_0470", "v0a130c_0481"]
+      }
+    },
+    "npc-greatlog-hibernation-attendant": {
+      "labels": [],
+      "scenes": {
+        "GreatLog barn": ["s003d6000_42dd", "s003d6000_458d"],
+        "Hibernating and waking monsters": ["v0a9a5c_0000", "v0a9a5c_0026", "v0a9a5c_003d", "v0a9a5c_0051", "v0a9a5c_0070", "v0a9a5c_0097", "v0a9a5c_00ac", "v0a9a5c_00ca", "v0a9a5c_00f7", "v0a9a5c_0119", "v0a9a5c_012f", "v0a9a5c_016a", "v0a9a5c_018d", "v0a9a5c_01da", "v0a9a5c_01fd", "v0a9a5c_021a", "v0a9a5c_0229", "v0a9a5c_027c", "v0a9a5c_02a1", "v0a9a5c_02d0"]
+      }
+    },
+    "npc-greatlog-librarian": {
+      "labels": [],
+      "scenes": {
+        "GreatLog library": ["s003f6800_3415", "s003f6800_34d9", "s003f6800_3724", "s003f6800_37d5", "s003f6800_3852", "s003f6800_389a"]
+      }
+    },
+    "npc-greatlog-storage-clerk": {
+      "labels": [],
+      "scenes": {
+        "GreatLog storage": ["s003f6800_2529", "s003f6800_25c2", "s003f6800_266e", "s003f6800_2717", "s003f6800_2821", "s003f6800_287b", "s003f6800_292c"],
+        "Deposits and withdrawals": ["v0a9220_0000", "v0a9220_0014", "v0a9220_0028", "v0a9220_0043", "v0a9220_005e", "v0a9220_0079", "v0a9220_008c", "v0a9220_00ae", "v0a9220_00d0", "v0a9220_00e1", "v0a9220_00f6", "v0a9220_010a", "v0a9220_012f", "v0a9220_0153", "v0a9220_0168", "v0a9220_017d", "v0a9220_01a1", "v0a9220_01c5", "v0a9220_01d9", "v0a9220_01ed"]
+      }
+    },
+    "npc-greatlog-storage-customer": {
+      "labels": [],
+      "scenes": {
+        "GreatLog storage": ["s003f6800_25e9", "s003f6800_26c5", "s003f6800_27a9", "s003f6800_28d5"]
+      }
+    },
+    "npc-greattree-egg-appraiser": {
+      "labels": [],
+      "scenes": {
+        "GreatTree egg appraiser": ["s0ab53000_5e04", "s0ab53000_5e6e", "s0ab53000_5f27", "s0ab53000_5f56"],
+        "Appraisals and blessings": ["v0a0de8_0000", "v0a0de8_002f", "v0a0de8_0045", "v0a0de8_0061", "v0a0de8_00fd", "v0a0de8_0142", "v0a0de8_0156", "v0a0de8_0179", "v0a0de8_0190", "v0a0de8_01b5", "v0a0de8_01f7", "v0a0de8_021f", "v0a0de8_0240", "v0a0de8_0252", "v0a0de8_025e", "v0a0de8_026b", "v0a0de8_0278", "v0a0de8_0284", "v0a0de8_0291", "v0a0de8_029d", "v0a0de8_02a8", "v0a0de8_02b4", "v0a0de8_02c3", "v0a0de8_02d5", "v0a0de8_02e4", "v0a0de8_02f6", "v0a0de8_0304", "v0a0de8_0311", "v0a0de8_0322", "v0a0de8_0332", "v0a0de8_0344", "v0a0de8_0350", "v0a0de8_0361", "v0a0de8_0373", "v0a0de8_0382", "v0a0de8_0393", "v0a0de8_03a5", "v0a0de8_03b7", "v0a0de8_03c7", "v0a0de8_03d7", "v0a0de8_03e8", "v0a0de8_03f7", "v0a0de8_0409", "v0a0de8_041a", "v0a0de8_042c", "v0a0de8_043d", "v0a0de8_044c", "v0a0de8_045e", "v0a0de8_046f"]
+      }
+    },
+    "npc-greattree-librarian": {
+      "labels": [],
+      "scenes": {
+        "GreatTree library": ["s0ab53000_4bdc", "s0ab53000_4c6f", "s0ab53000_4c96"]
+      }
+    },
+    "npc-greattree-name-master": {
+      "labels": [],
+      "scenes": {
+        "Name Master’s Room": ["s0ab53000_5cfc", "s0ab53000_5d50"]
+      }
+    },
+    "npc-greattree-storage-clerk": {
+      "labels": [],
+      "scenes": {
+        "GreatTree storage": ["s0ab53000_14c9", "s0ab53000_1563"],
+        "Deposits and withdrawals": ["v0a9220_0000", "v0a9220_0014", "v0a9220_0028", "v0a9220_0043", "v0a9220_005e", "v0a9220_0079", "v0a9220_008c", "v0a9220_00ae", "v0a9220_00d0", "v0a9220_00e1", "v0a9220_00f6", "v0a9220_010a", "v0a9220_012f", "v0a9220_0153", "v0a9220_0168", "v0a9220_017d", "v0a9220_01a1", "v0a9220_01c5", "v0a9220_01d9", "v0a9220_01ed"]
+      }
+    },
+    "npc-healie": {
+      "labels": ["Healie"],
+      "scenes": {
+        "Departure Gate": ["s001af000_0016", "s001af000_00a5", "s001af000_00d3"]
+      }
+    },
+    "npc-kameha": {
+      "labels": ["Kameha"],
+      "scenes": {
+        "Demon King's Castle": ["s002e4800_0534", "s002e4800_0678", "s002e4800_07bd", "s002e4800_0854", "s002e4800_08d3", "s002e4800_0d39"],
+        "GreatLog Castle": ["s0038d800_0679", "s0038d800_0696", "s0038d800_0838", "s0038d800_0c2a"],
+        "GreatLog arena district": ["s0039f000_3691", "s0039f000_3721", "s0039f000_378e", "s0039f000_37df", "s0039f000_37f2", "s0039f000_3813", "s0039f000_38a4", "s0039f000_38b7", "s0039f000_3901", "s0039f000_392b", "s0039f000_399f"],
+        "Beneath GreatLog Castle": ["s003b7800_01dc", "s003b7800_029b", "s003b7800_0308", "s003b7800_15b8", "s003b7800_1615", "s003b7800_166c", "s003b7800_16c1", "s003b7800_18be", "s003b7800_18eb", "s003b7800_1df3"],
+        "GreatLog": ["s003f6800_146f", "s003f6800_15d8"],
+        "GreatLog Main Street": ["s00419800_03b9", "s00419800_0496", "s00419800_07b0", "s00419800_0aa6"],
+        "Northden Castle": ["s0044a800_2f3b", "s0044a800_2f92", "s0044a800_30ea", "s0044a800_3111", "s0044a800_314c"],
+        "Port Ritz and Yord": ["s004ae000_0a72", "s004ae000_0ab6", "s004ae000_0ae2", "s004ae000_0b7e"],
+        "Westernia Castle": ["s004ee000_04da", "s004ee000_0fb0", "s004ee000_105a"],
+        "Volcanic Island Cave": ["s00521800_002c", "s00521800_0099", "s00521800_010c", "s00521800_0130", "s00521800_013e", "s00521800_014c", "s00521800_0168", "s00521800_0188", "s00521800_01af", "s00521800_02ca", "s00521800_02ef"]
+      }
+    },
+    "npc-king-of-assia": {
+      "labels": ["King"],
+      "scenes": {
+        "Kalkara": ["s000d8000_0a83"],
+        "Mirage Lake and the bandits’ hideout": ["s00488000_002f", "s00488000_03c8", "s00488000_0411", "s00488000_04e3", "s00488000_0516", "s00488000_058a", "s00488000_0607", "s00488000_06b8"],
+        "Underground Waterway": ["s004c3000_0052", "s004c3000_00dd", "s004c3000_012d", "s004c3000_01c4", "s004c3000_0279", "s004c3000_02f9", "s004c3000_040a", "s004c3000_04a1", "s004c3000_058d", "s004c3000_062b", "s004c3000_0667"],
+        "Assia": ["s03e9f000_01e6", "s03e9f000_1a6f", "s03e9f000_1ac4", "s03e9f000_1af2", "s03e9f000_1b2f", "s03e9f000_1c91", "s03e9f000_1ce6", "s03e9f000_1d17", "s03e9f000_1d3b", "s03e9f000_1faf", "s03e9f000_203c", "s03e9f000_20e0", "s03e9f000_21d3", "s03e9f000_2326", "s03e9f000_23aa", "s03e9f000_23dc", "s03e9f000_245c", "s03e9f000_248d", "s03e9f000_2697", "s03e9f000_26f0"]
+      }
+    },
+    "npc-king-of-greatlog": {
+      "labels": ["GreatLog King", "King"],
+      "scenes": {
+        "GreatLog Castle": ["s0038d800_00ff", "s0038d800_01a6", "s0038d800_01cd", "s0038d800_022c", "s0038d800_0276", "s0038d800_04b7", "s0038d800_0582", "s0038d800_06ef", "s0038d800_0733", "s0038d800_07f5", "s0038d800_0b89", "s0038d800_0baa"],
+        "GreatTree Castle": ["s0ac3d800_3d5d", "s0ac3d800_6450", "s0ac3d800_64eb", "s0ac3d800_65ac"]
+      }
+    },
+    "npc-king-of-greattree": {
+      "labels": ["King"],
+      "scenes": {
+        "GreatTree Castle": ["s0ac3d800_29e7", "s0ac3d800_2a29", "s0ac3d800_2a77", "s0ac3d800_2b01", "s0ac3d800_2b6d", "s0ac3d800_2d1b", "s0ac3d800_2d8e", "s0ac3d800_3210", "s0ac3d800_32c0", "s0ac3d800_330b", "s0ac3d800_335c", "s0ac3d800_33a7", "s0ac3d800_33cd", "s0ac3d800_3422", "s0ac3d800_3466", "s0ac3d800_3529", "s0ac3d800_38f4", "s0ac3d800_39e4", "s0ac3d800_3adc", "s0ac3d800_3b83", "s0ac3d800_3c5e", "s0ac3d800_3d9a", "s0ac3d800_3ef8", "s0ac3d800_3f90", "s0ac3d800_401a", "s0ac3d800_40b8", "s0ac3d800_4508", "s0ac3d800_459c", "s0ac3d800_464f", "s0ac3d800_4baa", "s0ac3d800_4cd0", "s0ac3d800_4d8b", "s0ac3d800_4ef4", "s0ac3d800_5112", "s0ac3d800_5192", "s0ac3d800_5358", "s0ac3d800_5678", "s0ac3d800_572d", "s0ac3d800_5782", "s0ac3d800_59cb", "s0ac3d800_5a68", "s0ac3d800_5b1b", "s0ac3d800_5b88", "s0ac3d800_5de0", "s0ac3d800_5e4e", "s0ac3d800_5ed1", "s0ac3d800_5f67", "s0ac3d800_62a1", "s0ac3d800_632b", "s0ac3d800_63c7", "s0ac3d800_649f", "s0ac3d800_65ec", "s0ac3d800_6b18", "s0ac3d800_6c34", "s0ac3d800_6cc1", "s0ac3d800_6d11", "s0ac3d800_6e37", "s0ac3d800_6fcc", "s0ac3d800_7032", "s0ac3d800_7279", "s0ac3d800_72f8", "s0ac3d800_736c", "s0ac3d800_738b", "s0ac3d800_743e", "s0ac3d800_74a6", "s0ac3d800_74c4", "s0ac3d800_74e1", "s0ac3d800_74ff", "s0ac3d800_751c", "s0ac3d800_753b", "s0ac3d800_755a", "s0ac3d800_757a", "s0ac3d800_7597", "s0ac3d800_7661"],
+        "GreatTree farm": ["s0b113000_19f4", "s0b113000_1ab5", "s0b113000_1ad3", "s0b113000_1bb7", "s0b113000_1c8d", "s0b113000_1d8b"]
+      }
+    },
+    "npc-king-of-northden": {
+      "labels": ["King"],
+      "scenes": {
+        "Northden Castle · the impostor": ["s0044a800_1317", "s0044a800_1643", "s0044a800_1763", "s0044a800_1af6", "s0044a800_1b47", "s0044a800_1ea3", "s0044a800_1ef3"],
+        "Northden Castle · the two claimants": ["s0044a800_1d3c", "s0044a800_1d5d", "s0044a800_1d85", "s0044a800_1dac", "s0044a800_1dd7", "s0044a800_1e02", "s0044a800_1e2e", "s0044a800_1e54", "s0044a800_1e7c"],
+        "Northden Castle": ["s0044a800_1f4b", "s0044a800_20a1", "s0044a800_21ba", "s0044a800_21ec", "s0044a800_22dc", "s0044a800_235c", "s0044a800_2435", "s0044a800_274f", "s0044a800_27d0", "s0044a800_27ea", "s0044a800_2819", "s0044a800_2849", "s0044a800_2871", "s0044a800_2893", "s0044a800_2ab9", "s0044a800_2b92", "s0044a800_2d9d", "s0044a800_2e1f"],
+        "Border Mine": ["s00340000_08b9", "s00340000_0913", "s00340000_0994", "s00340000_0a89", "s00340000_0ae5"]
+      }
+    },
+    "npc-king-of-westernia": {
+      "labels": ["King"],
+      "scenes": {
+        "Westernia Castle": ["s004ee000_0662", "s004ee000_06cc", "s004ee000_07be", "s004ee000_0880", "s004ee000_08af", "s004ee000_0906", "s004ee000_0f89", "s004ee000_0fe0", "s004ee000_1080", "s004ee000_10a6", "s004ee000_10df", "s004ee000_10f6", "s004ee000_114e", "s004ee000_1265", "s004ee000_12e9", "s004ee000_1336", "s004ee000_1714", "s004ee000_1c87"],
+        "Border Mine": ["s00340000_08d2", "s00340000_0966", "s00340000_0a0e", "s00340000_0b36"]
+      }
+    },
+    "npc-machiko": {
+      "labels": ["Machiko"],
+      "scenes": {
+        "GreatTree arena district": ["s0adf7000_0c40", "s0adf7000_d2a3", "s0adf7000_d2ea", "s0adf7000_d332", "s0adf7000_d357", "s0adf7000_d37b", "s0adf7000_d3c0", "s0adf7000_d403", "s0adf7000_d49b", "s0adf7000_d66e", "s0adf7000_d6eb", "s0adf7000_d73b", "s0adf7000_d783", "s0adf7000_d7a6", "s0adf7000_d948", "s0adf7000_d9f2", "s0adf7000_db9b"],
+        "GreatTree farm": ["s0b113000_18b1"]
+      }
+    },
+    "npc-medal-collector": {
+      "labels": [],
+      "scenes": {
+        "Medal Collector’s Room": ["s003f6800_2963", "s003f6800_2a2c", "s003f6800_2b13"],
+        "Tiny medal rewards": ["medal_0aadc0_0029", "medal_0aadc0_0055", "medal_0aadc0_00a4", "medal_0aadc0_00cb", "medal_0aadc0_0103", "medal_0aadc0_0133", "medal_0aadc0_01ee", "medal_0aadc0_022b", "medal_0aadc0_0251", "medal_0aadc0_0276", "medal_0aadc0_0342", "medal_0aadc0_0367"]
+      }
+    },
+    "npc-medal-man": {
+      "labels": [],
+      "scenes": {
+        "Medal Man’s Room": ["s0ab53000_59ee", "s0ab53000_5aa8"],
+        "Tiny medal rewards": ["medal_0aadc0_0029", "medal_0aadc0_0055", "medal_0aadc0_00a4", "medal_0aadc0_00cb", "medal_0aadc0_0103", "medal_0aadc0_0133", "medal_0aadc0_01ee", "medal_0aadc0_022b", "medal_0aadc0_0251", "medal_0aadc0_0276", "medal_0aadc0_0342", "medal_0aadc0_0367"]
+      }
+    },
+    "npc-milly": {
+      "labels": ["Milly"],
+      "scenes": {
+        "GreatLog arena district": ["s0039f000_3faa", "s0039f000_3ffe", "s0039f000_404e", "s0039f000_4070", "s0039f000_4099", "s0039f000_40f6", "s0039f000_4120", "s0039f000_417c", "s0039f000_426b"],
+        "GreatTree arena district": ["s0adf7000_0a60", "s0adf7000_0a87", "s0adf7000_0aac", "s0adf7000_0b40", "s0adf7000_0b4a", "s0adf7000_4242", "s0adf7000_43ff", "s0adf7000_4468", "s0adf7000_cb0b", "s0adf7000_cbc2", "s0adf7000_cbe8", "s0adf7000_cc0e", "s0adf7000_cc35", "s0adf7000_cc81", "s0adf7000_ccbc", "s0adf7000_cd0b"]
+      }
+    },
+    "npc-monster-elder": {
+      "labels": [],
+      "scenes": {
+        "Starry Shrine": ["s0ab53000_35b5", "s0ab53000_36d3", "s0ab53000_3d60", "s0ab53000_3e49", "s0ab53000_3e6c", "s0ab53000_3ebe"],
+        "Breeding and hatching": ["v0a08bc_0000", "v0a08bc_002a", "v0a08bc_0040", "v0a08bc_005d", "v0a08bc_0071", "v0a08bc_008e", "v0a08bc_00b7", "v0a08bc_00df", "v0a08bc_0102", "v0a08bc_0127", "v0a08bc_0150", "v0a08bc_017b", "v0a08bc_01a9", "v0a08bc_01ce", "v0a08bc_01e3", "v0a08bc_022e", "v0a08bc_0245", "v0a08bc_0263", "v0a08bc_02d2", "v0a08bc_02ee", "v0a08bc_0307", "v0a08bc_0327", "v0a08bc_0373", "v0a08bc_039e", "v0a08bc_03c4", "v0a08bc_03f0", "v0a08bc_040e", "v0a08bc_0427", "v0a08bc_044d", "v0a08bc_046e", "v0a08bc_04b4", "v0a08bc_04cc", "v0a08bc_04f3", "v0a08bc_0515", "v0a08bc_0559", "v0a08bc_05aa", "v0a08bc_05c9", "v0a08bc_05e5", "v0a08bc_0605", "v0a08bc_064c"]
+      }
+    },
+    "npc-monster-professor": {
+      "labels": [],
+      "scenes": {
+        "Starry Shrine": ["s003b7800_2ae4", "s003b7800_2b8f", "s003b7800_2bb2", "s003b7800_2f56"],
+        "Breeding and hatching": ["v0a08bc_0000", "v0a08bc_002a", "v0a08bc_0040", "v0a08bc_005d", "v0a08bc_0071", "v0a08bc_008e", "v0a08bc_00b7", "v0a08bc_00df", "v0a08bc_0102", "v0a08bc_0127", "v0a08bc_0150", "v0a08bc_017b", "v0a08bc_01a9", "v0a08bc_01ce", "v0a08bc_01e3", "v0a08bc_022e", "v0a08bc_0245", "v0a08bc_0263", "v0a08bc_02d2", "v0a08bc_02ee", "v0a08bc_0307", "v0a08bc_0327", "v0a08bc_0373", "v0a08bc_039e", "v0a08bc_03c4", "v0a08bc_03f0", "v0a08bc_040e", "v0a08bc_0427", "v0a08bc_044d", "v0a08bc_046e", "v0a08bc_04b4", "v0a08bc_04cc", "v0a08bc_04f3", "v0a08bc_0515", "v0a08bc_0559", "v0a08bc_05aa", "v0a08bc_05c9", "v0a08bc_05e5", "v0a08bc_0605", "v0a08bc_064c"]
+      }
+    },
+    "npc-mother": {
+      "labels": [],
+      "scenes": {
+        "Home in GreatLog": ["s003d6000_2bc2", "s003d6000_2cdf", "s003d6000_2d81", "s003d6000_2e63", "s003d6000_2e84", "s003d6000_2ea6", "s003d6000_2ec4", "s003d6000_2f11", "s003d6000_2f88", "s003d6000_357f", "s003d6000_35e5", "s003d6000_36f7", "s003d6000_37f6", "s003d6000_3868", "s003d6000_38ca", "s003d6000_3917", "s003d6000_395e", "s003d6000_39ec", "s003d6000_3a12", "s003d6000_3a35", "s003d6000_3a79", "s003d6000_3adb", "s003d6000_3b16", "s003d6000_3f02", "s003d6000_3f5b", "s003d6000_3f7e", "s003d6000_3fa6", "s003d6000_4016", "s003d6000_4039", "s003d6000_405c", "s003d6000_407f", "s003d6000_40a0", "s003d6000_40e2", "s003d6000_410e", "s003d6000_4273"]
+      }
+    },
+    "npc-mud-hand-s-room-rock-paper-scissors-opponent": {
+      "labels": [],
+      "scenes": {
+        "Mud Hand’s Room": ["s0ab53000_5826", "s0ab53000_586a", "s0ab53000_5888", "s0ab53000_5899", "s0ab53000_5993", "s0ab53000_59ba"]
+      }
+    },
+    "npc-petitbou": {
+      "labels": ["Petitbou"],
+      "scenes": {
+        "Beneath GreatLog Castle": ["s003b7800_26eb", "s003b7800_2713", "s003b7800_28f1", "s003b7800_2945", "s003b7800_29bd", "s003b7800_29e2", "s003b7800_2a0a"]
+      }
+    },
+    "npc-pulio": {
+      "labels": ["Pulio", "Purio"],
+      "scenes": {
+        "GreatTree Castle": ["s0ac3d800_32e8", "s0ac3d800_3332", "s0ac3d800_3440", "s0ac3d800_370e", "s0ac3d800_39c0"],
+        "GreatTree farm": ["s0b113000_050d", "s0b113000_058b", "s0b113000_060c", "s0b113000_0aaf", "s0b113000_21a0", "s0b113000_2590"],
+        "Managing the GreatTree farm": ["v0a81c0_0000", "v0a81c0_0020", "v0a81c0_0033", "v0a81c0_0045", "v0a81c0_0094", "v0a81c0_00cd", "v0a81c0_00e1", "v0a81c0_0109", "v0a81c0_0129", "v0a81c0_016a", "v0a81c0_01bf", "v0a81c0_01d8", "v0a81c0_01f5", "v0a81c0_0212", "v0a81c0_0229", "v0a81c0_025a", "v0a81c0_0288"]
+      }
+    },
+    "npc-queen-of-eastoria": {
+      "labels": [],
+      "scenes": {
+        "Eastoria": ["s00555000_0f1b", "s00555000_1031", "s00555000_1243", "s00555000_13a9"]
+      }
+    },
+    "npc-queen-of-greattree": {
+      "labels": [],
+      "scenes": {
+        "Queen’s Room": ["s0adf7000_b00e", "s0adf7000_b1b5", "s0adf7000_b23e", "s0adf7000_b266", "s0adf7000_b28d", "s0adf7000_b2d1", "s0adf7000_b2ee", "s0adf7000_b337", "s0adf7000_b377", "s0adf7000_b39d", "s0adf7000_b3c9", "s0adf7000_b3f1", "s0adf7000_b41a", "s0adf7000_b445", "s0adf7000_b472", "s0adf7000_b499", "s0adf7000_b4b7", "s0adf7000_b4e3", "s0adf7000_b505", "s0adf7000_b530", "s0adf7000_b553", "s0adf7000_b57c", "s0adf7000_b5d9", "s0adf7000_b603", "s0adf7000_b667", "s0adf7000_b692", "s0adf7000_b6b5", "s0adf7000_b741", "s0adf7000_b7b6", "s0adf7000_b7dc", "s0adf7000_b806", "s0adf7000_b82d", "s0adf7000_b854", "s0adf7000_b87e", "s0adf7000_b89f", "s0adf7000_b8cc", "s0adf7000_b8f3", "s0adf7000_b91f", "s0adf7000_b948", "s0adf7000_b977", "s0adf7000_b999", "s0adf7000_b9c3"]
+      }
+    },
+    "npc-queen-of-the-mermaids": {
+      "labels": [],
+      "scenes": {
+        "Mermaid Kingdom": ["s0049f000_0f01", "s0049f000_0fbf", "s0049f000_107a", "s0049f000_10a0", "s0049f000_11ee", "s0049f000_121b", "s0049f000_1549", "s0049f000_158f", "s0049f000_15af", "s0049f000_161b", "s0049f000_174c"]
+      }
+    },
+    "npc-sanchi": {
+      "labels": ["Sanchi"],
+      "scenes": {
+        "GreatTree": ["s0ab53000_2edb", "s0ab53000_2f12", "s0ab53000_2f24", "s0ab53000_2f3d", "s0ab53000_2f5d", "s0ab53000_2f96", "s0ab53000_2fb8", "s0ab53000_2fd6", "s0ab53000_2fe7"]
+      }
+    },
+    "npc-slash": {
+      "labels": ["Slash"],
+      "scenes": {
+        "GreatLog farm": ["s003d6000_0712", "s003d6000_0791", "s003d6000_0b76", "s003d6000_0bf7", "s003d6000_0f30", "s003d6000_3202", "s003d6000_32da", "s003d6000_3322"],
+        "Magic Door Shrine": ["s004bd800_00ad"]
+      }
+    },
+    "npc-surabou": {
+      "labels": ["Pulio"],
+      "scenes": {
+        "Pulio at the GreatTree farm": ["s0b113000_058b", "s0b113000_060c"]
+      }
+    },
+    "npc-surao": {
+      "labels": ["Surao"],
+      "scenes": {
+        "GreatTree farm": ["s0b113000_0658", "s0b113000_067b", "s0b113000_06f3", "s0b113000_070a", "s0b113000_14e2", "s0b113000_1548", "s0b113000_1597", "s0b113000_15d9", "s0b113000_1615", "s0b113000_2290", "s0b113000_25fd", "s0b113000_2622"]
+      }
+    },
+    "npc-tara": {
+      "labels": ["Tara"],
+      "scenes": {
+        "Aboard the sailing ship": ["s0037d000_02a4", "s0037d000_02e2", "s0037d000_038c", "s0037d000_03e3", "s0037d000_0483", "s0037d000_091d", "s0037d000_094a", "s0037d000_0a4d", "s0037d000_0ac4"],
+        "GreatLog Castle": ["s0038d800_14ca"],
+        "Beneath GreatLog Castle": ["s003b7800_0256", "s003b7800_04f6", "s003b7800_0519", "s003b7800_0992"],
+        "GreatLog farm": ["s003d6000_05c6", "s003d6000_0671", "s003d6000_0a1d", "s003d6000_0c49", "s003d6000_0c74", "s003d6000_0e46", "s003d6000_0e93", "s003d6000_1400", "s003d6000_1725", "s003d6000_17e5", "s003d6000_1a25", "s003d6000_1a4c", "s003d6000_1e42", "s003d6000_2217", "s003d6000_267e", "s003d6000_2b39", "s003d6000_2d37", "s003d6000_3057", "s003d6000_30f1", "s003d6000_3467", "s003d6000_34e0", "s003d6000_3506", "s003d6000_352f", "s003d6000_3556", "s003d6000_36a7", "s003d6000_3b8e", "s003d6000_3cbc", "s003d6000_3e29"],
+        "GreatLog": ["s003f6800_164c"],
+        "GreatLog Main Street": ["s00419800_0b48"],
+        "Managing the GreatLog farm": ["v0a84a8_0000", "v0a84a8_0025", "v0a84a8_0035", "v0a84a8_0044", "v0a84a8_0093", "v0a84a8_00bc", "v0a84a8_00ce", "v0a84a8_00f4", "v0a84a8_011f", "v0a84a8_0161", "v0a84a8_01b5", "v0a84a8_01c8", "v0a84a8_01ed", "v0a84a8_0217", "v0a84a8_0230", "v0a84a8_0257", "v0a84a8_0281"]
+      }
+    },
+    "npc-terry": {
+      "labels": ["Terry"],
+      "scenes": {
+        "GreatLog arena district": ["s0039f000_3ab0", "s0039f000_3adc", "s0039f000_3b06", "s0039f000_3b2d", "s0039f000_3b81", "s0039f000_3bd3", "s0039f000_3bee", "s0039f000_3c44", "s0039f000_3c8e", "s0039f000_3cb8", "s0039f000_3d0e", "s0039f000_3d24", "s0039f000_3d72", "s0039f000_3dca"]
+      }
+    },
+    "npc-teto": {
+      "labels": ["Teto"],
+      "scenes": {
+        "GreatTree arena district": ["s0adf7000_0e48", "s0adf7000_2a60", "s0adf7000_2a9f", "s0adf7000_8c92", "s0adf7000_8d29", "s0adf7000_8d52", "s0adf7000_8da1", "s0adf7000_8dc8", "s0adf7000_8e0c", "s0adf7000_8f2f", "s0adf7000_8f9e", "s0adf7000_94cb", "s0adf7000_954e", "s0adf7000_96a6", "s0adf7000_9711", "s0adf7000_9732", "s0adf7000_9756", "s0adf7000_979b", "s0adf7000_9d58", "s0adf7000_a138", "s0adf7000_a19e", "s0adf7000_a1c1", "s0adf7000_a52c", "s0adf7000_a594", "s0adf7000_a723", "s0adf7000_ae55", "s0adf7000_af1d"],
+        "GreatTree farm": ["s0b113000_2270"]
+      }
+    },
+    "npc-tife": {
+      "labels": ["Tife"],
+      "scenes": {
+        "GreatTree arena district": ["s0adf7000_13c7", "s0adf7000_1b9d", "s0adf7000_1bec", "s0adf7000_262f", "s0adf7000_2945", "s0adf7000_2970", "s0adf7000_3903", "s0adf7000_3926", "s0adf7000_3979", "s0adf7000_39f2", "s0adf7000_3a40", "s0adf7000_45d9", "s0adf7000_465c", "s0adf7000_46dd", "s0adf7000_4728", "s0adf7000_474e", "s0adf7000_4f6d", "s0adf7000_4fd8", "s0adf7000_9c0d", "s0adf7000_9c66", "s0adf7000_d81c"]
+      }
+    },
+    "npc-warubou": {
+      "labels": ["Warubou"],
+      "scenes": {
+        "GreatLog Castle": ["s0038d800_141d", "s0038d800_1471"],
+        "Beneath GreatLog Castle": ["s003b7800_01bb", "s003b7800_0208", "s003b7800_02ba", "s003b7800_02de", "s003b7800_032e", "s003b7800_0358", "s003b7800_036d", "s003b7800_0394", "s003b7800_03e8", "s003b7800_042f", "s003b7800_05b9", "s003b7800_05f1", "s003b7800_062e", "s003b7800_06c9", "s003b7800_0719", "s003b7800_0766", "s003b7800_078d", "s003b7800_0850", "s003b7800_08a7", "s003b7800_08ca", "s003b7800_0938", "s003b7800_09bc", "s003b7800_09e3", "s003b7800_0a35", "s003b7800_0af4", "s003b7800_0b47", "s003b7800_0b76", "s003b7800_0be6", "s003b7800_0c0b", "s003b7800_0c32", "s003b7800_0cab", "s003b7800_0cd4", "s003b7800_0cfb", "s003b7800_0d4a", "s003b7800_0dab", "s003b7800_0e4f", "s003b7800_0f21", "s003b7800_0f77", "s003b7800_1070", "s003b7800_109d", "s003b7800_1103", "s003b7800_114a", "s003b7800_11be", "s003b7800_1201", "s003b7800_1258", "s003b7800_12da", "s003b7800_1329", "s003b7800_1370", "s003b7800_1415", "s003b7800_1440", "s003b7800_1490", "s003b7800_14da", "s003b7800_1593", "s003b7800_1640", "s003b7800_169b", "s003b7800_16ef", "s003b7800_1719", "s003b7800_1820", "s003b7800_1875", "s003b7800_189c", "s003b7800_1919", "s003b7800_193d", "s003b7800_1955", "s003b7800_1a2d", "s003b7800_1a88", "s003b7800_1b08", "s003b7800_1ba3", "s003b7800_1c39", "s003b7800_1c5d", "s003b7800_1ccf", "s003b7800_1d52", "s003b7800_1d94", "s003b7800_1e6d", "s003b7800_1eba", "s003b7800_1f32", "s003b7800_1f9b", "s003b7800_1fc5", "s003b7800_2015", "s003b7800_2043", "s003b7800_20d2", "s003b7800_2100", "s003b7800_212b", "s003b7800_217c", "s003b7800_21a5", "s003b7800_2216", "s003b7800_2239", "s003b7800_225b", "s003b7800_22d5", "s003b7800_2393", "s003b7800_23a9", "s003b7800_243d", "s003b7800_245f", "s003b7800_24db", "s003b7800_252b", "s003b7800_25a0", "s003b7800_25fa", "s003b7800_264d", "s003b7800_2679", "s003b7800_26a0", "s003b7800_273d", "s003b7800_2764", "s003b7800_278b", "s003b7800_27ff", "s003b7800_2872", "s003b7800_289d", "s003b7800_28c5", "s003b7800_291c", "s003b7800_2a79", "s003b7800_2abc"],
+        "GreatLog farm": ["s003d6000_20a9"],
+        "GreatLog": ["s003f6800_1516", "s003f6800_155d", "s003f6800_1585"],
+        "GreatLog Main Street": ["s00419800_0422", "s00419800_07f4", "s00419800_0ace", "s00419800_0b1c"],
+        "GreatTree Castle": ["s0ac3d800_12cd", "s0ac3d800_1349", "s0ac3d800_1e1b", "s0ac3d800_1e6c", "s0ac3d800_1ee9"],
+        "GreatTree arena district": ["s0adf7000_447b"],
+        "GreatTree farm": ["s0b113000_381d", "s0b113000_382e", "s0b113000_383f", "s0b113000_3861", "s0b113000_38be", "s0b113000_38e6", "s0b113000_3911"],
+        "Rondalkia": ["s001e3800_00a2", "s001e3800_00da"],
+        "Spirit's Spring": ["s00208000_039c"],
+        "Demon King's Castle": ["s002e4800_0e16"],
+        "Dork’s Manor": ["s002f4000_0942"],
+        "Mirage Lake and the bandits’ hideout": ["s00488000_0749"],
+        "Spirit’s Spring and the tunnel to Nofo": ["s004d6000_0846"],
+        "Volcanic Island Cave": ["s00521800_038c"]
+      }
+    },
+    "npc-watabou": {
+      "labels": ["Watabou"],
+      "scenes": {
+        "GreatTree": ["s0ab53000_492a"],
+        "GreatTree Castle": ["s0ac3d800_07c4", "s0ac3d800_155d"],
+        "GreatTree farm": ["s0b113000_2ade", "s0b113000_2af1", "s0b113000_2b02", "s0b113000_2b56", "s0b113000_46de", "s0b113000_47ab", "s0b113000_481e", "s0b113000_4868", "s0b113000_488e", "s0b113000_48ce", "s0b113000_4908"],
+        "Departure Gate": ["s001af000_0100"],
+        "Swamp Cave": ["s001b5000_03e1"],
+        "Melkido Town": ["s001bc000_00f7"],
+        "Monster's Den": ["s001c2800_00ba"],
+        "Imul Forest": ["s001c8800_00e0"],
+        "Domdora Town": ["s001cf800_009d"],
+        "Casino": ["s001d6000_0550"],
+        "Tower of God": ["s001dd000_00cc"],
+        "Rondalkia": ["s001e3800_006c"],
+        "Lenoole Castle": ["s001ea800_00eb"],
+        "Arp Tower": ["s001f1800_007f"],
+        "Dancer's Stage": ["s001f8000_00af"],
+        "Traveler's Cave": ["s00200800_024c"],
+        "Land of Happiness": ["s00211000_0236"],
+        "Lifecod Village": ["s00217800_0137"],
+        "Tower of Trials": ["s0021e800_0143", "s0021e800_01b7", "s0021e800_022f"],
+        "Mysterious Cave": ["s00225800_0152"],
+        "Prison Town": ["s0022d800_02bc"],
+        "Zipang Cave": ["s00234000_009c", "s00234000_03c4"],
+        "Hell Cloud Castle": ["s0023b800_076a"],
+        "Dragonlord's Castle": ["s00244000_0266"],
+        "Hargon's Castle": ["s0024b800_01d8", "s0024b800_02a1"],
+        "Baramos's Castle": ["s00254000_015d"],
+        "Zoma's Castle": ["s0025b800_0232"],
+        "Mountain Summit": ["s00263000_02c1"],
+        "Enigmatic Cave": ["s0026b000_02bd"],
+        "Evil Mountain": ["s00272800_02c3"],
+        "Mudo's Castle": ["s0027a000_0188"],
+        "Castle Between Worlds": ["s00281000_030a"],
+        "Nameless Place": ["s00288800_032c"]
+      }
+    },
+    "npc-yuna": {
+      "labels": ["Yuna"],
+      "scenes": {
+        "Border Mine": ["s00340000_09e6", "s00340000_0e7f"],
+        "Westernia Castle": ["s004ee000_05d1", "s004ee000_062f", "s004ee000_06a6", "s004ee000_06f6", "s004ee000_074a", "s004ee000_0775", "s004ee000_07ed", "s004ee000_08d9", "s004ee000_10d3", "s004ee000_1f24", "s004ee000_2059", "s004ee000_2098"]
+      }
+    }
+  },
+  "omitLines": {
+    "s0b113000_058b": [3],
+    "s0b113000_3861": [0, 1, 2]
+  }
+}

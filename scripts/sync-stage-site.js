@@ -38,18 +38,19 @@ function versionAssets(input) {
     }).replace(/(<(?:script|link|img)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi,
     (match, prefix, quote, url) => /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url)
       ? match : prefix + quote + versionedURL(url) + quote);
-  const shell = html.includes('id="entry-permalink"') ? html : html.replace('aria-label="Resources">','aria-label="Resources"><a href="entries/">Guide index</a><a id="entry-permalink" hidden>Share this entry</a>');
+  const shell = html.includes('href="entries/"') ? html : html.replace('aria-label="Resources">','aria-label="Resources"><a href="entries/">Guide index</a>');
   assets.set('index.html', Buffer.from(shell));
 
   const originalWorker = read('sw.js');
   const match = originalWorker.match(/const PRECACHE = (\[[\s\S]*?\]);/);
   if (!match) throw new Error('Missing worker precache declaration');
-  const precache = JSON.parse(match[1]).filter(url => !url.startsWith('./maps/') && !url.startsWith('./entries/index.html'))
+  const referencePage = /^(?:entries|walkthroughs\/(?:terry|cobi-tara))\/index\.html$/;
+  const precache = JSON.parse(match[1]).filter(url => !url.startsWith('./maps/') && !referencePage.test(url.slice(2).split('?')[0]))
     .map(url => url === './index.html' ? url : versionedURL(url));
   // Map filenames already contain native image digests. Keep their exact
   // runtime URLs valid offline, including arrivals reachable only by a door.
   precache.push(...Array.from(assets.keys()).filter(file => /^maps\/[0-9a-f]{20}\.webp$/.test(file)).sort().map(file => './'+file));
-  if (assets.has('entries/index.html')) precache.push('./' + versionedURL('entries/index.html'));
+  for (const file of assets.keys()) if (referencePage.test(file)) precache.push('./' + versionedURL(file));
   let worker = originalWorker.replace(match[0], 'const PRECACHE = ' + JSON.stringify(precache, null, 2) + ';');
   // Hash all application identities plus the shell and worker implementation.
   // Changing only the translation snapshot therefore rotates the offline cache.

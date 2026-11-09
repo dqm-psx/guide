@@ -2934,20 +2934,181 @@ globalThis.FIELD_GUIDE = {
       ]
     },
     {
+      "id": "field-wandering-masters",
+      "game": "both",
+      "title": "Foreign masters and their monsters",
+      "summary": "Talk to a visiting master in the field to challenge their team. To recruit one of their monsters, feed meat during the fight and defeat that monster last. It can still refuse to join.",
+      "details": [
+        "Check the monster library before hunting a species. Choose Terry, Cobi or Tara on its profile and look for “Wandering master’s team” under Recorded encounters. For example, Metal Slime can appear at ranks 5 and 9 for Terry, or rank 6 for either sibling.",
+        "Your active party sets the opponent rank. Average each stat across your party, rounding down separately. Add the averages for maximum HP, maximum MP, Attack and Defense, then add half the combined Agility and Intelligence averages, rounded down. Every 100 points gives one rank, up to rank 19. A party averaging 100 in every stat scores 500 and faces rank 5.",
+        "In Terry’s adventure, the Master School describes several possible rewards for winning. One master heals your monsters, another gives meat, another sends you elsewhere, and another can raise a stat. Listen to the master before accepting the match.",
+        "A resident on GreatLog Main Street confirms that Cobi and Tara can recruit a visiting master’s monster in another world. Tournament fights in both arenas block recruitment."
+      ],
+      "source_ids": [
+        "s0ac3d800_1a19",
+        "s0adf7000_5062",
+        "PSX wandering-master selectors 800442C4 / 8004125C",
+        "PSX v1.0.66 arena recruitment mode 2",
+        "s00419800_2704",
+        "s0adf7000_548d",
+        "s0adf7000_553d",
+        "s000e9000_0aa4",
+        "s000e9000_0cbb",
+        "PSX retail and v1.0.73 party-strength classifier 80044434–80044640"
+      ],
+      "related": [
+        "field-recruitment",
+        "item-28",
+        "field-arena-items"
+      ],
+      "aliases": [
+        "foreign masters",
+        "wandering masters",
+        "visiting masters",
+        "other masters",
+        "rival master",
+        "steal a monster",
+        "Can I recruit a foreign master’s monster?"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none"
+    },
+    {
+      "id": "field-movement-settings",
+      "game": "both",
+      "title": "Walking speed, running and encounters",
+      "summary": "Terry walks faster on ordinary gate floors than Cobi or Tara do on the Desert, Water, Ice and Sky overworlds. Walk around GreatLog and the siblings use the same faster pace as Terry’s gate floors.",
+      "details": [
+        "The Japanese PS1 game sets walking pace by map. A normal step takes four movement updates on Terry’s ordinary gate floors and eight on those four overworlds. The same timing difference applies to diagonal steps.",
+        "In English patch v1.0.73, Tactics → Movement changes the speed for each adventure. Walk defaults to 1× the map’s usual pace. Hold R1 for 2×, or choose Toggle to switch speeds with each press. Walk and R1 can each be set to 1×, 2× or 4×.",
+        "Choose Time for roughly the same number of encounters per minute as you speed up. Choose Distance to keep the usual rate per step. You’ll cover ground faster between fights with Time.",
+        "Use Up and Down to choose a setting and Left and Right to change it. Circle or Triangle applies it. Save your adventure to keep the settings. When you reload, you start at walking speed.",
+        "Cobi and Tara also gain Triangle actions from Warubou as the story advances. Those actions let them cross water, break rocks and fly across gaps."
+      ],
+      "source_ids": [
+        "Japanese PS1 map movement selector 0x8005EA1C and step tables 0x800BC118–0x800BC14E · v55 walking-speed investigation",
+        "v1.0.73 release README · Movement Settings",
+        "s004d6000_065a"
+      ],
+      "related": [
+        "field-triangle"
+      ],
+      "aliases": [
+        "run",
+        "walk speed",
+        "R1 toggle",
+        "dash",
+        "encounter rate",
+        "movement differences",
+        "why does Cobi walk slowly",
+        "Terry gate speed",
+        "diagonal walking"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none"
+    },
+    {
+      "id": "field-restored-content",
+      "game": "dqm1",
+      "title": "What changed from Game Boy to PlayStation in Terry’s adventure?",
+      "summary": "The Game Boy game let Terry sit with his party at the Arena and visit special dungeon floors. The Japanese PlayStation release kept assets for those features. The English patch restores them.",
+      "details": [
+        "To hear your monsters talk, bring one to three living, visible party members to the Arena dining room. Sit on the east stool at the right-hand table. Press Up, Left or Down to select a monster, then Talk. Cancel or Right stands up.",
+        "In Travelers’ Gates you can find treasure rooms with Mimics, the Lost Forest, the traveling colosseum, mazes and sliding floors. Their behavior and appearance rates were reconstructed for the patch. Game Boy floor odds can give the wrong expectation here.",
+        "In the traveling colosseum, three wins unlock an optional second set of fights for the displayed prize. Decline to finish, then leave by the north door. If your bag was full when you won, make space and return to that door."
+      ],
+      "source_ids": [
+        "v1.0.73 release README · Restored Content in Terry’s Adventure",
+        "v1.0.70 traveling colosseum exit"
+      ],
+      "related": [
+        "field-packing",
+        "field-movement-settings"
+      ],
+      "aliases": [
+        "version differences",
+        "Game Boy Color",
+        "GBC vs PS1",
+        "special dungeon floors",
+        "Mimic room",
+        "Lost Forest",
+        "monster table conversations",
+        "traveling colosseum",
+        "restored content"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none"
+    },
+    {
+      "id": "field-retail-bugs",
+      "game": "both",
+      "title": "Which bugs came from the Japanese PlayStation game?",
+      "summary": "The patch release notes identify a Truth Gate progression bug in the original game and several faults in how it loaded and freed graphics.",
+      "details": [
+        "In Terry’s Truth Gate, losing to Dungeon Shrimp (Digster) could leave the boss unable to challenge you again. That also blocked credit for the gate toward recruiting Watabou. The English v1.0.34 release includes the repair. Return to the boss room on the updated game and answer the questions again to retry.",
+        "The original game could leave scene and NPC graphics in memory after they were no longer needed. v1.0.73 fixes these leaks and a separate walking-sprite loading bug.",
+        "For a stuck event on an older English build, patch a clean Japanese disc image, boot the updated game and load your in-game memory-card save. An emulator save state can resume the old game code."
+      ],
+      "source_ids": [
+        "v1.0.73 release README · v34, v73 and Install"
+      ],
+      "related": [
+        "field-restored-content"
+      ],
+      "aliases": [
+        "original Japanese bugs",
+        "retail PSX bugs",
+        "Digster",
+        "Truth Gate",
+        "update existing save",
+        "save state"
+      ],
+      "kind": "mechanic",
+      "spoiler": "story"
+    },
+    {
+      "id": "field-colosseum-prizes",
+      "game": "both",
+      "title": "How do two players wager monsters?",
+      "summary": "In the title-screen Colosseum, choose Local Rules and enable prizes. Monster transfer is available from English patch v1.0.73.",
+      "details": [
+        "Each player offers an awake farm monster outside their saved adventure party. Make space on the receiving farm before starting.",
+        "The winner keeps their own offer and receives the opponent’s monster. A draw leaves both farms as they were.",
+        "The transfer writes both Adventure Logs. Wait until both saves finish. If a card write fails, choose Retry before resetting or turning off the game."
+      ],
+      "source_ids": [
+        "v1.0.73 release README · Colosseum Battles"
+      ],
+      "related": [
+        "field-farm"
+      ],
+      "aliases": [
+        "wagers",
+        "bet monsters",
+        "two player",
+        "multiplayer",
+        "local rules",
+        "prize transfer"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none"
+    },
+    {
       "id": "field-recruitment",
       "kind": "mechanic",
       "game": "both",
       "title": "Recruit a wild monster",
       "summary": "Feed the monster you want and arrange for it to be the last enemy you defeat.",
       "details": [
-        "The field lesson ranks more expensive meat as more effective and suggests feeding a second or third piece. Defeating the target last does not guarantee it will join.",
+        "Meat stacks within a battle. On v1.0.66, a second Sirloin raised the tested recruitment chance for a previously collected Metal Slime from about 8% to 24%. A previously collected Slime was already at about 70% with one. These figures apply once the target is eligible and assume no Starry Orb.",
         "In a DQM2 world reached by a generated magic key, defeat its resident boss before trying to recruit the local monsters."
       ],
       "spoiler": "none",
       "source_ids": [
         "s0adf7000_5062",
         "s0039f000_4a3f",
-        "s08a74000_0377"
+        "s08a74000_0377",
+        "PSX v1.0.66 Sirloin and recruitment decision · 80128154 / 80121320"
       ],
       "related": [
         "item-25",
@@ -3021,15 +3182,19 @@ globalThis.FIELD_GUIDE = {
       "summary": "Bring a male and a female, each at level 10 or higher, to the Starry Shrine.",
       "details": [
         "Breeding leaves an egg. Both parents leave, so keep another monster ready to travel with you.",
-        "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents."
+        "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents.",
+        "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. In the title-screen Breeding room, the same pair from two different Adventure Logs produces Killing Machine 2 at lower + values."
       ],
+      "aliases": ["Roboster2 recipe", "Killing Machine 2 breeding", "Game Boy breeding differences"],
+      "species_ids": [252, 253],
       "spoiler": "none",
       "source_ids": [
         "v0a08bc_01e3",
         "v0a08bc_0605",
         "s0ab53000_1027",
         "s003f6800_0c8c",
-        "s0ab53000_0e61"
+        "s0ab53000_0e61",
+        "PSX shrine rule 8004AB80 and two-save override 8004B05C"
       ],
       "related": [
         "field-eggs"

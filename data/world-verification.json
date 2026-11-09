@@ -7,27 +7,27 @@
   "patched_bin_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
   "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
   "comparison_sha256": "d9666b598773aec100e0c7fb9d42a61f941d252b5e38b3122cf165328a4d2788",
-  "world_entries_sha256": "c65c5464cefa6142ae966c3fe466e630ddc3ba984a6b1f6c4dd53c02059d7f44",
-  "native_index_sha256": "f29ece54f8e5bf0b526b2a8849b68ce0ee32a9bdad99ff0c756cfa3eab1f2455",
+  "world_entries_sha256": "49320c98b60067780adc8626dec6a60007769b17021508436ca762b2c2571128",
+  "native_index_sha256": "73c5797466a29b580bfbef253070ba7a83ea4a17d83b6fa179abf90d77d6770d",
   "verified": {
-    "articles": 161,
+    "articles": 170,
     "articles_by_kind": {
       "boss": 29,
       "location": 28,
       "npc": 43,
-      "quest": 38,
+      "quest": 47,
       "story": 23
     },
-    "cited_records": 1262,
+    "cited_records": 1290,
     "source_categories": {
-      "script_slots": 1227,
+      "script_slots": 1254,
       "system_slots": 28,
       "service_descriptor_slots": 1,
-      "menu_pointer_offsets": 6
+      "menu_pointer_offsets": 7
     },
     "native_slots": {
-      "dialogue": 1291,
-      "key_descriptions": 6,
+      "dialogue": 1318,
+      "key_descriptions": 7,
       "service": 1,
       "system": 28
     },

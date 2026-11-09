@@ -40,8 +40,11 @@ const PRECACHE = [
   "./data/world-guide.js",
   "./data/field-guide.js",
   "./data/npc-sprites.js",
+  "./data/character-dialogue.js",
+  "./js/character-dialogue.js",
   "./data/skill-descriptions.js",
   "./js/current-names.js",
+  "./js/walkthrough.js",
   "./js/save-import.js",
   "./js/player-guide.js",
   "./js/player-atlas.js",
@@ -85,7 +88,8 @@ const fullDownload = new URL('.offline-complete', scope).href;
 const assetURLs = PRECACHE.map(path=>new URL(path, scope).href);
 const known = new Set(assetURLs);
 const knownPaths = new Set(assetURLs.map(url=>new URL(url).pathname));
-const guideIndex = assetURLs.find(url=>new URL(url).pathname===scope.pathname+'entries/index.html');
+const referencePages = new Map(assetURLs.filter(url=>new URL(url).pathname.endsWith('/index.html'))
+  .map(url=>[new URL(url).pathname,url]));
 const immutable = url => url.searchParams.has('v') || /\/[a-f0-9]{20,64}\.webp$/.test(url.pathname);
 const ownCache = key => key.startsWith(CACHE_PREFIX) && !key.slice(CACHE_PREFIX.length).includes("/");
 const inflight = new Map();
@@ -180,7 +184,7 @@ self.addEventListener('fetch',event=>{
         if (response.ok) await cache.put(key,response.clone());
         return response;
       } catch {
-        const cached=await cache.match(key) || (guideIndex && path===new URL(guideIndex).pathname && await cache.match(guideIndex));
+        const cached=await cache.match(key) || (referencePages.has(path) && await cache.match(referencePages.get(path)));
         if (cached) return cached;
         if (!root) {
           // The shell can reconstruct unopened entry routes from their native IDs offline.

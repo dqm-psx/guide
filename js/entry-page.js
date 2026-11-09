@@ -4,7 +4,13 @@
   const route = document.currentScript.dataset.route;
   const originalPath = location.pathname;
   if (!route || !/^https?:$/.test(location.protocol)) return;
-  window.DQMEntryHash = () => location.hash || (location.pathname === originalPath ? route : '');
+  window.DQMEntryHash = () => {
+    if (location.pathname === originalPath && route.startsWith('#field-guide?kind=story&game=') &&
+        /^#story-[\w-]+$/.test(location.hash)) {
+      return route+'&entry='+location.hash.slice(1);
+    }
+    return location.hash || (location.pathname === originalPath ? route : '');
+  };
   async function enhance() {
     const response = await fetch(new URL('index.html',document.baseURI));
     if (!response.ok) return;

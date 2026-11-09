@@ -45,22 +45,64 @@
     if (e.key === 'Escape' && panel.open) { dismiss(); summary.focus(); }
   });
   window.addEventListener('hashchange', dismiss);
+  const share = document.getElementById('entry-share');
+  const status = document.getElementById('entry-copy-status');
+  const input = document.getElementById('entry-copy-url');
+  let entryURL = '';
   function shareLink() {
-    const link = document.getElementById('entry-permalink');
-    if (!link) return;
     const [view, query] = (window.DQMEntryHash?.() || location.hash).slice(1).split('?');
     const params = new URLSearchParams(query || '');
     let path = '';
     if (view==='monster' && /^\d+$/.test(params.get('id') || '')) path='monsters/'+params.get('id')+'/';
-    if (view==='atlas' && /^map-\d+-\d+$/.test(params.get('map') || '')) {
+    if (view==='atlas' && params.get('tab')==='encounters' && /^(?:terry|cobi|tara)-\d+$/.test(params.get('area') || '')) {
+      path='index.html#atlas?tab=encounters&area='+params.get('area');
+    } else if (view==='atlas' && /^map-\d+-\d+$/.test(params.get('map') || '')) {
       const row=window.PLAYER_ATLAS?.maps.find(m=>m.id===params.get('map'));
-      if (row) path='places/'+(row.placeId || row.id)+'/';
+      if (row) {
+        const place=row.placeId || row.id;
+        const variant=params.get('variant');
+        path=place===row.id && !variant ? 'places/'+place+'/' : 'index.html#atlas?map='+row.id+
+          (variant ? '&variant='+encodeURIComponent(variant) : '');
+      }
     }
     const entry=params.get('entry');
     if (view==='field-guide' && /^[\w-]+$/.test(entry || '')) path=entry.startsWith('skill-') ? 'skills/'+entry.slice(6)+'/' : 'articles/'+entry+'/';
-    link.hidden=!path;
-    if (path) link.href=new URL(path,document.baseURI).href;
+    if (view==='field-guide') path=window.DQMField?.walkthroughPath?.(params) || path;
+    // The published edition has standalone entries. A local development server
+    // serves the hash router, and a downloaded file needs a public URL to share.
+    const published = document.querySelector('.footer-links a[href="entries/"]');
+    let url = '';
+    if (path) {
+      if (location.protocol === 'file:') url = new URL(path, 'https://dqm-psx.github.io/guide/').href;
+      else if (published) url = new URL(path, document.baseURI).href;
+      else url = location.href;
+    }
+    if (url !== entryURL) {
+      entryURL = url;
+      status.textContent = '';
+      input.hidden = true;
+      input.value = '';
+    }
+    share.hidden = !url;
   }
+  document.getElementById('entry-permalink').addEventListener('click', async () => {
+    shareLink();
+    const url = entryURL;
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      if (url !== entryURL) return;
+      input.hidden = true;
+      status.textContent = 'Entry link copied.';
+    } catch {
+      if (url !== entryURL) return;
+      status.textContent = 'Copy the selected link.';
+      input.value = url;
+      input.hidden = false;
+      input.focus();
+      input.select();
+    }
+  });
   window.addEventListener('guide-view-rendered',shareLink);
   window.addEventListener('hashchange',shareLink);
   shareLink();

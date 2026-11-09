@@ -34,7 +34,7 @@ test('item abbreviations lead to PSX shop prices and a shareable result', async 
   await expect(page.getByRole('table',{name:'Recorded shop prices'})).toContainText('9 G');
   await page.reload();
   await expect(page.locator('#article-title')).toHaveText('Medicinal Herb');
-  await page.getByRole('link',{name:'Back to guide'}).click();
+  await page.getByRole('link',{name:'← Search results'}).click();
   await expect(page.locator('#guide-search')).toHaveValue('MedHerb');
   await page.getByLabel('Search the guide').fill('やくそう');
   await expect(page.locator('.guide-row').first()).toContainText('Medicinal Herb');
@@ -45,6 +45,16 @@ test('item abbreviations lead to PSX shop prices and a shareable result', async 
   await expect(page.locator('.guide-row').filter({has:page.getByText('Dracky',{exact:true})}).first()).toHaveAttribute('href',/^#monster\?id=/);
   await page.getByLabel('Search the guide').fill('how to breed');
   await expect(page.locator('.guide-row').first()).toHaveAttribute('href','#pair-finder');
+});
+
+test('a species hunting question opens the correct campaign and encounter pool', async ({page}) => {
+  await page.goto(url);
+  await page.getByLabel('Search the guide').fill('Where can I catch Almiraj as Tara?');
+  const match=page.locator('.guide-row').filter({hasText:'Almiraj'});
+  await expect(match).toContainText('Tara · Ice Field · Lv. 19');
+  await match.click();
+  await expect(page.locator('#atlas-game')).toHaveValue('tara');
+  await expect(page.locator('#atlas-detail')).toContainText('Almiraj');
 });
 
 test('event copies share an atlas entry while distinct places and dungeon layouts remain reachable', async ({page}) => {
@@ -153,8 +163,8 @@ test('gate routes connect floor rosters, arena progress, boss records and tactic
   for (const name of ['Antbear','Dracky','Slime']) await expect(first.getByRole('link',{name,exact:true})).toHaveAttribute('href',/^#monster\?id=/);
   await expect(first).toContainText('Lv. 1');
   await page.goto(url+'#field-guide?entry=story-terry-early-arena');
-  await expect(page.getByRole('heading',{name:'Arena and gate order'})).toBeVisible();
-  await page.locator('.route-section').getByRole('link',{name:'Golem',exact:true}).click();
+  await expect(page.getByRole('table',{name:'Gates opened by each arena class'}).first()).toContainText('Guardian Gate');
+  await page.getByRole('table',{name:'Gates opened by each arena class'}).first().getByRole('link',{name:'Golem',exact:true}).click();
   await expect(page.locator('.boss-art[data-monster-index="248"]')).toBeVisible();
   await expect(page.locator('.battle-stats')).toContainText('HP100');
   await expect(page.locator('.battle-stats')).toContainText('Attack45');
@@ -166,6 +176,31 @@ test('gate routes connect floor rosters, arena progress, boss records and tactic
   await expect(page.locator('.battle-adventure')).toHaveText(['Cobi','Tara']);
   await expect(page.locator('.battle-member')).toHaveCount(6);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
+
+test('campaign walkthroughs read continuously and jump to bookmarked stages', async ({page}) => {
+  await page.setViewportSize({width:320,height:780});
+  await page.goto(url+'#field-guide?kind=story');
+  await expect(page.locator('#article-title')).toHaveText('Terry walkthrough');
+  await page.getByRole('navigation',{name:'Walkthrough campaign'}).getByRole('link',{name:'Cobi & Tara'}).click();
+  await expect(page.locator('#article-title')).toHaveText('Cobi & Tara walkthrough');
+  const contents=page.getByRole('navigation',{name:'Jump to a stage'});
+  await contents.getByRole('link',{name:'Sky World'}).click();
+  const selection=page.locator('#story-sky-ugor');
+  await expect(selection).toBeFocused();
+  await expect(selection).toBeInViewport();
+  await expect(page.locator('#guide-article')).toContainText('two right-hand tiles once each');
+  await expect(page.locator('#story-greatlog-spirit-rewards')).toBeAttached();
+  await page.reload();
+  await expect(selection).toBeInViewport();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.locator('#guide-settings summary').click();
+  await page.getByLabel('Show story spoilers').uncheck();
+  await expect(selection).toHaveText('Chapter 10');
+  await expect(page.locator('#guide-article')).not.toContainText('Transform Staff');
+  await selection.locator('+ button').click();
+  await expect(selection).toHaveText('Ugor and the missing orb');
+  await expect(page.locator('#guide-article')).not.toContainText('two right-hand tiles');
 });
 
 test('regional filters distinguish encounter pools and keep their rosters shareable', async ({page}) => {
@@ -182,4 +217,13 @@ test('regional filters distinguish encounter pools and keep their rosters sharea
   const address=page.url(), chosen=await pool.inputValue();
   await page.goto(address);
   await expect(pool).toHaveValue(chosen);
+});
+test('Healie speaks on his own page and links to his rescue quest', async ({page}) => {
+  await page.goto(url+'#field-guide?entry=npc-healie');
+  const article = page.locator('#guide-article');
+  await expect(article.locator('.spoken-lines')).toContainText("Hello! I'm Healie!");
+  const quest = article.locator('.character-quests a[href*="quest-rescue-healie"]');
+  await expect(quest).toHaveCount(1);
+  await quest.click();
+  await expect(page).toHaveURL(/entry=quest-rescue-healie/);
 });

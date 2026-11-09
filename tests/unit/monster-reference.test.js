@@ -95,3 +95,13 @@ test('base breeding references count concrete ordered pairs and retain exact exa
 test('profile strings are escaped before HTML rendering', () => {
   assert.equal(safe('<img src=x onerror="bad()">'), '&lt;img src=x onerror=&quot;bad()&quot;&gt;');
 });
+test('merging foreign-master encounters keeps all ranks, including rank zero', () => {
+  const master = {game:'terry', name:'Wandering master', floors:null, kind:'other'};
+  const groups = groupedLocations([
+    {...master, levels:[12], strength_ranks:[3,0]},
+    {...master, levels:[20], strength_ranks:[5,3]},
+    {...master, game:'cobi', levels:[18], strength_ranks:[4]},
+  ], 'terry');
+  assert.deepEqual(groups[0].strength_ranks, [0,3,5]);
+  assert.deepEqual(groups[0].levels, [12,20]);
+});
