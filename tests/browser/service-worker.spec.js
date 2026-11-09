@@ -16,7 +16,7 @@ test.afterAll(async () => {
 // tests/browser/offline.spec.js covers the file:// copy, where the worker
 // stays out of the way on purpose.
 test('a visited copy reloads and works with the network offline', async ({ page, context }) => {
-  const online = await page.goto(serverUrl);
+  const online = await page.goto(serverUrl + '#sources');
   expect(online.ok()).toBeTruthy();
   const expectedHtml = await online.text();
 
@@ -24,6 +24,14 @@ test('a visited copy reloads and works with the network offline', async ({ page,
   // claimed this page, which happens after the install cache is filled.
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
 
+  await expect(page.locator('#coverage-summary')).not.toBeEmpty();
+  await page.waitForFunction(async () => {
+    const cacheName = (await caches.keys()).find(key=>key.startsWith('dqm-guide:/guide/'));
+    if (!cacheName) return false;
+    const cache = await caches.open(cacheName);
+    const scripts = Array.from(document.scripts,script=>script.src).filter(Boolean);
+    return (await Promise.all(scripts.map(src=>cache.match(src)))).every(Boolean);
+  });
   await context.setOffline(true);
   try {
     const reloaded = await page.reload();
@@ -36,6 +44,7 @@ test('a visited copy reloads and works with the network offline', async ({ page,
     // Preserve the actual served shell, regardless of editable header wording.
     expect(await reloaded.text()).toBe(expectedHtml);
     // The data-driven tools still populate after the offline reload.
+    await expect(page.locator('#coverage-summary')).not.toBeEmpty();
     const slots = await page.evaluate(() => DATA.species.length);
     await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);
     await expect(page.locator('#pedigree option').first()).toBeAttached();
@@ -82,14 +91,23 @@ test('offline updates ignore retained legacy and unrelated cache entries', async
   const currentPage = await request.get(serverUrl);
   expect(currentPage.ok()).toBeTruthy();
   const expectedHtml = await currentPage.text();
-  await page.goto(serverUrl);
+  await page.goto(serverUrl + '#sources');
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 20000 });
 
+  await expect(page.locator('#coverage-summary')).not.toBeEmpty();
+  await page.waitForFunction(async () => {
+    const cacheName = (await caches.keys()).find(key=>key.startsWith('dqm-guide:/guide/'));
+    if (!cacheName) return false;
+    const cache = await caches.open(cacheName);
+    const scripts = Array.from(document.scripts,script=>script.src).filter(Boolean);
+    return (await Promise.all(scripts.map(src=>cache.match(src)))).every(Boolean);
+  });
   await context.setOffline(true);
   try {
     const reloaded = await page.reload();
     expect(reloaded.fromServiceWorker()).toBeTruthy();
     expect(await reloaded.text()).toBe(expectedHtml);
+    await expect(page.locator('#coverage-summary')).not.toBeEmpty();
     const slots = await page.evaluate(() => DATA.species.length);
     await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);
     const offlineScript = await page.evaluate(url => fetch(url).then(response => response.text()), scriptUrl);

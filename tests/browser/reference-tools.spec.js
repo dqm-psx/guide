@@ -44,18 +44,19 @@ test.describe('served', () => {
     }));
   });
 
-  test('pair finder selections and filters restore across reloads (item 10)', async ({ page }) => {
+  test('a committed picker selection survives reloads; unfinished searches do not change it', async ({ page }) => {
     await page.goto(url() + '#pair-finder');
     await page.selectOption('#pedigree', '1');
     await page.selectOption('#mate', '13');
-    await page.fill('#pedigree-search', 'Spotted');
+    await page.fill('#pedigree-combobox', 'Spotted');
+    await expect(page.locator('#pedigree-choices [role=option]').first()).toContainText('Spotted');
     // Leave the view; the next load carries no URL parameters, so the
     // session is the only source of the pair.
     await page.goto(url() + '#species-index');
     await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pedigree')).toHaveValue('1');
     await expect(page.locator('#mate')).toHaveValue('13');
-    await expect(page.locator('#pedigree-search')).toHaveValue('Spotted');
+    await expect(page.locator('#pedigree-combobox')).toHaveValue('Spotted Slime');
   });
 
   test('pairings chosen on the bare homepage become shareable URLs (item 6)', async ({ page }) => {
@@ -128,8 +129,10 @@ test.describe('served', () => {
   test('an internal pairing hash refreshes the name index and offspring options', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await expect(page.locator('#show-internal')).not.toBeChecked();
-    await page.fill('#target-search', 'Tattsu');
-    await expect(page.locator('#target')).toHaveValue('');
+    const previous = await page.locator('#target').inputValue();
+    await page.fill('#target-combobox', 'Tattsu');
+    await expect(page.locator('#target-choices')).toContainText('No matching monsters');
+    await expect(page.locator('#target')).toHaveValue(previous);
     await expect(page.locator('#target option[value="315"]')).toHaveCount(0);
     const fullCount = await page.evaluate(() => DATA.species.length);
 
@@ -137,20 +140,42 @@ test.describe('served', () => {
     await expect(page.locator('#show-internal')).toBeChecked();
     await expect(page.locator('#pedigree')).toHaveValue('315');
     await expect(page.locator('#target option[value="315"]')).toHaveCount(1);
-    await expect(page.locator('#target-active-summary')).toContainText('Viewing Tattsu');
+    await expect(page.locator('#target')).toHaveValue(previous);
     await page.click('.nav a[href="#species-index"]');
     await expect(page.locator('#species-count')).toHaveText(fullCount + ' matching species');
   });
 
-  test('reload keeps saved parent-search filters while applying the saved pair (item 10)', async ({ page }) => {
+  test('a Japanese picker query selects the same stable ID after reload', async ({ page }) => {
     await page.goto(url() + '#pair-finder');
-    await page.fill('#pedigree-search', 'Spotted');
-    // The pairing mirrors itself into the URL; a reload must honor that pair
-    // without wiping the compatible saved search filter.
-    await expect.poll(() => page.evaluate(() => location.hash)).toContain('a=');
+    const japanese = await page.evaluate(() => DATA.species[1].japanese);
+    await page.fill('#pedigree-combobox', japanese);
+    await page.locator('#pedigree-combobox').press('Enter');
+    await expect.poll(() => page.evaluate(() => location.hash)).toContain('a=1&');
     await page.reload();
-    await expect(page.locator('#pedigree-search')).toHaveValue('Spotted');
-    await expect(page.locator('#pedigree-search')).toBeVisible();
+    await expect(page.locator('#pedigree')).toHaveValue('1');
+    await expect(page.locator('#pedigree-combobox')).toHaveValue('Spotted Slime');
+  });
+
+  test('searching for a family keeps the current target until an alias is committed and pinned', async ({ page }) => {
+    await page.goto(url() + '#offspring-finder?target=17');
+    const selected = await page.evaluate(() => {
+      const entry = DATA.species.find(s => s.playable && s.index !== 17 && s.aliases?.some(alias =>
+        alias !== s.display_name && !DATA.species.some(other => other.index !== s.index && (other.aliases?.includes(alias) || other.display_name === alias))));
+      return {index:entry.index, name:entry.display_name, family:entry.family_display, alias:entry.aliases.find(alias => alias !== entry.display_name && !DATA.species.some(other => other.index !== entry.index && (other.aliases?.includes(alias) || other.display_name === alias)))};
+    });
+    const input = page.locator('#target-combobox');
+    await input.fill(selected.family);
+    await expect(page.locator('#target-choices-' + selected.index)).toBeAttached();
+    await expect(page.locator('#target')).toHaveValue('17');
+    await expect(page.locator('#target-pin')).toHaveText('Pin ' + await page.evaluate(() => DATA.species[17].display_name));
+    await input.fill(selected.alias);
+    await input.press('Enter');
+    await expect(page).toHaveURL(new RegExp('#offspring-finder\\?target=' + selected.index + '$'));
+    await expect(page.locator('#target-pin')).toHaveText('Pin ' + selected.name);
+    await page.locator('#target-pin').click();
+    await expect(page.locator('#target-active-summary')).toContainText(selected.name);
+    await page.reload();
+    await expect(input).toHaveValue(selected.name);
   });
 
   test('the name index drives the pair finder and Find parents (item 7)', async ({ page }) => {
@@ -181,13 +206,13 @@ test.describe('served', () => {
     await link.click();
     await expect(page.locator('#offspring-finder')).toBeVisible();
     await expect(page.locator('#target')).toHaveValue('2');
-    await expect(page.locator('#target')).toBeFocused();
+    await expect(page.locator('#target-combobox')).toBeFocused();
   });
 
   test('conditional recipes appear as labeled groups beside base pairs (item 8)', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await page.selectOption('#target', '17'); // Spotted King, produced by a + rule
-    await expect(page.locator('#reverse-rows')).toContainText('Base table pairs');
+    await expect(page.locator('#reverse-rows')).toContainText(/base table pairs · first copy/i);
     await expect(page.locator('#reverse-rows')).toContainText('Confirmed + value recipes');
     await expect(page.locator('#reverse-rows button[data-recipe-a]').first()).toBeVisible();
 

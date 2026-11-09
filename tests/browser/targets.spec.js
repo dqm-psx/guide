@@ -95,6 +95,7 @@ test.describe('served', () => {
 
   test('internal slots cannot be favorited (star is disabled)', async ({ page }) => {
     await page.goto(url() + '#species-index');
+    await page.locator('#guide-settings > summary').click();
     await page.check('#show-internal');
     await page.fill('#species-search', 'Tattsu');
     const internalIndex = await page.evaluate(() => DATA.species.find(s => s.playable === false).index);
@@ -238,7 +239,7 @@ test.describe('served', () => {
     await expect(page.locator('#offspring-finder')).toBeVisible();
     await expect(page.locator('#team-planner')).toBeHidden();
     await expect(page.locator('#target')).toHaveValue('11');
-    await expect(page.locator('#target')).toBeFocused();
+    await expect(page.locator('#offspring-heading')).toBeFocused();
   });
 
   test('the saved target list and the plan panel live in the planner Targets & plans tab', async ({ page }) => {
@@ -277,6 +278,7 @@ test.describe('served', () => {
     // "Include extra / internal slots" lives in the name index; the pin
     // control lives in Find parents. Both views are needed.
     await page.goto(url() + '#species-index');
+    await page.locator('#guide-settings > summary').click();
     await page.check('#show-internal');
     const internalIndex = await page.evaluate(() => DATA.species.find(s => s.playable === false).index);
     await page.goto(url() + '#offspring-finder');

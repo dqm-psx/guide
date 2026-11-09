@@ -18,6 +18,13 @@ test('item abbreviations lead to PSX shop prices and a shareable result', async 
   await expect(page.locator('#guide-search')).toHaveValue('MedHerb');
   await page.getByLabel('Search the guide').fill('やくそう');
   await expect(page.locator('.guide-row').first()).toContainText('Medicinal Herb');
+  await page.getByLabel('Search the guide').fill('buy herb');
+  await expect(page.locator('.guide-row').first()).toContainText('Medicinal Herb');
+  await expect(page.locator('.guide-row').first()).toContainText('10 G');
+  await page.getByLabel('Search the guide').fill('dracy');
+  await expect(page.locator('.guide-row').filter({has:page.getByText('Dracky',{exact:true})}).first()).toHaveAttribute('href',/^#monster\?id=/);
+  await page.getByLabel('Search the guide').fill('how to breed');
+  await expect(page.locator('.guide-row').first()).toHaveAttribute('href','#pair-finder');
 });
 
 test('event copies share an atlas entry while distinct places and dungeon layouts remain reachable', async ({page}) => {
@@ -78,9 +85,12 @@ test('a character links to its native map, and doors continue into the atlas', a
 test('story visibility persists and skill and encounter species lead to live profiles', async ({page}) => {
   await page.goto(url+'#field-guide?entry=boss-dragon');
   await expect(page.locator('#article-title')).toHaveText('Dragon');
+  await page.locator('#guide-settings summary').click();
   await page.getByLabel('Show story spoilers').uncheck();
   await page.reload();
+  await page.locator('#guide-settings summary').click();
   await expect(page.getByLabel('Show story spoilers')).not.toBeChecked();
+  await page.locator('#guide-settings summary').click();
   await expect(page.locator('#article-title')).not.toHaveText('Dragon');
   await page.getByRole('button',{name:'Reveal this entry'}).click();
   await expect(page.locator('#article-title')).toHaveText('Dragon');
@@ -91,8 +101,46 @@ test('story visibility persists and skill and encounter species lead to live pro
   await expect(page.locator('#monster-heading')).toBeVisible();
   await page.goto(url+'#atlas?tab=encounters');
   await page.getByLabel('Find an area or monster').fill('Dracky');
-  await page.locator('.atlas-scroll a').first().click();
   await expect(page.locator('.encounters')).toContainText('Dracky');
   await page.locator('.encounters .monster-link').first().click();
   await expect(page.locator('#monster')).toBeVisible();
+});
+
+test('gate routes connect floor rosters, arena progress, boss records and tactics', async ({page}) => {
+  await page.setViewportSize({width:320,height:760});
+  await page.goto(url+'#field-guide?entry=location-departure-gate');
+  const first=page.locator('.route-roster tbody tr').first();
+  await expect(first).toContainText(/1.4/);
+  for (const name of ['Antbear','Dracky','Slime']) await expect(first.getByRole('link',{name,exact:true})).toHaveAttribute('href',/^#monster\?id=/);
+  await expect(first).toContainText('Lv. 1');
+  await page.goto(url+'#field-guide?entry=story-terry-early-arena');
+  await expect(page.getByRole('heading',{name:'Arena and gate order'})).toBeVisible();
+  await page.locator('.route-section').getByRole('link',{name:'Golem',exact:true}).click();
+  await expect(page.locator('.boss-art[data-monster-index="248"]')).toBeVisible();
+  await expect(page.locator('.battle-stats')).toContainText('HP100');
+  await expect(page.locator('.battle-stats')).toContainText('Attack45');
+  await expect(page.locator('.battle-member')).toContainText('Lv. 7');
+  await expect(page.locator('.battle-member a[href*="skill-"]')).toHaveCount(3);
+  await page.locator('.article-lead').getByRole('link',{name:'Sleep Hit'}).click();
+  await expect(page.locator('#article-title')).toHaveText('Sleep Hit');
+  await page.goto(url+'#field-guide?entry=boss-dark-master');
+  await expect(page.locator('.battle-adventure')).toHaveText(['Cobi','Tara']);
+  await expect(page.locator('.battle-member')).toHaveCount(6);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
+
+test('regional filters distinguish encounter pools and keep their rosters shareable', async ({page}) => {
+  await page.goto(url+'#atlas?tab=encounters&game=cobi&region=water&q=Sea+Field');
+  const sea=page.locator('.atlas-scroll a').filter({has:page.getByText('Sea Field',{exact:true})});
+  await expect(sea).toHaveCount(1);
+  await sea.click();
+  await expect(page.locator('#atlas-location')).toHaveText('Sea Field');
+  const pool=page.getByLabel('Encounter pool');
+  const options=await pool.locator('option').allTextContents();
+  expect(options.length).toBeGreaterThan(1);
+  expect(new Set(options).size).toBe(options.length);
+  await pool.selectOption({index:1});
+  const address=page.url(), chosen=await pool.inputValue();
+  await page.goto(address);
+  await expect(pool).toHaveValue(chosen);
 });

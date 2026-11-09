@@ -67,7 +67,13 @@ test('invalid plus values never render a guessed recipe', async ({page}) => {
 test('phone layout contains table scrolling and keeps profile navigation usable', async ({page}) => {
   await page.setViewportSize({width:360,height:780});
   await page.goto(url+'#breeding-table');
+  await expect(page.locator('#matrix-view')).toHaveValue('list');
+  await expect(page.locator('#matrix-view')).toBeHidden();
+  await expect(page.locator('#planner-all-grid.matrix-list tbody a').first()).toBeVisible();
+  expect(await page.locator('#planner-all-grid').evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+  await page.locator('#matrix-filters summary').click();
   await expect(page.locator('#matrix-view')).toBeVisible();
+  await page.selectOption('#matrix-view','grid');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await page.selectOption('#matrix-view','list');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

@@ -2,7 +2,7 @@
   "name": "dqmpsx-guide",
   "version": "1.0.0",
   "private": true,
-  "description": "DQM1&2 PS1 breeding reference page with local-only test tooling",
+  "description": "Player guide and breeding tools for Dragon Quest Monsters 1 & 2 on PlayStation",
   "type": "commonjs",
   "scripts": {
     "test": "npm run test:unit && npm run test:browser",

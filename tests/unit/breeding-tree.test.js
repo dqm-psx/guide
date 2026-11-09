@@ -9,6 +9,19 @@ function setup() {
 }
 const plain = value => JSON.parse(JSON.stringify(value));
 
+test('saved plans share every branch or have no visual link', () => {
+  const { tree } = setup();
+  let plan = tree.createPlan(290, 'shrine');
+  assert.deepEqual(plain(tree.shareableState(plan).branches), []);
+  plan = tree.choose(plan, '', tree.candidates(plan, '').items[0].id);
+  plan = tree.choose(plan, '0', tree.candidates(plan, '0').items[0].id);
+  assert.deepEqual(plain(tree.shareableState(plan)), plain(tree.snapshot(plan)));
+  const incompatible = plain(plan);
+  incompatible.nodes[0].recipe.kind = 'flag_gated';
+  assert.equal(tree.shareableState(incompatible), null);
+  assert.equal(tree.shareableState({nodes: Array(64)}), null);
+});
+
 test('branches retain ordered parents and independently expand both sides', () => {
   const { tree, core } = setup();
   let plan = tree.createPlan(290, 'shrine');

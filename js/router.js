@@ -30,9 +30,10 @@
     { id: "breeding-table", heading: "breeding-table-heading" },
     { id: "species-index", heading: "species-heading" },
     { id: "team-planner", heading: "planner-heading" },
+    { id: "sources", heading: "sources-heading" },
   ];
-  const aliases = { "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "species-index" };
-  const aliasTargets = { "rules-guide": "offspring-heading", "conditional-rules": "breeding-conditions", "about": "name-guide" };
+  const aliases = { "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "sources" };
+  const aliasTargets = { "rules-guide": "offspring-heading", "conditional-rules": "breeding-conditions", "about": "sources-heading" };
   const known = new Set(views.map(view => view.id));
   const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
   const skipLink = document.querySelector("a.skip");
@@ -79,6 +80,8 @@
 
   let activeView = null;
   let pendingFocusId = null;
+  let navigation = 0;
+  const currentHash = () => window.DQMEntryHash?.() || location.hash;
 
   // Only the leading view id is parsed. Whatever follows the first separator
   // is returned as params, so a future route can read it without changing how
@@ -109,7 +112,7 @@
   }
   function markNav(viewId) {
     for (const link of navLinks) {
-      const active = viewFor(link.hash) === (viewId === "monster" ? "species-index" : viewId);
+      const active = viewFor(link.hash) === ({monster:"species-index", "offspring-finder":"pair-finder"}[viewId] || viewId);
       if (active) {
         link.setAttribute("aria-current", "page");
       }
@@ -121,7 +124,7 @@
   // The nav label is the view's title, so one edit renames both.
   function setTitle(viewId) {
     const link = navLinks.find(candidate => viewFor(candidate.hash) === viewId);
-    const label = link ? link.getAttribute("aria-label") || link.textContent.trim() : viewId;
+    const label = link ? link.getAttribute("aria-label") || link.textContent.trim() : ({"offspring-finder":"Find parents", sources:"Sources & coverage"}[viewId] || viewId);
     document.title = label + " · " + TITLE_SUFFIX;
   }
   // A hash that names an element inside the revealed view keeps the browser's
@@ -143,16 +146,59 @@
   // click, and go() all end up here. The destination is revealed before
   // anything is scrolled or focused, so focus can never land in a hidden view.
   function render(viewId, options) {
+    if (viewId === "field-guide") {
+      const query = new URLSearchParams(parse(currentHash()).params);
+      if (query.get("kind") === "monster" && !query.has("entry")) {
+        const search = query.get("q");
+        viewId = "species-index";
+        history.replaceState(null, "", "#species-index" + (search ? "?q="+encodeURIComponent(search) : ""));
+      }
+    }
+    const ticket = ++navigation;
+    const status = P("view-load-status");
+    if (status) status.remove();
+    const waiting = window.DQMAssets.ready(viewId, currentHash());
+    if (!waiting) { showView(viewId, options); return; }
+    const main = document.querySelector("main");
+    main.setAttribute("aria-busy","true");
+    waiting.then(() => {
+      if (ticket === navigation) showView(viewId, options);
+    }, () => {
+      if (ticket !== navigation) return;
+      main.removeAttribute("aria-busy");
+      const notice = document.createElement("div");
+      notice.id = "view-load-status";
+      notice.className = "panel";
+      notice.setAttribute("role","alert");
+      notice.textContent = "This section couldn’t load. Reconnect and try again. ";
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.textContent = "Reload";
+      retry.onclick = () => location.reload();
+      notice.append(retry);
+      main.prepend(notice);
+      if (options?.focus) retry.focus();
+    });
+  }
+  function showView(viewId, options) {
+    document.querySelector("main").removeAttribute("aria-busy");
     const settings = options || {};
     const view = P(viewId);
     if (!view) return;
     setBreedingOpen(false);
     reveal(viewId);
     if (window.DQMApp && typeof window.DQMApp.viewShown === "function") window.DQMApp.viewShown(viewId);
+    if (viewId === "species-index") {
+      const q = new URLSearchParams(parse(currentHash()).params).get("q");
+      if (q !== null && q !== P("species-search").value) {
+        P("species-search").value = q;
+        P("species-search").dispatchEvent(new Event("input",{bubbles:true}));
+      }
+    }
     markNav(viewId);
     setTitle(viewId);
     if (viewId === "field-guide" || viewId === "atlas") {
-      const title = viewId === "atlas" ? window.DQMAtlas.show() : window.DQMField.show();
+      const title = viewId === "atlas" ? window.DQMAtlas.show() : (window.DQMField || window.DQMGuideShell).show();
       if (title) document.title = title + " · " + TITLE_SUFFIX;
     }
     if (viewId === "monster" && window.DQMMonsters) { window.DQMMonsters.renderRoute(); document.title = window.DQMMonsters.title() + " · " + TITLE_SUFFIX; }
@@ -161,7 +207,11 @@
       P("planner-tab-roster").click();
       if (settings.focus) settings.focusId = "save-import-file";
     }
+    if (viewId === "team-planner" && new URLSearchParams(parse(location.hash).params).get("manage") === "teams") {
+      settings.focusId = "manage-teams";
+    }
     activeView = viewId;
+    window.dispatchEvent(new Event('guide-view-rendered'));
     if (settings.scroll === false) return;
     const heading = headingFor(viewId);
     const requested = settings.focusId ? P(settings.focusId) : null;
@@ -176,21 +226,23 @@
   function go(viewId, options) {
     if (!known.has(viewId)) return;
     const focusId = (options && options.focusId) || null;
+    const query = new URLSearchParams(options?.params || {}).toString();
+    const hash = "#" + viewId + (query ? "?" + query : "");
     // A handoff always lands on the bare view id. A parameterised hash for the
     // same view (a shared pairing, say) must not read as "already here", or its
     // parameters would linger after a "Try pair" / "Use as pedigree" jump.
-    if (location.hash === "#" + viewId) {
+    if (location.hash === hash) {
       render(viewId, { focus: true, focusId });
       return;
     }
     pendingFocusId = focusId;
-    location.hash = viewId;
+    location.hash = hash;
   }
 
   window.addEventListener("hashchange", () => {
     const focusId = pendingFocusId;
     pendingFocusId = null;
-    render(viewFor(location.hash), { focus: true, focusId });
+    render(viewFor(currentHash()), { focus: true, focusId });
   });
 
   for (const link of navLinks) {
@@ -202,10 +254,7 @@
         render(viewFor(link.hash), { focus: true });
         return;
       }
-      // Reveal the destination before the browser follows the anchor, so its
-      // own scroll lands on a view that is actually displayed. The hashchange
-      // above then owns the scroll and the focus.
-      reveal(viewFor(link.hash));
+      // The hashchange reveals and focuses the tool after its controls are ready.
     });
   }
 
@@ -223,5 +272,5 @@
   // Normal loads leave position and focus to the browser. Old guide fragments
   // no longer name DOM elements, so scroll their replacement help into view
   // explicitly without moving keyboard focus.
-  render(viewFor(location.hash), { focus: false, scroll: Boolean(aliasTargets[parse(location.hash).id]) });
+  render(viewFor(currentHash()), { focus: false, scroll: Boolean(aliasTargets[parse(currentHash()).id]) });
 })();

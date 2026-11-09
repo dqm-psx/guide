@@ -51,7 +51,7 @@ test.describe('sticky chrome and feature surfaces', () => {
     const trigger=page.getByRole('button',{name:'Breeding',exact:true});
     await expect(page.locator('#breeding-nav-links')).toBeHidden();
     await trigger.hover();
-    await expect(page.locator('#breeding-nav-links a')).toHaveText(['Find a pairing','Find parents','Breeding tree','Breeding table']);
+    await expect(page.locator('#breeding-nav-links a')).toHaveText(['Breeding lookup','Breeding tree','Breeding table']);
     await page.locator('#breeding-nav-links a').nth(1).hover();
     await expect(trigger).toHaveAttribute('aria-expanded','true');
     await page.locator('.masthead').hover();

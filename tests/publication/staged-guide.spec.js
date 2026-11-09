@@ -81,18 +81,21 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   await expect(page.locator('.nav a[href="#field-guide"]')).toHaveAttribute('aria-current', 'page');
   await waitForOfflineCache(page);
 
-  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[href], .brand img[src], .hero-map img[src]'))
+  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[rel="stylesheet"], link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"], .brand img[src], .hero-map img[src]'))
     .map(element => element.src || element.href));
   expect(assets.length).toBeGreaterThan(10);
   for (const asset of assets) {
     expect(asset.startsWith(url), 'Asset mounted under /guide/: ' + asset).toBe(true);
     expect(new URL(asset).searchParams.get('v'), 'Content identity: ' + asset).toMatch(/^[a-f0-9]{16}$/);
   }
-  const currentNames = await page.evaluate(() => DATA.species.map(entry => [entry.index, entry.name, entry.display_name]));
-  expect(currentNames).toEqual(shipped.data.species.map(entry => [entry.index, entry.name, entry.display_name]));
+  expect(await page.evaluate(() => Boolean(window.DATA || window.GUIDE_REFERENCE || window.MONSTER_REFERENCE))).toBe(false);
   const guideNames = shipped.reference.guide_names;
   expect(guideNames.coverage.items).toBe(Object.keys(guideNames.items).length);
   expect(guideNames.coverage.maps).toBe(Object.keys(guideNames.maps).length);
+  await page.locator('.hero-map').click();
+  await page.locator('.map-image img').evaluate(img => img.decode());
+  await expect(page.locator('.map-doors a').first()).toBeVisible();
+  expect(await page.evaluate(() => Boolean(window.DATA || window.MONSTER_REFERENCE))).toBe(false);
   const named = await page.evaluate(() => ({
     item: FIELD_GUIDE.entries.find(row => row.id === 'item-41'),
     skill: FIELD_GUIDE.skill_names[1],
@@ -107,9 +110,11 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   expect(named.revision).toBe(shipped.reference.metadata.public_revision);
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
   expect(await page.locator('.brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
-  await page.locator('.hero-map').click();
-  await page.locator('.map-image img').evaluate(img => img.decode());
-  await expect(page.locator('.map-doors a').first()).toBeVisible();
+  await page.evaluate(() => { location.hash = 'pair-finder'; });
+  await expect(page.locator('#pair-finder #result-name a')).toBeVisible();
+  const currentNames = await page.evaluate(() => DATA.species.map(entry => [entry.index, entry.name, entry.display_name]));
+  expect(currentNames).toEqual(shipped.data.species.map(entry => [entry.index, entry.name, entry.display_name]));
+  expect(await page.evaluate(() => Boolean(window.MONSTER_REFERENCE))).toBe(false);
   check.assertClean();
 });
 
@@ -171,10 +176,14 @@ test('ordered pairing results link correctly and a tree can expand a parent bran
   check.assertClean();
 });
 
-test('a fresh staged install keeps every precached asset and its profile usable offline', async ({ page, context }) => {
+test('downloading the guide keeps its tools, atlas and profiles usable offline', async ({ page, context }) => {
   const check = audit(page, context);
   await page.goto(url + '#monster?id=11');
   await waitForOfflineCache(page);
+  await page.locator('#guide-settings > summary').click();
+  await page.locator('#download-offline').click();
+  await expect(page.locator('#offline-status')).toHaveText('Ready to use offline.', {timeout: 30000});
+  await page.locator('#guide-settings > summary').click();
   check.assertClean();
   check.offline();
   await context.setOffline(true);
@@ -193,6 +202,63 @@ test('a fresh staged install keeps every precached asset and its profile usable 
     await page.locator('#monster .monster-primary').click();
     await expect(page.locator('#breeding-tree')).toBeVisible();
     await expect(page.locator('#tree-target')).toHaveValue('11');
+    await page.goto(url+'entries/');
+    await expect(page.getByRole('heading',{name:'Guide index',exact:true})).toBeVisible();
+    await page.getByRole('link',{name:'Bang',exact:true}).first().click();
+    await expect(page.locator('#article-title')).toHaveText('Bang');
     check.assertClean();
   } finally { await context.setOffline(false); }
+});
+
+test('real entry URLs expose crawlable references and open the matching interactive tool',async ({browser,page})=>{
+  const entry = 'skills/e0c2b/';
+  const staticContext = await browser.newContext({javaScriptEnabled:false});
+  try {
+    const reader = await staticContext.newPage();
+    await reader.goto(url+'articles/boss-golem/');
+    await expect(reader.getByRole('heading',{level:1})).toHaveText('Golem');
+    await expect(reader.locator('main')).toContainText('HP 100');
+    await expect(reader.getByRole('link',{name:'Guardian Gate'}).first()).toBeVisible();
+    await reader.goto(url+entry);
+    await expect(reader.getByRole('heading',{level:1})).toHaveText('Bang');
+    await expect(reader.locator('main')).toContainText('MP cost');
+    await expect(reader.locator('meta[property="og:image"]')).toHaveAttribute('content',/guide-card\.png$/);
+    await expect(reader.locator('link[rel="canonical"]')).toHaveAttribute('href','https://dqm-psx.github.io/guide/'+entry);
+    const sitemap = await (await reader.request.get(url+'sitemap.xml')).text();
+    const paths = [...sitemap.matchAll(/<loc>https:\/\/dqm-psx\.github\.io\/guide\/([^<]*)<\/loc>/g)].map(m=>m[1]);
+    expect(paths.length).toBeGreaterThan(800);
+    expect(new Set(paths).size).toBe(paths.length);
+    expect(paths.filter(p=>!fs.existsSync(path.join(STAGED_ROOT,p,'index.html')))).toEqual([]);
+  } finally {await staticContext.close();}
+  await page.goto(url+entry);
+  await expect(page.locator('#article-title')).toHaveText('Bang');
+  await expect(page).toHaveURL(url+entry);
+  await expect(page.locator('#entry-permalink')).toHaveAttribute('href',url+entry);
+  await page.locator('.nav a[href="#species-index"]').click();
+  await expect(page.locator('#species-rows a').first()).toBeVisible();
+  await page.goBack();
+  await expect(page.locator('#article-title')).toHaveText('Bang');
+  await page.goto(url+'monsters/11/');
+  await expect(page.locator('#monster-heading')).toHaveText(name(11));
+  await page.getByRole('button',{name:'Use as pedigree'}).click();
+  await expect(page.locator('#pair-finder')).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(url+'monsters/11/');
+  await expect(page.locator('#monster-heading')).toBeVisible();
+  await expect(page.locator('#monster-heading')).toHaveText(name(11));
+});
+
+test('a direct entry respects saved spoilers and keeps its static reference when a tool fails', async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('dqm-guide-story-spoilers','hide'));
+  await page.route('**/guide/index.html',route=>route.abort());
+  await page.goto(url+'articles/story-greatlog-postgame/');
+  await expect(page.getByRole('heading',{name:'Story entry'})).toBeVisible();
+  await expect(page.locator('.entry-content')).toBeHidden();
+  await page.getByRole('button',{name:'Reveal this entry'}).click();
+  await expect(page.locator('.entry-content')).toBeVisible();
+  await page.unroute('**/guide/index.html');
+  await page.route('**/data/monster-reference.js*',route=>route.abort());
+  await page.goto(url+'monsters/11/');
+  await expect(page.getByRole('heading',{level:1,name:name(11),exact:true})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Open in the player guide'})).toBeVisible();
 });

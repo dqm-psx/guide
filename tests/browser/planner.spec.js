@@ -104,10 +104,11 @@ test.describe('served', () => {
 
   test('sprite style preference persists under its storage key', async ({ page }) => {
     await page.goto(url() + '#pair-finder');
+    await page.locator('#guide-settings > summary').click();
     await page.click('button[data-sprite-style="overworld"]');
-    await expect(page.locator('#pedigree-sprite img')).toHaveAttribute('data-sprite-kind', 'overworld');
+    await expect(page.locator('#pedigree-sprite [data-sprite-kind]')).toHaveAttribute('data-sprite-kind', 'overworld');
     await page.reload();
-    await expect(page.locator('#pedigree-sprite img')).toHaveAttribute('data-sprite-kind', 'overworld');
+    await expect(page.locator('#pedigree-sprite [data-sprite-kind]')).toHaveAttribute('data-sprite-kind', 'overworld');
     const stored = await page.evaluate(key => localStorage.getItem(key), SPRITE_STYLE_KEY);
     assert.equal(stored, 'overworld');
   });
@@ -199,6 +200,8 @@ test.describe('served', () => {
   test('breeding table scrolls columns without clipping rows on a narrow screen', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url() + '#breeding-table');
+    await page.locator('#matrix-filters > summary').click();
+    await page.selectOption('#matrix-view','grid');
     const grid = page.locator('#planner-all-grid');
     await expect(grid.locator('tbody tr')).toHaveCount(12);
     const dimensions = await grid.evaluate(element => ({

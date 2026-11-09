@@ -44,5 +44,5 @@
     }
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = {apply};
-  else apply(root.MONSTER_REFERENCE, root.FIELD_GUIDE, root.WORLD_GUIDE, root.PLAYER_ATLAS);
+  else apply(root.GUIDE_REFERENCE, root.FIELD_GUIDE, root.WORLD_GUIDE, root.PLAYER_ATLAS);
 })(globalThis);

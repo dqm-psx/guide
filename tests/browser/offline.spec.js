@@ -21,6 +21,9 @@ test.describe('served', () => {
     const requests = [];
     page.on('request', request => requests.push(request.url()));
     await page.goto(serverUrl);
+    expect(await page.evaluate(() => Boolean(window.DATA))).toBe(false);
+    await page.locator('footer a[href="#sources"]').click();
+    await expect(page.locator('#coverage-summary')).not.toBeEmpty();
     const slots = await page.evaluate(() => DATA.species.length);
     const version = await page.evaluate(() => DATA.metadata.version);
     await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);

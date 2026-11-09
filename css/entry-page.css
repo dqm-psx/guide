@@ -1,0 +1,5 @@
+:root{color-scheme:light dark;font:16px/1.55 system-ui,sans-serif;background:#f6f7f3;color:#182f28}
+*{box-sizing:border-box}body{margin:0}header{padding:14px max(18px,calc((100vw - 58rem)/2));background:#163b33}header a{color:white;font-weight:700;text-decoration:none}
+main{max-width:60rem;margin:auto;padding:20px}h1,h2{line-height:1.15;font-family:Georgia,serif}h1{font-size:clamp(2rem,5vw,3.5rem)}a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:pixelated}.entry-map{width:min(100%,40rem)}.entry-icon{width:64px;float:right}section ul{columns:2;column-width:15rem}
+@media(prefers-color-scheme:dark){:root{background:#18231f;color:#ebf3ea}a{color:#a7dfbf}}
+.entry-shield,.hide-story .entry-content{display:none}.hide-story .entry-shield{display:block}

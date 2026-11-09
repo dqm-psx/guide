@@ -25,7 +25,10 @@ const VIEWS = [
   { hash: '#breeding-table', id: 'breeding-table' },
   { hash: '#species-index', id: 'species-index' },
   { hash: '#team-planner', id: 'team-planner' },
+  { hash: '#sources', id: 'sources' },
 ];
+
+const TOP_VIEWS = VIEWS.filter(view => !['offspring-finder', 'sources'].includes(view.id));
 
 // Every view id must be one of the view wrappers, and exactly one is displayed.
 async function expectSingleView(page, id) {
@@ -52,20 +55,20 @@ test.describe('served', () => {
 
   test('guidance appears beside the tool it explains and source details remain available', async ({ page }) => {
     await page.goto(url() + '#pair-finder');
-    await expect(page.locator('#pair-finder #pair-guidance')).toBeVisible();
-    await expect(page.locator('#pair-guidance')).toContainText(/pedigree|parent|order/i);
+    await expect(page.locator('#pair-finder .lookup-modes')).toBeVisible();
     await expect(page.locator('#rules-guide, #plus-rules, #flag-rules')).toHaveCount(0);
 
     await page.locator('#breeding-nav-trigger').click();
-    await page.click('.nav a[href="#offspring-finder"]');
+    await page.click('.nav a[href="#pair-finder"]');
+    await page.click('#pair-finder [data-parent-mode]');
     await expect(page.locator('#offspring-finder #breeding-conditions')).toBeVisible();
     await expect(page.locator('#breeding-conditions')).toContainText('+');
     await expect(page.locator('#breeding-conditions')).toContainText(/Breeding room/i);
 
     await page.click('.nav a[href="#species-index"]');
     await expect(page.locator('#species-index #name-guide')).toBeVisible();
-    const sources = page.locator('#species-index details').filter({ has: page.locator('#coverage-summary') });
-    await sources.locator(':scope > summary').click();
+    await page.locator('footer a[href="#sources"]').click();
+    const sources = page.locator('#sources');
     await expect(page.locator('#coverage-summary')).toBeVisible();
     const slots = await page.evaluate(() => DATA.species.length);
     const version = await page.evaluate(() => DATA.metadata.version);
@@ -82,14 +85,14 @@ test.describe('served', () => {
     const expected = {
       '#field-guide': 'Field guide',
       '#atlas': 'Map atlas',
-      '#pair-finder': 'Find a pairing',
+      '#pair-finder': 'Breeding lookup',
       '#offspring-finder': 'Find parents',
       '#breeding-tree': 'Breeding tree',
       '#breeding-table': 'Breeding table',
       '#species-index': 'Monster library',
       '#team-planner': 'My game',
     };
-    for (const view of VIEWS) {
+    for (const view of TOP_VIEWS) {
       await test.step(view.id, async () => {
         const link = page.locator('.nav a[href="' + view.hash + '"]');
         if (await link.locator('xpath=..').getAttribute('id') === 'breeding-nav-links') await page.locator('#breeding-nav-trigger').click();
@@ -111,7 +114,7 @@ test.describe('served', () => {
           })
         );
         expect(marks.filter(mark => mark.href.startsWith('#')).map(mark => mark.href))
-          .toEqual(VIEWS.map(entry => entry.hash));
+          .toEqual(TOP_VIEWS.map(entry => entry.hash));
         // The clicked link alone owns both the semantic and visual marks.
         expect(marks.filter(mark => mark.current === 'page').map(mark => mark.href)).toEqual([view.hash]);
         const marked = marks.filter(mark => mark.active);
@@ -170,11 +173,11 @@ test.describe('served', () => {
     await expectSingleView(page, 'species-index');
     // An alias with a parameter still resolves through the same rule.
     await page.goto(url() + '#about');
-    await expectSingleView(page, 'species-index');
+    await expectSingleView(page, 'sources');
     expect(await page.evaluate(() => DQMViews.parse('#team-planner?tab=roster')))
       .toEqual({ id: 'team-planner', params: '?tab=roster' });
     expect(await page.evaluate(() => DQMViews.viewFor('#about')))
-      .toBe('species-index');
+      .toBe('sources');
     expect(await page.evaluate(() => DQMViews.viewFor('#nope')))
       .toBe('field-guide');
   });
@@ -251,14 +254,14 @@ test.describe('served', () => {
     const aliases = [
       { hash: '#rules-guide', view: 'offspring-finder', target: 'offspring-heading', heading: 'offspring-heading', title: 'Find parents' },
       { hash: '#conditional-rules', view: 'offspring-finder', target: 'breeding-conditions', heading: 'offspring-heading', title: 'Find parents' },
-      { hash: '#about', view: 'species-index', target: 'name-guide', heading: 'species-heading', title: 'Monster library' },
+      { hash: '#about', view: 'sources', target: 'sources-heading', heading: 'sources-heading', title: 'Sources & coverage' },
     ];
     for (const alias of aliases) {
       await page.evaluate(hash => { location.hash = hash; }, alias.hash);
       await expectSingleView(page, alias.view);
-      const link = page.locator('.nav a[href="#' + alias.view + '"]');
-      await expect(link).toHaveClass(/\bnav-link-active\b/);
-      await expect(link).toHaveAttribute('aria-current', 'page');
+      const active = page.locator('.nav a[aria-current="page"]');
+      if (alias.view === 'sources') await expect(active).toHaveCount(0);
+      else await expect(active).toHaveAttribute('href', '#pair-finder');
       await expect(page).toHaveTitle(new RegExp('^' + alias.title + ' · '));
       await expect(page.locator('#' + alias.target)).toBeVisible();
       await expect(page.locator('#' + alias.heading)).toBeFocused();
@@ -326,13 +329,14 @@ test.describe('served', () => {
       });
     });
     await page.goto(url() + '#pair-finder');
-    await expect(page.locator('#pair-guidance')).toBeVisible();
+    await expect(page.locator('#pair-finder .lookup-modes')).toBeVisible();
     await page.locator('#breeding-nav-trigger').click();
-    await page.click('.nav a[href="#offspring-finder"]');
+    await page.click('.nav a[href="#pair-finder"]');
+    await page.click('#pair-finder [data-parent-mode]');
     await expectSingleView(page, 'offspring-finder');
     await expect(page.locator('#breeding-conditions')).toBeVisible();
     await expect(page.locator('#reverse-rows tr').first()).toBeVisible();
-    await expect(page.locator('#reverse-rows')).toContainText('Base table pairs');
+    await expect(page.locator('#reverse-rows')).toContainText(/base table|first copy/i);
     await expect(page.locator('#reverse-rows')).not.toContainText('Confirmed + value recipes');
     await expect(page.locator('#offspring-heading')).toBeFocused();
     await page.click('.nav a[href="#species-index"]');
@@ -368,13 +372,13 @@ test.describe('narrow screens and print', () => {
     const trigger = page.getByRole('button', {name:'Breeding',exact:true});
     await trigger.focus();
     await page.keyboard.press('ArrowDown');
-    await expect(page.locator('#breeding-nav-links').getByRole('link',{name:'Find a pairing',exact:true})).toBeFocused();
+    await expect(page.locator('#breeding-nav-links').getByRole('link',{name:'Breeding lookup',exact:true})).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
     await expect(trigger).toHaveAttribute('aria-expanded','false');
     await trigger.click();
     await page.locator('#breeding-nav-links a').nth(1).click();
-    await expectSingleView(page,'offspring-finder');
+    await expectSingleView(page,'breeding-tree');
     await expect(trigger).toHaveClass(/nav-link-active/);
     await expect(trigger).toHaveAttribute('aria-expanded','false');
     await page.getByRole('navigation',{name:'Views',exact:true}).getByRole('link',{name:'Monster library',exact:true}).click();

@@ -9,6 +9,19 @@
 }
 .field-view [hidden], .field-view[hidden], #guide-home[hidden] {display:none!important}
 .masthead{background:#122e2b;border-bottom:2px solid #b48a46;padding:10px 0}
+.masthead .project-links{margin-left:auto;display:flex;gap:16px}.project-links a{color:#e1ede8;font-size:14px}
+#guide-settings{position:relative;z-index:60;margin:0;padding:0;border:0;background:transparent;color:white}
+#guide-settings>summary{white-space:nowrap;padding:8px 11px;border:1px solid #91a99f;border-radius:6px;font-size:14px}
+.settings-popover{position:absolute;right:0;top:100%;width:min(285px,90vw);padding:15px;display:grid;gap:12px;border:1px solid var(--line);border-radius:8px;background:var(--white);color:var(--ink);box-shadow:0 6px 24px #10251b33}
+#guide-settings fieldset{display:block;border:0;padding:0;margin:0;color:var(--ink)}
+#guide-settings legend{padding:0;margin-bottom:3px;font-weight:650;font-size:13px}
+#guide-settings .theme-options button,#guide-settings .sprite-style-options button{color:var(--ink);min-height:34px;font-size:13px}
+#guide-settings button[aria-pressed=true]{background:var(--teal);color:var(--white)}
+.settings-popover label{display:flex;align-items:center;gap:8px;font-weight:600}.settings-popover input{min-height:0}
+.settings-popover output:empty{display:none}
+.team-shortcuts{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;margin:10px 0}.team-shortcuts a:first-child{font-weight:700}
+#manage-teams{margin-top:1rem}
+@media(max-width:700px){.masthead .project-links{display:none}.masthead #guide-settings{margin-left:auto}.masthead .title-line .version{font-size:12px!important}}
 .masthead .brand{gap:11px}.masthead .brand img{width:43px;height:43px}.title-line .eyebrow{color:#e6c987}
 .nav nav{gap:clamp(14px,3vw,38px);overflow:visible;flex-wrap:wrap}
 .nav a,.nav #breeding-nav-trigger{padding:11px 0;white-space:nowrap}
@@ -106,10 +119,22 @@
 .encounters ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));padding:0;gap:5px 16px}.encounters li{border-top:1px solid var(--guide-rule);display:flex;align-items:center;justify-content:space-between;gap:6px}
 .save-import-panel{padding:16px;margin:0 0 14px}.save-import-panel p{margin:4px 0}.save-import-panel input[type=file]{max-width:100%}.save-import-panel .controls{display:flex;gap:8px;flex-wrap:wrap}
 .field-view .learning{margin:15px 0;padding:12px 15px;background:var(--guide-soft);border-radius:8px}.learning h3{font:700 16px Georgia,serif}.learning dl{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}.learning dt{font-size:11px}.learning dd{font-size:17px;margin:0;font-weight:700}.field-view .next-chapter{margin-top:16px}.next-chapter a{font-weight:700}
+.atlas-filters{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin:8px 0}.atlas-filters label{min-width:0;font-size:12px;font-weight:650}
+.atlas-scroll h4{margin:11px 0 4px;padding-inline:8px;font-size:13px;color:var(--guide-green)}
+.atlas-caption .atlas-layout-picker{max-width:100%;font-size:13px}.atlas-layout-picker select{max-width:min(100%,20rem)}
+.atlas-empty{padding:8px 16px}
+.route-section{clear:both;margin:18px 0}.route-section ol,.route-section ul{padding-inline-start:1.5em}.route-section li{padding:2px 0}
+.route-section h3{margin-bottom:7px}.route-roster{width:100%;border-collapse:collapse;text-align:left}.route-roster th,.route-roster td{padding:7px;vertical-align:top;border-bottom:1px solid var(--guide-rule)}
+.route-roster th:first-child{width:27%}.route-roster tbody th{font-weight:600}.route-roster td span{display:inline-block}
+.route-roster small,.battle-member small{font-size:12px;color:var(--muted);white-space:nowrap}
+.route-campaign,.item-names{padding:0;border:0;background:none}.route-campaign summary,.item-names summary{padding:8px 0;color:var(--guide-green);font-weight:650;cursor:pointer}
+.boss-art{width:clamp(60px,18vw,96px);height:clamp(60px,18vw,96px);float:right;margin:0 0 10px 12px;image-rendering:pixelated}.guide-row .boss-art{width:40px;height:40px;float:none;margin:0;flex:none}
+.battle-adventure{margin:14px 0 0}.battle-member{padding:8px 0;border-bottom:1px solid var(--guide-rule)}.battle-member h4{display:flex;align-items:center;gap:8px}
+.battle-member p{margin:7px 0 0}.battle-stats{margin:7px 0;display:flex;flex-wrap:wrap;gap:7px 17px}.battle-stats dt{font-size:12px;color:var(--muted)}.battle-stats dd{margin:0;font-weight:700}
 @media(max-width:760px){
   .field-view{margin-top:13px}.hero-map{min-height:78px}.hero-map>span{left:12px;bottom:9px;font-size:17px}
   .guide-toolbar{flex-direction:column;align-items:stretch;gap:8px}.guide-toolbar .story-setting{order:-1;align-self:flex-start;min-height:34px}
-  .home-columns{grid-template-columns:1fr;gap:13px;margin:15px 0}.guide-filters{display:grid;grid-template-columns:1fr 1fr auto;gap:7px}.guide-filters .guide-query{grid-column:1/-1}
+  .home-columns{grid-template-columns:1fr;gap:13px;margin:15px 0}.guide-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.guide-filters .guide-query{grid-column:1/-1}
   .ranch-links h3{width:100%}.atlas-layout{grid-template-columns:1fr;gap:10px}.atlas-scroll{max-height:135px}.atlas-scroll a{display:inline-flex;vertical-align:top;flex-direction:column;width:50%}
   .map-controls{gap:6px}.directory-grid{grid-template-columns:1fr}.map-doors{columns:1}.directory-head,.atlas-caption{align-items:flex-start;gap:7px;flex-wrap:wrap}
 }
@@ -117,3 +142,5 @@
 @media(max-width:600px){.masthead .wrap{display:flex;flex-wrap:nowrap;gap:6px}.masthead .brand{gap:6px;min-width:0}.masthead .brand img{width:30px;height:30px}.masthead .title-line h1{font-size:16px}.masthead .title-line .eyebrow{font-size:8px;letter-spacing:.04em}.masthead .title-line .version{font-size:9px}.masthead .theme-picker{width:auto;flex:0 0 auto}.masthead .theme-options button{font-size:10px;padding:4px;min-height:29px}}
 @media(max-width:600px){#guide-home{display:flex;flex-direction:column}#guide-home .ranch-links{order:-1;align-items:flex-start;gap:3px 16px;padding:8px 12px;margin-top:10px}#guide-home .ranch-links h3{font-size:16px}#guide-home .ranch-links a{min-height:27px;font-size:12px}}
 @media print{.guide-filters,.map-controls,.atlas-browser,.atlas-tabs,.guide-back,.guide-pager{display:none}.atlas-layout{display:block}.map-scroll{height:auto;background:none}.field-view,.guide-article{margin:0}}
+.home-import{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;padding:9px 12px;margin-bottom:8px;border-radius:6px;background:var(--light);color:var(--teal);text-decoration:none}
+.home-import span{font-size:.82rem}.home-import:hover,.home-import:focus-visible{text-decoration:underline}

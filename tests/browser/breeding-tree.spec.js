@@ -27,7 +27,7 @@ test('hiding a branch is reversible and Undo restores the earlier tree', async (
   await expect(page.locator('[data-tree-collapse=""]')).toHaveAttribute('aria-expanded', 'false');
   await page.locator('#tree-undo').click();
   await expect(page.locator('.tree-node')).toHaveCount(3);
-  await expect(page.locator('#tree-target')).toBeFocused();
+  await expect(page.locator('#tree-target-combobox')).toBeFocused();
   await page.locator('#tree-clear').click();
   await expect(page.locator('.tree-node')).toHaveCount(1);
   await page.locator('#tree-undo').click();
@@ -48,6 +48,23 @@ test('mobile tree keeps the page within the viewport while the diagram scrolls',
   await expect(page.locator('#tree-recipes-heading')).toBeFocused();
   await page.fill('#tree-recipe-search', 'no-such-parent-zzzz');
   await expect(page.locator('#tree-recipe-list')).toContainText('No parent names match');
+});
+
+test('a team plan opens the same explored branches and a cleared tree stays clear in a shared link', async ({ page }) => {
+  await page.goto(serverUrl + '#breeding-tree?target=290');
+  await page.locator('[data-tree-select="0"]').click();
+  await page.locator('[data-tree-recipe]:not([disabled])').first().click();
+  const branches = await page.evaluate(() => new URLSearchParams(location.hash.split('?')[1]).get('branches'));
+  await page.locator('#tree-owned').click();
+  await expect(page.locator('#team-open-tree')).toBeVisible();
+  await page.locator('#team-open-tree').click();
+  await expect(page.locator('.tree-node')).toHaveCount(5);
+  expect(await page.evaluate(() => new URLSearchParams(location.hash.split('?')[1]).get('branches'))).toBe(branches);
+  await page.locator('[data-tree-select=""]').click();
+  await page.locator('#tree-clear').click();
+  await expect(page.locator('.tree-node')).toHaveCount(1);
+  await page.reload();
+  await expect(page.locator('.tree-node')).toHaveCount(1);
 });
 
 test('a malformed shared tree retains the saved tree and offers a usable view', async ({ page }) => {

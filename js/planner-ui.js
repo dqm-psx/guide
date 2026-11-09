@@ -80,6 +80,11 @@
     });
     persist();
   }
+  const pendingStyle = storage.read("dqm-guide-pending-sprite");
+  if (!storageBlocked && (pendingStyle === "overworld" || pendingStyle === "portrait")) {
+    state = app.setSpriteStyle(state,pendingStyle);
+    if (persist()) storage.remove("dqm-guide-pending-sprite");
+  }
   if (state.spriteStyle !== currentSpriteStyle) setSpriteStyle(state.spriteStyle);
   currentSpriteStyle = state.spriteStyle;
 
@@ -348,6 +353,16 @@
     planNotice(nextPlan === null ? "Cleared the breeding plan." : "Plan saved.");
     restoreFocus();
   }
+  function openTreePlan(tree) {
+    const team = activeTeam();
+    if (!team) return;
+    let next = app.addTarget(state, team.id, tree.speciesIndex);
+    const target = next.teams.find(t=>t.id===team.id).targets.find(t=>t.speciesIndex===tree.speciesIndex);
+    if (!target.plan) next = app.setTargetPlan(next,team.id,target.id,tree);
+    commit(next,target.plan ? "Opened your saved plan." : "Added this tree to your team’s targets.");
+    activeTab = "targets";
+    location.hash = "team-planner?tab=targets";
+  }
   // Notes are free text. Persist them without re-rendering the tree so typing
   // keeps focus and caret, and a note is never lost to an unblurred reload.
   function commitNote(nodeId, value) {
@@ -376,6 +391,15 @@
   function renderPlan() {
     const team = activeTeam();
     const target = activeTarget();
+    if (P("team-open-tree")) {
+      const link = P("team-open-tree");
+      const route = target && (target.plan && window.DQMBreedingTree?.linkForPlan
+        ? DQMBreedingTree.linkForPlan(target.plan) : "#breeding-tree?target="+target.speciesIndex);
+      link.hidden = !route;
+      if (route) link.href = route;
+      else link.removeAttribute("href");
+    }
+
     const empty = P("plan-empty");
     const body = P("plan-body");
     if (!team || !target) {
@@ -655,6 +679,10 @@
     }
   }
   function renderAll() {
+    if (currentSpriteStyle !== state.spriteStyle) {
+      currentSpriteStyle = state.spriteStyle;
+      setSpriteStyle(currentSpriteStyle);
+    }
     renderTeams();
     renderGameSwitch();
     renderRoster();
@@ -668,7 +696,7 @@
     return rosterSpecies.filter(s => matchesName(s, P(searchId).value) && familyMatches(s, P(familyId).value));
   }
   function refreshAddSpecies(selected) {
-    setOptions("planner-add-species", filterSpecies("planner-add-search", "planner-add-family"), selected);
+    setOptions("planner-add-species", rosterSpecies, selected);
     P("planner-add-button").disabled = P("planner-add-species").disabled;
     refreshAddSprite();
   }
@@ -742,17 +770,28 @@
     P("planner-all-summary").textContent = rows.length+" pedigrees × "+columns.length+" mates · "+(rows.length*columns.length).toLocaleString()+" ordered pairings · "+contextLabel(context)+".";
     const entries = (species, plus) => species.map(s => ({speciesIndex:s.index,plus,nickname:""}));
     if (listMode) {
-      const recipes = [];
-      for (const a of rows) for (const b of columns) {
-        const result = core.result(a.index,b.index,rowPlus,columnPlus,context);
-        if (matchesName(byId.get(result.resultIndex),query)) recipes.push({a,b,result});
-      }
       const listSize = size * 4;
-      rowPage = Math.max(0,Math.min(rowPage,Math.max(0,Math.ceil(recipes.length/listSize)-1)));
-      const displayed = recipes.slice(rowPage*listSize,(rowPage+1)*listSize);
-      P("matrix-filter-status").textContent = query ? recipes.length.toLocaleString()+" matching recipes across all filtered parents" : "";
+      const totalPairs = rows.length * columns.length;
+      // A blank query uses direct page offsets, even on a phone with the full roster.
+      const matches = query ? [] : null;
+      if (matches) {
+        const resultIds = new Set(DATA.species.filter(s => matchesName(s,query)).map(s => s.index));
+        for (let i = 0; i < totalPairs; i++) {
+          const a = rows[Math.floor(i/columns.length)], b = columns[i%columns.length];
+          if (resultIds.has(core.result(a.index,b.index,rowPlus,columnPlus,context).resultIndex)) matches.push(i);
+        }
+      }
+      const total = matches ? matches.length : totalPairs;
+      rowPage = Math.max(0,Math.min(rowPage,Math.max(0,Math.ceil(total/listSize)-1)));
+      const displayed = [];
+      for (let at = rowPage*listSize; at < Math.min(total,(rowPage+1)*listSize); at++) {
+        const i = matches ? matches[at] : at;
+        const a = rows[Math.floor(i/columns.length)], b = columns[i%columns.length];
+        displayed.push({a,b,result:core.result(a.index,b.index,rowPlus,columnPlus,context)});
+      }
+      P("matrix-filter-status").textContent = query ? total.toLocaleString()+" matching recipes across all filtered parents" : "";
       P("planner-all-grid").innerHTML = displayed.length ? '<table><caption class="sr-only">Ordered recipes · '+safe(contextLabel(context))+'</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Offspring</th><th scope="col">Rule / actions</th></tr></thead><tbody>'+displayed.map(({a,b,result}) => '<tr><td>'+spriteLabel(a.index,named(a.index))+' <small>+'+rowPlus+'</small></td><td>'+spriteLabel(b.index,named(b.index))+' <small>+'+columnPlus+'</small></td><td>'+spriteLabel(result.resultIndex,named(result.resultIndex))+'</td><td class="matrix-list-actions"><span class="detail">'+safe(ruleLabel(result))+'</span><button type="button" data-planner-pair data-a="'+a.index+'" data-b="'+b.index+'" data-ap="'+rowPlus+'" data-bp="'+columnPlus+'" data-context="'+context+'">Inspect</button><a href="#breeding-tree?target='+result.resultIndex+'&context='+context+'">Tree ↗</a></td></tr>').join('')+'</tbody></table>' : '<p class="planner-empty">No recipes match. Clear the offspring search or reset the parent filters.</p>';
-      pageRange("planner-row",rowPage,recipes.length,"Recipes",listSize);
+      pageRange("planner-row",rowPage,total,"Recipes",listSize);
     } else {
       rowPage = Math.max(0,Math.min(rowPage,Math.max(0,Math.ceil(rows.length/size)-1)));
       columnPage = Math.max(0,Math.min(columnPage,Math.max(0,Math.ceil(columns.length/size)-1)));
@@ -840,7 +879,6 @@
       const member = team.entries.find(e => e.id === edit.dataset.memberEdit);
       if (!member) return;
       editing = member.id;
-      P("planner-add-search").value = ""; P("planner-add-family").value = "";
       refreshAddSpecies(member.speciesIndex);
       P("planner-sex-"+member.sex).checked = true;
       P("planner-location-"+entryLocation(member)).checked = true;
@@ -1007,7 +1045,8 @@
         const next = app.insertTeam(state, team);
         commit(app.setActiveGame(app.setActiveTeam(next, team.id), save.game), "Imported " + team.entries.length + " monsters into " + name + ".");
         clear();
-        P("planner-team-select").focus({preventScroll: true});
+        location.hash = "team-planner?tab=breeding";
+        setPlannerTab("breeding",true);
       } catch (error) { status.textContent = error.message; }
     });
   }
@@ -1045,9 +1084,8 @@
   });
 
   // ---- events ----
-  for (const id of ["planner-add-family","planner-row-family","planner-column-family"]) setFamilies(id);
+  for (const id of ["planner-row-family","planner-column-family"]) setFamilies(id);
   refreshAddSpecies(11);
-  for (const id of ["planner-add-search","planner-add-family"]) P(id).addEventListener(id.endsWith("search") ? "input" : "change", () => refreshAddSpecies());
   P("planner-add-species").addEventListener("change", refreshAddSprite);
   P("planner-entry-form").addEventListener("submit", event => {
     event.preventDefault();
@@ -1266,7 +1304,10 @@
   });
   for (const mode of PLANNER_TABS) {
     const tab = P("planner-tab-"+mode);
-    tab.addEventListener("click", () => setPlannerTab(mode));
+    tab.addEventListener("click", () => {
+      setPlannerTab(mode);
+      if (location.hash.startsWith("#team-planner")) history.replaceState(null,"","#team-planner?tab="+mode);
+    });
     tab.addEventListener("keydown", event => {
       const last = PLANNER_TABS.length - 1, index = PLANNER_TABS.indexOf(mode);
       let next;
@@ -1397,22 +1438,6 @@
     DQMViews.go("team-planner", { focusId: "plan-heading" });
   });
   P("target").addEventListener("change", renderTargets);
-  P("target-search").addEventListener("input", renderTargets);
-  P("planner-open-target").addEventListener("click", event => {
-    // The href stays for a plain link, but go() owns the navigation so the
-    // focus and the already-open destination behave the same as a nav click.
-    event.preventDefault();
-    const team = activeTeam();
-    const activeTargetId = team ? team.activeTargetId : null;
-    const activeTarget = team ? team.targets.find(t => t.id === activeTargetId) : null;
-    const activeSpecies = activeTarget ? byId.get(activeTarget.speciesIndex) : null;
-    if (!activeSpecies) return;
-    // Select the target first, then hand off: go() also works when Find
-    // parents is already open, where no hashchange would follow the link.
-    if (typeof DQMReference !== "undefined" && typeof DQMReference.selectTarget === "function") DQMReference.selectTarget(activeSpecies.index);
-    renderTargets();
-    DQMViews.go("offspring-finder", { focusId: "target" });
-  });
   // ---- breeding plan events ----
   P("plan-context").addEventListener("change", () => {
     const newContext = P("plan-context").value;
@@ -1642,12 +1667,15 @@
     activeTeam,
     activeTarget,
     savePlan,
+    openTreePlan,
     // Called by js/router.js once this view is displayed, so the active tab
     // and its panels are current whenever the planner comes back into view.
     viewShown: id => {
       if (id === "team-planner") {
         movePairDetail("planner-team-detail-host");
-        setPlannerTab(activeTab);
+        const query = new URLSearchParams(location.hash.split("?")[1]);
+        const tab = query.get("tab");
+        setPlannerTab(PLANNER_TABS.includes(tab) ? tab : activeTab);
       } else if (id === "breeding-table") {
         movePairDetail("planner-all-detail-host");
         P("planner-pair-detail").hidden = true;
@@ -1674,4 +1702,5 @@
 
   setPlannerTab("roster");
   renderAll();
+  window.DQMMonsterPicker?.attach(P("planner-add-species"), {label:"Monster"});
 })();

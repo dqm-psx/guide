@@ -39,6 +39,7 @@ test.describe('served', () => {
   test('reverse-finder Try pair path shows the + rule note for Spotted Slime', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await page.selectOption('#target', '1');
+    await page.selectOption('#reverse-copy-mode', 'repeat');
     await page.selectOption('#reverse-pedigree-family', '0');
     await page.selectOption('#reverse-mate-family', '0');
     const tryPair = page.locator('#reverse-rows button[data-a="1"][data-b="1"]');
@@ -72,9 +73,12 @@ test.describe('served', () => {
     await expect(baseRow.locator('.breeding-rule-note')).toHaveText('Ordinary shrine: both below +4 give Dragon; either +4 or higher gives Great Dragon.');
     // Dragon + Dragon Kid has no exact + rule: a family match must not add one.
     const ordinaryRow = page.locator('#reverse-rows tr').filter({ has: page.locator('button[data-a="45"][data-b="26"]') });
+    await expect(ordinaryRow).toHaveCount(0);
+    await page.selectOption('#reverse-copy-mode', 'repeat');
     await expect(ordinaryRow).toHaveCount(1);
     await expect(ordinaryRow.locator('.breeding-rule-marker')).toHaveCount(0);
     await expect(ordinaryRow.locator('.breeding-rule-note')).toHaveCount(0);
+    await page.selectOption('#reverse-copy-mode', 'first');
 
     await baseRow.getByRole('button').click();
     await expect(page.locator('#result-name')).toHaveText('Dragon');
@@ -119,24 +123,32 @@ test.describe('served', () => {
     const playable = await page.evaluate(() => DATA.species.filter(s => s.playable !== false).length);
     const total = await page.evaluate(() => DATA.species.length);
     await expect(page.locator('#species-count')).toHaveText(`${playable} matching species`);
-    await page.check('#show-internal');
+    await page.check('#library-extra-slots');
+    await expect(page.locator('#show-internal')).toBeChecked();
     await expect(page.locator('#species-count')).toHaveText(`${total} matching species`);
+    await page.fill('#species-search','Aibou');
+    await expect(page.locator('#species-rows').getByRole('link',{name:'Aibou',exact:true})).toBeVisible();
+    await page.fill('#species-search','');
+    await page.locator('#guide-settings summary').click();
     await page.uncheck('#show-internal');
+    await expect(page.locator('#library-extra-slots')).not.toBeChecked();
     await expect(page.locator('#species-count')).toHaveText(`${playable} matching species`);
   });
 
   test('keyboard: tabbing to the sprite style buttons switches sprites', async ({ page }) => {
     await page.goto(url() + '#pair-finder');
-    await expect(page.locator('#pedigree-sprite img')).toHaveAttribute('data-sprite-kind', 'portrait');
-    for (let i = 0; i < 30; i++) {
+    await expect(page.locator('#pedigree-sprite [data-sprite-kind]')).toHaveAttribute('data-sprite-kind', 'portrait');
+    await page.locator('#guide-settings summary').focus();
+    await page.keyboard.press('Enter');
+    for (let i = 0; i < 12; i++) {
       await page.keyboard.press('Tab');
       const focused = await page.evaluate(() => document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.spriteStyle : undefined);
       if (focused === 'overworld') break;
     }
     await page.keyboard.press('Enter');
-    await expect(page.locator('#pair-finder button[data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('#pair-finder button[data-sprite-style="portrait"]')).toHaveAttribute('aria-pressed', 'false');
-    await expect(page.locator('#pedigree-sprite img')).toHaveAttribute('data-sprite-kind', 'overworld');
+    await expect(page.locator('#guide-settings button[data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#guide-settings button[data-sprite-style="portrait"]')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('#pedigree-sprite [data-sprite-kind]')).toHaveAttribute('data-sprite-kind', 'overworld');
   });
 
   test('planner navigation shows the planner and hides the reference sections', async ({ page }) => {

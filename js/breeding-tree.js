@@ -79,7 +79,18 @@
       }
       return { plan, collapsed };
     }
-    return Object.freeze({ createPlan: planner.createPlan, at, candidates, choose, clear, conditions, snapshot, restore, MAX_DEPTH, MAX_NODES });
+    function shareableState(plan) {
+      if (!Array.isArray(plan?.nodes) || plan.nodes.length > MAX_NODES) return null;
+      try {
+        planner.validate(plan);
+        if (planner.validateContext(plan).length) return null;
+        const state = snapshot(plan);
+        if (state.branches.length !== plan.nodes.filter(node => node.children !== null).length) return null;
+        restore(state);
+        return state;
+      } catch { return null; }
+    }
+    return Object.freeze({ createPlan: planner.createPlan, at, candidates, choose, clear, conditions, snapshot, restore, shareableState, MAX_DEPTH, MAX_NODES });
   }
 
   root.DQMBreedingTreeCore = Object.freeze({ create, MAX_SHARED_LENGTH, MAX_DEPTH, MAX_NODES });
@@ -102,20 +113,18 @@
   let message = '';
   const P = id => document.getElementById(id);
 
-  host.innerHTML = '<div class="section-head tree-heading-row"><div><h2 id="tree-heading" tabindex="-1">Breeding tree</h2></div><div class="tree-top-actions"><button type="button" id="tree-undo" disabled>Undo</button><button type="button" id="tree-share">Copy tree link</button></div></div>' +
-    '<div class="tree-controls"><div class="field"><label for="tree-search">Find a target</label><input id="tree-search" type="search" placeholder="Current, old, or Japanese name" autocomplete="off"></div><div class="field"><label for="tree-target">Target monster</label><select id="tree-target"></select></div><div class="field"><label for="tree-context">Breeding location</label><select id="tree-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></div></div>' +
+  host.innerHTML = '<div class="section-head tree-heading-row"><div><h2 id="tree-heading" tabindex="-1">Breeding tree</h2></div><div class="tree-top-actions"><button type="button" id="tree-owned">Use my monsters</button><button type="button" id="tree-undo" disabled>Undo</button><button type="button" id="tree-share">Copy tree link</button></div></div>' +
+    '<div class="tree-controls"><div class="field"><label for="tree-target">Target monster</label><select id="tree-target"></select></div><div class="field"><label for="tree-context">Breeding location</label><select id="tree-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></div></div>' +
     '<p id="tree-message" class="tree-message" role="status" aria-live="polite"></p>' +
     '<div class="tree-workspace"><div class="tree-map-panel"><div class="tree-map-bar"><span id="tree-summary"></span><button type="button" id="tree-center">Center target</button></div><div id="tree-canvas" class="tree-canvas" tabindex="0" role="region" aria-label="Breeding tree, scroll to explore branches"><div id="tree-diagram" class="tree-diagram"></div></div></div>' +
     '<aside class="tree-recipes" aria-labelledby="tree-recipes-heading"><div class="tree-recipe-header"><h3 id="tree-recipes-heading" tabindex="-1"></h3><label class="sr-only" for="tree-recipe-search">Filter recipes by parent name</label><input id="tree-recipe-search" type="search" placeholder="Filter by either parent…" autocomplete="off"><div class="tree-recipe-summary"><p id="tree-recipe-count" class="hint"></p><button type="button" id="tree-clear">Clear this branch</button></div></div><div id="tree-recipe-list"></div><div class="tree-recipe-pages"><button id="tree-prev" type="button">Previous</button><span id="tree-page"></span><button id="tree-next" type="button">Next</button></div></aside></div>' +
-    '<details class="tree-help"><summary>How to read this tree</summary><p>Each branch has its own recipe. The pedigree is on the left and the mate is on the right.</p><p>Special recipes show the required + value or two-save rule. Recipes that would repeat an ancestor are omitted.</p><p>Check parent sex, level and availability in your game. Your tree is saved in this browser.</p></details>';
+    '<details class="tree-help"><summary>How to read this tree</summary><p>Each branch has its own recipe. The pedigree is on the left and the mate is on the right.</p><p>Special recipes show the required + value or two-save rule. Recipes that would repeat an ancestor are omitted.</p><p>Your tree is saved in this browser.</p></details>';
 
   function targetOptions() {
-    const query = P('tree-search').value;
-    const items = Array.from(species.values()).filter(item => !query || matches(item.index, query));
-    P('tree-target').innerHTML = items.map(item => '<option value="' + item.index + '">' + esc(name(item.index)) + '</option>').join('');
-    if (items.some(item => item.index === plan.speciesIndex)) P('tree-target').value = String(plan.speciesIndex);
-    else if (items.length) P('tree-target').selectedIndex = -1;
-    else P('tree-target').innerHTML = '<option value="">No matching monsters</option>';
+    const target = P('tree-target');
+    if (!target.length) target.innerHTML = Array.from(species.values(), item => '<option value="' + item.index + '">' + esc(name(item.index)) + '</option>').join('');
+    target.value = String(plan.speciesIndex);
+    root.DQMMonsterPicker.attach(target, {label:'Target monster'}).refresh();
   }
   function link(index) { return '<a href="#monster?id=' + index + '" class="tree-monster-link">' + (typeof spriteMarkup === 'function' ? spriteMarkup(index) : '') + '<span>' + esc(name(index)) + '</span></a>'; }
   function family(node) {
@@ -179,7 +188,7 @@
   function currentState() { return engine.snapshot(plan, collapsed); }
   function route(state) {
     const params = new URLSearchParams({ target: String(state.target), context: state.context });
-    if (state.branches.length) params.set('branches', JSON.stringify(state.branches));
+    params.set('branches', JSON.stringify(state.branches));
     return '#breeding-tree?' + params.toString();
   }
   function persist() {
@@ -200,11 +209,12 @@
     collapsed = new Set(); selected = ''; page = 0;
     const first = engine.candidates(plan, '').items[0];
     if (first) plan = engine.choose(plan, '', first.id);
-    P('tree-search').value = ''; P('tree-recipe-search').value = '';
+    P('tree-recipe-search').value = '';
     message = ''; draw(); persist(); center();
   }
   function readRoute() {
     if (!location.hash.startsWith('#breeding-tree') || location.hash === lastRoute) return;
+    initializeExplorer();
     lastRoute = location.hash;
     const query = location.hash.split('?')[1];
     if (!query) { draw(); return; }
@@ -221,7 +231,7 @@
       } else setTarget(Number(raw), context, true);
     } catch (error) { message = error.message + ' Your previous tree has been kept.'; draw(); }
   }
-  P('tree-search').addEventListener('input', targetOptions);
+  P('tree-owned').addEventListener('click', () => root.DQMApp.openTreePlan(JSON.parse(JSON.stringify(plan))));
   P('tree-target').addEventListener('change', event => { if (event.target.value !== '') setTarget(Number(event.target.value), plan.context); });
   P('tree-context').addEventListener('change', event => { setTarget(plan.speciesIndex, event.target.value); message = 'The tree was restarted for this breeding location. Undo restores the previous branches.'; P('tree-message').textContent = message; });
   P('tree-recipe-search').addEventListener('input', () => { page = 0; drawRecipes(); });
@@ -240,7 +250,7 @@
     if (!undo.length) return;
     applyState(undo.pop()); message = 'Previous tree restored.'; draw(); persist();
     // A disabled last-Undo button must not strand keyboard focus on the body.
-    if (P('tree-undo').disabled) P('tree-target').focus({ preventScroll: true });
+    if (P('tree-undo').disabled) root.DQMMonsterPicker.get(P('tree-target')).focus({ preventScroll: true });
   });
   host.addEventListener('click', event => {
     const select = event.target.closest('[data-tree-select]');
@@ -283,19 +293,30 @@
     }
     P('tree-message').textContent = message;
   });
-  try {
-    const saved = localStorage.getItem(storageKey);
-    if (saved && saved.length <= MAX_SHARED_LENGTH) applyState(JSON.parse(saved));
-    else {
-      const first = engine.candidates(plan, '').items[0];
-      if (first) plan = engine.choose(plan, '', first.id);
-    }
-  } catch (error) { message = 'The saved tree could not be loaded. Choose a target to start a new one.'; }
-  draw();
+  let initialized = false;
+  function initializeExplorer() {
+    if (initialized) return;
+    initialized = true;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved && saved.length <= MAX_SHARED_LENGTH) applyState(JSON.parse(saved));
+      else {
+        const first = engine.candidates(plan, '').items[0];
+        if (first) plan = engine.choose(plan, '', first.id);
+      }
+    } catch (error) { message = 'The saved tree could not be loaded. Choose a target to start a new one.'; }
+    draw();
+    root.DQMReference.addGlossary(host);
+  }
   root.addEventListener('hashchange', readRoute);
   root.DQMBreedingTree = Object.freeze({
+    linkForPlan(saved) {
+      const state = engine.shareableState(saved);
+      const hash = state && route(state);
+      return hash && hash.length <= MAX_SHARED_LENGTH ? hash : null;
+    },
     open(index) { if (species.has(index)) { location.hash = 'breeding-tree?target=' + index + '&context=shrine'; readRoute(); } },
-    viewShown() { readRoute(); center(); },
+    viewShown() { initializeExplorer(); readRoute(); center(); },
   });
   readRoute();
 })(globalThis);

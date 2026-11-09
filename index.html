@@ -4,8 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Dragon Quest Monsters 1 &amp; 2 · Player Guide</title>
+<title>Dragon Quest Monsters 1 &amp; 2 PSX Player Guide</title>
 <meta name="description" content="Walkthroughs, maps, items, monsters and breeding tools for the English PlayStation edition of Dragon Quest Monsters 1 &amp; 2.">
+<link rel="canonical" href="https://dqm-psx.github.io/guide/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Dragon Quest Monsters 1 &amp; 2 PSX Player Guide">
+<meta property="og:description" content="Walkthroughs, monster locations, skills, maps and breeding plans for Terry, Cobi and Tara.">
+<meta property="og:url" content="https://dqm-psx.github.io/guide/">
+<meta property="og:image" content="https://dqm-psx.github.io/guide/icons/guide-card.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#163143">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,7 +44,16 @@
 </head>
 <body>
 <a class="skip" href="#field-guide">Skip to main content</a>
-<header class="masthead"><div class="wrap"><a class="brand" href="#field-guide" aria-label="DQM1 and 2 PSX guide home"><img src="icons/icon-192.png" width="42" height="42" alt=""><div class="title-line"><h1>Dragon Quest Monsters 1 &amp; 2</h1><span class="version">PSX English guide</span></div></a><div class="theme-picker" role="group" aria-label="Color theme"><div class="theme-options"><button type="button" data-theme-choice="system" aria-pressed="true">System</button><button type="button" data-theme-choice="light" aria-pressed="false">Light</button><button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button></div></div></div></header>
+<header class="masthead"><div class="wrap">
+  <a class="brand" href="#field-guide" aria-label="Player Guide home"><img src="icons/icon-192.png" width="42" height="42" alt=""><div class="title-line"><h1>Dragon Quest Monsters 1 &amp; 2</h1><span class="version">PSX Player Guide</span></div></a>
+  <nav class="project-links" aria-label="Translation project"><a href="https://dqm-psx.github.io/">English patch</a><a href="https://dqm-psx.github.io/translations/">Translations</a></nav>
+  <details id="guide-settings"><summary>Settings</summary><div class="settings-popover">
+    <fieldset class="theme-picker"><legend>Theme</legend><div class="theme-options"><button type="button" data-theme-choice="system" aria-pressed="true">System</button><button type="button" data-theme-choice="light" aria-pressed="false">Light</button><button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button></div></fieldset>
+    <fieldset class="sprite-style-picker"><legend>Monster sprites</legend><div class="sprite-style-options"><button type="button" data-sprite-style="portrait" aria-pressed="true">Portrait</button><button type="button" data-sprite-style="overworld" aria-pressed="false">Overworld</button></div></fieldset>
+    <label><input type="checkbox" id="guide-spoilers" checked> Show story spoilers</label>
+    <label><input type="checkbox" id="show-internal"> Include extra monster slots</label>
+    <button id="download-offline" type="button" hidden>Download guide for offline use</button><output id="offline-status" role="status"></output>
+  </div></details></div></header>
 <div id="app-storage-error" class="app-error wrap" role="alert" hidden>
   <p id="app-storage-error-text"></p>
   <div class="app-error-actions">
@@ -51,8 +67,7 @@
   <div class="breeding-nav">
     <button type="button" id="breeding-nav-trigger" aria-controls="breeding-nav-links" aria-expanded="false">Breeding</button>
     <div id="breeding-nav-links" hidden>
-      <a href="#pair-finder">Find a pairing</a>
-      <a href="#offspring-finder">Find parents</a>
+      <a href="#pair-finder">Breeding lookup</a>
       <a href="#breeding-tree">Breeding tree</a>
       <a href="#breeding-table">Breeding table</a>
     </div>
@@ -68,9 +83,8 @@
       <label class="guide-query">Search the guide<input id="guide-search" type="search" placeholder="Quest, item, character, monster…" autocomplete="off" maxlength="120"></label>
       <label>Adventure<select id="guide-game"><option value="">All</option><option value="dqm1">Terry · DQM1</option><option value="dqm2">Cobi &amp; Tara · DQM2</option></select></label>
       <label>Topic<select id="guide-kind"><option value="">All</option></select></label>
-      <button type="submit" class="guide-action">Search</button>
     </form>
-    <div class="story-setting"><label><input type="checkbox" id="guide-spoilers" checked> Show story spoilers</label></div>
+
   </div>
   <div id="guide-browser">
     <div id="guide-home">
@@ -84,7 +98,7 @@
       </div>
       <div class="home-columns">
         <div class="home-topics"><h3>Reference</h3><div id="topic-links" class="topic-links"></div></div>
-        <div class="home-topics"><h3>Breeding &amp; planning</h3><div class="topic-links"><a href="#pair-finder">Find a pairing</a><a href="#offspring-finder">Find parents</a><a href="#breeding-tree">Breeding tree</a><a href="#breeding-table">Breeding table</a><a href="#team-planner">Team planner</a><a href="#team-planner?import=save">Import a memory card</a></div></div>
+        <div class="home-topics"><h3>Breeding &amp; planning</h3><a class="home-import" href="#team-planner?import=save"><strong>Import a memory card</strong><span>See what your monsters can breed →</span></a><div class="topic-links"><a href="#pair-finder">Find a pairing</a><a href="#offspring-finder">Find parents</a><a href="#breeding-tree">Breeding tree</a><a href="#breeding-table">Breeding table</a><a href="#team-planner">My game</a></div></div>
       </div>
     </div>
     <div id="guide-directory" hidden></div>
@@ -93,26 +107,27 @@
 </section>
 <section id="atlas" class="view field-view" data-view="atlas" aria-labelledby="atlas-heading" hidden>
   <div class="atlas-head"><h2 id="atlas-heading" tabindex="-1">Map atlas</h2><div class="atlas-tabs"><a href="#atlas" data-atlas-tab="maps">Field maps</a><a href="#atlas?tab=encounters" data-atlas-tab="encounters">Wild encounters</a></div></div>
-  <div class="atlas-layout"><aside class="atlas-browser"><label for="atlas-search" id="atlas-search-label">Find a map</label><input id="atlas-search" type="search" autocomplete="off" maxlength="100"><label id="atlas-game-label" hidden>Adventure<select id="atlas-game"><option value="">All adventures</option><option value="terry">Terry</option><option value="cobi">Cobi</option><option value="tara">Tara</option></select></label><div id="atlas-index"></div></aside><article id="atlas-detail" aria-live="off"></article></div>
+  <div class="atlas-layout"><aside class="atlas-browser"><label for="atlas-search" id="atlas-search-label">Find a map</label><input id="atlas-search" type="search" autocomplete="off" maxlength="100"><div class="atlas-filters"><label id="atlas-game-label">Adventure<select id="atlas-game"><option value="">All</option><option value="terry">Terry</option><option value="cobi">Cobi</option><option value="tara">Tara</option></select></label><label>Region<select id="atlas-region"><option value="">All</option></select></label></div><div id="atlas-index"></div></aside><article id="atlas-detail" aria-live="off"></article></div>
 </section>
-<section id="pair-finder" hidden class="section view" data-view="pair-finder" aria-labelledby="pair-heading"><div class="section-head"><div><h2 id="pair-heading" tabindex="-1">Find a pairing</h2></div><div class="sprite-style-picker" role="group" aria-label="Monster sprite style"><span>Sprites</span><div class="sprite-style-options"><button type="button" data-sprite-style="portrait" aria-pressed="true">Portrait</button><button type="button" data-sprite-style="overworld" aria-pressed="false">Overworld</button></div></div></div>
+<section id="pair-finder" hidden class="section view" data-view="pair-finder" aria-labelledby="pair-heading"><div class="section-head"><div><h2 id="pair-heading" tabindex="-1">Breeding lookup</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder" aria-current="page">Find offspring</a><a href="#offspring-finder" data-parent-mode>Find parents</a></nav></div></div>
 <div class="panel"><div class="pair-layout">
-<div><div class="parent-title"><h3>Pedigree</h3></div><div class="filters"><div class="field"><label for="pedigree-family">Family</label><select id="pedigree-family"></select></div><div class="field"><label for="pedigree-search">Filter names</label><input id="pedigree-search" type="search" placeholder="e.g. Slime" autocomplete="off"></div></div><div class="field"><label class="sr-only" for="pedigree">Choose pedigree</label><div class="monster-picker"><span id="pedigree-sprite" class="monster-preview" aria-hidden="true"></span><select id="pedigree"></select></div></div><p id="pedigree-hint" class="hint"></p></div>
+<div><div class="parent-title"><h3>Pedigree</h3></div><div class="field"><label class="sr-only" for="pedigree">Choose pedigree</label><div class="monster-picker"><span id="pedigree-sprite" class="monster-preview" aria-hidden="true"></span><select id="pedigree"></select></div></div></div>
 <button id="swap" class="swap" type="button" aria-label="Swap pedigree and mate" title="Swap pedigree and mate">⇄</button>
-<div><div class="parent-title"><h3>Mate</h3></div><div class="filters"><div class="field"><label for="mate-family">Family</label><select id="mate-family"></select></div><div class="field"><label for="mate-search">Filter names</label><input id="mate-search" type="search" placeholder="e.g. Dracky" autocomplete="off"></div></div><div class="field"><label class="sr-only" for="mate">Choose mate</label><div class="monster-picker"><span id="mate-sprite" class="monster-preview" aria-hidden="true"></span><select id="mate"></select></div></div><p id="mate-hint" class="hint"></p></div>
+<div><div class="parent-title"><h3>Mate</h3></div><div class="field"><label class="sr-only" for="mate">Choose mate</label><div class="monster-picker"><span id="mate-sprite" class="monster-preview" aria-hidden="true"></span><select id="mate"></select></div></div></div>
 </div><div class="result" id="pair-result" aria-live="polite" aria-atomic="true"><div><div class="kicker">Base offspring</div><span id="result-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="result-name">Choose two parents</h3><p id="result-detail" class="short"></p><p id="pair-description"></p><p id="pair-room-note" class="hint" hidden></p><p id="pair-plus-note" class="pair-plus-note" hidden></p><div class="pair-result-actions"><button id="result-find-parents" type="button" hidden>Find parents ↗</button><button id="copy-pairing" type="button">Copy pairing</button></div></div><div class="reverse-result"><div class="kicker">Reversed order</div><span id="reverse-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="reverse-name">—</h3><p id="reverse-detail" class="short"></p><p id="reverse-comparison"></p><p id="reverse-room-note" class="hint" hidden></p><div class="pair-result-actions"><button id="reverse-find-parents" type="button" hidden>Find parents ↗</button></div></div></div></div><p id="copy-pairing-status" class="hint" role="status"></p><section id="recent-pairs" class="panel recent-pairs" aria-labelledby="recent-pairs-heading" hidden><div class="planner-panel-heading"><h3 id="recent-pairs-heading">Recent pairings</h3></div><ul id="recent-pairs-list" class="recent-pairs-list" aria-label="Recent pairings"></ul><div class="recent-pairs-actions"><button id="recent-pairs-clear" type="button">Clear history</button></div></section>
-<p id="pair-guidance" class="hint">Swapping the pedigree and mate can change the offspring. Check each parent’s breeding eligibility in-game.</p>
 </section>
-<section id="offspring-finder" class="section view" data-view="offspring-finder" aria-labelledby="offspring-heading" hidden><div class="section-head"><div><h2 id="offspring-heading" tabindex="-1">Find parents</h2></div></div>
-<div class="panel"><div class="target-row"><div class="field"><label for="target">Desired offspring</label><div class="monster-picker"><span id="target-sprite" class="monster-preview" aria-hidden="true"></span><select id="target"></select></div></div><div class="target-pin-block"><div class="target-toolbar"><button id="target-pin" type="button" class="planner-primary">Pin current offspring</button><button id="target-view-plan" type="button" hidden>View plan in My game ↗</button></div></div></div><div class="toolbar"><div class="field"><label for="target-search">Filter offspring names</label><input id="target-search" type="search" placeholder="Search full or in-game name" autocomplete="off"></div><div class="field"><label for="reverse-pedigree-family">Pedigree family</label><select id="reverse-pedigree-family"></select></div><div class="field"><label for="reverse-mate-family">Mate family</label><select id="reverse-mate-family"></select></div><div class="field"><label for="reverse-search">Either parent’s name</label><input id="reverse-search" type="search" placeholder="Search parent names" autocomplete="off"></div></div><div class="table-info"><p id="reverse-count" role="status"></p></div><div class="table-scroll"><table><caption class="sr-only">Ordered parent combinations for the desired offspring</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col"><span class="sr-only">Inspect pairing</span></th></tr></thead><tbody id="reverse-rows"></tbody></table></div><div class="pagination"><span id="reverse-range"></span><div class="controls"><button id="reverse-prev" type="button">← Previous</button><span id="reverse-page"></span><button id="reverse-next" type="button">Next →</button></div></div></div>
+<section id="offspring-finder" class="section view" data-view="offspring-finder" aria-labelledby="offspring-heading" hidden><div class="section-head"><div><h2 id="offspring-heading" tabindex="-1">Breeding lookup</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder">Find offspring</a><a href="#offspring-finder" data-parent-mode aria-current="page">Find parents</a></nav></div></div>
+<div class="panel"><div class="target-row"><div class="field"><label for="target">Desired offspring</label><div class="monster-picker"><span id="target-sprite" class="monster-preview" aria-hidden="true"></span><select id="target"></select></div></div><div class="target-pin-block"><div class="target-toolbar"><a id="target-tree" href="#breeding-tree">Breeding tree ↗</a><button id="target-pin" type="button" class="planner-primary">Pin current offspring</button><button id="target-view-plan" type="button" hidden>View plan in My game ↗</button></div></div></div><div class="lookup-recipe-choice"><label for="reverse-copy-mode">Parent recipes</label><select id="reverse-copy-mode"><option value="first">For a first copy</option><option value="repeat">Already have the target</option></select></div><details class="matrix-filter-drawer lookup-filters" open><summary>Filters</summary><div class="toolbar"><div class="field"><label for="reverse-pedigree-family">Pedigree family</label><select id="reverse-pedigree-family"></select></div><div class="field"><label for="reverse-mate-family">Mate family</label><select id="reverse-mate-family"></select></div><div class="field"><label for="reverse-search">Either parent’s name</label><input id="reverse-search" type="search" placeholder="Search parent names" autocomplete="off"></div></div></details><div class="table-info"><p id="reverse-count" role="status"></p></div><div class="table-scroll"><table><caption class="sr-only">Ordered parent combinations for the desired offspring</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col"><span class="sr-only">Inspect pairing</span></th></tr></thead><tbody id="reverse-rows"></tbody></table></div><div class="pagination"><span id="reverse-range"></span><div class="controls"><button id="reverse-prev" type="button">← Previous</button><span id="reverse-page"></span><button id="reverse-next" type="button">Next →</button></div></div></div>
+<details id="lookup-glossary" class="lookup-glossary"><summary>Breeding terms</summary><dl><dt>Pedigree</dt><dd>Your first parent. Swapping parents can change the result.</dd><dt>Mate</dt><dd>The second parent.</dd><dt>+ value</dt><dd>The breeding bonus beside a monster’s name. A threshold applies to either parent individually.</dd><dt>Base table</dt><dd>The offspring for an ordered pair before special breeding rules apply.</dd><dt>Ordinary shrine</dt><dd>Breed monsters from the same save. Some pairs produce a different offspring at higher + values.</dd><dt>First copy</dt><dd>A recipe where neither parent is the desired offspring.</dd><dt>Breeding room</dt><dd>Breed across two saves from the title screen. Certain pairs have exclusive results here.</dd><dt>Eligible parents</dt><dd>Confirm each parent’s sex and level in game before breeding.</dd></dl></details>
 <p id="breeding-conditions" class="hint">Either parent can meet a + threshold. In the title-screen Breeding room, each player’s monster is their pedigree.</p>
 </section>
 <section id="breeding-tree" class="section view breeding-tree-view" data-view="breeding-tree" hidden aria-labelledby="tree-heading"></section>
 <section id="monster" class="section view" data-view="monster" hidden aria-labelledby="monster-heading"><div id="monster-detail"></div></section>
 <section id="breeding-table" class="section planner view breeding-table-view" data-view="breeding-table" aria-labelledby="breeding-table-heading" hidden>
   <div class="section-head"><div><h2 id="breeding-table-heading" tabindex="-1">Breeding table</h2></div></div>
+  <nav class="lookup-modes" aria-label="Breeding table scope"><a href="#breeding-table" aria-current="page">All monsters</a><a href="#team-planner?tab=breeding">My monsters</a></nav>
   <div id="planner-everything">
-    <div class="workbench-tools">
+    <details class="matrix-filter-drawer" id="matrix-filters" open><summary>Filters</summary><div class="workbench-tools">
       <div class="field"><label for="matrix-result-search">Highlight offspring</label><input id="matrix-result-search" type="search" placeholder="Find a result by current or alternate name" autocomplete="off"></div>
       <div class="field"><label for="matrix-view">Display</label><select id="matrix-view"><option value="grid">Breeding matrix</option><option value="list">Recipe list</option></select></div>
       <div class="field"><label for="matrix-page-size">Rows / columns per page</label><select id="matrix-page-size"><option value="8">8</option><option value="12" selected>12</option><option value="24">24</option></select></div>
@@ -134,6 +149,7 @@
       </div>
       <p id="matrix-plus-note" class="hint planner-context-note">Each + value applies to every parent on its axis. Either parent can meet a + threshold.</p>
     </div>
+    </details>
     <p id="matrix-room-note" class="hint" hidden>In the title-screen Breeding room, each player’s monster is their pedigree. Room recipes take priority over + rules.</p>
     <p id="matrix-filter-status" class="matrix-filter-status" role="status"></p>
     <p id="planner-all-summary" class="planner-summary" role="status"></p>
@@ -149,35 +165,26 @@
   <div id="planner-all-detail-host"></div>
 </section>
 <section id="species-index" class="section view" data-view="species-index" aria-labelledby="species-heading" hidden><div class="section-head"><div><h2 id="species-heading" tabindex="-1">Monster library</h2></div></div>
-<div class="panel"><div class="toolbar species-toolbar"><div class="field"><label for="species-search">Search species</label><input id="species-search" type="search" placeholder="Full name, in-game name, or Japanese name" autocomplete="off"></div><div class="field"><label for="species-family">Family</label><select id="species-family"></select></div><div class="field"><label for="species-sort">Sort by</label><select id="species-sort"><option value="id">Library order</option><option value="name">Name A–Z</option><option value="family">Family, then name</option></select></div><label class="settings-inline"><input id="species-favorites-only" type="checkbox"> Favorites only</label><label class="settings-inline species-extra-toggle"><input id="show-internal" type="checkbox"> Include extra / internal table slots</label></div><div class="table-info"><p id="species-count" role="status"></p><p id="species-message" class="hint" role="status"></p></div><div class="table-scroll"><table><caption class="sr-only">English and in-game species names by family</caption><thead><tr><th scope="col"><span class="sr-only">Favorite</span></th><th scope="col">English name</th><th scope="col">In-game name</th><th scope="col">Family</th><th scope="col">Japanese</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody id="species-rows"></tbody></table></div><div class="pagination"><span id="species-range"></span><div class="controls"><button id="species-prev" type="button">← Previous</button><span id="species-page"></span><button id="species-next" type="button">Next →</button></div></div></div>
+<div class="panel"><div class="toolbar species-toolbar"><div class="field"><label for="species-search">Search species</label><input id="species-search" type="search" placeholder="Full name, in-game name, or Japanese name" autocomplete="off"></div><div class="field"><label for="species-family">Family</label><select id="species-family"></select></div><div class="field"><label for="species-sort">Sort by</label><select id="species-sort"><option value="id">Library order</option><option value="name">Name A–Z</option><option value="family">Family, then name</option></select></div><label class="settings-inline"><input id="species-favorites-only" type="checkbox"> Favorites only</label><label class="settings-inline"><input id="library-extra-slots" type="checkbox"> Include extra monster slots</label></div><div class="table-info"><p id="species-count" role="status"></p><p id="species-message" class="hint" role="status"></p></div><div class="table-scroll"><table><caption class="sr-only">English and in-game species names by family</caption><thead><tr><th scope="col"><span class="sr-only">Favorite</span></th><th scope="col">English name</th><th scope="col">In-game name</th><th scope="col">Family</th><th scope="col">Japanese</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody id="species-rows"></tbody></table></div><div class="pagination"><span id="species-range"></span><div class="controls"><button id="species-prev" type="button">← Previous</button><span id="species-page"></span><button id="species-next" type="button">Next →</button></div></div></div>
 <p id="name-guide" class="hint">In-game names match the short labels in menus. Numbers distinguish forms that share a name. Extra slots include monsters with unconfirmed availability.</p>
-<details><summary>Source, coverage, and verification</summary><div class="source-body"><div id="source-version-summary"></div><p id="coverage-summary"></p><p>Names, library wording, skill/location labels, and the latest patch version update automatically from the translation project's public export. Publication is checked every four hours. Gameplay verification is a separate check against a release build; a text update does not advance it. All shipped data works offline.</p><details><summary>Technical provenance and original extraction</summary><pre id="source-metadata"></pre></details></div></details>
+
 </section>
+
+<section id="sources" class="section view" data-view="sources" aria-labelledby="sources-heading" hidden><div class="section-head"><h2 id="sources-heading" tabindex="-1">Sources &amp; coverage</h2></div>
+<p>The guide uses the PlayStation releases of Terry’s adventure and Cobi and Tara’s adventures. Campaign scripts, fixed maps, learning requirements and breeding rules have been checked against the v1.0.73 English disc.</p>
+<p><a href="https://anonymous.4open.science/r/DQM-1-2-PSX-translation-D1FC/README.txt">English patch release</a> · <a href="https://github.com/dqm-psx/guide/tree/main/docs">Verification notes</a> · <a href="https://dqm-psx.github.io/translations/">Compare translation editions</a></p><div class="source-body"><div id="source-version-summary"></div><p id="coverage-summary"></p><p>Names, library wording, skill/location labels, and the latest patch version update automatically from the translation project's public export. Publication is checked every four hours. Gameplay verification is a separate check against a release build; a text update does not advance it. All shipped data works offline.</p><details><summary>Technical provenance and original extraction</summary><pre id="source-metadata"></pre></details></div></section>
 
 <section id="team-planner" class="section planner view" data-view="team-planner" aria-labelledby="planner-heading" hidden>
   <div class="section-head">
     <h2 id="planner-heading" tabindex="-1">My game</h2>
-    <div class="planner-game-group"><div class="planner-game-switch" role="group" aria-label="Game"><span>Game</span><div class="planner-game-options"><button id="planner-game-dqm1" type="button" data-game="dqm1" aria-pressed="true">DQM1</button><button id="planner-game-dqm2" type="button" data-game="dqm2" aria-pressed="false">DQM2</button></div></div><button id="planner-file-game" type="button" class="planner-file-game" hidden>File under DQM1</button></div>
-    <div class="sprite-style-picker" role="group" aria-label="Monster sprite style"><span>Sprites</span><div class="sprite-style-options"><button type="button" data-sprite-style="portrait" aria-pressed="true">Portrait</button><button type="button" data-sprite-style="overworld" aria-pressed="false">Overworld</button></div></div>
+
+
   </div>
-  <div class="panel planner-teams-panel">
-    <div class="planner-panel-heading"><h3>Your teams</h3><p id="planner-save-status" class="hint" role="status"></p></div>
-    <div class="planner-team-bar">
-      <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
-      <div class="field planner-team-game-field"><label for="planner-team-game">Team game</label><select id="planner-team-game"><option value="">Unassigned</option><option value="dqm1">DQM1</option><option value="dqm2">DQM2</option></select></div>
-      <div class="planner-actions">
-        <button id="planner-team-new" type="button">New team</button>
-        <button id="planner-team-rename" type="button">Rename</button>
-        <button id="planner-team-delete" type="button">Delete</button>
-      </div>
-      <form id="planner-team-name-form" class="planner-team-name" hidden>
-        <div class="field"><label for="planner-team-name">Team name</label><input id="planner-team-name" maxlength="40" autocomplete="off" required></div>
-        <button id="planner-team-name-save" type="submit" class="planner-primary">Save name</button>
-        <button id="planner-team-name-cancel" type="button">Cancel</button>
-      </form>
-    </div>
-    <p id="planner-team-game-hint" class="hint planner-team-game-hint" hidden>Unassigned teams appear in both games.</p>
-  </div>
+    <section class="panel save-import-panel" id="save-import-panel" aria-labelledby="save-import-heading"><div><h3 id="save-import-heading"><label for="save-import-file">Import a PlayStation save</label></h3><p class="hint" id="save-import-formats">Open your memory card to see what your team can breed. Supports .mcd, .mcr, .srm and extracted Adventure Logs.</p></div>
+      <div class="field"><input id="save-import-file" type="file" aria-describedby="save-import-formats" accept=".mcd,.mcr,.srm,.mc,.sav,.bin,.raw,.mcs"></div><p id="save-import-status" role="status"></p>
+      <div id="save-import-preview" hidden><div class="field"><label for="save-import-slot">Save slot</label><select id="save-import-slot"></select></div><label class="planner-toggle"><input id="save-import-nicknames" type="checkbox" checked> Use English-patch monster nicknames</label><div id="save-import-summary"></div><div class="controls"><button type="button" id="save-import-apply" class="planner-primary">Create team from save</button><button type="button" id="save-import-cancel">Cancel</button></div></div>
+    </section>
+  <div class="team-shortcuts"><a href="#team-planner?tab=breeding">See team breeding</a><a href="#team-planner?manage=teams">Manage teams</a></div>
   <div class="planner-tabs" role="tablist" aria-label="My game views">
     <button id="planner-tab-roster" type="button" role="tab" aria-selected="true" aria-controls="planner-roster" data-planner-tab="roster">My monsters</button>
     <button id="planner-tab-targets" type="button" role="tab" aria-selected="false" aria-controls="planner-targets" tabindex="-1" data-planner-tab="targets">Targets &amp; plans</button>
@@ -185,15 +192,10 @@
   </div>
 
   <div id="planner-roster" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-roster">
-    <section class="panel save-import-panel" id="save-import-panel" aria-labelledby="save-import-heading"><div><h3 id="save-import-heading"><label for="save-import-file">Import a PlayStation save</label></h3><p class="hint" id="save-import-formats">Memory card (.mcd, .mcr, .srm) or extracted Adventure Log.</p></div>
-      <div class="field"><input id="save-import-file" type="file" aria-describedby="save-import-formats" accept=".mcd,.mcr,.srm,.mc,.sav,.bin,.raw,.mcs"></div><p id="save-import-status" role="status"></p>
-      <div id="save-import-preview" hidden><div class="field"><label for="save-import-slot">Save slot</label><select id="save-import-slot"></select></div><label class="planner-toggle"><input id="save-import-nicknames" type="checkbox" checked> Use English-patch monster nicknames</label><div id="save-import-summary"></div><div class="controls"><button type="button" id="save-import-apply" class="planner-primary">Create team from save</button><button type="button" id="save-import-cancel">Cancel</button></div></div>
-    </section>
+
     <div class="panel planner-entry">
       <div class="planner-panel-heading"><h3>Add a monster</h3></div>
       <form id="planner-entry-form" class="planner-entry-form">
-        <div class="field planner-entry-search"><label for="planner-add-search">Filter monster names</label><input id="planner-add-search" type="search" placeholder="Full or in-game name" autocomplete="off"></div>
-        <div class="field planner-entry-family"><label for="planner-add-family">Family</label><select id="planner-add-family"></select></div>
         <div class="field planner-entry-species"><label for="planner-add-species">Monster</label><div class="monster-picker"><span id="planner-add-sprite" class="monster-preview" aria-hidden="true"></span><select id="planner-add-species" required></select></div></div>
         <fieldset class="planner-sex-field"><legend>Sex</legend><div class="planner-sex-options"><label for="planner-sex-male"><input id="planner-sex-male" type="radio" name="planner-sex" value="male" checked> Male</label><label for="planner-sex-female"><input id="planner-sex-female" type="radio" name="planner-sex" value="female"> Female</label></div></fieldset>
         <fieldset class="planner-location-field"><legend>Location</legend><div class="planner-location-options"><label for="planner-location-party"><input id="planner-location-party" type="radio" name="planner-location" value="party" checked> Party</label><label for="planner-location-farm"><input id="planner-location-farm" type="radio" name="planner-location" value="farm"> Farm</label></div></fieldset>
@@ -257,7 +259,7 @@
     </div>
     <div class="panel plan-panel" id="plan-panel">
       <div class="planner-panel-heading">
-        <h3 id="plan-heading">Breeding plan</h3>
+        <h3 id="plan-heading">Breeding plan</h3><a id="team-open-tree" hidden>Explore this tree</a>
       </div>
       <p id="plan-empty" class="planner-empty">Pin an offspring in <a href="#offspring-finder">Find parents</a> to start a plan.</p>
       <div id="plan-body" hidden>
@@ -325,33 +327,39 @@
     <button id="planner-inspect-reference" type="button">Open in pair finder ↗</button>
   </aside>
   </div>
+  <div class="panel planner-teams-panel" id="manage-teams" tabindex="-1">
+    <div class="planner-panel-heading"><h3>Your teams</h3><p id="planner-save-status" class="hint" role="status"></p></div>
+    <div class="planner-game-group"><div class="planner-game-switch" role="group" aria-label="Game"><span>Game</span><div class="planner-game-options"><button id="planner-game-dqm1" type="button" data-game="dqm1" aria-pressed="true">DQM1</button><button id="planner-game-dqm2" type="button" data-game="dqm2" aria-pressed="false">DQM2</button></div></div><button id="planner-file-game" type="button" class="planner-file-game" hidden>File under DQM1</button></div>
+    <div class="planner-team-bar">
+      <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
+      <div class="field planner-team-game-field"><label for="planner-team-game">Team game</label><select id="planner-team-game"><option value="">Unassigned</option><option value="dqm1">DQM1</option><option value="dqm2">DQM2</option></select></div>
+      <div class="planner-actions">
+        <button id="planner-team-new" type="button">New team</button>
+        <button id="planner-team-rename" type="button">Rename</button>
+        <button id="planner-team-delete" type="button">Delete</button>
+      </div>
+      <form id="planner-team-name-form" class="planner-team-name" hidden>
+        <div class="field"><label for="planner-team-name">Team name</label><input id="planner-team-name" maxlength="40" autocomplete="off" required></div>
+        <button id="planner-team-name-save" type="submit" class="planner-primary">Save name</button>
+        <button id="planner-team-name-cancel" type="button">Cancel</button>
+      </form>
+    </div>
+    <p id="planner-team-game-hint" class="hint planner-team-game-hint" hidden>Unassigned teams appear in both games.</p>
+  </div>
 </section>
 
-</main><footer><nav class="wrap footer-links" aria-label="Resources"><a href="#about">Sources &amp; coverage</a><a href="https://dqm-psx.github.io/translations/">Translations</a><a href="https://github.com/dqm-psx/guide">GitHub</a></nav></footer>
-<script src="data/overworld-sprites.js"></script>
-<script src="data/monster-sprites.js"></script>
-<script src="data/breeding-data.js"></script>
-<script src="data/monster-reference.js"></script>
-<script src="js/sprites.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/session.js"></script>
-<script src="js/reference.js"></script>
-<script src="js/planner-core.js"></script>
-<script src="js/recipe-planner.js"></script>
-<script src="js/app-state.js"></script>
-<script src="js/save-import.js"></script>
-<script src="js/planner-ui.js"></script>
-<script src="js/breeding-tree.js"></script>
-<script src="js/monster-reference.js"></script>
-<script src="js/matrix-tools.js"></script>
-<script src="data/player-atlas.js"></script>
-<script src="data/world-guide.js"></script>
-<script src="data/field-guide.js"></script>
-<script src="data/npc-sprites.js"></script>
-<script src="data/skill-descriptions.js"></script>
-<script src="js/current-names.js"></script>
-<script src="js/player-guide.js"></script>
-<script src="js/player-atlas.js"></script>
+</main><footer><nav class="wrap footer-links" aria-label="Resources"><a href="#sources">Sources &amp; coverage</a><a href="https://dqm-psx.github.io/">English patch</a><a href="https://dqm-psx.github.io/translations/">Translations</a><a href="https://github.com/dqm-psx/guide">GitHub</a></nav></footer>
+<script type="application/json" id="guide-assets">
+{"shared":["data/sprite-sheets.js","js/sprites.js"],
+"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/npc-sprites.js","data/skill-descriptions.js","js/current-names.js","js/player-guide.js","js/player-atlas.js"],
+"tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/reference.js","js/planner-core.js","js/recipe-planner.js","js/app-state.js","js/save-import.js","js/planner-ui.js"],
+"tree":["js/breeding-tree.js"],"matrix":["js/matrix-tools.js"],
+"profile":["data/monster-reference.js","js/monster-reference.js"]}
+</script>
+<script src="data/home-names.js"></script>
+<script src="js/asset-loader.js"></script>
+<script src="js/guide-shell.js"></script>
+<script src="js/guide-settings.js"></script>
 <script src="js/router.js"></script>
 <script src="js/theme.js"></script>
 <script src="js/offline.js"></script>
