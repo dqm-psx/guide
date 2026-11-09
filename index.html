@@ -62,11 +62,31 @@
   </div>
 </div>
 <div class="nav"><nav class="wrap" aria-label="Views">
-  <a href="#field-guide" aria-label="Field guide"><span class="nav-wide">Field guide</span><span class="nav-short">Guide</span></a>
-  <a href="#atlas" aria-label="Map atlas"><span class="nav-wide">Map atlas</span><span class="nav-short">Atlas</span></a>
-  <div class="breeding-nav">
-    <button type="button" id="breeding-nav-trigger" aria-controls="breeding-nav-links" aria-expanded="false">Breeding</button>
-    <div id="breeding-nav-links" hidden>
+  <div class="nav-group">
+    <button type="button" class="nav-trigger" id="adventure-nav-trigger" aria-label="Adventure guide" aria-controls="adventure-nav-links" aria-expanded="false"><span class="nav-wide">Adventure</span><span class="nav-short">Guide</span></button>
+    <div class="nav-links" id="adventure-nav-links" hidden>
+      <a href="#field-guide">Field guide</a>
+      <a href="#field-guide?kind=story">Walkthroughs</a>
+      <a href="#field-guide?kind=quest">Quests</a>
+      <a href="#field-guide?kind=boss">Bosses</a>
+      <a href="#atlas">Map atlas</a>
+      <a href="#field-guide?kind=location">Locations</a>
+      <a href="#atlas?tab=encounters">Wild encounters</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <button type="button" class="nav-trigger" id="reference-nav-trigger" aria-controls="reference-nav-links" aria-expanded="false">Reference</button>
+    <div class="nav-links" id="reference-nav-links" hidden>
+      <a href="#field-guide?kind=npc">Characters</a>
+      <a href="#field-guide?kind=item">Items</a>
+      <a href="#field-guide?kind=tool">Tools</a>
+      <a href="#field-guide?kind=skill">Skills</a>
+      <a href="#field-guide?kind=mechanic">Mechanics</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <button type="button" class="nav-trigger" id="breeding-nav-trigger" aria-controls="breeding-nav-links" aria-expanded="false">Breeding</button>
+    <div class="nav-links" id="breeding-nav-links" hidden>
       <a href="#pair-finder">Breeding lookup</a>
       <a href="#breeding-tree">Breeding tree</a>
       <a href="#breeding-table">Breeding table</a>

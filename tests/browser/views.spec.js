@@ -80,13 +80,12 @@ test.describe('served', () => {
     await expect(page.locator('#source-metadata')).toContainText(version);
   });
 
-  test('each guide nav link opens, titles and distinctly marks its own view', async ({ page }) => {
+  test('each primary view link opens, titles and distinctly marks its destination', async ({ page }) => {
     await page.goto(url());
     const expected = {
       '#field-guide': 'Field guide',
       '#atlas': 'Map atlas',
       '#pair-finder': 'Breeding lookup',
-      '#offspring-finder': 'Find parents',
       '#breeding-tree': 'Breeding tree',
       '#breeding-table': 'Breeding table',
       '#species-index': 'Monster library',
@@ -95,7 +94,9 @@ test.describe('served', () => {
     for (const view of TOP_VIEWS) {
       await test.step(view.id, async () => {
         const link = page.locator('.nav a[href="' + view.hash + '"]');
-        if (await link.locator('xpath=..').getAttribute('id') === 'breeding-nav-links') await page.locator('#breeding-nav-trigger').click();
+        const menuId = await link.evaluate(a => a.closest('.nav-links')?.id);
+        const menuButton = menuId && page.locator('.nav-trigger[aria-controls="' + menuId + '"]');
+        if (menuButton) await menuButton.click();
         await expect(link).toBeVisible();
         await link.click();
         await expectSingleView(page, view.id);
@@ -113,8 +114,10 @@ test.describe('served', () => {
             };
           })
         );
-        expect(marks.filter(mark => mark.href.startsWith('#')).map(mark => mark.href))
+        expect(marks.filter(mark => /^#[\w-]+$/.test(mark.href)).map(mark => mark.href))
           .toEqual(TOP_VIEWS.map(entry => entry.hash));
+        await expect(page.locator('.nav-trigger.nav-link-active')).toHaveCount(menuButton ? 1 : 0);
+        if (menuButton) await expect(menuButton).toHaveClass(/\bnav-link-active\b/);
         // The clicked link alone owns both the semantic and visual marks.
         expect(marks.filter(mark => mark.current === 'page').map(mark => mark.href)).toEqual([view.hash]);
         const marked = marks.filter(mark => mark.active);
@@ -212,8 +215,7 @@ test.describe('served', () => {
     await page.goto(url());
     await page.keyboard.press('Tab');
     await expect(page.locator('a.skip')).toBeFocused();
-    // Tab forward through any controls above the nav (the theme picker) and
-    // the links, stopping when Name index takes focus.
+    // Closed dropdowns should leave the library reachable through the main tab order.
     let reached = false;
     for (let i = 0; i < 12 && !reached; i++) {
       await page.keyboard.press('Tab');
@@ -358,26 +360,48 @@ test.describe('served', () => {
 // Layout and media queries. These rules are the same whether the page was
 // opened from disk or served, so they run once, against the shipped file.
 test.describe('narrow screens and print', () => {
-  test('the five primary destinations fit at 320px and breeding opens by keyboard', async ({ page }) => {
+  test('all five primary controls and their open menus fit at 320px and work by keyboard', async ({ page }) => {
     await page.setViewportSize({width:320, height:640});
     await page.goto(FILE_URL);
-    const primary = page.locator('.nav nav > a, #breeding-nav-trigger');
-    expect(await primary.count()).toBe(5);
+    const primary = page.locator('.nav nav > a, .nav .nav-trigger');
+    const names = ['Adventure guide', 'Reference', 'Breeding', 'Monster library', 'My game'];
+    await expect(primary).toHaveCount(names.length);
+    for (const [index,name] of names.entries()) await expect(primary.nth(index)).toHaveAccessibleName(name);
     const bounds = await primary.evaluateAll(items => items.map(a => {
       const r = a.getBoundingClientRect();
       return [r.left, r.right, r.top];
     }));
     expect(new Set(bounds.map(r=>Math.round(r[2]))).size).toBe(1);
     expect(bounds.every(([l,r])=>l>=0 && r<=320)).toBe(true);
-    const trigger = page.getByRole('button', {name:'Breeding',exact:true});
-    await trigger.focus();
-    await page.keyboard.press('ArrowDown');
-    await expect(page.locator('#breeding-nav-links').getByRole('link',{name:'Breeding lookup',exact:true})).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expect(trigger).toBeFocused();
-    await expect(trigger).toHaveAttribute('aria-expanded','false');
+    for (const name of ['adventure','reference','breeding']) {
+      const button = page.locator('#' + name + '-nav-trigger');
+      const menu = page.locator('#' + name + '-nav-links');
+      await button.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(menu.locator('a').first()).toBeFocused();
+      await expect(button).toHaveAttribute('aria-expanded','true');
+      const box = await menu.boundingBox();
+      expect(box.x).toBeGreaterThanOrEqual(-1);
+      expect(box.x + box.width).toBeLessThanOrEqual(321);
+      await page.keyboard.press('ArrowUp');
+      await expect(menu.locator('a').last()).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(button).toBeFocused();
+      await expect(menu).toBeHidden();
+    }
+    const reference = page.locator('#reference-nav-trigger');
+    await reference.click();
+    const skills = page.locator('#reference-nav-links a[href="#field-guide?kind=skill"]');
+    await skills.click();
+    await expect(page).toHaveURL(/#field-guide\?kind=skill$/);
+    await expect(page.locator('#directory-title')).toHaveText('Skills');
+    await expect(page).toHaveTitle(/^Skills · /);
+    await expect(page.locator('.nav a[aria-current="page"]')).toHaveAttribute('href','#field-guide?kind=skill');
+    await expect(reference).toHaveClass(/\bnav-link-active\b/);
+    await expect(reference).toHaveAttribute('aria-expanded','false');
+    const trigger = page.locator('#breeding-nav-trigger');
     await trigger.click();
-    await page.locator('#breeding-nav-links a').nth(1).click();
+    await page.locator('#breeding-nav-links a[href="#breeding-tree"]').click();
     await expectSingleView(page,'breeding-tree');
     await expect(trigger).toHaveClass(/nav-link-active/);
     await expect(trigger).toHaveAttribute('aria-expanded','false');

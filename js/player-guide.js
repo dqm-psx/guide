@@ -376,5 +376,5 @@
     if (!el('field-guide').hidden) document.title = show() + ' · DQM1&2 PSX Player Guide';
     if (!el('atlas').hidden) window.DQMAtlas?.show();
   }
-  window.DQMField = {show, filter, guarded, campaigns, setSpoilers};
+  window.DQMField = {show, filter, guarded, campaigns, setSpoilers, kindForEntry: id => byId.get(id)?.kind};
 })();
