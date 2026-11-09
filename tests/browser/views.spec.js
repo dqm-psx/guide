@@ -368,7 +368,7 @@ test.describe('narrow screens and print', () => {
     const trigger = page.getByRole('button', {name:'Breeding',exact:true});
     await trigger.focus();
     await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('link',{name:'Find a pairing',exact:true})).toBeFocused();
+    await expect(page.locator('#breeding-nav-links').getByRole('link',{name:'Find a pairing',exact:true})).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
     await expect(trigger).toHaveAttribute('aria-expanded','false');
@@ -377,6 +377,9 @@ test.describe('narrow screens and print', () => {
     await expectSingleView(page,'offspring-finder');
     await expect(trigger).toHaveClass(/nav-link-active/);
     await expect(trigger).toHaveAttribute('aria-expanded','false');
+    await page.getByRole('navigation',{name:'Views',exact:true}).getByRole('link',{name:'Monster library',exact:true}).click();
+    await expectSingleView(page,'species-index');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
   });
 
   test('a hidden view stays out of the way on a narrow screen too', async ({ page }) => {

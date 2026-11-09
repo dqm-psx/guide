@@ -61,13 +61,14 @@
   for (const area of areas.values()) area.search = searchText([...area.roster.keys()].map(i=>{
     const m=DATA.species[i]; return [m.display_name, m.short_name, ...(m.aliases || [])].join(' ');
   }).join(' '));
-  function subtitle(row) {
+  function subtitle(row, list = true) {
     if (row.roster) return names[row.game] + (row.floors ? ' · '+ row.floors : '');
     const place = places.get(row.placeId || row.id);
     const region = row.scene >= 6 && row.scene <= 11 ? maps.get('map-6-0').title :
       [12,13,14,15,16,21].includes(row.scene) ? maps.get('map-12-0').title :
       row.scene >= 184 ? 'Area '+row.scene : '';
-    return [region !== row.title ? region : '', place.layouts.length > 1 ? place.layouts.length+' layouts' : ''].filter(Boolean).join(' · ');
+    return [region && region !== row.title && !row.title.startsWith(region + ' ') ? region : '',
+      list && place.layouts.length > 1 ? place.layouts.length+' layouts' : ''].filter(Boolean).join(' · ');
   }
   function catalog() { return tab()==='maps' ? places : areas; }
   function current() { return params().get(tab()==='maps' ? 'map' : 'area') || catalog().keys().next().value; }
@@ -81,12 +82,18 @@
     const max=Math.max(1,Math.ceil(rows.length/pageSize));
     const page=Math.min(max,Math.max(1,Number.parseInt(params().get('page'),10) || 1));
     const key=tab()==='maps' ? 'map' : 'area';
-    const links=rows.slice((page-1)*pageSize,page*pageSize).map(r=>'<a href="' + safe(href({[key]:r.id,variant:''})) + '"' +
-      (r.id===(maps.get(current())?.placeId || current()) ? ' aria-current="true"' : '') + '><span>'+safe(r.title)+'</span><small>'+safe(subtitle(r))+'</small></a>').join('');
-    el('atlas-index').innerHTML = '<p class="guide-count" role="status">'+rows.length+' matches · Page '+page+' of '+max+'</p><div class="atlas-scroll">'+
-      (links || '<p>No matching locations.</p>')+'</div><nav class="guide-pager" aria-label="Location pages">'+
-      (page>1 ? '<a href="'+safe(href({page:String(page-1)}))+'">← Previous</a>' : '')+
-      (page<max ? '<a href="'+safe(href({page:String(page+1)}))+'">Next →</a>' : '')+'</nav>';
+    const links=rows.slice((page-1)*pageSize,page*pageSize).map(r=>{
+      const note=subtitle(r);
+      return '<a href="' + safe(href({[key]:r.id,variant:''})) + '"' +
+        (r.id===(maps.get(current())?.placeId || current()) ? ' aria-current="true"' : '') + '><span>'+safe(r.title)+'</span>'+
+        (note ? '<small>'+safe(note)+'</small>' : '')+'</a>';
+    }).join('');
+    const count=rows.length ? rows.length+(rows.length===1?' location':' locations') : 'No matching locations';
+    el('atlas-index').innerHTML = '<p class="guide-count" role="status">'+count+(max>1 ? ' · Page '+page+' of '+max : '')+'</p>'+
+      (links ? '<div class="atlas-scroll">'+links+'</div>' : '')+
+      (max>1 ? '<nav class="guide-pager" aria-label="Location pages">'+
+        (page>1 ? '<a href="'+safe(href({page:String(page-1)}))+'">Previous</a>' : '')+
+        (page<max ? '<a href="'+safe(href({page:String(page+1)}))+'">Next</a>' : '')+'</nav>' : '');
   }
   function mapView(row) {
     const place = places.get(placeId(row));
@@ -100,24 +107,25 @@
     const doors=valid.map(exit=>'<li><a href="'+doorHref(exit)+'">'+safe(maps.get(exit.to).title)+'</a>'+
       (places.get(placeId(maps.get(exit.to))).layouts.length>1 ? ' <small>Layout '+layoutFor.get(exit.to).number+'</small>' : '')+'</li>').join('');
     const npcs=WORLD_GUIDE.entries.filter(r=>r.kind==='npc' && r.map_ids?.some(id=>maps.has(id) && placeId(maps.get(id))===place.id) && !window.DQMField.guarded(r));
-    const layouts = place.layouts.map(l=>({id:l.map.id, label:'Layout '+l.number, selected:l===layout&&!arrival}));
+    const layouts = place.layouts.map(l=>({id:l.map.id, label:String(l.number), selected:l===layout&&!arrival}));
     for (const map of place.records) {
       for (const variant of map.arrivalVariants || []) {
         const from=variant.from.map(id=>layoutFor.get(id)).filter(Boolean);
-        const label='Layout '+layoutFor.get(map.id).number+' · from '+from.map(l=>l.map.title+' (layout '+l.number+')').join(', ');
+        const label=layoutFor.get(map.id).number+' · from '+from.map(l=>l.map.title+' (layout '+l.number+')').join(', ');
         layouts.push({id:map.id+':'+variant.id, label, selected:arrival===variant});
       }
     }
     const picker = layouts.length > 1 ? '<label class="atlas-layout-picker">Layout <select id="atlas-layout-select">'+
       layouts.map(l=>'<option value="'+safe(l.id)+'"'+(l.selected?' selected':'')+'>'+safe(l.label)+'</option>').join('')+'</select></label>' : '';
     const detail=el('atlas-detail');
-    detail.innerHTML='<div class="atlas-caption"><div><small>'+safe(subtitle(row))+'</small><h3 id="atlas-location" tabindex="-1">'+safe(row.title)+'</h3></div><div class="map-controls">'+
+    const region=subtitle(row, false);
+    detail.innerHTML='<div class="atlas-caption"><div>'+(region ? '<small>'+safe(region)+'</small>' : '')+'<h3 id="atlas-location" tabindex="-1">'+safe(row.title)+'</h3></div><div class="map-controls">'+
       picker+(pins ? '<label><input type="checkbox" id="atlas-pins" checked> Exit pins</label>' : '')+'<button type="button" id="atlas-zoom" aria-pressed="false">Zoom in</button></div></div>'+
       '<div class="map-scroll" tabindex="0" aria-label="Scrollable field map"><div class="map-image"><img src="maps/'+safe(imageFile)+'" alt="Static field layout of '+safe(row.title)+'"><div class="map-pins">'+pins+'</div></div></div>'+
-      '<div class="map-notes"><h4>Connected maps</h4>'+(doors ? '<ol class="map-doors">'+doors+'</ol>' : '<p>No named destinations are verified here.</p>')+
+      '<div class="map-notes">'+(doors ? '<h4>Connected maps</h4><ol class="map-doors">'+doors+'</ol>' : '')+
       (npcs.length ? '<p><strong>Characters</strong> · '+npcs.map(n=>'<a href="#field-guide?entry='+safe(n.id)+'">'+safe(n.title)+'</a>').join(' · ')+'</p>' : '')+
-      '<details><summary>Map coverage</summary><p>Verified against the English PSX '+safe(PLAYER_ATLAS.verification.version)+'. This location includes '+place.records.length+' native map record'+(place.records.length===1?'':'s')+
-      '. Layouts group matching backgrounds and exits. Actors, story-dependent tiles and randomly generated floors vary in play. Open a map online once to cache its artwork.</p></details></div>';
+      '<details><summary>Map coverage</summary><p>English PSX '+safe(PLAYER_ATLAS.verification.version)+' · '+place.records.length+' native map record'+(place.records.length===1?'':'s')+
+      '. Actors, story-dependent tiles and random floors can differ in play.</p></details></div>';
     el('atlas-layout-select')?.addEventListener('change',e=>{
       const [map,variant] = e.target.value.split(':');
       location.hash=href({map,variant});
@@ -134,14 +142,13 @@
   function encounters(row) {
     const entries = [...row.roster].sort((a,b) => DATA.species[a[0]].display_name.localeCompare(DATA.species[b[0]].display_name));
     el('atlas-detail').innerHTML='<div class="atlas-caption"><div><small>'+safe(subtitle(row))+'</small><h3 id="atlas-location" tabindex="-1">'+safe(row.title)+'</h3></div></div>'+
-      '<div class="encounters"><p>Wild monsters recorded for this area and floor range.</p><ul>'+entries.map(([id,levels])=>
-        '<li>'+spriteLabel(id,DATA.species[id].display_name)+'<small>Lv. '+[...levels].sort((a,b)=>a-b).join(', ')+'</small></li>').join('')+'</ul></div>';
+      '<div class="encounters"><ul aria-label="Wild monsters">'+entries.map(([id,levels])=>
+        '<li>'+spriteLabel(id,DATA.species[id].display_name)+(levels.size ? '<small>Lv. '+[...levels].sort((a,b)=>a-b).join(', ')+'</small>' : '')+'</li>').join('')+'</ul></div>';
   }
   function show() {
     const t=tab(), row=(t==='maps' ? maps : areas).get(current());
     const label=t==='maps' ? 'Find a map' : 'Find an area or monster';
     el('atlas-search-label').textContent=label;
-    el('atlas-search').placeholder=t==='maps' ? 'e.g. GreatTree or Bazaar' : 'e.g. Strength Gate or Dracky';
     el('atlas-search').value=params().get('q') || '';
     el('atlas-game-label').hidden=t==='maps';
     el('atlas-game').value=params().get('game') || '';

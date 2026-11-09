@@ -37,16 +37,16 @@
 .guide-overline,.campaign small,.guide-row small,.atlas-caption small {
   display:block;font:700 10px/1.4 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.13em;color:var(--guide-accent)
 }
-.guide-hero{display:grid;grid-template-columns:1.1fr 1fr;isolation:isolate;overflow:hidden;border:1px solid var(--guide-rule);border-radius:15px;background:var(--guide-cream)}
-.hero-copy{align-self:center;padding:clamp(22px,3vw,40px)}
-.hero-copy h2,.guide-article h2,.atlas-head h2,.directory-head h2{font:700 clamp(33px,4vw,62px)/.99 Georgia,'Times New Roman',serif;letter-spacing:-.045em;color:var(--guide-green)}
-.hero-copy h2{margin:9px 0 11px}.hero-copy h2 em{font-weight:500}
-.hero-copy p{max-width:46ch;color:var(--ink);font-size:clamp(13px,1.15vw,17px);line-height:1.45}
-.hero-map{position:relative;display:block;overflow:hidden;min-height:210px;background:#29472c}
+.guide-overview h2,.guide-article h2,.atlas-head h2,.directory-head h2{font:700 clamp(28px,3vw,42px)/1.06 Georgia,'Times New Roman',serif;letter-spacing:-.04em;color:var(--guide-green)}
+.hero-map{position:relative;display:block;overflow:hidden;min-height:0;border-radius:10px;background:#29472c}
 .hero-map img{position:absolute;height:100%;width:100%;object-fit:cover;object-position:50% 42%;image-rendering:pixelated}
 .hero-map::after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,#0a201ace);pointer-events:none}
 .hero-map>span{position:absolute;z-index:1;bottom:14px;left:18px;right:18px;text-shadow:0 1px 3px black;display:flex;align-items:center;justify-content:space-between;color:white;font:700 21px/1.2 Georgia,serif}
-.hero-map b{font:600 12px system-ui,sans-serif;border-bottom:1px solid #ffffff95}
+.hero-map:hover>span,.hero-map:focus-visible>span{text-decoration:underline}
+.guide-toolbar{display:flex;gap:16px;align-items:flex-end;border-bottom:1px solid var(--guide-rule);padding-bottom:12px}
+.guide-toolbar .guide-filters{flex:1;min-width:0;border:0;padding:0}
+.guide-toolbar .story-setting{flex:none;align-self:flex-end;margin:0;min-height:40px}
+.guide-context{font-size:13px;color:var(--muted)}
 .guide-filters,.directory-head,.atlas-head,.atlas-caption,.ranch-links,.map-controls,.guide-pager{display:flex;align-items:center;gap:14px}
 .guide-filters{padding:14px 0 16px;border-bottom:1px solid var(--guide-rule);align-items:flex-end}
 .guide-filters label,.atlas-browser>label{font-size:12px;font-weight:650;color:var(--ink)}
@@ -107,13 +107,13 @@
 .save-import-panel{padding:16px;margin:0 0 14px}.save-import-panel p{margin:4px 0}.save-import-panel input[type=file]{max-width:100%}.save-import-panel .controls{display:flex;gap:8px;flex-wrap:wrap}
 .field-view .learning{margin:15px 0;padding:12px 15px;background:var(--guide-soft);border-radius:8px}.learning h3{font:700 16px Georgia,serif}.learning dl{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}.learning dt{font-size:11px}.learning dd{font-size:17px;margin:0;font-weight:700}.field-view .next-chapter{margin-top:16px}.next-chapter a{font-weight:700}
 @media(max-width:760px){
-  .field-view{margin-top:13px}.guide-hero{grid-template-columns:1.4fr 1fr}.hero-map{min-height:185px}.hero-copy{padding:18px}.hero-copy h2{font-size:35px}
-  .hero-map>span{display:block;left:10px;bottom:8px;font-size:17px}.hero-map b{display:table}
+  .field-view{margin-top:13px}.hero-map{min-height:78px}.hero-map>span{left:12px;bottom:9px;font-size:17px}
+  .guide-toolbar{flex-direction:column;align-items:stretch;gap:8px}.guide-toolbar .story-setting{order:-1;align-self:flex-start;min-height:34px}
   .home-columns{grid-template-columns:1fr;gap:13px;margin:15px 0}.guide-filters{display:grid;grid-template-columns:1fr 1fr auto;gap:7px}.guide-filters .guide-query{grid-column:1/-1}
   .ranch-links h3{width:100%}.atlas-layout{grid-template-columns:1fr;gap:10px}.atlas-scroll{max-height:135px}.atlas-scroll a{display:inline-flex;vertical-align:top;flex-direction:column;width:50%}
   .map-controls{gap:6px}.directory-grid{grid-template-columns:1fr}.map-doors{columns:1}.directory-head,.atlas-caption{align-items:flex-start;gap:7px;flex-wrap:wrap}
 }
-@media(max-width:425px){.hero-copy h2{font-size:29px}.hero-copy p{font-size:12px}.hero-copy{padding:13px}.guide-overline{font-size:9px}.topic-links{gap:0 12px}.atlas-tabs a{font-size:12px}.guide-filters label{min-width:0}.guide-action{padding-inline:10px}}
+@media(max-width:425px){.topic-links{gap:0 12px}.atlas-tabs a{font-size:12px}.guide-filters label{min-width:0}.guide-action{padding-inline:10px}}
 @media(max-width:600px){.masthead .wrap{display:flex;flex-wrap:nowrap;gap:6px}.masthead .brand{gap:6px;min-width:0}.masthead .brand img{width:30px;height:30px}.masthead .title-line h1{font-size:16px}.masthead .title-line .eyebrow{font-size:8px;letter-spacing:.04em}.masthead .title-line .version{font-size:9px}.masthead .theme-picker{width:auto;flex:0 0 auto}.masthead .theme-options button{font-size:10px;padding:4px;min-height:29px}}
 @media(max-width:600px){#guide-home{display:flex;flex-direction:column}#guide-home .ranch-links{order:-1;align-items:flex-start;gap:3px 16px;padding:8px 12px;margin-top:10px}#guide-home .ranch-links h3{font-size:16px}#guide-home .ranch-links a{min-height:27px;font-size:12px}}
 @media print{.guide-filters,.map-controls,.atlas-browser,.atlas-tabs,.guide-back,.guide-pager{display:none}.atlas-layout{display:block}.map-scroll{height:auto;background:none}.field-view,.guide-article{margin:0}}

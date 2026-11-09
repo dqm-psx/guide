@@ -18,7 +18,7 @@ test('previews a local card, creates a team in its campaign and uses it in both 
   const original = await team.inputValue();
   const card = fixture.card([[1, 5, fixture.block()], [2, 7, fixture.block(2)]]);
   const file = {name: 'example.mcd', mimeType: 'application/octet-stream', buffer: card};
-  await page.getByLabel('PSX save file').setInputFiles(file);
+  await page.getByRole('button', {name: 'Import a PlayStation save', exact: true}).setInputFiles(file);
   await expect(page.locator('#save-import-status')).toContainText('2 saves');
   await page.getByLabel('Save slot', {exact: true}).selectOption({index: 1});
   await expect(page.locator('#save-import-summary')).toContainText('1 party · 2 farm');
@@ -48,7 +48,7 @@ test('rejects damaged bytes and cancellation leaves the current team available',
   const team = page.locator('#planner-team-select');
   const original = await team.inputValue();
   const file = {name: 'slot.sav', mimeType: 'application/octet-stream', buffer: fixture.block()};
-  const input = page.getByLabel('PSX save file');
+  const input = page.getByRole('button', {name: 'Import a PlayStation save', exact: true});
   await input.setInputFiles(file);
   await page.locator('#save-import-cancel').click();
   await expect(page.locator('#save-import-preview')).toBeHidden();

@@ -102,12 +102,12 @@
   let message = '';
   const P = id => document.getElementById(id);
 
-  host.innerHTML = '<div class="section-head tree-heading-row"><div><h2 id="tree-heading" tabindex="-1">Breeding tree</h2><p>Choose an offspring, compare recipes, and branch into either parent.</p></div><div class="tree-top-actions"><button type="button" id="tree-undo" disabled>Undo</button><button type="button" id="tree-share">Copy tree link</button></div></div>' +
+  host.innerHTML = '<div class="section-head tree-heading-row"><div><h2 id="tree-heading" tabindex="-1">Breeding tree</h2></div><div class="tree-top-actions"><button type="button" id="tree-undo" disabled>Undo</button><button type="button" id="tree-share">Copy tree link</button></div></div>' +
     '<div class="tree-controls"><div class="field"><label for="tree-search">Find a target</label><input id="tree-search" type="search" placeholder="Current, old, or Japanese name" autocomplete="off"></div><div class="field"><label for="tree-target">Target monster</label><select id="tree-target"></select></div><div class="field"><label for="tree-context">Breeding location</label><select id="tree-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></div></div>' +
     '<p id="tree-message" class="tree-message" role="status" aria-live="polite"></p>' +
-    '<div class="tree-workspace"><div class="tree-map-panel"><div class="tree-map-bar"><span id="tree-summary"></span><button type="button" id="tree-center">Center target</button></div><div id="tree-canvas" class="tree-canvas" tabindex="0" role="region" aria-label="Breeding tree, scroll to explore branches"><div id="tree-diagram" class="tree-diagram"></div></div><p class="tree-map-hint">Pedigree is always left; mate is right. Scroll across larger trees. Your tree is saved in this browser.</p></div>' +
-    '<aside class="tree-recipes" aria-labelledby="tree-recipes-heading"><div class="tree-recipe-header"><span class="kicker">Choose parents for</span><h3 id="tree-recipes-heading" tabindex="-1"></h3><label class="sr-only" for="tree-recipe-search">Filter recipes by parent name</label><input id="tree-recipe-search" type="search" placeholder="Filter by either parent…" autocomplete="off"><div class="tree-recipe-summary"><p id="tree-recipe-count" class="hint"></p><button type="button" id="tree-clear">Clear this branch</button></div></div><div id="tree-recipe-list"></div><div class="tree-recipe-pages"><button id="tree-prev" type="button">Previous</button><span id="tree-page"></span><button id="tree-next" type="button">Next</button></div></aside></div>' +
-    '<details class="tree-help"><summary>How to read this tree</summary><p>Each card is one monster needed for your goal. Choose a recipe, then choose parents for either branch. You can change recipes independently; Undo restores the previous tree.</p><p>Recipes use the PSX breeding table and its verified + and two-save rules. A family card means any monster of that family. Repeated ancestors are excluded to prevent circular plans. A recipe can need a specific parent + value, shown beside that step.</p><p>This is an editable recipe map, not a shortest-path or acquisition guarantee. Parent sex, level, availability and inherited stats still need to be checked in your game. The two games share this breeding reference; team and farm progress remains in My game.</p></details>';
+    '<div class="tree-workspace"><div class="tree-map-panel"><div class="tree-map-bar"><span id="tree-summary"></span><button type="button" id="tree-center">Center target</button></div><div id="tree-canvas" class="tree-canvas" tabindex="0" role="region" aria-label="Breeding tree, scroll to explore branches"><div id="tree-diagram" class="tree-diagram"></div></div></div>' +
+    '<aside class="tree-recipes" aria-labelledby="tree-recipes-heading"><div class="tree-recipe-header"><h3 id="tree-recipes-heading" tabindex="-1"></h3><label class="sr-only" for="tree-recipe-search">Filter recipes by parent name</label><input id="tree-recipe-search" type="search" placeholder="Filter by either parent…" autocomplete="off"><div class="tree-recipe-summary"><p id="tree-recipe-count" class="hint"></p><button type="button" id="tree-clear">Clear this branch</button></div></div><div id="tree-recipe-list"></div><div class="tree-recipe-pages"><button id="tree-prev" type="button">Previous</button><span id="tree-page"></span><button id="tree-next" type="button">Next</button></div></aside></div>' +
+    '<details class="tree-help"><summary>How to read this tree</summary><p>Each branch has its own recipe. The pedigree is on the left and the mate is on the right.</p><p>Special recipes show the required + value or two-save rule. Recipes that would repeat an ancestor are omitted.</p><p>Check parent sex, level and availability in your game. Your tree is saved in this browser.</p></details>';
 
   function targetOptions() {
     const query = P('tree-search').value;
@@ -137,7 +137,7 @@
     const leaf = node.speciesIndex === null;
     const atLimit = path.length >= MAX_DEPTH;
     return '<div class="tree-branch"><article class="tree-node' + (selected === path ? ' tree-node-selected' : '') + (leaf ? ' tree-node-family' : '') + '" data-tree-path="' + path + '"><div class="tree-node-role">' + role + (path ? ' · Generation ' + path.length : '') + '</div>' + title +
-      (leaf ? '<p class="tree-node-note">Choose any member of this family.</p>' : '<span class="tree-node-family-name">' + esc(species.get(node.speciesIndex).family_display || species.get(node.speciesIndex).family) + '</span>') +
+      (leaf ? '' : '<span class="tree-node-family-name">' + esc(species.get(node.speciesIndex).family_display || species.get(node.speciesIndex).family) + '</span>') +
       (condition ? '<p class="tree-condition">' + esc(condition) + '</p>' : '') +
       (!leaf ? '<div class="tree-node-actions"><button type="button" data-tree-select="' + path + '" aria-label="' + (node.children ? 'Change recipe for ' : 'Choose parents for ') + esc(name(node.speciesIndex)) + '"' + (atLimit ? ' disabled' : '') + '>' + (node.children ? 'Change recipe' : 'Choose parents') + '</button>' + (node.children ? '<button type="button" data-tree-collapse="' + path + '" aria-expanded="' + !hidden + '" aria-label="' + (hidden ? 'Show' : 'Hide') + ' parents of ' + esc(name(node.speciesIndex)) + '">' + (hidden ? 'Show' : 'Hide') + '</button>' : '') + '</div>' : '') +
       (atLimit ? '<p class="tree-node-note">Generation limit reached</p>' : '') + '</article>' +
@@ -146,7 +146,7 @@
   function drawRecipes() {
     let node = engine.at(plan, selected);
     if (!node || node.speciesIndex === null) { selected = ''; node = engine.at(plan, ''); }
-    P('tree-recipes-heading').innerHTML = link(node.speciesIndex);
+    P('tree-recipes-heading').innerHTML = 'Parents for ' + link(node.speciesIndex);
     P('tree-clear').hidden = !node.children;
     const found = engine.candidates(plan, selected);
     const filter = P('tree-recipe-search').value;
@@ -162,14 +162,16 @@
     }).join('') || '<p class="tree-empty">' + (filter ? 'No parent names match. Clear the filter to see all recipes.' : 'No non-circular recipe is available here. Obtain this monster separately or choose another earlier recipe.') + '</p>';
     P('tree-prev').disabled = page === 0;
     P('tree-next').disabled = page + 1 >= pages;
-    P('tree-page').textContent = pages ? (page + 1) + ' / ' + pages : '0 / 0';
+    P('tree-page').parentElement.hidden = pages <= 1;
+    P('tree-page').textContent = (page + 1) + ' / ' + pages;
   }
   function draw() {
     P('tree-context').value = plan.context;
     targetOptions();
     P('tree-diagram').innerHTML = drawNode('', 'Your goal');
     const steps = plan.nodes.filter(node => node.children).length;
-    P('tree-summary').textContent = steps + (steps === 1 ? ' breeding step' : ' breeding steps') + ' · ' + (plan.nodes.length - steps) + ' parent requirements';
+    const parents = plan.nodes.length - steps;
+    P('tree-summary').textContent = steps + (steps === 1 ? ' breeding step' : ' breeding steps') + ' · ' + parents + (parents === 1 ? ' monster needed' : ' monsters needed');
     P('tree-message').textContent = message;
     P('tree-undo').disabled = undo.length === 0;
     drawRecipes();
@@ -182,7 +184,7 @@
   }
   function persist() {
     const state = currentState();
-    try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (error) { message = 'This tree works for this session. Browser storage is unavailable; copy the tree link to keep it.'; P('tree-message').textContent = message; }
+    try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (error) { message = 'Browser storage is unavailable. Copy the tree link to keep it.'; P('tree-message').textContent = message; }
     if (location.hash.startsWith('#breeding-tree')) {
       const hash = route(state);
       try { history.replaceState(null, '', hash); lastRoute = hash; } catch (error) { /* file URLs can still use Copy tree link. */ }

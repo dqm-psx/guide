@@ -39,8 +39,8 @@
       map.aliases = translated.aliases;
     }
     for (const guide of [field, world]) {
-      guide.provenance.name_source_url = reference.metadata.source_url;
-      guide.provenance.name_public_revision = reference.metadata.public_revision;
+      guide.provenance.name_source_url = reference.metadata?.source_url;
+      guide.provenance.name_public_revision = reference.metadata?.public_revision;
     }
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = {apply};

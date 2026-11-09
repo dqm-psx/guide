@@ -261,6 +261,7 @@ function updateParent(id, selected) {
   const species = allSpecies().filter(s => familyMatches(s, $(id + "-family").value) && matchesName(s, $(id + "-search").value));
   setOptions(id, species, selected);
   const hint = $(id + "-hint");
+  hint.hidden = species.length > 0 && !$(id + "-family").value && !$(id + "-search").value.trim();
   if (species.length) hint.textContent = species.length.toLocaleString() + " matching species";
   else hint.innerHTML = filterEmptyInlineMarkup("No monsters match these filters.", parentChips(id), id);
 }
@@ -289,7 +290,7 @@ function renderPair() {
   $("result-detail").textContent = a && b ? resultDetail(forward) : "Adjust the name or family filters to select two species.";
   $("reverse-detail").textContent = a && b ? resultDetail(reverse) : "";
   $("pair-description").textContent = a && b ? displayName(a) + " + " + displayName(b) : "";
-  $("reverse-comparison").textContent = a && b ? (forward && reverse && forward.index === reverse.index ? "Both orders have the same base result." : "Reversed: " + displayName(b) + " + " + displayName(a)) : "";
+  $("reverse-comparison").textContent = a && b ? (forward && reverse && forward.index === reverse.index ? "Same offspring in both orders." : displayName(b) + " + " + displayName(a)) : "";
   const plusRule = a && b ? plusRuleFor(a, b) : undefined;
   $("pair-plus-note").hidden = !plusRule;
   $("pair-plus-note").textContent = plusRule ? plusRuleCondition(plusRule, true) : "";

@@ -142,10 +142,8 @@
   }
   function updateSaveStatus() {
     P("planner-save-status").textContent = (storageBlocked || !storageHealthy || documentTooLarge)
-      ? (documentTooLarge
-        ? "This document is too large to save or export in the browser. Remove some teams, monsters, plans, or notes."
-        : "Browser saving is unavailable. Your changes work for this session; export a full backup to keep them.")
-      : "Saved in this browser only. Export a full backup to keep or move everything.";
+      ? "Changes are unsaved."
+      : "Teams are saved in this browser. Save files stay on this device.";
   }
   function commit(nextState, message) {
     undoState = copy(state);
@@ -214,19 +212,22 @@
     malePage = femalePage = 0;
     const team = activeTeam();
     const favoritesOnly = P("planner-roster-favorites").checked;
+    const visible = favoritesOnly ? team.entries.filter(entry => entry.favorite) : team.entries;
     for (const sex of ["male","female"]) {
-      let entries = team.entries.filter(e => e.sex === sex);
-      if (favoritesOnly) entries = entries.filter(e => e.favorite === true);
+      const entries = visible.filter(e => e.sex === sex);
       P("planner-"+sex+"-count").textContent = entries.length;
-      const empty = '<p class="planner-empty">'+(favoritesOnly ? "No favorites yet. Star a monster to see it here." : "No "+sex+" monsters yet. Add one using the form above.")+'</p>';
+      P("planner-"+sex+"s").closest("section").hidden = !visible.length;
       P("planner-"+sex+"s").innerHTML = entries.length ? ["party","farm"].map(loc => {
         const group = entries.filter(e => entryLocation(e) === loc);
         return '<h4 class="planner-location-heading">'+loc[0].toUpperCase()+loc.slice(1)+' <span class="planner-count">'+group.length+'</span></h4>' +
-          '<div class="planner-card-list">'+(group.map(e => cardMarkup(e, sex)).join("") || '<p class="planner-empty">No '+sex+' monsters in the '+loc+'.</p>')+'</div>';
-      }).join("") : '<div class="planner-card-list">'+empty+'</div>';
+          '<div class="planner-card-list">'+group.map(e => cardMarkup(e, sex)).join("")+'</div>';
+      }).join("") : "";
     }
     const party = team.entries.filter(e => entryLocation(e) === "party").length;
-    P("planner-team-summary").textContent = team.entries.length+" / "+DQMPlannerCore.MAX_ENTRIES+" monsters in "+team.name+" ("+party+" party · "+(team.entries.length-party)+" farm)";
+    const summary = P("planner-team-summary");
+    if (!team.entries.length) summary.textContent = "No monsters in "+team.name+".";
+    else if (!visible.length) summary.textContent = "No favorites in "+team.name+". Star a monster to include it.";
+    else summary.textContent = team.entries.length+" / "+DQMPlannerCore.MAX_ENTRIES+" monsters in "+team.name+" ("+party+" party · "+(team.entries.length-party)+" farm)";
     P("planner-export").disabled = !team.entries.length;
   }
   function renderBreeding() {
@@ -247,7 +248,18 @@
       }
     }
     const total = 2*males.length*females.length;
-    P("planner-breeding-summary").textContent = total.toLocaleString()+" ordered pairings · "+contextLabel(context)+" · "+(includeFarm ? "party + farm" : "party only")+(query ? " · "+matches.toLocaleString()+" matching offspring; other cells are faded." : " · Select any result for details.");
+    for (const sex of ["male","female"]) {
+      const grid = P("planner-"+sex+"-grid");
+      grid.closest("section").hidden = !total;
+      if (!total) grid.replaceChildren();
+    }
+    P("team-breeding-eligibility").hidden = !total;
+    if (!total) {
+      const needed = !males.length && !females.length ? "a male and a female" : !males.length ? "a male" : "a female";
+      P("planner-breeding-summary").textContent = "Add "+needed+" to your "+(includeFarm ? "team" : "party")+" to see pairings.";
+      return;
+    }
+    P("planner-breeding-summary").textContent = total.toLocaleString()+" ordered pairings · "+(includeFarm ? "party + farm" : "party only")+(query ? " · "+matches.toLocaleString()+" matching offspring highlighted" : "");
     renderMatrix("planner-male-grid", males.slice(malePage*PAGE, (malePage+1)*PAGE), females, context, query, "Male pedigree and female mate: offspring by ordered pairing");
     renderMatrix("planner-female-grid", females.slice(femalePage*PAGE, (femalePage+1)*PAGE), males, context, query, "Female pedigree and male mate: offspring by ordered pairing");
     pageRange("planner-male", malePage, males.length, "Pedigrees");
@@ -264,9 +276,10 @@
     // The pin control stays beside the offspring selector in Find parents;
     // the saved list and the plan it opens live in the planner.
     const summary = P("target-active-summary");
+    P("saved-targets-panel").hidden = !team?.targets.length;
     const activeText = activeSpecies
       ? "Active target: " + displayName(activeSpecies)
-      : "No active target yet. Pin the offspring you want to breed toward.";
+      : "No active target.";
     const viewing = browsingSpecies && (!activeSpecies || browsingSpecies.index !== activeSpecies.index);
     summary.textContent = (viewing ? "Viewing " + displayName(browsingSpecies) + " · " : "") + activeText;
 
@@ -284,13 +297,8 @@
 
     // The path back to Find parents to choose another target.
     const link = P("planner-open-target");
-    if (activeSpecies) {
-      link.hidden = false;
-      link.textContent = "Open active target in Find parents: " + displayName(activeSpecies) + " ↗";
-    } else {
-      link.hidden = true;
-      link.textContent = "Open active target in Find parents ↗";
-    }
+    link.hidden = !activeSpecies;
+    link.href = activeSpecies ? "#offspring-finder?target="+activeSpecies.index : "#offspring-finder";
 
     const list = P("target-list");
     if (!team || !team.targets.length) {
@@ -491,12 +499,10 @@
           ? '<p class="plan-node-incompatible">This stored recipe does not apply in the ' + safe(contextLabel(plan.context)) + " context. Choose another recipe or switch the breeding context.</p>"
           : "") +
         '<p class="plan-node-parents">Pedigree ' + profileLink(recipe.parents[0],pedigreeName) + " + Mate " + profileLink(recipe.parents[1],mateName) + "</p>" +
-        '<span class="plan-node-kind">' + safe(kindLabel) + "</span>" +
-        '<p class="plan-node-context">' + safe(contextLabel(plan.context)) + "</p>";
+        '<span class="plan-node-kind">' + safe(kindLabel) + "</span>";
       if (recipe.kind === "plus_threshold" && recipe.minPlus !== null) {
         recipeInfo.innerHTML += '<p class="plan-node-condition">Either parent +' + recipe.minPlus + " or higher.</p>";
       }
-      recipeInfo.innerHTML += '<p class="plan-node-unknowns">Acquisition, offspring sex, inherited + value, and breeding eligibility are not established by this table.</p>';
       if (recipe.kind === "plus_threshold") {
         recipeInfo.innerHTML += '<p class="plan-node-unknowns">An unknown + value is not treated as zero.</p>';
       }
@@ -623,7 +629,6 @@
       }
       if (item.missingParents.length > 0) html += '<span class="plan-suggestion-badge">Missing</span>';
       html += "</p>";
-      html += '<p class="plan-suggestion-unknowns">Acquisition, offspring sex, inherited + value, and breeding eligibility are not established by this table.</p>';
       html += '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' + safe(named(item.parents[0])) + " + Mate " + safe(item.parents[1] === null ? "Any monster" : named(item.parents[1])) + '">Use this recipe</button>';
       card.innerHTML = html;
       container.appendChild(card);
@@ -724,6 +729,8 @@
     const query = P("matrix-result-search").value;
     const context = P("planner-all-context").value;
     const listMode = P("matrix-view").value === "list";
+    P("matrix-room-note").hidden = context !== "room";
+    P("matrix-plus-note").hidden = context === "base";
     P("planner-column-range").parentElement.hidden = listMode;
     P("planner-row-range").parentElement.querySelector(".planner-page-label").textContent = listMode ? "Recipes" : "Pedigrees";
     for (const direction of ["prev","next"]) {
@@ -743,8 +750,8 @@
       const listSize = size * 4;
       rowPage = Math.max(0,Math.min(rowPage,Math.max(0,Math.ceil(recipes.length/listSize)-1)));
       const displayed = recipes.slice(rowPage*listSize,(rowPage+1)*listSize);
-      P("matrix-filter-status").textContent = recipes.length.toLocaleString()+" matching recipes across all filtered parents";
-      P("planner-all-grid").innerHTML = displayed.length ? '<table><caption>Ordered recipes · '+safe(contextLabel(context))+'</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Offspring</th><th scope="col">Rule / actions</th></tr></thead><tbody>'+displayed.map(({a,b,result}) => '<tr><td>'+spriteLabel(a.index,named(a.index))+' <small>+'+rowPlus+'</small></td><td>'+spriteLabel(b.index,named(b.index))+' <small>+'+columnPlus+'</small></td><td>'+spriteLabel(result.resultIndex,named(result.resultIndex))+'</td><td class="matrix-list-actions"><span class="detail">'+safe(ruleLabel(result))+'</span><button type="button" data-planner-pair data-a="'+a.index+'" data-b="'+b.index+'" data-ap="'+rowPlus+'" data-bp="'+columnPlus+'" data-context="'+context+'">Inspect</button><a href="#breeding-tree?target='+result.resultIndex+'&context='+context+'">Tree ↗</a></td></tr>').join('')+'</tbody></table>' : '<p class="planner-empty">No recipes match. Clear the offspring search or reset the parent filters.</p>';
+      P("matrix-filter-status").textContent = query ? recipes.length.toLocaleString()+" matching recipes across all filtered parents" : "";
+      P("planner-all-grid").innerHTML = displayed.length ? '<table><caption class="sr-only">Ordered recipes · '+safe(contextLabel(context))+'</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col">Offspring</th><th scope="col">Rule / actions</th></tr></thead><tbody>'+displayed.map(({a,b,result}) => '<tr><td>'+spriteLabel(a.index,named(a.index))+' <small>+'+rowPlus+'</small></td><td>'+spriteLabel(b.index,named(b.index))+' <small>+'+columnPlus+'</small></td><td>'+spriteLabel(result.resultIndex,named(result.resultIndex))+'</td><td class="matrix-list-actions"><span class="detail">'+safe(ruleLabel(result))+'</span><button type="button" data-planner-pair data-a="'+a.index+'" data-b="'+b.index+'" data-ap="'+rowPlus+'" data-bp="'+columnPlus+'" data-context="'+context+'">Inspect</button><a href="#breeding-tree?target='+result.resultIndex+'&context='+context+'">Tree ↗</a></td></tr>').join('')+'</tbody></table>' : '<p class="planner-empty">No recipes match. Clear the offspring search or reset the parent filters.</p>';
       pageRange("planner-row",rowPage,recipes.length,"Recipes",listSize);
     } else {
       rowPage = Math.max(0,Math.min(rowPage,Math.max(0,Math.ceil(rows.length/size)-1)));
@@ -752,7 +759,7 @@
       const pageRows = rows.slice(rowPage*size,(rowPage+1)*size), pageColumns = columns.slice(columnPage*size,(columnPage+1)*size);
       renderMatrix("planner-all-grid",entries(pageRows,rowPlus),entries(pageColumns,columnPlus),context,query,"All species breeding grid: pedigree rows and mate columns");
       const matching = P("planner-all-grid").querySelectorAll('td:not(.planner-nonmatch)').length;
-      P("matrix-filter-status").textContent = query ? matching+" matching results on this page · use Recipe list to search all filtered parents." : "Tip: use arrow keys to move between results. Select a result for both parent orders.";
+      P("matrix-filter-status").textContent = query ? matching+" matching results on this page · use Recipe list to search all filtered parents." : "";
       pageRange("planner-row",rowPage,rows.length,"Rows",size);
       pageRange("planner-column",columnPage,columns.length,"Columns",size);
     }
