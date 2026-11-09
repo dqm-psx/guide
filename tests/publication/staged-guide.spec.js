@@ -75,12 +75,13 @@ async function waitForOfflineCache(page) {
 
 test('the staged artifact boots with fingerprinted assets and its synchronized names', async ({ page, context }) => {
   const check = audit(page, context);
-  const response = await page.goto(url + '#pair-finder?a=11&b=99');
+  const response = await page.goto(url);
   expect(response.ok()).toBe(true);
-  await expect(page.locator('#pair-finder')).toBeVisible();
+  await expect(page.locator('#field-guide')).toBeVisible();
+  await expect(page.locator('.nav a[href="#field-guide"]')).toHaveAttribute('aria-current', 'page');
   await waitForOfflineCache(page);
 
-  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[href], .brand img[src]'))
+  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[href], .brand img[src], .hero-map img[src]'))
     .map(element => element.src || element.href));
   expect(assets.length).toBeGreaterThan(10);
   for (const asset of assets) {
@@ -91,6 +92,9 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   expect(currentNames).toEqual(shipped.data.species.map(entry => [entry.index, entry.name, entry.display_name]));
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
   expect(await page.locator('.brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  await page.locator('.hero-map').click();
+  await page.locator('.map-image img').evaluate(img => img.decode());
+  await expect(page.locator('.map-doors a').first()).toBeVisible();
   check.assertClean();
 });
 

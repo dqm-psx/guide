@@ -1,24 +1,53 @@
-# DQM1 & 2 PSX · Breeding & Monster Reference
+# Dragon Quest Monsters 1 & 2 PSX · Player’s Handbook
 
 **[Open the guide](https://dqm-psx.github.io/guide/)** ·
 [English translation project](https://dqm-psx.github.io/) ·
 [Compare translation editions](https://dqm-psx.github.io/translations/)
 
-Breeding tools and a monster library for the English patch of **Dragon Quest
-Monsters 1 & 2 for PlayStation**. The guide uses PSX species identities, breeding
-data, and native monster records. Displayed names follow the public translation
-export's **Current** edition; older English and Japanese names remain searchable.
+A player guide for Terry, Cobi, and Tara in the English PlayStation patch. Start
+with a campaign, look up an item or character, or import a memory card to plan
+breeding with the monsters you already have. The guide opens from disk or on
+GitHub Pages, with no account or backend.
 
 ## Choose a tool
 
 | Tool | What it does |
 | --- | --- |
+| [Field guide](https://dqm-psx.github.io/guide/#field-guide) | Search walkthroughs, quests, NPCs, bosses, gate and world locations, items, tools, natural skills and gameplay mechanics. Filter by adventure. Reveal story spoilers individually or across a directory. |
+| [Map atlas](https://dqm-psx.github.io/guide/#atlas) | Explore 406 named static layouts, zoom the map, and follow recorded exits. Character profiles link directly to verified locations. |
+| [Wild encounters](https://dqm-psx.github.io/guide/#atlas?tab=encounters) | Look up an area, floor range or monster, filter by Terry, Cobi or Tara, and open the profiles of recorded wild monsters. |
 | [Find a pairing](https://dqm-psx.github.io/guide/#pair-finder) | Look up ordered parents, compare the reversed pairing, inspect special conditions, and copy or share a pairing. |
 | [Find parents](https://dqm-psx.github.io/guide/#offspring-finder) | Choose an offspring and filter its parent combinations. Special `+` and two-save recipes appear with their conditions. |
 | [Breeding tree](https://dqm-psx.github.io/guide/#breeding-tree) | Explore branching recipes without setting up a team. Change either branch, hide or clear parents, undo edits, and share the selected tree. |
 | [Breeding table](https://dqm-psx.github.io/guide/#breeding-table) | Compare a matrix or a recipe list, filter each parent axis and the offspring, enter parent `+` values, swap axes, and inspect results. |
 | [Monster library](https://dqm-psx.github.io/guide/#species-index) | Search names and aliases, filter families and favorites, sort the index, and open each monster's profile. |
 | [My game](https://dqm-psx.github.io/guide/#team-planner) | Keep DQM1/DQM2 teams, party and farm monsters, saved targets, and breeding plans in your browser. |
+
+### Bring your game save
+
+Open [Import a PlayStation save](https://dqm-psx.github.io/guide/#team-planner?import=save).
+Choose a raw 128 KiB memory card (including DuckStation `.mcd`, `.mcr` or
+`.srm`), an 8 KiB DQM Adventure Log, or a single-save `.mcs` export.
+On a card with multiple adventures, choose a slot and inspect its preview.
+**Create team from save** adds a new planner team. Party and farm assignments,
+species, sex, level, breeding + and supported English-patch nicknames are read
+locally. Turn off English nicknames for a Japanese-edition save. The preview
+accounts for eggs and records the planner cannot use. Emulator save states use
+a different format. The guide never uploads or writes back to the card.
+
+### Handbook sources
+
+Walkthroughs and field maps use the English PSX v1.0.66 native extraction.
+Article records cite the public translation entries checked for their wording.
+The map atlas includes named static scenes; exit markers indicate recorded
+transitions. Runtime actors and generated dungeon floors do not have fixed
+layouts here. Map images load on demand and can be revisited offline once cached.
+
+Items distinguish verified effects from evidence of availability in a
+particular adventure. Shop stock, prices and skill-learning thresholds were
+checked against v1.0.73. Natural skill names, encounter labels and monster
+profiles use the automatically refreshed translation snapshot. Edited
+walkthrough prose and older map labels retain their recorded source versions.
 
 Monster links open profiles containing the current and alternate names,
 Japanese name, sprite, library text, stats and growth, natural skills,
@@ -240,6 +269,9 @@ baseline are excluded from the hosted files.
 | `index.html`, `css/`, `js/` | Application shell, styles, and tool logic |
 | `data/breeding-data.js` | Species identities, ordered breeding matrix, and conditional rules |
 | `data/monster-reference.js` | Generated current names and monster profile data |
+| `data/world-guide.js`, `data/field-guide.js` | Campaign articles, translation references, item records and learning thresholds |
+| `data/player-atlas.js`, `maps/` | Named layout index, linked doors and content-addressed map images. Rebuild with `python scripts/build-player-atlas.py path/to/reference/site/dist` and Pillow. |
+| `js/save-import.js` | Read-only PSX card and Adventure Log decoder |
 | `data/monster-baseline.json` | Native extraction records used by the sync and verifier; not a browser asset |
 | `data/gameplay-verification.json` | Release-matched gameplay proof, bound to the guide's data and source hashes |
 | `data/*sprites.js`, `icons/` | Shipped sprites and application icons |

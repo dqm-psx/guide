@@ -18,7 +18,7 @@ test.describe('served', () => {
   const url = () => serverUrl;
 
   test('pair finder shows the default Slime + Dracky base result', async ({ page }) => {
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pedigree')).toHaveValue('11');
     await expect(page.locator('#mate')).toHaveValue('99');
     await expect(page.locator('#result-name')).toHaveText('Winged Slime');
@@ -27,7 +27,7 @@ test.describe('served', () => {
   });
 
   test('swap button reverses the parents and updates the result', async ({ page }) => {
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await page.click('#swap');
     await expect(page.locator('#pedigree')).toHaveValue('99');
     await expect(page.locator('#mate')).toHaveValue('11');
@@ -126,7 +126,7 @@ test.describe('served', () => {
   });
 
   test('keyboard: tabbing to the sprite style buttons switches sprites', async ({ page }) => {
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pedigree-sprite img')).toHaveAttribute('data-sprite-kind', 'portrait');
     for (let i = 0; i < 30; i++) {
       await page.keyboard.press('Tab');
@@ -140,7 +140,7 @@ test.describe('served', () => {
   });
 
   test('planner navigation shows the planner and hides the reference sections', async ({ page }) => {
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pair-finder')).toBeVisible();
     await expect(page.locator('#team-planner')).toBeHidden();
     await page.click('#planner-nav-link');

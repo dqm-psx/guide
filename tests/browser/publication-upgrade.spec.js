@@ -56,9 +56,9 @@ test.beforeAll(async () => {
   for (const file of ['index.html', 'sw.js', 'manifest.webmanifest', '.nojekyll']) {
     source.set(file, fs.readFileSync(path.join(REPO_ROOT, file)));
   }
-  for (const directory of ['js', 'css', 'data', 'icons']) {
+  for (const directory of ['js', 'css', 'data', 'icons', 'media', 'maps']) {
     for (const entry of fs.readdirSync(path.join(REPO_ROOT, directory), { withFileTypes: true })) {
-      if (entry.isFile() && /\.(js|css|png|svg|ico)$/.test(entry.name)) {
+      if (entry.isFile() && /\.(js|css|png|svg|ico|webp)$/.test(entry.name)) {
         const file = directory + '/' + entry.name;
         source.set(file, fs.readFileSync(path.join(REPO_ROOT, file)));
       }
@@ -67,7 +67,7 @@ test.beforeAll(async () => {
   published = versionAssets(source);
   const version = published.get('sw.js').toString().match(/const CACHE_VERSION = "([^"]+)";/)[1];
   workerCache = 'dqm-guide:/guide/' + version;
-  const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
+  const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webp': 'image/webp' };
   server = http.createServer((request, response) => {
     const url = new URL(request.url, 'http://127.0.0.1');
     const file = url.pathname === '/guide/' ? 'index.html' : url.pathname.slice('/guide/'.length);

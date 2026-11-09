@@ -63,6 +63,8 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(shape.childTypes).toEqual(shape.childTypes.map(() => 1));
     expect(shape.allLinks).toBe(true);
     expect(shape.hrefs).toEqual([
+      '#field-guide',
+      '#atlas',
       '#pair-finder',
       '#offspring-finder',
       '#breeding-tree',
