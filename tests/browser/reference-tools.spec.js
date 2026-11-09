@@ -59,7 +59,7 @@ test.describe('served', () => {
   });
 
   test('pairings chosen on the bare homepage become shareable URLs (item 6)', async ({ page }) => {
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await page.selectOption('#pedigree', '1');
     await page.selectOption('#mate', '13');
     await expect.poll(() => page.evaluate(() => location.hash)).toBe('#pair-finder?a=1&b=13');

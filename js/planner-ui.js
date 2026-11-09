@@ -206,8 +206,9 @@
   }
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
+    const level = Number.isInteger(entry.level) && entry.level > 0 && entry.level <= 127 ? " · Lv " + entry.level : "";
     const star = '<button type="button" data-member-favorite="'+safe(entry.id)+'" aria-pressed="'+entry.favorite+'" aria-label="Favorite '+safe(memberName(entry))+'">★</button>';
-    return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button><button type="button" data-member-move="'+safe(entry.id)+'" aria-label="Move '+safe(fullName(entry))+' to the '+otherLocation(entryLocation(entry))+'">Move to '+otherLocation(entryLocation(entry))+'</button></div></article>';
+    return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus+level)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button><button type="button" data-member-move="'+safe(entry.id)+'" aria-label="Move '+safe(fullName(entry))+' to the '+otherLocation(entryLocation(entry))+'">Move to '+otherLocation(entryLocation(entry))+'</button></div></article>';
   }
   function renderRoster() {
     malePage = femalePage = 0;
@@ -924,6 +925,87 @@
     const inserted = next.teams[next.teams.length-1];
     commit(app.setActiveTeam(next, inserted.id), 'Imported "'+inserted.name+'" as a new team.');
   }
+
+  // ---- PSX save import ----
+  function setupSaveImport() {
+    const input = P("save-import-file"), select = P("save-import-slot");
+    const status = P("save-import-status"), preview = P("save-import-preview");
+    const summary = P("save-import-summary"), useNames = P("save-import-nicknames");
+    const apply = P("save-import-apply");
+    let saves = [], generation = 0;
+    function clear() {
+      generation++;
+      saves = [];
+      input.value = "";
+      select.replaceChildren();
+      summary.replaceChildren();
+      preview.hidden = true;
+      status.textContent = "";
+    }
+    function renderPreview() {
+      const save = saves[select.selectedIndex];
+      const party = save.entries.filter(e => e.location === "party").length;
+      const counts = save.skipped;
+      const notes = [counts.eggs && counts.eggs + " unhatched eggs", counts.unavailable && counts.unavailable + " unavailable records",
+        counts.unsupported && counts.unsupported + " species outside the standard roster"].filter(Boolean);
+      const skipped = notes.length ? "<p>Excluded from the team: " + safe(notes.join(", ")) + ".</p>" : "";
+      const names = useNames.checked && save.unreadableNames ? "<p>Using species names for " + save.unreadableNames + " unreadable nicknames.</p>" : "";
+      const rows = save.entries.map(e => "<tr><th scope=\"row\">" + profileLink(e.speciesIndex) +
+        (useNames.checked && e.nickname ? " · " + safe(e.nickname) : "") + "</th><td>" + (e.location === "party" ? "Party" : "Farm") +
+        "</td><td>" + (e.sex === "male" ? "Male" : "Female") + "</td><td>" + e.level + "</td><td>+" + e.plus + "</td></tr>").join("");
+      summary.innerHTML = "<p><strong>" + party + " party · " + (save.entries.length - party) + " farm</strong> (ranch and storage)</p>" +
+        skipped + names + (rows ? '<details><summary>Review monsters (' + save.entries.length + ')</summary><div class="table-scroll"><table>' +
+        '<caption class="sr-only">Monsters in this save</caption><thead><tr><th scope="col">Monster</th><th scope="col">Location</th>' +
+        '<th scope="col">Sex</th><th scope="col">Level</th><th scope="col">Plus</th></tr></thead><tbody>' + rows + "</tbody></table></div></details>" : "");
+      apply.disabled = !rows;
+    }
+    input.addEventListener("change", async () => {
+      const file = input.files[0];
+      clear();
+      if (!file) return;
+      const request = generation;
+      try {
+        if (!DQMSaveImport.acceptedSizes.includes(file.size)) throw new Error("Choose a raw 128 KiB card, an 8 KiB save block, or an .mcs single-save export.");
+        const bytes = await file.arrayBuffer();
+        if (request !== generation) return;
+        const result = DQMSaveImport.read(bytes, DATA.species);
+        saves = result.saves;
+        for (const s of saves) {
+          const prefix = s.slot === null ? "" : "Slot " + s.slot + " · ";
+          const playtime = s.hours + "h " + s.minutes + "m";
+          select.add(new Option(prefix + s.campaign + " · " + playtime));
+        }
+        preview.hidden = false;
+        status.textContent = [saves.length === 1 ? "One save found." : saves.length + " saves found. Choose a slot.", ...result.errors].join(" ");
+        renderPreview();
+        select.focus({preventScroll: true});
+      } catch (error) {
+        if (request === generation) status.textContent = error.message;
+      }
+    });
+    select.addEventListener("change", renderPreview);
+    useNames.addEventListener("change", renderPreview);
+    P("save-import-cancel").addEventListener("click", () => {
+      clear();
+      status.textContent = "Import cancelled.";
+      input.focus({preventScroll: true});
+    });
+    apply.addEventListener("click", () => {
+      const save = saves[select.selectedIndex];
+      if (!save || !save.entries.length) return;
+      const name = save.campaign + (save.slot === null ? " · Save" : " · Slot " + save.slot);
+      try {
+        const team = {id: app.makeId("t-"), name, game: save.game, targets: [], activeTargetId: null,
+          entries: save.entries.map(e => ({...e, id: app.makeId("m-"), favorite: false, nickname: useNames.checked ? e.nickname : ""}))};
+        const next = app.insertTeam(state, team);
+        commit(app.setActiveGame(app.setActiveTeam(next, team.id), save.game), "Imported " + team.entries.length + " monsters into " + name + ".");
+        clear();
+        P("planner-team-select").focus({preventScroll: true});
+      } catch (error) { status.textContent = error.message; }
+    });
+  }
+
+  setupSaveImport();
 
   // ---- cross-tab refresh ----
   function adoptStoredDocument(text, announce) {

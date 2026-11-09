@@ -17,6 +17,8 @@ test.afterAll(async () => {
 });
 
 const VIEWS = [
+  { hash: '#field-guide', id: 'field-guide' },
+  { hash: '#atlas', id: 'atlas' },
   { hash: '#pair-finder', id: 'pair-finder' },
   { hash: '#offspring-finder', id: 'offspring-finder' },
   { hash: '#breeding-tree', id: 'breeding-tree' },
@@ -38,18 +40,18 @@ async function expectSingleView(page, id) {
 test.describe('served', () => {
   const url = () => serverUrl;
 
-  test('every view id mounts a wrapper and only Find a pairing starts visible', async ({ page }) => {
+  test('every view id mounts a wrapper and only the Field guide starts visible', async ({ page }) => {
     await page.goto(url());
     for (const view of VIEWS) {
       await expect(page.locator('#' + view.id)).toHaveCount(1);
       await expect(page.locator('#' + view.id)).toHaveAttribute('data-view', view.id);
       await expect(page.locator('#' + view.id)).toHaveClass(/\bview\b/);
     }
-    await expectSingleView(page, 'pair-finder');
+    await expectSingleView(page, 'field-guide');
   });
 
   test('guidance appears beside the tool it explains and source details remain available', async ({ page }) => {
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pair-finder #pair-guidance')).toBeVisible();
     await expect(page.locator('#pair-guidance')).toContainText(/pedigree|parent|order/i);
     await expect(page.locator('#rules-guide, #plus-rules, #flag-rules')).toHaveCount(0);
@@ -77,6 +79,8 @@ test.describe('served', () => {
   test('each guide nav link opens, titles and distinctly marks its own view', async ({ page }) => {
     await page.goto(url());
     const expected = {
+      '#field-guide': 'Field guide',
+      '#atlas': 'Map atlas',
       '#pair-finder': 'Find a pairing',
       '#offspring-finder': 'Find parents',
       '#breeding-tree': 'Breeding tree',
@@ -169,7 +173,7 @@ test.describe('served', () => {
     expect(await page.evaluate(() => DQMViews.viewFor('#about')))
       .toBe('species-index');
     expect(await page.evaluate(() => DQMViews.viewFor('#nope')))
-      .toBe('pair-finder');
+      .toBe('field-guide');
   });
 
   test('a repeated click on the current nav link stays put and takes focus', async ({ page }) => {
@@ -217,7 +221,7 @@ test.describe('served', () => {
 
   test('a direct hash, a reload, and Back/Forward each show the intended view', async ({ page }) => {
     const titles = {
-      'pair-finder': 'Find a pairing',
+      'field-guide': 'Field guide',
       'species-index': 'Monster library',
     };
     // Every step lands on the same view, marked the same way, under the same
@@ -228,13 +232,13 @@ test.describe('served', () => {
       await expect(page).toHaveTitle(new RegExp('^' + titles[id] + ' · '));
     };
     await page.goto(url());
-    await expectLanded('pair-finder');
+    await expectLanded('field-guide');
     await page.goto(url() + '#species-index');
     await expectLanded('species-index');
     await page.reload();
     await expectLanded('species-index');
     await page.goBack();
-    await expectLanded('pair-finder');
+    await expectLanded('field-guide');
     await page.goForward();
     await expectLanded('species-index');
   });
@@ -267,11 +271,11 @@ test.describe('served', () => {
     }
   });
 
-  test('an unknown hash falls back to Find a pairing and marks its link', async ({ page }) => {
+  test('an unknown hash falls back to the Field guide and marks its link', async ({ page }) => {
     await page.goto(url());
     await page.goto(url() + '#not-a-view');
-    await expectSingleView(page, 'pair-finder');
-    await expect(page.locator('.nav a[href="#pair-finder"]')).toHaveClass(/\bnav-link-active\b/);
+    await expectSingleView(page, 'field-guide');
+    await expect(page.locator('.nav a[href="#field-guide"]')).toHaveClass(/\bnav-link-active\b/);
   });
 
   test('a hidden view is display:none and has no box at all', async ({ page }) => {
@@ -318,7 +322,7 @@ test.describe('served', () => {
         },
       });
     });
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pair-guidance')).toBeVisible();
     await page.click('.nav a[href="#offspring-finder"]');
     await expectSingleView(page, 'offspring-finder');
@@ -342,11 +346,12 @@ test.describe('served', () => {
       const links = [...document.querySelectorAll('.nav nav a')].map(a => a.getBoundingClientRect());
       return {
         declared: parseFloat(getComputedStyle(document.querySelector('.nav nav')).columnGap),
-        rendered: Math.round(links[1].left - links[0].right),
+        rendered: links[1].left - links[0].right,
       };
     });
     expect(gap.declared).toBeGreaterThan(0);
-    expect(gap.rendered).toBeGreaterThanOrEqual(gap.declared);
+    // Layout rounds fractional CSS pixels to layout units.
+    expect(gap.rendered).toBeCloseTo(gap.declared, 1);
   });
 
   test('views stay mounted across a switch, so their controls keep their state', async ({ page }) => {

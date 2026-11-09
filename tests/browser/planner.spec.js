@@ -103,7 +103,7 @@ test.describe('served', () => {
   });
 
   test('sprite style preference persists under its storage key', async ({ page }) => {
-    await page.goto(url());
+    await page.goto(url() + '#pair-finder');
     await page.click('button[data-sprite-style="overworld"]');
     await expect(page.locator('#pedigree-sprite img')).toHaveAttribute('data-sprite-kind', 'overworld');
     await page.reload();

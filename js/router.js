@@ -6,7 +6,7 @@
    The URL hash is the source of truth. The view id is the hash up to its first
    separator, so room is left for route parameters after it. A hash that names
    no view — empty, unknown, or a future parameterised route — falls back to
-   Find a pairing. Legacy guide anchors open the relevant contextual guidance.
+   the field guide. Legacy guide anchors open the relevant contextual guidance.
 
    The router does not own species selections, team data, or planner tabs. A
    view reacts to being revealed by implementing window.DQMApp.viewShown(id),
@@ -18,9 +18,11 @@
 (() => {
   "use strict";
   const P = id => document.getElementById(id);
-  const TITLE_SUFFIX = "DQM1&2 PS1 breeding reference";
-  const DEFAULT_VIEW = "pair-finder";
+  const TITLE_SUFFIX = "DQM1&2 PSX Player Guide";
+  const DEFAULT_VIEW = "field-guide";
   const views = [
+    { id: "field-guide", heading: "field-heading" },
+    { id: "atlas", heading: "atlas-heading" },
     { id: "pair-finder", heading: "pair-heading" },
     { id: "offspring-finder", heading: "offspring-heading" },
     { id: "breeding-tree", heading: "tree-heading" },
@@ -54,6 +56,7 @@
     return (known.has(id) ? id : aliases[id]) || DEFAULT_VIEW;
   }
   function headingFor(viewId) {
+    if (viewId === "field-guide") return P("article-title") || P("directory-title") || P("field-heading");
     const view = views.find(entry => entry.id === viewId);
     return view ? P(view.heading) : null;
   }
@@ -111,8 +114,16 @@
     if (window.DQMApp && typeof window.DQMApp.viewShown === "function") window.DQMApp.viewShown(viewId);
     markNav(viewId);
     setTitle(viewId);
+    if (viewId === "field-guide" || viewId === "atlas") {
+      const title = viewId === "atlas" ? window.DQMAtlas.show() : window.DQMField.show();
+      if (title) document.title = title + " · " + TITLE_SUFFIX;
+    }
     if (viewId === "monster" && window.DQMMonsters) { window.DQMMonsters.renderRoute(); document.title = window.DQMMonsters.title() + " · " + TITLE_SUFFIX; }
     if (viewId === "breeding-tree" && window.DQMBreedingTree) window.DQMBreedingTree.viewShown();
+    if (viewId === "team-planner" && new URLSearchParams(parse(location.hash).params).get("import") === "save") {
+      P("planner-tab-roster").click();
+      if (settings.focus) settings.focusId = "save-import-file";
+    }
     activeView = viewId;
     if (settings.scroll === false) return;
     const heading = headingFor(viewId);

@@ -1,0 +1,4152 @@
+globalThis.FIELD_GUIDE = {
+  "schema_version": 1,
+  "provenance": {
+    "source_url": "https://github.com/dqm-psx/translations/tree/e5097e6e9403abda92130144b44488c84bfcb0e3",
+    "source_label": "PSX English patch text and item records",
+    "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
+    "translation_revision": "a5b29b8686d49453f5a47c0dbef7b326a2bf810a",
+    "patch_version": "v1.0.73",
+    "disc_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
+    "release_url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73",
+    "scope": "Item attributes, base prices and 18 fixed-town shop inventories checked against the v1.0.73 PSX disc. Town stock can change with story progress. Shared item data does not establish a Terry acquisition route. Locations are listed only where supported by shop stock or game text.",
+    "source_ids_note": "Item and dialogue IDs identify rows in the public translation catalog. PSX shop IDs identify the archive scene and byte offset of a stock list.",
+    "skill_requirements": "Minimum level and stats for 169 PSX skill-learning records, checked against v1.0.73. Species, inheritance and skill evolution determine eligibility."
+  },
+  "entries": [
+    {
+      "id": "item-1",
+      "kind": "item",
+      "game": "both",
+      "title": "Medicinal Herb",
+      "category": "Consumable",
+      "summary": "Restores 30–40 HP to one ally.",
+      "details": [
+        "Cobi / Tara: Mom gives you one at the farm. Terry can receive one at GreatTree Castle; leave space in your bag for the gift.",
+        "Single use.",
+        "Terry shops sell it for 10 G (9 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10 G (9 G with a Gold Pass). GreatLog / Main Street · Port Ritz Town · Assia."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0937",
+        "m_exe_08b68c",
+        "s003d6000_35cb",
+        "s0ac3d800_35fb",
+        "s0ac3d800_3621",
+        "PSX shop 5671/8",
+        "PSX shop 134/8",
+        "PSX shop 142/4",
+        "PSX shop 2162/4"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "MedHerb"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10,
+          "gold_pass": 9,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10,
+          "gold_pass": 9,
+          "locations": [
+            "GreatLog / Main Street",
+            "Port Ritz Town",
+            "Assia"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA4klEQVR42q2TwQ3CMAxFPUJH4Nojxx5ZgWNH4MqRI0dWYATWYBXWCPpBP/pYqZNKiWS1dePn79gx21iHsyUbuYYCATu95rQFPV4sqYXJCVvfy99GBeAfLCe9T20gNt8+1xwwLT8F9AGgsKiSAkTgMz1yIBXBR6DCmDQsV4FUBB+/FYb3LiCNgVpmaUYE8w2hIqoqDehVV4N6VR4GXxewFqhl0powD+WMackcZMC6gVicP1Wr57gLTBievkw1QkMwVfEn4f7uqoVzWDtsZveQsFze1+g8mhA/e7u61mrCMNjo9QXbcFIRzaZQ+gAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-2",
+      "kind": "item",
+      "game": "both",
+      "title": "Amor Water",
+      "category": "Consumable",
+      "summary": "Restores 60–70 HP to one ally.",
+      "details": [
+        "Single use.",
+        "Terry shops sell it for 50 G (45 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 50 G (45 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo · Northden Town · Pei Town · Port Ritz Town · Wiston · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e093c",
+        "m_exe_08b6a8",
+        "PSX shop 5671/8",
+        "PSX shop 122/8",
+        "PSX shop 134/8",
+        "PSX shop 135/8",
+        "PSX shop 136/8",
+        "PSX shop 138/8",
+        "PSX shop 142/16",
+        "PSX shop 142/4",
+        "PSX shop 149/8",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "AmorWater"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "Hitano",
+            "GreatLog / Main Street",
+            "Nofo",
+            "Northden Town",
+            "Pei Town",
+            "Port Ritz Town",
+            "Wiston",
+            "Eastoria"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA6klEQVR42q3UoQ6DMBCAYR5jcpZH6CsgJ/sI2MnJSSxychLJKyAnsXuEydlbfrYjl26B0u6SSwOhH0cvR1FEhNt7IYt/BNBwF6nbUfa7Mh8Faa9P8b7PB0vnxFUH8fVxWrlORtkMdOk7IU5NM8NZKJvDzD7D7MrCKvls0CwQiOTsbo9xWrXKzbA2RDFSq9zcbdtdIEJB2+kolKmo3HmuTCMEFeX5RVRBpoJRs5/7BX7mexVUrBve88vYsXKf5IXkZhAIlB8DaWGLRoEhulRlVGMsqpmE6ajpJkWSzi9ELWwRhZLG8NefZg16AaDTiNf9T/rSAAAAAElFTkSuQmCC"
+    },
+    {
+      "id": "item-3",
+      "kind": "item",
+      "game": "both",
+      "title": "Yggdrasil Dew",
+      "category": "Consumable",
+      "summary": "Fully restores every ally’s HP.",
+      "details": [
+        "Single use.",
+        "Terry shops sell it for 500 G (450 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 500 G (450 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo · Pei Town."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0944",
+        "m_exe_08b6c4",
+        "PSX shop 5671/21",
+        "PSX shop 122/8",
+        "PSX shop 134/24",
+        "PSX shop 135/8",
+        "PSX shop 138/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "YggDew"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 500,
+          "gold_pass": 450,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 500,
+          "gold_pass": 450,
+          "locations": [
+            "Hitano",
+            "GreatLog / Main Street",
+            "Nofo",
+            "Pei Town"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA6klEQVR42q3UoQ6DMBCAYR5jcpZH6CsgJ/sI2MnJSSxychLJKyAnsXuEydlbfrYjl26B0u6SSwOhH0cvR1FEhNt7IYt/BNBwF6nbUfa7Mh8Faa9P8b7PB0vnxFUH8fVxWrlORtkMdOk7IU5NM8NZKJvDzD7D7MrCKvls0CwQiOTsbo9xWrXKzbA2RDFSq9zcbdtdIEJB2+kolKmo3HmuTCMEFeX5RVRBpoJRs5/7BX7mexVUrBve88vYsXKf5IXkZhAIlB8DaWGLRoEhulRlVGMsqpmE6ajpJkWSzi9ELWwRhZLG8NefZg16AaDTiNf9T/rSAAAAAElFTkSuQmCC"
+    },
+    {
+      "id": "item-4",
+      "kind": "item",
+      "game": "both",
+      "title": "Magic Water",
+      "category": "Consumable",
+      "summary": "Restores 20–30 MP to one ally.",
+      "details": [
+        "Single use.",
+        "Terry shops sell it for 200 G (180 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 200 G (180 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo · Pei Town."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e094e",
+        "m_exe_08b6dc",
+        "PSX shop 5671/21",
+        "PSX shop 122/8",
+        "PSX shop 134/24",
+        "PSX shop 135/8",
+        "PSX shop 138/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "MagicWatr"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 200,
+          "gold_pass": 180,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 200,
+          "gold_pass": 180,
+          "locations": [
+            "Hitano",
+            "GreatLog / Main Street",
+            "Nofo",
+            "Pei Town"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA6klEQVR42q3UoQ6DMBCAYR5jcpZH6CsgJ/sI2MnJSSxychLJKyAnsXuEydlbfrYjl26B0u6SSwOhH0cvR1FEhNt7IYt/BNBwF6nbUfa7Mh8Faa9P8b7PB0vnxFUH8fVxWrlORtkMdOk7IU5NM8NZKJvDzD7D7MrCKvls0CwQiOTsbo9xWrXKzbA2RDFSq9zcbdtdIEJB2+kolKmo3HmuTCMEFeX5RVRBpoJRs5/7BX7mexVUrBve88vYsXKf5IXkZhAIlB8DaWGLRoEhulRlVGMsqpmE6ajpJkWSzi9ELWwRhZLG8NefZg16AaDTiNf9T/rSAAAAAElFTkSuQmCC"
+    },
+    {
+      "id": "item-5",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Elfin Elixir",
+      "category": "Consumable",
+      "summary": "Fully restores one ally’s MP.",
+      "details": [
+        "Single use.",
+        "Cobi / Tara shops sell it for 2,000 G (1,800 G with a Gold Pass). GreatLog / Main Street."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0957",
+        "m_exe_08b6f8",
+        "PSX shop 134/40"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "ElfinElix"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 2000,
+          "gold_pass": 1800,
+          "locations": [
+            "GreatLog / Main Street"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA6klEQVR42q3UoQ6DMBCAYR5jcpZH6CsgJ/sI2MnJSSxychLJKyAnsXuEydlbfrYjl26B0u6SSwOhH0cvR1FEhNt7IYt/BNBwF6nbUfa7Mh8Faa9P8b7PB0vnxFUH8fVxWrlORtkMdOk7IU5NM8NZKJvDzD7D7MrCKvls0CwQiOTsbo9xWrXKzbA2RDFSq9zcbdtdIEJB2+kolKmo3HmuTCMEFeX5RVRBpoJRs5/7BX7mexVUrBve88vYsXKf5IXkZhAIlB8DaWGLRoEhulRlVGMsqpmE6ajpJkWSzi9ELWwRhZLG8NefZg16AaDTiNf9T/rSAAAAAElFTkSuQmCC"
+    },
+    {
+      "id": "item-6",
+      "kind": "item",
+      "game": "both",
+      "title": "Antidote Herb",
+      "category": "Consumable",
+      "summary": "Cures poison in one ally.",
+      "details": [
+        "Single use.",
+        "Terry shops sell it for 4 G (3 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 4 G (3 G with a Gold Pass). GreatLog / Main Street · Northden Town · Port Ritz Town · Assia."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0961",
+        "m_exe_08b70c",
+        "PSX shop 5671/8",
+        "PSX shop 134/8",
+        "PSX shop 136/8",
+        "PSX shop 142/16",
+        "PSX shop 142/4",
+        "PSX shop 2162/4"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "Antidote"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 4,
+          "gold_pass": 3,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 4,
+          "gold_pass": 3,
+          "locations": [
+            "GreatLog / Main Street",
+            "Northden Town",
+            "Port Ritz Town",
+            "Assia"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA4klEQVR42q2TwQ3CMAxFPUJH4Nojxx5ZgWNH4MqRI0dWYATWYBXWCPpBP/pYqZNKiWS1dePn79gx21iHsyUbuYYCATu95rQFPV4sqYXJCVvfy99GBeAfLCe9T20gNt8+1xwwLT8F9AGgsKiSAkTgMz1yIBXBR6DCmDQsV4FUBB+/FYb3LiCNgVpmaUYE8w2hIqoqDehVV4N6VR4GXxewFqhl0powD+WMackcZMC6gVicP1Wr57gLTBievkw1QkMwVfEn4f7uqoVzWDtsZveQsFze1+g8mhA/e7u61mrCMNjo9QXbcFIRzaZQ+gAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-7",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Moonwort",
+      "category": "Consumable",
+      "summary": "Cures paralysis in one ally.",
+      "details": [
+        "Single use.",
+        "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Northden Town · Wiston · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0968",
+        "m_exe_08b720",
+        "PSX shop 134/24",
+        "PSX shop 136/8",
+        "PSX shop 149/8",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "GreatLog / Main Street",
+            "Northden Town",
+            "Wiston",
+            "Eastoria"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA4klEQVR42q2TwQ3CMAxFPUJH4Nojxx5ZgWNH4MqRI0dWYATWYBXWCPpBP/pYqZNKiWS1dePn79gx21iHsyUbuYYCATu95rQFPV4sqYXJCVvfy99GBeAfLCe9T20gNt8+1xwwLT8F9AGgsKiSAkTgMz1yIBXBR6DCmDQsV4FUBB+/FYb3LiCNgVpmaUYE8w2hIqoqDehVV4N6VR4GXxewFqhl0powD+WMackcZMC6gVicP1Wr57gLTBievkw1QkMwVfEn4f7uqoVzWDtsZveQsFze1+g8mhA/e7u61mrCMNjo9QXbcFIRzaZQ+gAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-8",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Laurel Leaf",
+      "category": "Consumable",
+      "summary": "Lifts a curse from one ally.",
+      "details": [
+        "Single use.",
+        "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Nofo · Northden Town."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e096f",
+        "m_exe_08b734",
+        "PSX shop 134/24",
+        "PSX shop 135/20",
+        "PSX shop 136/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "LaurelLf"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "GreatLog / Main Street",
+            "Nofo",
+            "Northden Town"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA4klEQVR42q2TwQ3CMAxFPUJH4Nojxx5ZgWNH4MqRI0dWYATWYBXWCPpBP/pYqZNKiWS1dePn79gx21iHsyUbuYYCATu95rQFPV4sqYXJCVvfy99GBeAfLCe9T20gNt8+1xwwLT8F9AGgsKiSAkTgMz1yIBXBR6DCmDQsV4FUBB+/FYb3LiCNgVpmaUYE8w2hIqoqDehVV4N6VR4GXxewFqhl0powD+WMackcZMC6gVicP1Wr57gLTBievkw1QkMwVfEn4f7uqoVzWDtsZveQsFze1+g8mhA/e7u61mrCMNjo9QXbcFIRzaZQ+gAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-9",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Awakening Powder",
+      "category": "Consumable",
+      "summary": "Wakes up one ally.",
+      "details": [
+        "Single use.",
+        "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Port Ritz Town · Assia."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0976",
+        "m_exe_08b748",
+        "PSX shop 134/24",
+        "PSX shop 142/16",
+        "PSX shop 142/4",
+        "PSX shop 2162/4"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "AwakePwdr"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "GreatLog / Main Street",
+            "Port Ritz Town",
+            "Assia"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA6klEQVR42q3UoQ6DMBCAYR5jcpZH6CsgJ/sI2MnJSSxychLJKyAnsXuEydlbfrYjl26B0u6SSwOhH0cvR1FEhNt7IYt/BNBwF6nbUfa7Mh8Faa9P8b7PB0vnxFUH8fVxWrlORtkMdOk7IU5NM8NZKJvDzD7D7MrCKvls0CwQiOTsbo9xWrXKzbA2RDFSq9zcbdtdIEJB2+kolKmo3HmuTCMEFeX5RVRBpoJRs5/7BX7mexVUrBve88vYsXKf5IXkZhAIlB8DaWGLRoEhulRlVGMsqpmE6ajpJkWSzi9ELWwRhZLG8NefZg16AaDTiNf9T/rSAAAAAElFTkSuQmCC"
+    },
+    {
+      "id": "item-10",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Angel Bell",
+      "category": "Consumable",
+      "summary": "Cures one ally’s confusion.",
+      "details": [
+        "Single use.",
+        "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Nofo · Wiston · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e097d",
+        "m_exe_08b75c",
+        "PSX shop 134/24",
+        "PSX shop 135/8",
+        "PSX shop 149/8",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "AngelBell"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "GreatLog / Main Street",
+            "Nofo",
+            "Wiston",
+            "Eastoria"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAy0lEQVR42s2UsQ3CQAxFbxTalJRZgZIyI6RlhKxAyQgpaRnhSlpGSElr9A++9KGKbZCwZF0Uxe/O//xTyj/FvivG/Aqsxf1ot3mXhwIA0FJHq9MmB+z63pCXoTQY1jAQoNN5trpcG9StoQqPJGwYDw3oBqEd5rR9vgvBqA+ER1IrQl2toZA3iLHgaKwGKoQAheHZDUQBP0Z7nzBXyzyhDinWEOzNSi+t9KTcJAREAYsUqpu4/al2IiRlfr1xQtPm5zxyqFPm/9kPNBoPImE5PI6LoLkAAAAASUVORK5CYII="
+    },
+    {
+      "id": "item-11",
+      "kind": "item",
+      "game": "dqm1",
+      "title": "Sage's Stone",
+      "category": "Reusable item",
+      "summary": "Restores about 60 HP to every ally.",
+      "details": [
+        "GreatTree’s bazaar describes it as a party heal that can be used several times before it breaks.",
+        "Can be reused until it breaks.",
+        "Terry shops sell it for 1,000 G (900 G with a Gold Pass). GreatTree / Bazaar."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0984",
+        "m_exe_08b774",
+        "s0afae000_09c1",
+        "PSX shop 5671/21"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "SageStone"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 1000,
+          "gold_pass": 900,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        }
+      ],
+      "related": [
+        "item-3"
+      ]
+    },
+    {
+      "id": "item-12",
+      "kind": "item",
+      "game": "both",
+      "title": "Yggdrasil Leaf",
+      "category": "Consumable",
+      "summary": "Revives one ally.",
+      "details": [
+        "Single use.",
+        "Terry shops sell it for 1,000 G (900 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 1,000 G (900 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e098c",
+        "m_exe_08b790",
+        "PSX shop 5671/21",
+        "PSX shop 122/8",
+        "PSX shop 134/40",
+        "PSX shop 135/20"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "YggLeaf"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 1000,
+          "gold_pass": 900,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 1000,
+          "gold_pass": 900,
+          "locations": [
+            "Hitano",
+            "GreatLog / Main Street",
+            "Nofo"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA4klEQVR42q2TwQ3CMAxFPUJH4Nojxx5ZgWNH4MqRI0dWYATWYBXWCPpBP/pYqZNKiWS1dePn79gx21iHsyUbuYYCATu95rQFPV4sqYXJCVvfy99GBeAfLCe9T20gNt8+1xwwLT8F9AGgsKiSAkTgMz1yIBXBR6DCmDQsV4FUBB+/FYb3LiCNgVpmaUYE8w2hIqoqDehVV4N6VR4GXxewFqhl0powD+WMackcZMC6gVicP1Wr57gLTBievkw1QkMwVfEn4f7uqoVzWDtsZveQsFze1+g8mhA/e7u61mrCMNjo9QXbcFIRzaZQ+gAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-13",
+      "kind": "item",
+      "game": "both",
+      "title": "Strength Seed",
+      "category": "Consumable",
+      "summary": "Raises one ally’s Attack by 3.",
+      "details": [
+        "Single use.",
+        "No confirmed purchase location in the fixed-town shop survey."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0994",
+        "m_exe_08b7a4"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "StrSeed"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA9ElEQVR42s2UsQ3CMBBFPQIjsAal12AEt5SUrMAIlF4jJWVWYIS0Qf/EN1/2YSUKQkQ62b7YL/+f7YTw6yfuw6yxGZRTmIdrtEB/NZgLxnya83lnoMf9ZoH+JQaLRWAqAgwAtNM0GBgBEN7bOL3BXSAVqTKFoaX6LpAwTFa7zAEGuIFVbXKgSHCiwhRerIpdtsdDBS2bIBNZR6rgZhDMMWAYN0Ba4uJi9aXIjo2oU5irkMVWVaquhjFHmKtQoVqCOlhLhbkbU9eQcH5AbRPW2P0ELTVKba6rzD0+qT0Sdbi1691lVcMbsUrdEvBXf2ObQX/zPAF0OsCrCuj+qwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-14",
+      "kind": "item",
+      "game": "both",
+      "title": "Defense Seed",
+      "category": "Consumable",
+      "summary": "Raises one ally’s Defense by 3.",
+      "details": [
+        "Single use.",
+        "No confirmed purchase location in the fixed-town shop survey."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e099b",
+        "m_exe_08b7c0"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "DefSeed"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA9ElEQVR42s2UsQ3CMBBFPQIjsAal12AEt5SUrMAIlF4jJWVWYIS0Qf/EN1/2YSUKQkQ62b7YL/+f7YTw6yfuw6yxGZRTmIdrtEB/NZgLxnya83lnoMf9ZoH+JQaLRWAqAgwAtNM0GBgBEN7bOL3BXSAVqTKFoaX6LpAwTFa7zAEGuIFVbXKgSHCiwhRerIpdtsdDBS2bIBNZR6rgZhDMMWAYN0Ba4uJi9aXIjo2oU5irkMVWVaquhjFHmKtQoVqCOlhLhbkbU9eQcH5AbRPW2P0ELTVKba6rzD0+qT0Sdbi1691lVcMbsUrdEvBXf2ObQX/zPAF0OsCrCuj+qwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-15",
+      "kind": "item",
+      "game": "both",
+      "title": "Agility Seed",
+      "category": "Consumable",
+      "summary": "Raises one ally’s Agility by 3.",
+      "details": [
+        "Single use.",
+        "No confirmed purchase location in the fixed-town shop survey."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09a2",
+        "m_exe_08b7dc"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "AgiSeed"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA9ElEQVR42s2UsQ3CMBBFPQIjsAal12AEt5SUrMAIlF4jJWVWYIS0Qf/EN1/2YSUKQkQ62b7YL/+f7YTw6yfuw6yxGZRTmIdrtEB/NZgLxnya83lnoMf9ZoH+JQaLRWAqAgwAtNM0GBgBEN7bOL3BXSAVqTKFoaX6LpAwTFa7zAEGuIFVbXKgSHCiwhRerIpdtsdDBS2bIBNZR6rgZhDMMWAYN0Ba4uJi9aXIjo2oU5irkMVWVaquhjFHmKtQoVqCOlhLhbkbU9eQcH5AbRPW2P0ELTVKba6rzD0+qT0Sdbi1691lVcMbsUrdEvBXf2ObQX/zPAF0OsCrCuj+qwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-16",
+      "kind": "item",
+      "game": "both",
+      "title": "Wisdom Seed",
+      "category": "Consumable",
+      "summary": "Raises one ally’s Wisdom by 3.",
+      "details": [
+        "Single use.",
+        "No confirmed purchase location in the fixed-town shop survey."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09aa",
+        "m_exe_08b7f4"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "WisSeed"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA9ElEQVR42s2UsQ3CMBBFPQIjsAal12AEt5SUrMAIlF4jJWVWYIS0Qf/EN1/2YSUKQkQ62b7YL/+f7YTw6yfuw6yxGZRTmIdrtEB/NZgLxnya83lnoMf9ZoH+JQaLRWAqAgwAtNM0GBgBEN7bOL3BXSAVqTKFoaX6LpAwTFa7zAEGuIFVbXKgSHCiwhRerIpdtsdDBS2bIBNZR6rgZhDMMWAYN0Ba4uJi9aXIjo2oU5irkMVWVaquhjFHmKtQoVqCOlhLhbkbU9eQcH5AbRPW2P0ELTVKba6rzD0+qT0Sdbi1691lVcMbsUrdEvBXf2ObQX/zPAF0OsCrCuj+qwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-17",
+      "kind": "item",
+      "game": "both",
+      "title": "Life Nut",
+      "category": "Consumable",
+      "summary": "Raises one ally’s maximum HP by 5.",
+      "details": [
+        "Single use.",
+        "No confirmed purchase location in the fixed-town shop survey."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09b2",
+        "m_exe_08b80c"
+      ],
+      "availability": "unconfirmed",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA9ElEQVR42s2UsQ3CMBBFPQIjsAal12AEt5SUrMAIlF4jJWVWYIS0Qf/EN1/2YSUKQkQ62b7YL/+f7YTw6yfuw6yxGZRTmIdrtEB/NZgLxnya83lnoMf9ZoH+JQaLRWAqAgwAtNM0GBgBEN7bOL3BXSAVqTKFoaX6LpAwTFa7zAEGuIFVbXKgSHCiwhRerIpdtsdDBS2bIBNZR6rgZhDMMWAYN0Ba4uJi9aXIjo2oU5irkMVWVaquhjFHmKtQoVqCOlhLhbkbU9eQcH5AbRPW2P0ELTVKba6rzD0+qT0Sdbi1691lVcMbsUrdEvBXf2ObQX/zPAF0OsCrCuj+qwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-18",
+      "kind": "item",
+      "game": "both",
+      "title": "Mystic Nut",
+      "category": "Consumable",
+      "summary": "Raises one ally’s maximum MP by 5.",
+      "details": [
+        "Single use.",
+        "No confirmed purchase location in the fixed-town shop survey."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09ba",
+        "m_exe_08b828"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "MysticNut"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA9ElEQVR42s2UsQ3CMBBFPQIjsAal12AEt5SUrMAIlF4jJWVWYIS0Qf/EN1/2YSUKQkQ62b7YL/+f7YTw6yfuw6yxGZRTmIdrtEB/NZgLxnya83lnoMf9ZoH+JQaLRWAqAgwAtNM0GBgBEN7bOL3BXSAVqTKFoaX6LpAwTFa7zAEGuIFVbXKgSHCiwhRerIpdtsdDBS2bIBNZR6rgZhDMMWAYN0Ba4uJi9aXIjo2oU5irkMVWVaquhjFHmKtQoVqCOlhLhbkbU9eQcH5AbRPW2P0ELTVKba6rzD0+qT0Sdbi1691lVcMbsUrdEvBXf2ObQX/zPAF0OsCrCuj+qwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-19",
+      "kind": "item",
+      "game": "both",
+      "title": "Adventure Book",
+      "category": "Consumable",
+      "summary": "Reading it steers the monster toward being braver.",
+      "details": [
+        "It can take more than one book to change a monster’s personality.",
+        "Single use.",
+        "Terry shops sell it for 10,000 G (9,000 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10,000 G (9,000 G with a Gold Pass). Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09c2",
+        "m_exe_08b844",
+        "s0afae000_1197",
+        "PSX shop 5671/34",
+        "PSX shop 135/33"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "AdvenBook"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "Nofo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-20",
+      "kind": "item",
+      "game": "both",
+      "title": "Scary Story Book",
+      "category": "Consumable",
+      "summary": "Reading it steers the monster toward being more timid.",
+      "details": [
+        "It can take more than one book to change a monster’s personality.",
+        "Single use.",
+        "Terry shops sell it for 10,000 G (9,000 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10,000 G (9,000 G with a Gold Pass). Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09c9",
+        "m_exe_08b85c",
+        "s0afae000_1197",
+        "PSX shop 5671/34",
+        "PSX shop 135/33"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "ScaryBook"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "Nofo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-21",
+      "kind": "item",
+      "game": "both",
+      "title": "Kindness Book",
+      "category": "Consumable",
+      "summary": "Reading it steers the monster toward being kinder.",
+      "details": [
+        "It can take more than one book to change a monster’s personality.",
+        "Single use.",
+        "Terry shops sell it for 10,000 G (9,000 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10,000 G (9,000 G with a Gold Pass). Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09d3",
+        "m_exe_08b874",
+        "s0afae000_1197",
+        "PSX shop 5671/34",
+        "PSX shop 135/33"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "KindBook"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "Nofo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-22",
+      "kind": "item",
+      "game": "both",
+      "title": "Slyness Book",
+      "category": "Consumable",
+      "summary": "Reading it steers the monster toward being more coldhearted.",
+      "details": [
+        "It can take more than one book to change a monster’s personality.",
+        "Single use.",
+        "Terry shops sell it for 10,000 G (9,000 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10,000 G (9,000 G with a Gold Pass). Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09dd",
+        "m_exe_08b88c",
+        "s0afae000_1197",
+        "PSX shop 5671/34",
+        "PSX shop 135/33"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "SlyBook"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "Nofo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-23",
+      "kind": "item",
+      "game": "both",
+      "title": "Clear Mind Book",
+      "category": "Consumable",
+      "summary": "Reading it steers the monster toward being more thoughtful.",
+      "details": [
+        "It can take more than one book to change a monster’s personality.",
+        "Single use.",
+        "Terry shops sell it for 10,000 G (9,000 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10,000 G (9,000 G with a Gold Pass). Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09e5",
+        "m_exe_08b8a4",
+        "s0afae000_1197",
+        "PSX shop 5671/34",
+        "PSX shop 135/33"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "ClearBook"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "Nofo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-24",
+      "kind": "item",
+      "game": "both",
+      "title": "Humor Book",
+      "category": "Consumable",
+      "summary": "Reading it steers the monster toward being more foolish.",
+      "details": [
+        "It can take more than one book to change a monster’s personality.",
+        "Single use.",
+        "Terry shops sell it for 10,000 G (9,000 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10,000 G (9,000 G with a Gold Pass). Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09ef",
+        "m_exe_08b8bc",
+        "s0afae000_1197",
+        "PSX shop 5671/34",
+        "PSX shop 135/33"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "HumorBook"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10000,
+          "gold_pass": 9000,
+          "locations": [
+            "Nofo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-25",
+      "kind": "item",
+      "game": "both",
+      "title": "BeefJerky",
+      "category": "Consumable",
+      "summary": "Wins a monster over.",
+      "details": [
+        "The least effective of the four ordinary recruitment meats. Defeat the monster you want last.",
+        "Single use.",
+        "Terry shops sell it for 10 G (9 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 10 G (9 G with a Gold Pass). GreatLog / Main Street · Assia."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09f7",
+        "m_exe_08b8d4",
+        "s0adf7000_5062",
+        "s0b113000_09a2",
+        "PSX shop 5671/8",
+        "PSX shop 134/8",
+        "PSX shop 2162/4"
+      ],
+      "availability": "shop",
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 10,
+          "gold_pass": 9,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 10,
+          "gold_pass": 9,
+          "locations": [
+            "GreatLog / Main Street",
+            "Assia"
+          ]
+        }
+      ],
+      "related": [
+        "item-26",
+        "item-27",
+        "item-28"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAxElEQVR42t2UsQ2DQAxFGYGSkhVSpmSNlClpKRmBNiWrXMkIrJA1LvpI/2RZvtjQJZa+hHTyk+/jf03z93Xv+0ydanzcuqxFICqlPQ5FcxqHIgIBmJ5jXpbXoRBQwt7rdAjf89AWIOUCAUMjYXnfCpCTuh5KjySMklCcE3pqInlVCfsK5FQapieyYC6w5pkEuf5p36y/qiHuQuPQAoen0vHhkhJYu6KbRcSG8eGCWlELAzGVhFGWZ6HXohafyy/J5cafrA/KoXUnCsIa2wAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-26",
+      "kind": "item",
+      "game": "both",
+      "title": "PorkChop",
+      "category": "Consumable",
+      "summary": "Wins a monster over.",
+      "details": [
+        "Stronger recruitment bait than BeefJerky. Rib and Sirloin are stronger still.",
+        "Single use.",
+        "Terry shops sell it for 40 G (36 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 40 G (36 G with a Gold Pass). GreatLog / Main Street · Nofo · Northden Town · Port Ritz Town."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e09fe",
+        "m_exe_08b8e4",
+        "s0adf7000_5062",
+        "s0b113000_09a2",
+        "PSX shop 5671/8",
+        "PSX shop 134/8",
+        "PSX shop 135/8",
+        "PSX shop 136/8",
+        "PSX shop 142/16",
+        "PSX shop 142/4"
+      ],
+      "availability": "shop",
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 40,
+          "gold_pass": 36,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 40,
+          "gold_pass": 36,
+          "locations": [
+            "GreatLog / Main Street",
+            "Nofo",
+            "Northden Town",
+            "Port Ritz Town"
+          ]
+        }
+      ],
+      "related": [
+        "item-25",
+        "item-27",
+        "item-28"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAxElEQVR42t2UsQ2DQAxFGYGSkhVSpmSNlClpKRmBNiWrXMkIrJA1LvpI/2RZvtjQJZa+hHTyk+/jf03z93Xv+0ydanzcuqxFICqlPQ5FcxqHIgIBmJ5jXpbXoRBQwt7rdAjf89AWIOUCAUMjYXnfCpCTuh5KjySMklCcE3pqInlVCfsK5FQapieyYC6w5pkEuf5p36y/qiHuQuPQAoen0vHhkhJYu6KbRcSG8eGCWlELAzGVhFGWZ6HXohafyy/J5cafrA/KoXUnCsIa2wAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-27",
+      "kind": "item",
+      "game": "both",
+      "title": "Rib",
+      "category": "Consumable",
+      "summary": "Wins a monster over.",
+      "details": [
+        "Stronger bait than PorkChop. In GreatLog, Mom may ask you to bring her a Rib from the item shop.",
+        "Single use.",
+        "Terry shops sell it for 200 G (180 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 200 G (180 G with a Gold Pass). GreatLog / Main Street · Nofo · Northden Town · Pei Town · Port Ritz Town · Wiston · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a05",
+        "m_exe_08b8f4",
+        "s0b113000_09a2",
+        "s003d6000_3adb",
+        "s003d6000_3afc",
+        "PSX shop 5671/21",
+        "PSX shop 134/24",
+        "PSX shop 135/20",
+        "PSX shop 136/8",
+        "PSX shop 138/8",
+        "PSX shop 142/16",
+        "PSX shop 149/8",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 200,
+          "gold_pass": 180,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 200,
+          "gold_pass": 180,
+          "locations": [
+            "GreatLog / Main Street",
+            "Nofo",
+            "Northden Town",
+            "Pei Town",
+            "Port Ritz Town",
+            "Wiston",
+            "Eastoria"
+          ]
+        }
+      ],
+      "related": [
+        "item-26",
+        "item-28"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAxElEQVR42t2UsQ2DQAxFGYGSkhVSpmSNlClpKRmBNiWrXMkIrJA1LvpI/2RZvtjQJZa+hHTyk+/jf03z93Xv+0ydanzcuqxFICqlPQ5FcxqHIgIBmJ5jXpbXoRBQwt7rdAjf89AWIOUCAUMjYXnfCpCTuh5KjySMklCcE3pqInlVCfsK5FQapieyYC6w5pkEuf5p36y/qiHuQuPQAoen0vHhkhJYu6KbRcSG8eGCWlELAzGVhFGWZ6HXohafyy/J5cafrA/KoXUnCsIa2wAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-28",
+      "kind": "item",
+      "game": "both",
+      "title": "Sirloin",
+      "category": "Consumable",
+      "summary": "Wins a monster over.",
+      "details": [
+        "The strongest of the four ordinary meats. Feed the target during battle and defeat it last. Mom can also request Sirloin for the GreatLog farm celebration.",
+        "Single use.",
+        "Terry shops sell it for 1,000 G (900 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 1,000 G (900 G with a Gold Pass). Hitano · GreatLog / Main Street · Pei Town."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a0c",
+        "m_exe_08b904",
+        "s0adf7000_5062",
+        "s003d6000_3fa6",
+        "s003d6000_407f",
+        "PSX shop 5671/45",
+        "PSX shop 122/8",
+        "PSX shop 134/40",
+        "PSX shop 138/8"
+      ],
+      "availability": "shop",
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 1000,
+          "gold_pass": 900,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 1000,
+          "gold_pass": 900,
+          "locations": [
+            "Hitano",
+            "GreatLog / Main Street",
+            "Pei Town"
+          ]
+        }
+      ],
+      "related": [
+        "item-25",
+        "item-26",
+        "item-27"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAxElEQVR42t2UsQ2DQAxFGYGSkhVSpmSNlClpKRmBNiWrXMkIrJA1LvpI/2RZvtjQJZa+hHTyk+/jf03z93Xv+0ydanzcuqxFICqlPQ5FcxqHIgIBmJ5jXpbXoRBQwt7rdAjf89AWIOUCAUMjYXnfCpCTuh5KjySMklCcE3pqInlVCfsK5FQapieyYC6w5pkEuf5p36y/qiHuQuPQAoen0vHhkhJYu6KbRcSG8eGCWlELAzGVhFGWZ6HXohafyy/J5cafrA/KoXUnCsIa2wAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-29",
+      "kind": "item",
+      "game": "both",
+      "title": "BadMeat",
+      "category": "Consumable",
+      "summary": "Poisons a monster.",
+      "details": [
+        "Single use.",
+        "No confirmed purchase location in the fixed-town shop survey."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a13",
+        "m_exe_08b914"
+      ],
+      "availability": "unconfirmed",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAxElEQVR42t2UsQ2DQAxFGYGSkhVSpmSNlClpKRmBNiWrXMkIrJA1LvpI/2RZvtjQJZa+hHTyk+/jf03z93Xv+0ydanzcuqxFICqlPQ5FcxqHIgIBmJ5jXpbXoRBQwt7rdAjf89AWIOUCAUMjYXnfCpCTuh5KjySMklCcE3pqInlVCfsK5FQapieyYC6w5pkEuf5p36y/qiHuQuPQAoen0vHhkhJYu6KbRcSG8eGCWlELAzGVhFGWZ6HXohafyy/J5cafrA/KoXUnCsIa2wAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-30",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Starry Orb",
+      "category": "Consumable",
+      "summary": "Recruitment item that wins over an eligible monster.",
+      "details": [
+        "Tara’s medal exchange offers one for 2 Tiny Medals after the collector opens the exchange. The effect applies to an eligible recruitment target.",
+        "Single use."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a1a",
+        "m_exe_08b928",
+        "m_exe_0aa8e0",
+        "medal_0aadc0_02a3"
+      ],
+      "availability": "event",
+      "aliases": [
+        "StarryOrb"
+      ],
+      "related": [
+        "item-44"
+      ]
+    },
+    {
+      "id": "item-31",
+      "kind": "tool",
+      "game": "both",
+      "title": "Mommonja Tail",
+      "category": "Reusable item",
+      "summary": "Find the next gateway in Terry’s adventure or check a monster’s capture history.",
+      "details": [
+        "Terry: in a Travelers’ Gate it points toward the hole. In battle, it checks whether you have caught that monster before. Cobi / Tara: it checks whether you have caught the monster before.",
+        "Unlimited uses.",
+        "Terry shops sell it for 800 G (720 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 800 G (720 G with a Gold Pass). GreatLog / Main Street · Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a23",
+        "m_exe_08b940",
+        "s0afae000_0115",
+        "s0adf7000_922d",
+        "m_exe_08bf94",
+        "PSX shop 5671/8",
+        "PSX shop 134/40",
+        "PSX shop 135/20"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "MomTail"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 800,
+          "gold_pass": 720,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 800,
+          "gold_pass": 720,
+          "locations": [
+            "GreatLog / Main Street",
+            "Nofo"
+          ]
+        }
+      ],
+      "related": [
+        "item-40",
+        "item-47"
+      ]
+    },
+    {
+      "id": "item-32",
+      "kind": "item",
+      "game": "both",
+      "title": "Holy Water",
+      "category": "Consumable",
+      "summary": "Prevents monsters from appearing.",
+      "details": [
+        "Single use.",
+        "Terry shops sell it for 100 G (90 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 100 G (90 G with a Gold Pass). Hitano · Pei Town."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a2d",
+        "m_exe_08b95c",
+        "PSX shop 5671/8",
+        "PSX shop 122/8",
+        "PSX shop 138/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "HolyWater"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 100,
+          "gold_pass": 90,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 100,
+          "gold_pass": 90,
+          "locations": [
+            "Hitano",
+            "Pei Town"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA6klEQVR42q3UoQ6DMBCAYR5jcpZH6CsgJ/sI2MnJSSxychLJKyAnsXuEydlbfrYjl26B0u6SSwOhH0cvR1FEhNt7IYt/BNBwF6nbUfa7Mh8Faa9P8b7PB0vnxFUH8fVxWrlORtkMdOk7IU5NM8NZKJvDzD7D7MrCKvls0CwQiOTsbo9xWrXKzbA2RDFSq9zcbdtdIEJB2+kolKmo3HmuTCMEFeX5RVRBpoJRs5/7BX7mexVUrBve88vYsXKf5IXkZhAIlB8DaWGLRoEhulRlVGMsqpmE6ajpJkWSzi9ELWwRhZLG8NefZg16AaDTiNf9T/rSAAAAAElFTkSuQmCC"
+    },
+    {
+      "id": "item-33",
+      "kind": "tool",
+      "game": "both",
+      "title": "Silver Harp",
+      "category": "Reusable item",
+      "summary": "Uses music to attract monsters.",
+      "details": [
+        "Unlimited uses.",
+        "Terry shops sell it for 1,200 G (1,080 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 1,200 G (1,080 G with a Gold Pass). GreatLog / Main Street · Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a32",
+        "m_exe_08b974",
+        "PSX shop 5671/45",
+        "PSX shop 134/40",
+        "PSX shop 135/20"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "SilvHarp"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 1200,
+          "gold_pass": 1080,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 1200,
+          "gold_pass": 1080,
+          "locations": [
+            "GreatLog / Main Street",
+            "Nofo"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAnUlEQVR42mNgGAU0A0GaDP9xYbIMu7fG6z8K+Dbl/7uzWf/3RpFoKLphIENAfBgGGUy0ofhcBsMkGQpSgOwqfIaCaKINPNusgPAiFkNhriTOQKh3UMINzVCSDITFJLKByIbCDAPRRBkI8i42V8INBcqRFCnNhqiGgjAsTJENA6kjOunADAV5H2YIzJskGYZuKMyFyJhkw2iSl4c3AAD19X15fBuaKwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-34",
+      "kind": "item",
+      "game": "both",
+      "title": "Silence Staff",
+      "category": "Reusable item",
+      "summary": "A strange mist seals enemy magic.",
+      "details": [
+        "Can be reused until it breaks.",
+        "Terry shops sell it for 700 G (630 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 700 G (630 G with a Gold Pass). GreatLog / Main Street."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a3a",
+        "m_exe_08b98c",
+        "PSX shop 5671/21",
+        "PSX shop 134/40"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "HushStaff"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 700,
+          "gold_pass": 630,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 700,
+          "gold_pass": 630,
+          "locations": [
+            "GreatLog / Main Street"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-35",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Friendship Staff",
+      "category": "Reusable item",
+      "summary": "Doubles one ally's Attack.",
+      "details": [
+        "Can be reused until it breaks.",
+        "Cobi / Tara shops sell it for 800 G (720 G with a Gold Pass). GreatLog / Main Street."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a42",
+        "m_exe_08b9a8",
+        "PSX shop 134/40"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "PalStaff"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 800,
+          "gold_pass": 720,
+          "locations": [
+            "GreatLog / Main Street"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-36",
+      "kind": "item",
+      "game": "both",
+      "title": "Divine Staff",
+      "category": "Reusable item",
+      "summary": "Deals damage with a vacuum wave.",
+      "details": [
+        "The GreatTree bazaar compares its effect to Infernos. The staff can break after repeated use.",
+        "Can be reused until it breaks.",
+        "Terry shops sell it for 1,500 G (1,350 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 1,500 G (1,350 G with a Gold Pass). GreatLog / Main Street."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a4b",
+        "m_exe_08b9c4",
+        "s0afae000_0dd4",
+        "PSX shop 5671/45",
+        "PSX shop 134/40"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "DivStaff"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 1500,
+          "gold_pass": 1350,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 1500,
+          "gold_pass": 1350,
+          "locations": [
+            "GreatLog / Main Street"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-37",
+      "kind": "item",
+      "game": "both",
+      "title": "Thunder Staff",
+      "category": "Reusable item",
+      "summary": "Deals damage with a lightning bolt.",
+      "details": [
+        "The GreatTree bazaar compares its effect to Bolt. The staff can break after repeated use.",
+        "Can be reused until it breaks.",
+        "Terry shops sell it for 3,000 G (2,700 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 3,000 G (2,700 G with a Gold Pass). GreatLog / Main Street."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a53",
+        "m_exe_08b9e0",
+        "s0afae000_0dd4",
+        "PSX shop 5671/45",
+        "PSX shop 134/40"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "ThunStaff"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 3000,
+          "gold_pass": 2700,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 3000,
+          "gold_pass": 2700,
+          "locations": [
+            "GreatLog / Main Street"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-38",
+      "kind": "item",
+      "game": "dqm1",
+      "title": "Blizzard Staff",
+      "category": "Reusable item",
+      "summary": "Deals damage with a blizzard.",
+      "details": [
+        "The GreatTree bazaar compares its effect to Freezing Blizzard. The staff can break after repeated use.",
+        "Can be reused until it breaks.",
+        "Terry shops sell it for 4,000 G (3,600 G with a Gold Pass). GreatTree / Bazaar."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a5b",
+        "m_exe_08b9f8",
+        "s0afae000_0dd4",
+        "PSX shop 5671/45"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "BlizStaff"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 4000,
+          "gold_pass": 3600,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-39",
+      "kind": "item",
+      "game": "dqm1",
+      "title": "Flame Staff",
+      "category": "Reusable item",
+      "summary": "Deals damage with flames.",
+      "details": [
+        "The GreatTree bazaar compares its effect to Scorch. The staff can break after repeated use.",
+        "Can be reused until it breaks.",
+        "Terry shops sell it for 5,000 G (4,500 G with a Gold Pass). GreatTree / Bazaar."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a62",
+        "m_exe_08ba10",
+        "s0afae000_0dd4",
+        "PSX shop 5671/45"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "FireStaff"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 5000,
+          "gold_pass": 4500,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-40",
+      "kind": "tool",
+      "game": "both",
+      "title": "Return Staff",
+      "category": "Consumable",
+      "summary": "Warp to the gateway or the magic door shrine, depending on the campaign.",
+      "details": [
+        "Terry: warp directly to the dimensional gateway. Cobi / Tara: warp to the magic door shrine.",
+        "Single use.",
+        "Cobi / Tara shops sell it for 50 G (45 G with a Gold Pass). Hitano · Nofo · Northden Town · Pei Town · Port Ritz Town · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a69",
+        "m_exe_08ba28",
+        "s0adf7000_227b",
+        "m_exe_08bf78",
+        "PSX shop 122/8",
+        "PSX shop 135/8",
+        "PSX shop 136/8",
+        "PSX shop 138/8",
+        "PSX shop 142/16",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "RetnStaff"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "Hitano",
+            "Nofo",
+            "Northden Town",
+            "Pei Town",
+            "Port Ritz Town",
+            "Eastoria"
+          ]
+        }
+      ],
+      "related": [
+        "item-31",
+        "item-41",
+        "item-46"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-41",
+      "kind": "tool",
+      "game": "both",
+      "title": "Chimera Wing",
+      "category": "Consumable",
+      "summary": "Return to your home kingdom from the field.",
+      "details": [
+        "Terry: return to GreatTree. Cobi / Tara: return to GreatLog.",
+        "Single use.",
+        "Terry shops sell it for 25 G (22 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 25 G (22 G with a Gold Pass). GreatLog / Main Street · Port Ritz Town · Wiston · Assia."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a70",
+        "m_exe_08ba3c",
+        "s003f6800_356e",
+        "m_exe_08bf60",
+        "PSX shop 5671/8",
+        "PSX shop 134/8",
+        "PSX shop 142/4",
+        "PSX shop 149/8",
+        "PSX shop 2162/4"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "ChimWing"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 25,
+          "gold_pass": 22,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 25,
+          "gold_pass": 22,
+          "locations": [
+            "GreatLog / Main Street",
+            "Port Ritz Town",
+            "Wiston",
+            "Assia"
+          ]
+        }
+      ],
+      "related": [
+        "item-40",
+        "item-42"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA2klEQVR42sWTsQ3DIBBFGSWty5Ss4NKlR3CbMqVLr5ARXKbNCJRpM4JXuOiIfvKFToKjCdIXCHSP/zk7hH+OOE5Skwt0u++SjqdYQ/ebgACVxZCeqa7bJkOM0gzjYmheLlkKgqpAhllxceZ2Z0WEqjDLXQlxR0VEzLx2NYLdcSEawHK7K924YuqYhpA/ToAsN00gwI60iM5lxGZICUzr6Qtldf34KH7MH6eQXuKGArSef1BI97DvgulQRyhmiMslx3ztY17jPfEMeNdmoLrhiLiEm9TVEO5qb5ffThfgbNoWjGIAAAAASUVORK5CYII="
+    },
+    {
+      "id": "item-42",
+      "kind": "tool",
+      "game": "dqm2",
+      "title": "Memory Bell",
+      "category": "Consumable",
+      "summary": "Returns to the entrance instantly.",
+      "details": [
+        "Single use.",
+        "Cobi / Tara shops sell it for 50 G (45 G with a Gold Pass). Hitano · Nofo · Northden Town · Pei Town · Port Ritz Town · Wiston · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a78",
+        "m_exe_08ba54",
+        "PSX shop 122/8",
+        "PSX shop 135/8",
+        "PSX shop 136/8",
+        "PSX shop 138/8",
+        "PSX shop 142/16",
+        "PSX shop 149/8",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "MemBell"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "Hitano",
+            "Nofo",
+            "Northden Town",
+            "Pei Town",
+            "Port Ritz Town",
+            "Wiston",
+            "Eastoria"
+          ]
+        }
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAy0lEQVR42s2UsQ3CQAxFbxTalJRZgZIyI6RlhKxAyQgpaRnhSlpGSElr9A++9KGKbZCwZF0Uxe/O//xTyj/FvivG/Aqsxf1ot3mXhwIA0FJHq9MmB+z63pCXoTQY1jAQoNN5trpcG9StoQqPJGwYDw3oBqEd5rR9vgvBqA+ER1IrQl2toZA3iLHgaKwGKoQAheHZDUQBP0Z7nzBXyzyhDinWEOzNSi+t9KTcJAREAYsUqpu4/al2IiRlfr1xQtPm5zxyqFPm/9kPNBoPImE5PI6LoLkAAAAASUVORK5CYII="
+    },
+    {
+      "id": "item-43",
+      "kind": "tool",
+      "game": "both",
+      "title": "Travel Bookmark",
+      "category": "Consumable",
+      "summary": "Lets you save progress anywhere.",
+      "details": [
+        "Use it to write to the adventure log while away from a usual save point.",
+        "Single use.",
+        "Terry shops sell it for 50 G (45 G with a Gold Pass). GreatTree / Bazaar.",
+        "Cobi / Tara shops sell it for 50 G (45 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo · Port Ritz Town · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a80",
+        "m_exe_08ba6c",
+        "s0afae000_09c1",
+        "PSX shop 5671/21",
+        "PSX shop 122/8",
+        "PSX shop 134/8",
+        "PSX shop 134/24",
+        "PSX shop 135/20",
+        "PSX shop 142/4",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "Bookmark"
+      ],
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        },
+        {
+          "game": "dqm2",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "Hitano",
+            "GreatLog / Main Street",
+            "Nofo",
+            "Port Ritz Town",
+            "Eastoria"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-44",
+      "kind": "item",
+      "game": "both",
+      "title": "Tiny Medal",
+      "category": "Key item",
+      "summary": "Collect these to trade for prizes.",
+      "details": [
+        "GreatTree’s Medal Man and GreatLog’s collector keep the medals you hand in. Clear space in the bag or farm before collecting a reward."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a87",
+        "m_exe_08ba88",
+        "s0ab53000_59ee",
+        "s003f6800_0054",
+        "medal_0aadc0_02f2",
+        "medal_0aadc0_031e"
+      ],
+      "availability": "event",
+      "aliases": [
+        "TinyMedal"
+      ],
+      "related": [
+        "item-30"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAnUlEQVR42mNgGAU0A0GaDP9xYbIMu7fG6z8K+Dbl/7uzWf/3RpFoKLphIENAfBgGGUy0ofhcBsMkGQpSgOwqfIaCaKINPNusgPAiFkNhriTOQKh3UMINzVCSDITFJLKByIbCDAPRRBkI8i42V8INBcqRFCnNhqiGgjAsTJENA6kjOunADAV5H2YIzJskGYZuKMyFyJhkw2iSl4c3AAD19X15fBuaKwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-45",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Gold Pass",
+      "category": "Key item",
+      "summary": "Lowers the price of goods at shops.",
+      "details": [
+        "Carrying the pass sets the purchase rate to 90% of base price. The shop rounds each unit down to whole gold.",
+        "Key item.",
+        "Cobi / Tara shops sell it for 20,000 G (18,000 G with a Gold Pass). GreatLog / Main Street · Nofo."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a8f",
+        "m_exe_08baa0",
+        "s00434000_0309",
+        "PSX shop 134/40",
+        "PSX shop 135/20"
+      ],
+      "availability": "shop",
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 20000,
+          "gold_pass": 18000,
+          "locations": [
+            "GreatLog / Main Street",
+            "Nofo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-46",
+      "kind": "tool",
+      "game": "dqm2",
+      "title": "GreatLog Branch",
+      "category": "Consumable",
+      "summary": "Moves the magic door shrine.",
+      "details": [
+        "Cobi / Tara: use it to move the magic door shrine to your chosen spot. The Return Staff warps back to that shrine.",
+        "Single use.",
+        "Cobi / Tara shops sell it for 50 G (45 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo · Northden Town · Wiston · Eastoria."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a96",
+        "m_exe_08babc",
+        "s003f6800_1abc",
+        "m_exe_08bf78",
+        "PSX shop 122/8",
+        "PSX shop 134/24",
+        "PSX shop 135/20",
+        "PSX shop 136/8",
+        "PSX shop 149/8",
+        "PSX shop 154/8"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "LogBranch"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "Hitano",
+            "GreatLog / Main Street",
+            "Nofo",
+            "Northden Town",
+            "Wiston",
+            "Eastoria"
+          ]
+        }
+      ],
+      "related": [
+        "item-40"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAhUlEQVR42mNgGCgQZcnwH4apYtCzNZZgvCaLAkNhBoEMgeFvZ4PIMxTZsGZHhv+OChAMYpNlKEgxsmEgMZihV6cogOVg4iSFHbomsg3EZ9HRZk3qGAgyDOY65KAYNYyI5FMtQD3DqJZEaONVahoGSrxUMQxkAMxl2LIeWQZSzTBkQ8k1DADWRrS/UyeXhwAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-47",
+      "kind": "tool",
+      "game": "dqm1",
+      "title": "Seek Herb",
+      "category": "Consumable",
+      "summary": "Reveals the surroundings in your mind.",
+      "details": [
+        "Terry’s field lesson says it reveals the entire floor map. Pair it with the Mommonja Tail to locate the gateway.",
+        "Single use.",
+        "Terry shops sell it for 50 G (45 G with a Gold Pass). GreatTree / Bazaar."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0a9d",
+        "m_exe_08bad8",
+        "s0adf7000_227b",
+        "PSX shop 5671/21"
+      ],
+      "availability": "shop",
+      "prices": [
+        {
+          "game": "dqm1",
+          "buy": 50,
+          "gold_pass": 45,
+          "locations": [
+            "GreatTree / Bazaar"
+          ]
+        }
+      ],
+      "related": [
+        "item-31",
+        "item-40"
+      ],
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA4klEQVR42q2TwQ3CMAxFPUJH4Nojxx5ZgWNH4MqRI0dWYATWYBXWCPpBP/pYqZNKiWS1dePn79gx21iHsyUbuYYCATu95rQFPV4sqYXJCVvfy99GBeAfLCe9T20gNt8+1xwwLT8F9AGgsKiSAkTgMz1yIBXBR6DCmDQsV4FUBB+/FYb3LiCNgVpmaUYE8w2hIqoqDehVV4N6VR4GXxewFqhl0powD+WMackcZMC6gVicP1Wr57gLTBievkw1QkMwVfEn4f7uqoVzWDtsZveQsFze1+g8mhA/e7u61mrCMNjo9QXbcFIRzaZQ+gAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "item-48",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Spring Water",
+      "category": "Key item",
+      "summary": "Summons an illusory lake.",
+      "details": [
+        "In Assia, give food to the hungry prisoner. He gives you the Spring Water and a hint to lay bait for what keeps running away."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0aa5",
+        "m_exe_08baf4",
+        "s03e9f000_0000",
+        "s03e9f000_28d8",
+        "s03e9f000_28f1",
+        "s03e9f000_298e"
+      ],
+      "availability": "event",
+      "aliases": [
+        "SprngWatr"
+      ]
+    },
+    {
+      "id": "item-49",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Moonstone",
+      "category": "Key item",
+      "summary": "Moon power makes the tide rise.",
+      "details": [
+        "Open the chest aboard the Ghost Ship. Fit the Moonstone into the pedestal at the top of East Lighthouse to open the approach to Volcano Island."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0aaa",
+        "m_exe_08bb0c",
+        "s00494000_0000",
+        "s00494000_01ea",
+        "s00300000_0000",
+        "s00300000_0078",
+        "s004ae000_1162"
+      ],
+      "availability": "event"
+    },
+    {
+      "id": "item-50",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Spirit Mark",
+      "category": "Key item",
+      "summary": "Proof of a spirit's approval.",
+      "details": [
+        "Visit the spirit at the spring northwest of Northden Castle. Show the mark to identify yourself as the spirit’s envoy when seeking entry to the castles."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0ab0",
+        "m_exe_08bb24",
+        "s0044a800_016c",
+        "s004d6000_0222",
+        "s004d6000_03eb"
+      ],
+      "availability": "event",
+      "aliases": [
+        "SprtMark"
+      ]
+    },
+    {
+      "id": "item-51",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Princess's Soul",
+      "category": "Key item",
+      "summary": "The soul of an amnesiac princess.",
+      "details": [
+        "Recover the soul in the Southern Forest and take it back to Westernia Castle. Defeat the enemy there so it can return to the princess."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0ab9",
+        "m_exe_08bb3c",
+        "s00538800_0000",
+        "s00538800_01c5",
+        "s004ee000_0000",
+        "s004ee000_1e0f",
+        "s004ee000_1f0a"
+      ],
+      "availability": "event",
+      "aliases": [
+        "PrincSoul"
+      ]
+    },
+    {
+      "id": "item-52",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Birdsong Herb",
+      "category": "Key item",
+      "summary": "Used to make Birdsong Nectar.",
+      "details": [
+        "Examine the blue flower at the summit of Northern Mountain, then take the herb to the botanist. The resulting nectar restores the townspeople’s voices."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0ac1",
+        "m_exe_08bb54",
+        "s0046b000_0000",
+        "s0046b000_0012",
+        "s00555000_0517",
+        "s00555000_05ad"
+      ],
+      "availability": "event",
+      "aliases": [
+        "BirdHerb"
+      ]
+    },
+    {
+      "id": "item-53",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Transform Staff",
+      "category": "Key item",
+      "summary": "Transforms you into a monster.",
+      "details": [
+        "Search the hollow behind the grave in Funt Village. Clear space in your inventory before taking the staff."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0ac8",
+        "m_exe_08bb6c",
+        "s0031d800_0000",
+        "s0031d800_03dd",
+        "s0031d800_0410"
+      ],
+      "availability": "event",
+      "aliases": [
+        "MorphStaf"
+      ]
+    },
+    {
+      "id": "item-54",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Sea Bell",
+      "category": "Key item",
+      "summary": "Summons a shell to cross the sea.",
+      "details": [
+        "The king rewards you after the trouble at Mirage Lake. Return to Warubou with the bell, then press Triangle beside water to cross it."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0acf",
+        "m_exe_08bb80",
+        "s03e9f000_23dc",
+        "s004c3000_0667",
+        "s00488000_069e",
+        "s003b7800_0dab"
+      ],
+      "availability": "event"
+    },
+    {
+      "id": "item-55",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Mirror of Destruction",
+      "category": "Key item",
+      "summary": "A mirror that destroys what it reflects.",
+      "details": [
+        "Recover it from Volcanic Island Cave and show it to Warubou. Face a breakable rock and press Triangle to clear it."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0ad7",
+        "m_exe_08bb98",
+        "s00521800_0000",
+        "s00521800_0359",
+        "s003b7800_11be",
+        "s003b7800_1201"
+      ],
+      "availability": "event",
+      "aliases": [
+        "DestrMirr"
+      ]
+    },
+    {
+      "id": "item-56",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Sky Shield",
+      "category": "Key item",
+      "summary": "Summons a cloud to fly through the sky.",
+      "details": [
+        "Return to the spirit after restoring peace. Take the shield to Warubou, then press Triangle at a gap where you can fly across."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0adf",
+        "m_exe_08bbb0",
+        "s004d6000_0773",
+        "s004d6000_0813",
+        "s003b7800_1955",
+        "s003b7800_1a2d"
+      ],
+      "availability": "event",
+      "aliases": [
+        "SkyShield"
+      ]
+    },
+    {
+      "id": "item-57",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Zenithian Helm",
+      "category": "Key item",
+      "summary": "A helm sought by the Demon Lord.",
+      "details": [
+        "Open the treasure chest in Small Cave. Gather all three pieces of Zenithian equipment for Mudo’s offer of the Orb of Light."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0ae7",
+        "m_exe_08bbc8",
+        "s00373000_0000",
+        "s00373000_0094",
+        "s00329800_00c9"
+      ],
+      "availability": "event",
+      "aliases": [
+        "ZenHelm"
+      ],
+      "related": [
+        "item-58",
+        "item-59"
+      ]
+    },
+    {
+      "id": "item-58",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Zenithian Armor",
+      "category": "Key item",
+      "summary": "Armor sought by the Demon Lord.",
+      "details": [
+        "Open the treasure chest in Wind Tower. Gather all three pieces of Zenithian equipment for Mudo’s offer of the Orb of Light."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0af0",
+        "m_exe_08bbe0",
+        "s0035e800_0000",
+        "s0035e800_002b",
+        "s00329800_00c9"
+      ],
+      "availability": "event",
+      "aliases": [
+        "ZenArmor"
+      ],
+      "related": [
+        "item-57",
+        "item-59"
+      ]
+    },
+    {
+      "id": "item-59",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Zenithian Sword",
+      "category": "Key item",
+      "summary": "A sword sought by the Demon Lord.",
+      "details": [
+        "Open the treasure chest in Castle of the Dead. Gather all three pieces of Zenithian equipment for Mudo’s offer of the Orb of Light."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "e0af9",
+        "m_exe_08bbf8",
+        "s002d3000_0000",
+        "s002d3000_01ba",
+        "s00329800_00c9"
+      ],
+      "availability": "event",
+      "aliases": [
+        "ZenSword"
+      ],
+      "related": [
+        "item-57",
+        "item-58"
+      ]
+    },
+    {
+      "id": "item-60",
+      "kind": "item",
+      "game": "both",
+      "title": "Magic Stone",
+      "category": "Key item",
+      "summary": "A blue stone filled with magic power.",
+      "details": [
+        "The item has a native record. Its acquisition and quest use are unconfirmed."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b02",
+        "m_exe_08bc10"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "MagicSton"
+      ]
+    },
+    {
+      "id": "item-61",
+      "kind": "item",
+      "game": "both",
+      "title": "Pretty Ring",
+      "category": "Key item",
+      "summary": "A gold ring with lovely decorations.",
+      "details": [
+        "The item has a native record. Its acquisition and quest use are unconfirmed."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b0a",
+        "m_exe_08bc2c"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "PretyRing"
+      ]
+    },
+    {
+      "id": "item-64",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Stamina Belt",
+      "category": "Accessory",
+      "summary": "Max HP increased by 30.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b18",
+        "m_exe_08bc68",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "StamBelt"
+      ]
+    },
+    {
+      "id": "item-65",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Dragon Belt",
+      "category": "Accessory",
+      "summary": "Max HP increased by 80.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b20",
+        "m_exe_08bc7c",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "DrgnBelt"
+      ]
+    },
+    {
+      "id": "item-66",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Magic Belt",
+      "category": "Accessory",
+      "summary": "Max MP increased by 30.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b28",
+        "m_exe_08bc90",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "MagicBelt"
+      ]
+    },
+    {
+      "id": "item-67",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Mystic Belt",
+      "category": "Accessory",
+      "summary": "Max MP increased by 80.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b30",
+        "m_exe_08bca4",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "MystBelt"
+      ]
+    },
+    {
+      "id": "item-68",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Stone Fang",
+      "category": "Accessory",
+      "summary": "Attack increased by 10.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b38",
+        "m_exe_08bcb8",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "StoneFang"
+      ]
+    },
+    {
+      "id": "item-69",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Steel Fang",
+      "category": "Accessory",
+      "summary": "Attack increased by 50.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b3e",
+        "m_exe_08bccc",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "SteelFang"
+      ]
+    },
+    {
+      "id": "item-70",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Mermaid Scale",
+      "category": "Accessory",
+      "summary": "Defense increased by 10.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b45",
+        "m_exe_08bce0",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "MermScale"
+      ]
+    },
+    {
+      "id": "item-71",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Divine Dragon Scale",
+      "category": "Accessory",
+      "summary": "Defense increased by 50.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b4e",
+        "m_exe_08bcf4",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "DivDScale"
+      ]
+    },
+    {
+      "id": "item-72",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Gale Bracelet",
+      "category": "Accessory",
+      "summary": "Agility increased by 10.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b58",
+        "m_exe_08bd08",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "GaleBrac"
+      ]
+    },
+    {
+      "id": "item-73",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Meteor Bracelet",
+      "category": "Accessory",
+      "summary": "Agility increased by 50.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b61",
+        "m_exe_08bd1c",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "MeteoBrac"
+      ]
+    },
+    {
+      "id": "item-74",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Wisdom Cap",
+      "category": "Accessory",
+      "summary": "Wisdom increased by 50.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b69",
+        "m_exe_08bd30",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "WisdomCap"
+      ]
+    },
+    {
+      "id": "item-75",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Knowledge Cap",
+      "category": "Accessory",
+      "summary": "Wisdom increased by 100.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b70",
+        "m_exe_08bd44",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "KnowCap"
+      ]
+    },
+    {
+      "id": "item-76",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Magic Cloak",
+      "category": "Accessory",
+      "summary": "Resists offensive spells.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b78",
+        "m_exe_08bd58",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "MagCloak"
+      ]
+    },
+    {
+      "id": "item-77",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Dragon Cloak",
+      "category": "Accessory",
+      "summary": "Resists fire and blizzards.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b80",
+        "m_exe_08bd70",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "DrgnCloak"
+      ]
+    },
+    {
+      "id": "item-78",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Silver Cloak",
+      "category": "Accessory",
+      "summary": "Resists sleep, poison and confusion.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b88",
+        "m_exe_08bd88",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "SilvCloak"
+      ]
+    },
+    {
+      "id": "item-79",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Gold Cloak",
+      "category": "Accessory",
+      "summary": "Resists sleep, curse, Surround and paralysis.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b90",
+        "m_exe_08bda4",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "GoldCloak"
+      ]
+    },
+    {
+      "id": "item-80",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Platinum Cloak",
+      "category": "Accessory",
+      "summary": "Resists Beat, Sacrifice, curse and paralysis.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0b98",
+        "m_exe_08bdc4",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "PlatCloak"
+      ]
+    },
+    {
+      "id": "item-81",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Dolphin Cloak",
+      "category": "Accessory",
+      "summary": "Resists Water-based attacks.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0ba0",
+        "m_exe_08bde4",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "DolfCloak"
+      ]
+    },
+    {
+      "id": "item-82",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Fortitude Cloak",
+      "category": "Accessory",
+      "summary": "Makes attacks harder to seal.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0ba9",
+        "m_exe_08be00",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "FortCloak"
+      ]
+    },
+    {
+      "id": "item-83",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Dragon Scale",
+      "category": "Accessory",
+      "summary": "Defense increased by 5.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bb1",
+        "m_exe_08be18",
+        "PSX shop 134/8",
+        "s003f6800_04d2"
+      ],
+      "availability": "shop",
+      "aliases": [
+        "DrgnScale"
+      ],
+      "prices": [
+        {
+          "game": "dqm2",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "GreatLog / Main Street"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "item-84",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Life Ring",
+      "category": "Accessory",
+      "summary": "Restores HP as you walk.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bb9",
+        "m_exe_08be2c",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented"
+    },
+    {
+      "id": "item-85",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Goddess Ring",
+      "category": "Accessory",
+      "summary": "Restores MP as you walk.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bc1",
+        "m_exe_08be44",
+        "s003f6800_04d2"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "GodesRing"
+      ]
+    },
+    {
+      "id": "item-86",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Warrior Ring",
+      "category": "Accessory",
+      "summary": "Improves Max HP growth.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
+        "Keep it equipped when gaining a level to improve the matching stat gain."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bc9",
+        "m_exe_08be5c",
+        "s003f6800_04d2",
+        "s003f6800_0709"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "WarRing"
+      ]
+    },
+    {
+      "id": "item-87",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Mage Ring",
+      "category": "Accessory",
+      "summary": "Improves Max MP growth.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
+        "Keep it equipped when gaining a level to improve the matching stat gain."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bd1",
+        "m_exe_08be78",
+        "s003f6800_04d2",
+        "s003f6800_0709"
+      ],
+      "availability": "class-documented"
+    },
+    {
+      "id": "item-88",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Fighter Ring",
+      "category": "Accessory",
+      "summary": "Improves Attack growth.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
+        "Keep it equipped when gaining a level to improve the matching stat gain."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bda",
+        "m_exe_08be94",
+        "s003f6800_04d2",
+        "s003f6800_0709"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "FightRing"
+      ]
+    },
+    {
+      "id": "item-89",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Sailor Ring",
+      "category": "Accessory",
+      "summary": "Improves Defense growth.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
+        "Keep it equipped when gaining a level to improve the matching stat gain."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0be3",
+        "m_exe_08beb0",
+        "s003f6800_04d2",
+        "s003f6800_0709"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "SailRing"
+      ]
+    },
+    {
+      "id": "item-90",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Thief Ring",
+      "category": "Accessory",
+      "summary": "Improves Agility growth.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
+        "Keep it equipped when gaining a level to improve the matching stat gain."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bec",
+        "m_exe_08bec8",
+        "s003f6800_04d2",
+        "s003f6800_0709"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "ThiefRing"
+      ]
+    },
+    {
+      "id": "item-91",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Priest Ring",
+      "category": "Accessory",
+      "summary": "Improves Wisdom growth.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
+        "Keep it equipped when gaining a level to improve the matching stat gain."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bf5",
+        "m_exe_08bee0",
+        "s003f6800_04d2",
+        "s003f6800_0709"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "PristRing"
+      ]
+    },
+    {
+      "id": "item-92",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Spellblade Ring",
+      "category": "Accessory",
+      "summary": "Improves Max HP and MP growth.",
+      "details": [
+        "Equip in the monster’s accessory slot.",
+        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
+        "Keep it equipped when gaining a level to improve the matching stat gain."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0bfe",
+        "m_exe_08bef8",
+        "s003f6800_04d2",
+        "s003f6800_0709"
+      ],
+      "availability": "class-documented",
+      "aliases": [
+        "SpelbRing"
+      ]
+    },
+    {
+      "id": "item-96",
+      "kind": "item",
+      "game": "dqm2",
+      "title": "Miracle Mark",
+      "category": "Consumable",
+      "summary": "Changes one monster's sex.",
+      "details": [
+        "GreatLog residents distinguish this rare item, used on a monster, from the egg appraiser’s blessing before hatching.",
+        "Single use."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "e0c07",
+        "m_exe_08bf48",
+        "s00419800_1bf0",
+        "s003f6800_0473"
+      ],
+      "availability": "unconfirmed",
+      "aliases": [
+        "MirclMark"
+      ]
+    },
+    {
+      "id": "field-recruitment",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Recruit a wild monster",
+      "summary": "Feed the monster you want and arrange for it to be the last enemy you defeat.",
+      "details": [
+        "The field lesson ranks more expensive meat as more effective and suggests feeding a second or third piece. Defeating the target last does not guarantee it will join.",
+        "In a DQM2 world reached by a generated magic key, defeat its resident boss before trying to recruit the local monsters."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s0adf7000_5062",
+        "s0039f000_4a3f",
+        "s08a74000_0377"
+      ],
+      "related": [
+        "item-25",
+        "item-26",
+        "item-27",
+        "item-28",
+        "item-30"
+      ]
+    },
+    {
+      "id": "field-storage",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Keep gold safe in storage",
+      "summary": "A party wipe costs half the gold you are carrying. Deposited gold stays safe.",
+      "details": [
+        "Deposit gold in GreatTree or GreatLog before a risky expedition. A GreatLog resident gives the storage limit as 999,900 G."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s0ab53000_158a",
+        "s003f6800_27a9",
+        "s003f6800_25e9"
+      ]
+    },
+    {
+      "id": "field-farm",
+      "kind": "mechanic",
+      "game": "dqm1",
+      "title": "GreatTree farm and hibernation",
+      "summary": "Reserve a farm slot before accepting an egg. The farm can hold 30 monsters and eggs combined.",
+      "details": [
+        "Monsters left awake on the farm gain a little experience. Hibernating monsters gain none. Leaving a monster behind for long periods reduces obedience."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s0b113000_167b",
+        "s0b113000_0927"
+      ]
+    },
+    {
+      "id": "field-packing",
+      "kind": "mechanic",
+      "game": "dqm1",
+      "title": "Pack for a Travelers’ Gate",
+      "summary": "Terry can carry up to 30 items. Leave space if you plan to collect treasure or accept gifts.",
+      "details": [
+        "A Seek Herb reveals the map, a Mommonja Tail indicates the gateway direction and a Return Staff takes you straight there.",
+        "Keep a Chimera Wing to return to GreatTree. Use a Travel Bookmark to save away from a normal save point."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s0b1d9000_016f",
+        "s0adf7000_227b",
+        "s0afae000_09c1",
+        "m_exe_08ba3c"
+      ],
+      "related": [
+        "item-47",
+        "item-31",
+        "item-40",
+        "item-41",
+        "item-43"
+      ]
+    },
+    {
+      "id": "field-breed",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Prepare a pair for breeding",
+      "summary": "Bring a male and a female, each at level 10 or higher, to the Starry Shrine.",
+      "details": [
+        "Breeding leaves an egg. Both parents leave, so keep another monster ready to travel with you.",
+        "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "v0a08bc_01e3",
+        "v0a08bc_0605",
+        "s0ab53000_1027",
+        "s003f6800_0c8c",
+        "s0ab53000_0e61"
+      ],
+      "related": [
+        "field-eggs"
+      ]
+    },
+    {
+      "id": "field-eggs",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Appraise, bless and hatch an egg",
+      "summary": "Have the egg appraised before hatching if you want to choose the hatchling’s sex.",
+      "details": [
+        "The appraiser can tell you traits of the hatchling. A blessing changes its sex while it is in the egg.",
+        "Hatching has its own fee. If you lack the gold, you can leave the egg unhatched."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s003f6800_0473",
+        "s0ab53000_5e6e",
+        "v0a08bc_00df",
+        "v0a08bc_0150"
+      ],
+      "related": [
+        "field-breed"
+      ]
+    },
+    {
+      "id": "field-equipment",
+      "kind": "mechanic",
+      "game": "dqm2",
+      "title": "Equip and recover accessories",
+      "summary": "Each monster can hold one accessory. Choose between immediate stat bonuses, resistances, recovery and improved growth.",
+      "details": [
+        "Recovery rings work while walking. Growth rings affect gains when the wearer levels up.",
+        "At the GreatLog shrine a breeding parent’s accessory can go to storage. Make room before breeding if the service reports that storage is full."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s003f6800_04d2",
+        "s003f6800_06b9",
+        "s003f6800_0709",
+        "s003f6800_0cc7",
+        "s003f6800_0d08"
+      ],
+      "related": [
+        "item-64",
+        "item-65",
+        "item-83",
+        "item-84",
+        "item-85",
+        "item-86"
+      ]
+    },
+    {
+      "id": "field-generated-keys",
+      "kind": "mechanic",
+      "game": "dqm2",
+      "title": "Appraise and read magic keys",
+      "summary": "Take an unnamed key to GreatLog’s Key Appraiser and pay the quoted fee before using it at the Magic Door.",
+      "details": [
+        "Each key leads to a particular world. A family name such as Slime in the key name is a clue to the monsters that live there.",
+        "Leave room on your key ring before accepting a reward. GreatLog’s arena receptionist can hold a prize in some situations, while another prize service requires another victory."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s003f6800_032d",
+        "s003f6800_038a",
+        "s003f6800_0b2e",
+        "s0038d800_0049",
+        "s0039f000_2801",
+        "s0039f000_2846",
+        "v0a21ac_0143",
+        "v0a21ac_0321"
+      ]
+    },
+    {
+      "id": "field-medals",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Collect and exchange Tiny Medals",
+      "summary": "Bring Tiny Medals to the local collector. Early rewards use your cumulative medal total.",
+      "details": [
+        "The exchange menu becomes available after the cumulative reward track. Make room in your bag or on your farm before claiming a prize.",
+        "In GreatLog there is a separate offer from the talking pot on Main Street. It offers a single magic key in exchange for one Tiny Medal."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s0ab53000_59ee",
+        "medal_0aadc0_0029",
+        "medal_0aadc0_0133",
+        "medal_0aadc0_02a3",
+        "medal_0aadc0_02f2",
+        "medal_0aadc0_031e",
+        "s00419800_0197",
+        "s00419800_0345",
+        "s00419800_0372"
+      ],
+      "related": [
+        "item-44",
+        "item-30"
+      ]
+    },
+    {
+      "id": "field-personality",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Shape personality and obedience",
+      "summary": "A master’s orders gradually change a monster’s personality, which influences its battle behavior.",
+      "details": [
+        "To steer a trait more directly, read the matching personality book. It may take more than one.",
+        "A higher-level recruit tends to be wilder. A newly hatched monster follows orders."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s003f6800_0221",
+        "s0039f000_306a",
+        "s0afae000_1197"
+      ],
+      "related": [
+        "item-19",
+        "item-20",
+        "item-21",
+        "item-22",
+        "item-23",
+        "item-24"
+      ]
+    },
+    {
+      "id": "field-growth",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Raise a monster’s growth limit",
+      "summary": "The level at which growth stops depends on the species. Repeated generations of breeding can push that limit later.",
+      "details": [
+        "Check the base level limit and six stat growth tables on the monster’s profile when choosing a pedigree. Seeds and nuts raise the corresponding stat when used."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s0ab53000_0de3",
+        "s003f6800_027c"
+      ],
+      "related": [
+        "item-13",
+        "item-14",
+        "item-15",
+        "item-16",
+        "item-17",
+        "item-18"
+      ]
+    },
+    {
+      "id": "field-arena-items",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Prepare for an arena class",
+      "summary": "Prepare before entering. Both arenas forbid item use and count fleeing as a loss.",
+      "details": [
+        "GreatTree requires three wins. Direct orders are unavailable, so take monsters whose behavior and skills fit the team.",
+        "GreatLog’s Kids’ Class also requires three wins. A full key ring can interfere with collecting the prize."
+      ],
+      "spoiler": "none",
+      "source_ids": [
+        "s0adf7000_df8b",
+        "s0039f000_23af",
+        "s0039f000_2801"
+      ]
+    },
+    {
+      "id": "field-triangle",
+      "kind": "mechanic",
+      "game": "dqm2",
+      "title": "Use Triangle to cross water, break rock and fly",
+      "summary": "Bring each recovered treasure to Warubou to gain its field ability.",
+      "details": [
+        "With the Sea Bell’s power, press Triangle near the water to cross. With the Mirror of Destruction’s power, face a suitable rock and press Triangle to break it. With the Sky Shield’s power, press Triangle at a gap you can fly across."
+      ],
+      "spoiler": "story",
+      "source_ids": [
+        "s003b7800_0dab",
+        "s003b7800_1201",
+        "s003b7800_1955",
+        "s003b7800_1a2d"
+      ],
+      "related": [
+        "item-54",
+        "item-55",
+        "item-56"
+      ]
+    }
+  ],
+  "skill_requirements": {
+    "1": {
+      "level": 1,
+      "mp": 7,
+      "intelligence": 20
+    },
+    "2": {
+      "level": 13,
+      "mp": 46,
+      "intelligence": 64
+    },
+    "3": {
+      "level": 28,
+      "mp": 112,
+      "intelligence": 146
+    },
+    "4": {
+      "level": 3,
+      "mp": 11,
+      "intelligence": 23
+    },
+    "5": {
+      "level": 10,
+      "mp": 34,
+      "intelligence": 52
+    },
+    "6": {
+      "level": 26,
+      "mp": 96,
+      "intelligence": 122
+    },
+    "7": {
+      "level": 4,
+      "mp": 13,
+      "intelligence": 26
+    },
+    "8": {
+      "level": 14,
+      "mp": 50,
+      "intelligence": 68
+    },
+    "9": {
+      "level": 29,
+      "mp": 120,
+      "intelligence": 158
+    },
+    "10": {
+      "level": 2,
+      "mp": 10,
+      "intelligence": 21
+    },
+    "11": {
+      "level": 10,
+      "mp": 38,
+      "intelligence": 56
+    },
+    "12": {
+      "level": 21,
+      "mp": 104,
+      "intelligence": 134
+    },
+    "13": {
+      "level": 6,
+      "mp": 20,
+      "intelligence": 35
+    },
+    "14": {
+      "level": 15,
+      "mp": 54,
+      "intelligence": 72
+    },
+    "15": {
+      "level": 30,
+      "mp": 128,
+      "intelligence": 170
+    },
+    "16": {
+      "level": 5,
+      "mp": 16,
+      "intelligence": 30
+    },
+    "17": {
+      "level": 12,
+      "mp": 42,
+      "intelligence": 60
+    },
+    "18": {
+      "level": 25,
+      "mp": 88,
+      "intelligence": 110
+    },
+    "19": {
+      "level": 16,
+      "mp": 58,
+      "intelligence": 76
+    },
+    "20": {
+      "level": 24,
+      "mp": 80,
+      "intelligence": 98
+    },
+    "21": {
+      "level": 28,
+      "mp": 40,
+      "defense": 140,
+      "intelligence": 6
+    },
+    "22": {
+      "level": 1,
+      "mp": 7,
+      "intelligence": 6
+    },
+    "23": {
+      "level": 10,
+      "mp": 52,
+      "intelligence": 48
+    },
+    "24": {
+      "level": 16,
+      "mp": 82,
+      "intelligence": 80
+    },
+    "25": {
+      "level": 20,
+      "mp": 140,
+      "intelligence": 120
+    },
+    "26": {
+      "level": 28,
+      "mp": 196,
+      "intelligence": 160
+    },
+    "27": {
+      "level": 1,
+      "mp": 55,
+      "intelligence": 6
+    },
+    "28": {
+      "level": 10,
+      "mp": 82,
+      "intelligence": 48
+    },
+    "29": {
+      "level": 16,
+      "mp": 120,
+      "intelligence": 120
+    },
+    "30": {
+      "level": 14,
+      "mp": 63,
+      "intelligence": 54
+    },
+    "31": {
+      "level": 27,
+      "mp": 174,
+      "intelligence": 152
+    },
+    "32": {
+      "level": 32,
+      "mp": 188,
+      "intelligence": 176
+    },
+    "33": {
+      "level": 5,
+      "mp": 21,
+      "intelligence": 20
+    },
+    "34": {
+      "level": 6,
+      "mp": 24,
+      "intelligence": 26
+    },
+    "35": {
+      "level": 8,
+      "mp": 30,
+      "intelligence": 22
+    },
+    "36": {
+      "level": 7,
+      "mp": 27,
+      "intelligence": 24
+    },
+    "37": {
+      "level": 2,
+      "mp": 14,
+      "intelligence": 12
+    },
+    "38": {
+      "level": 6,
+      "mp": 27,
+      "intelligence": 24
+    },
+    "39": {
+      "level": 4,
+      "mp": 18,
+      "intelligence": 15
+    },
+    "40": {
+      "level": 8,
+      "mp": 36,
+      "intelligence": 32
+    },
+    "41": {
+      "level": 1,
+      "mp": 10,
+      "intelligence": 8
+    },
+    "42": {
+      "level": 5,
+      "mp": 24,
+      "intelligence": 20
+    },
+    "43": {
+      "level": 3,
+      "mp": 16,
+      "intelligence": 14
+    },
+    "44": {
+      "level": 7,
+      "mp": 32,
+      "intelligence": 28
+    },
+    "45": {
+      "level": 17,
+      "mp": 72,
+      "intelligence": 66
+    },
+    "46": {
+      "level": 10,
+      "mp": 47,
+      "intelligence": 41
+    },
+    "47": {
+      "level": 4,
+      "mp": 24,
+      "intelligence": 16
+    },
+    "48": {
+      "level": 11,
+      "mp": 52,
+      "intelligence": 46
+    },
+    "49": {
+      "level": 13,
+      "mp": 58,
+      "intelligence": 28
+    },
+    "50": {
+      "level": 7,
+      "mp": 32,
+      "intelligence": 52
+    },
+    "51": {
+      "level": 9,
+      "mp": 44,
+      "intelligence": 38
+    },
+    "52": {
+      "level": 12,
+      "mp": 56,
+      "intelligence": 49
+    },
+    "53": {
+      "level": 15,
+      "mp": 62,
+      "intelligence": 58
+    },
+    "54": {
+      "level": 16,
+      "mp": 68,
+      "intelligence": 62
+    },
+    "55": {
+      "level": 20,
+      "mp": 84,
+      "intelligence": 78
+    },
+    "56": {
+      "level": 18,
+      "mp": 76,
+      "intelligence": 70
+    },
+    "57": {
+      "level": 19,
+      "mp": 80,
+      "intelligence": 74
+    },
+    "58": {
+      "level": 21,
+      "mp": 92,
+      "intelligence": 88
+    },
+    "59": {
+      "level": 23,
+      "mp": 72,
+      "intelligence": 90
+    },
+    "60": {
+      "level": 40,
+      "mp": 224,
+      "intelligence": 236
+    },
+    "61": {
+      "level": 38,
+      "mp": 210,
+      "intelligence": 224
+    },
+    "62": {
+      "level": 36,
+      "hp": 196,
+      "mp": 196,
+      "intelligence": 208
+    },
+    "63": {
+      "level": 34,
+      "hp": 184,
+      "mp": 184,
+      "intelligence": 224
+    },
+    "64": {
+      "level": 3,
+      "hp": 21
+    },
+    "65": {
+      "level": 10,
+      "hp": 70
+    },
+    "66": {
+      "level": 20,
+      "hp": 140
+    },
+    "67": {
+      "level": 20,
+      "hp": 210
+    },
+    "68": {
+      "level": 3,
+      "hp": 21
+    },
+    "69": {
+      "level": 10,
+      "hp": 70
+    },
+    "70": {
+      "level": 20,
+      "hp": 140
+    },
+    "71": {
+      "level": 20,
+      "hp": 210
+    },
+    "72": {
+      "level": 13,
+      "hp": 74,
+      "attack": 60,
+      "agility": 84
+    },
+    "73": {
+      "level": 19,
+      "hp": 112,
+      "attack": 114,
+      "agility": 132
+    },
+    "74": {
+      "level": 10,
+      "hp": 65,
+      "attack": 90,
+      "agility": 52
+    },
+    "75": {
+      "level": 16,
+      "hp": 124,
+      "attack": 102
+    },
+    "76": {
+      "level": 13,
+      "hp": 74,
+      "attack": 60,
+      "agility": 84
+    },
+    "77": {
+      "level": 19,
+      "hp": 112,
+      "attack": 114,
+      "agility": 132
+    },
+    "78": {
+      "level": 17,
+      "hp": 84,
+      "mp": 42,
+      "agility": 68,
+      "intelligence": 54
+    },
+    "79": {
+      "level": 23,
+      "hp": 128,
+      "mp": 64,
+      "agility": 82,
+      "intelligence": 74
+    },
+    "80": {
+      "level": 11,
+      "hp": 77,
+      "mp": 34,
+      "attack": 66,
+      "intelligence": 42
+    },
+    "81": {
+      "level": 11,
+      "hp": 77,
+      "mp": 34,
+      "attack": 66,
+      "intelligence": 42
+    },
+    "82": {
+      "level": 11,
+      "hp": 77,
+      "mp": 34,
+      "attack": 66,
+      "intelligence": 42
+    },
+    "83": {
+      "level": 11,
+      "hp": 77,
+      "mp": 34,
+      "attack": 66,
+      "intelligence": 42
+    },
+    "84": {
+      "level": 12,
+      "hp": 62,
+      "attack": 68,
+      "agility": 72
+    },
+    "85": {
+      "level": 12,
+      "hp": 62,
+      "attack": 72,
+      "agility": 62
+    },
+    "86": {
+      "level": 12,
+      "hp": 62,
+      "attack": 68,
+      "agility": 62
+    },
+    "87": {
+      "level": 12,
+      "hp": 62,
+      "attack": 68,
+      "agility": 72
+    },
+    "88": {
+      "level": 12,
+      "hp": 68,
+      "attack": 72,
+      "agility": 62
+    },
+    "89": {
+      "level": 12,
+      "hp": 68,
+      "attack": 62,
+      "agility": 72
+    },
+    "90": {
+      "level": 12,
+      "hp": 64,
+      "attack": 58,
+      "agility": 62,
+      "intelligence": 48
+    },
+    "91": {
+      "level": 12,
+      "hp": 64,
+      "attack": 58,
+      "agility": 62,
+      "intelligence": 48
+    },
+    "92": {
+      "level": 12,
+      "hp": 68,
+      "attack": 72,
+      "agility": 62
+    },
+    "93": {
+      "level": 12,
+      "hp": 68,
+      "attack": 72,
+      "agility": 62
+    },
+    "94": {
+      "level": 12,
+      "hp": 68,
+      "attack": 72,
+      "agility": 62
+    },
+    "95": {
+      "level": 5,
+      "hp": 35,
+      "attack": 50,
+      "intelligence": 30
+    },
+    "96": {
+      "level": 9,
+      "hp": 63,
+      "attack": 54,
+      "intelligence": 54
+    },
+    "97": {
+      "level": 7,
+      "hp": 49,
+      "attack": 42,
+      "intelligence": 42
+    },
+    "98": {
+      "level": 12,
+      "hp": 72,
+      "attack": 68,
+      "agility": 82
+    },
+    "99": {
+      "level": 19,
+      "hp": 98,
+      "attack": 88,
+      "agility": 112
+    },
+    "100": {
+      "level": 24,
+      "hp": 124,
+      "attack": 112,
+      "agility": 136
+    },
+    "101": {
+      "level": 15,
+      "hp": 92,
+      "attack": 90,
+      "agility": 96
+    },
+    "102": {
+      "level": 28,
+      "hp": 154,
+      "mp": 140,
+      "attack": 168,
+      "agility": 168,
+      "intelligence": 148
+    },
+    "103": {
+      "level": 33,
+      "hp": 231,
+      "mp": 164,
+      "attack": 198,
+      "agility": 198,
+      "intelligence": 198
+    },
+    "104": {
+      "level": 14,
+      "hp": 98,
+      "defense": 84
+    },
+    "105": {
+      "level": 12,
+      "hp": 74,
+      "attack": 82,
+      "defense": 68
+    },
+    "106": {
+      "level": 20,
+      "hp": 75,
+      "attack": 70,
+      "agility": 48
+    },
+    "107": {
+      "level": 15,
+      "hp": 106,
+      "attack": 90
+    },
+    "108": {
+      "level": 12,
+      "hp": 84,
+      "attack": 72,
+      "agility": 72
+    },
+    "109": {
+      "level": 8,
+      "hp": 80,
+      "attack": 80
+    },
+    "110": {
+      "level": 14,
+      "hp": 98,
+      "attack": 84,
+      "defense": 84
+    },
+    "111": {
+      "level": 12,
+      "hp": 70,
+      "agility": 70
+    },
+    "112": {
+      "level": 18,
+      "hp": 126,
+      "attack": 108,
+      "defense": 108
+    },
+    "113": {
+      "level": 10,
+      "hp": 70,
+      "intelligence": 60
+    },
+    "114": {
+      "level": 16,
+      "hp": 112,
+      "intelligence": 96
+    },
+    "115": {
+      "level": 9,
+      "hp": 63,
+      "intelligence": 54
+    },
+    "116": {
+      "level": 14,
+      "hp": 98,
+      "intelligence": 84
+    },
+    "117": {
+      "level": 15,
+      "mp": 65,
+      "agility": 82,
+      "intelligence": 82
+    },
+    "118": {
+      "level": 10,
+      "hp": 54,
+      "mp": 27,
+      "agility": 63,
+      "intelligence": 49
+    },
+    "119": {
+      "level": 12,
+      "hp": 68,
+      "mp": 39,
+      "agility": 85,
+      "intelligence": 61
+    },
+    "120": {
+      "level": 13,
+      "hp": 74,
+      "agility": 78,
+      "intelligence": 78
+    },
+    "121": {
+      "level": 20,
+      "hp": 140,
+      "mp": 72,
+      "agility": 120,
+      "intelligence": 120
+    },
+    "122": {
+      "level": 14,
+      "hp": 84,
+      "agility": 98
+    },
+    "123": {
+      "level": 30,
+      "hp": 210,
+      "agility": 180,
+      "intelligence": 180
+    },
+    "124": {
+      "level": 18,
+      "hp": 114,
+      "agility": 130,
+      "intelligence": 96
+    },
+    "125": {
+      "level": 9,
+      "hp": 63,
+      "agility": 54
+    },
+    "126": {
+      "level": 10,
+      "hp": 70,
+      "agility": 70
+    },
+    "127": {
+      "level": 12,
+      "mp": 42,
+      "agility": 72,
+      "intelligence": 72
+    },
+    "128": {
+      "level": 14,
+      "mp": 65,
+      "agility": 84,
+      "intelligence": 84
+    },
+    "129": {
+      "level": 23,
+      "mp": 130,
+      "intelligence": 170
+    },
+    "130": {
+      "level": 21,
+      "mp": 110,
+      "intelligence": 150
+    },
+    "131": {
+      "level": 20,
+      "mp": 100,
+      "intelligence": 140
+    },
+    "132": {
+      "level": 22,
+      "mp": 120,
+      "intelligence": 160
+    },
+    "133": {
+      "level": 20,
+      "mp": 70,
+      "intelligence": 90
+    },
+    "134": {
+      "level": 25,
+      "mp": 100,
+      "intelligence": 120
+    },
+    "135": {
+      "level": 30,
+      "mp": 130,
+      "intelligence": 150
+    },
+    "136": {
+      "level": 35,
+      "mp": 160,
+      "intelligence": 180
+    },
+    "137": {
+      "level": 17,
+      "hp": 119,
+      "defense": 102
+    },
+    "138": {
+      "level": 18,
+      "hp": 126,
+      "defense": 108,
+      "agility": 108,
+      "intelligence": 108
+    },
+    "139": {
+      "level": 7,
+      "hp": 55,
+      "agility": 67
+    },
+    "140": {
+      "level": 13,
+      "hp": 81,
+      "agility": 94
+    },
+    "141": {
+      "level": 6,
+      "hp": 32,
+      "attack": 31,
+      "agility": 48
+    },
+    "142": {
+      "level": 12,
+      "hp": 66,
+      "attack": 63,
+      "agility": 77
+    },
+    "143": {
+      "level": 10,
+      "attack": 60,
+      "agility": 60
+    },
+    "144": {
+      "level": 14,
+      "hp": 120
+    },
+    "145": {
+      "level": 22,
+      "hp": 140,
+      "mp": 120,
+      "attack": 120,
+      "agility": 120,
+      "intelligence": 120
+    },
+    "146": {
+      "level": 16,
+      "hp": 100,
+      "agility": 120
+    },
+    "147": {
+      "level": 17,
+      "hp": 120,
+      "attack": 100,
+      "agility": 140
+    },
+    "148": {
+      "level": 14,
+      "hp": 98,
+      "defense": 84
+    },
+    "149": {
+      "level": 18,
+      "hp": 126,
+      "attack": 108,
+      "defense": 108,
+      "agility": 108
+    },
+    "150": {
+      "level": 14,
+      "hp": 98,
+      "attack": 84,
+      "defense": 84,
+      "agility": 84
+    },
+    "151": {
+      "level": 5,
+      "hp": 35,
+      "defense": 30,
+      "agility": 30
+    },
+    "152": {
+      "level": 12,
+      "hp": 84,
+      "defense": 72,
+      "agility": 72
+    },
+    "153": {
+      "level": 11,
+      "hp": 75,
+      "defense": 84,
+      "agility": 70
+    },
+    "154": {
+      "level": 19,
+      "hp": 140,
+      "defense": 126,
+      "agility": 140
+    },
+    "155": {
+      "level": 20,
+      "hp": 100,
+      "mp": 94,
+      "defense": 84,
+      "intelligence": 110
+    },
+    "156": {
+      "level": 35,
+      "hp": 87,
+      "mp": 160,
+      "intelligence": 220
+    },
+    "157": {
+      "level": 13,
+      "hp": 91,
+      "defense": 78
+    },
+    "158": {
+      "level": 21,
+      "hp": 147,
+      "mp": 147,
+      "attack": 126,
+      "defense": 126,
+      "agility": 126,
+      "intelligence": 126
+    },
+    "159": {
+      "level": 26,
+      "hp": 182,
+      "defense": 156,
+      "intelligence": 156
+    },
+    "160": {
+      "level": 27,
+      "hp": 198,
+      "mp": 94,
+      "agility": 145,
+      "intelligence": 162
+    },
+    "161": {
+      "level": 24,
+      "hp": 116,
+      "mp": 96,
+      "agility": 78,
+      "intelligence": 140
+    },
+    "162": {
+      "level": 4,
+      "mp": 28,
+      "intelligence": 24
+    },
+    "163": {
+      "level": 4,
+      "mp": 28,
+      "intelligence": 24
+    },
+    "164": {
+      "level": 10,
+      "mp": 40,
+      "intelligence": 34
+    },
+    "165": {
+      "level": 10,
+      "mp": 40,
+      "intelligence": 34
+    },
+    "166": {
+      "level": 10,
+      "mp": 40,
+      "intelligence": 34
+    },
+    "167": {
+      "level": 10,
+      "mp": 40,
+      "intelligence": 34
+    },
+    "168": {
+      "level": 10,
+      "mp": 40,
+      "intelligence": 34
+    },
+    "169": {
+      "level": 10,
+      "mp": 40,
+      "intelligence": 34
+    }
+  }
+};
