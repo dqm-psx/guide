@@ -64,7 +64,7 @@ test.describe('served', () => {
     assert.equal(stored.teams.length, 1);
     assert.equal(stored.teams[0].entries.length, 2);
     assert.equal(stored.spriteStyle, 'overworld');
-    await expect(page.locator('#team-planner button[data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#guide-settings button[data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed', 'true');
     // The old keys are left untouched.
     assert.equal(await readStored(page, LEGACY_TEAM_KEY), JSON.stringify(team));
     assert.equal(await readStored(page, SPRITE_KEY), 'overworld');
@@ -195,6 +195,7 @@ test.describe('served', () => {
     // Add a target so the round trip covers targets too.
     exported.teams[1].targets.push({ id: 't-target-1', speciesIndex: 50, plan: null });
     exported.teams[1].activeTargetId = 't-target-1';
+    exported.spriteStyle = 'overworld';
     const tmp = path.join(os.tmpdir(), 'dqm-guide-backup-test.json');
     fs.writeFileSync(tmp, JSON.stringify(exported));
 
@@ -212,6 +213,7 @@ test.describe('served', () => {
     await expect(page.locator('#planner-import-preview-text')).toContainText(/\d+ teams?/);
     await page.click('#planner-import-confirm');
     await expect(page.locator('#planner-import-preview')).toBeHidden();
+    await expect(page.locator('#guide-settings [data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed','true');
     await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
     await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Dracky');
     const stored = JSON.parse(await readStored(page, STATE_KEY));
@@ -230,6 +232,7 @@ test.describe('served', () => {
     await expect(page.locator('#planner-backup-message')).toContainText('Import failed');
     await expect(page.locator('#planner-backup-import')).toHaveValue('');
     await expect(page.locator('#planner-import-preview')).toBeHidden();
+    await expect(page.locator('#guide-settings [data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed','true');
     await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
     assert.equal(await readStored(page, STATE_KEY), storedBefore);
   });
@@ -249,8 +252,9 @@ test.describe('served', () => {
     // Clicking around mutates the session but must not write.
     await addMonster(page, 11);
     await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await page.click('#team-planner button[data-sprite-style="overworld"]');
-    await expect(page.locator('#team-planner button[data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('#guide-settings > summary').click();
+    await page.click('#guide-settings button[data-sprite-style="overworld"]');
+    await expect(page.locator('#guide-settings button[data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed', 'true');
     assert.equal(await readStored(page, STATE_KEY), before);
   });
 

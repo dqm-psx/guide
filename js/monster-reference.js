@@ -4,7 +4,8 @@
   'use strict';
 
   const STATS = [['hp', 'HP'], ['mp', 'MP'], ['attack', 'Attack'], ['defense', 'Defense'], ['agility', 'Agility'], ['intelligence', 'Intelligence']];
-  const CAMPAIGNS = { terry: 'DQM1 · Terry', cobi: 'DQM2 · Cobi', tara: 'DQM2 · Tara' };
+  const campaignNames = root.GUIDE_HOME?.campaigns || {terry: 'Terry', cobi: 'Cobi', tara: 'Tara'};
+  const CAMPAIGNS = { terry: 'DQM1 · ' + campaignNames.terry, cobi: 'DQM2 · ' + campaignNames.cobi, tara: 'DQM2 · ' + campaignNames.tara };
   const safe = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const named = species => species ? (species.display_name || species.current_name || species.name || '') : 'Unknown monster';
 
@@ -45,6 +46,7 @@
     const records = new Map(((reference && reference.species) || []).map(entry => [entry.index, entry]));
     const playable = data.species.filter(entry => entry.playable !== false);
     let parents;
+    const firstCopies = new Map();
 
     function get(index) {
       const entry = species.get(index);
@@ -56,10 +58,28 @@
         parents = new Map();
         for (const a of playable) for (const b of playable) {
           const target = data.matrix[a.index] && data.matrix[a.index][b.index];
-          if (species.has(target)) parents.set(target, (parents.get(target) || 0) + 1);
+          if (!species.has(target)) continue;
+          parents.set(target, (parents.get(target) || 0) + 1);
+          if (a.index === target || b.index === target) continue;
+          if (!firstCopies.has(target)) firstCopies.set(target, []);
+          const examples = firstCopies.get(target);
+          if (examples.length < 3) examples.push([a.index, b.index]);
         }
       }
       return parents.get(index) || 0;
+    }
+
+    function firstRecipes(index) {
+      parentCount(index);
+      const rules = data.runtime_rules?.rules || [];
+      const special = rules.filter(rule => rule.offspring_index === index && rule.pedigree_index !== index &&
+        rule.mate_index !== index).map(rule => ({a:rule.pedigree_index, b:rule.mate_index,
+        family:rule.mate_family_index, condition:rule.kind === 'plus_threshold' ? 'Either parent +' + rule.minimum_parent_plus + ' or higher' : 'Two-save Breeding room'}));
+      const base = (firstCopies.get(index) || []).map(([a,b]) => {
+        const plus = rules.find(rule => rule.kind === 'plus_threshold' && rule.pedigree_index === a && rule.mate_index === b);
+        return {a, b, condition:plus ? 'Both parents below +' + plus.minimum_parent_plus : ''};
+      });
+      return [...special, ...base].slice(0, 3);
     }
 
     function offspringGroups(index, role) {
@@ -83,7 +103,7 @@
         (rule.mate_index == null && entry && rule.mate_family_index === entry.family_id));
     }
 
-    return Object.freeze({ get, parentCount, offspringGroups, conditions, species: data.species, playable });
+    return Object.freeze({ get, parentCount, firstRecipes, offspringGroups, conditions, species: data.species, playable });
   }
 
   const api = { create, routeIndex, growthAt, groupedLocations, safe };
@@ -125,16 +145,47 @@
   }
 
   function skillsMarkup(species) {
-    const skills = species.skills && species.skills[campaign];
-    return skills && skills.length ? '<ul class="monster-skill-list">' + skills.map(skill =>
-      '<li><a href="#field-guide?kind=skill&amp;entry=skill-' + safe(skill.system_entry_id) + '">' + safe(skill.name) + '</a></li>').join('') +
-      '</ul>' : '<p class="monster-empty">Skills unverified for this entry.</p>';
+    const skills = species.skills?.[campaign];
+    if (!skills?.length) return '<p class="monster-empty">Skills unverified for this entry.</p>';
+    const names = root.MONSTER_REFERENCE?.guide_names?.skills || {};
+    return '<ul class="monster-skill-list">' + skills.map(skill => {
+      const minimum = names[skill.id]?.minimum_level;
+      const entry = skill.system_entry_id || names[skill.id]?.id;
+      const title = entry ? '<a href="#field-guide?kind=skill&amp;entry=skill-' + safe(entry) + '">' + safe(skill.name) + '</a>' : safe(skill.name);
+      return '<li>' + title + (Number.isInteger(minimum) && minimum > 0 ? '<span class="skill-minimum">Min. level ' + minimum + '</span>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function naturalSkillsCard(species) {
+    const campaigns = Object.entries(CAMPAIGNS).map(([key,label]) => {
+      const count = groupedLocations(species.locations, key).length;
+      const coverage = count === 1 ? '1 encounter' : count + ' encounters';
+      return '<option value="' + key + '"' + (key === campaign ? ' selected' : '') + '>' + safe(label) + ' · ' + coverage + '</option>';
+    }).join('');
+    return '<section class="monster-card monster-natural-skills"><div class="monster-card-heading"><h3>Natural skills</h3>' +
+      '<label class="sr-only" for="monster-campaign">Adventure for skills and encounters</label><select id="monster-campaign">' + campaigns +
+      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div></section>';
   }
 
   function locationsMarkup(species) {
     const locations = groupedLocations(species.locations, campaign);
-    return locations.length ? '<div class="table-scroll"><table class="monster-locations"><caption class="sr-only">Recorded encounters for ' + safe(CAMPAIGNS[campaign]) + '</caption><thead><tr><th scope="col">Location</th><th scope="col">Floors</th><th scope="col">Type</th><th scope="col">Level</th></tr></thead><tbody>' + locations.map(entry =>
-      '<tr><th scope="row">' + safe(entry.name) + '</th><td>' + safe(entry.floors || '—') + '</td><td>' + safe(String(entry.kind || '—').replace(/_/g, ' ')) + '</td><td>' + safe(entry.levels.join(', ') || '—') + '</td></tr>').join('') + '</tbody></table></div>' : '<p class="monster-empty">No encounters recorded for ' + safe(CAMPAIGNS[campaign]) + '.</p>';
+    return locations.length ? '<div class="table-scroll"><table class="monster-locations"><caption class="sr-only">Recorded encounters for ' + safe(CAMPAIGNS[campaign]) + '</caption><thead><tr><th scope="col">Encounter</th><th scope="col">Floors</th><th scope="col">Level</th></tr></thead><tbody>' + locations.map(entry => {
+      const location = entry.kind === 'other' && entry.source?.native_selection ? 'Wandering master’s team' : entry.name;
+      return '<tr><th scope="row">' + safe(location) + '</th><td>' + safe(entry.floors || '—') + '</td><td>' + safe(entry.levels.join(', ') || '—') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' : '<p class="monster-empty">No encounters recorded for ' + safe(CAMPAIGNS[campaign]) + '.</p>';
+  }
+
+  function acquisitionMarkup(species) {
+    const recipes = model.firstRecipes(species.index);
+    const examples = recipes.map(recipe => {
+      const family = DATA.families.find(item => item.id === recipe.family);
+      const mate = recipe.b == null ? 'Any ' + safe(family?.display_name || family?.name || 'matching') + ' monster' : link(recipe.b, null, {sprite:true});
+      return '<li><div class="first-copy-parents">' + link(recipe.a, null, {sprite:true}) + '<span>+</span>' + mate + '</div>' +
+        (recipe.condition ? '<small>' + safe(recipe.condition) + '</small>' : '') + '</li>';
+    }).join('');
+    return '<section class="monster-card monster-acquire"><div class="monster-card-heading"><h3>How to get ' + safe(named(species)) + '</h3></div>' +
+      '<div class="acquire-columns"><div><h4>First-copy breeding</h4>' + (examples ? '<p class="hint">Pedigree + mate</p><ul class="first-copy-list">' + examples + '</ul>' : '<p>No recorded pairing produces a first copy.</p>') +
+      '<a href="#offspring-finder?target=' + species.index + '">All parent recipes ↗</a></div><div><h4>Recorded encounters</h4><div id="monster-locations">' + locationsMarkup(species) + '</div></div></div></section>';
   }
 
   function conditionsMarkup(species) {
@@ -156,8 +207,9 @@
 
   function render() {
     const host = P('monster-detail');
-    if (!host || !/^#monster(?:[?&/]|$)/i.test(location.hash)) return;
-    const index = routeIndex(location.hash);
+    const hash = root.DQMEntryHash?.() || location.hash;
+    if (!host || !/^#monster(?:[?&/]|$)/i.test(hash)) return;
+    const index = routeIndex(hash);
     const species = model.get(index);
     if (!species) {
       activeIndex = null;
@@ -180,11 +232,12 @@
       (next ? '<a href="#monster?id=' + next.index + '" aria-label="Next monster: ' + safe(named(next)) + '">' + safe(named(next)) + ' →</a>' : '') + '</nav></div>' +
       '<header class="monster-profile-header"><div class="monster-profile-art">' + sprite(index) + '</div><div class="monster-profile-identity"><p class="monster-eyebrow">' + safe(species.family_display || species.family) + ' family <span>· #' + String(index).padStart(3, '0') + '</span></p><h2 id="monster-heading" tabindex="-1">' + safe(named(species)) + '</h2><p class="monster-japanese" lang="ja">' + safe(species.japanese) + '</p>' + aliasesMarkup(species) + '</div>' +
       '<div class="monster-profile-actions">' + (species.playable === false ? '' : '<a class="monster-primary" href="#breeding-tree?target=' + index + '&context=shrine">Build breeding tree</a><button type="button" data-species-parents="' + index + '">Find all parents</button>') + '<div><button type="button" data-species-pedigree="' + index + '">Use as pedigree</button><button type="button" data-species-mate="' + index + '">Use as mate</button></div></div></header>' +
-      (species.playable === false ? '<p class="monster-internal">Extra table slot. Availability in normal play is unconfirmed.</p>' : '') +
       '<div class="monster-library-quote"><span class="monster-eyebrow">In-game library</span><p>' + safe(library.text || 'No in-game library entry.') + '</p></div>' +
-      '<div class="monster-profile-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">Base level limit ' + safe(species.stats.base_level_limit) + '</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
-      '<section class="monster-card"><div class="monster-card-heading"><h3>Skills & encounters</h3><label class="sr-only" for="monster-campaign">Campaign</label><select id="monster-campaign">' + Object.entries(CAMPAIGNS).map(([key, label]) => '<option value="' + key + '"' + (campaign === key ? ' selected' : '') + '>' + label + '</option>').join('') + '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div><h4 class="monster-subheading">Recorded encounters</h4><div id="monster-locations">' + locationsMarkup(species) + '</div></section></div>' +
-      '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint"><a href="#offspring-finder?target=' + index + '">' + parents.toLocaleString() + ' base-table parent pairings</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section>' +
+      naturalSkillsCard(species) +
+      (species.playable === false ? '<p class="monster-internal">Extra table slot. Availability in normal play is unconfirmed.</p>' : '') +
+      acquisitionMarkup(species) +
+      '<div class="monster-profile-grid monster-lower-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">Base level limit ' + safe(species.stats.base_level_limit) + '</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
+      '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint"><a href="#offspring-finder?target=' + index + '">' + parents.toLocaleString() + ' base-table parent pairings</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section></div>' +
       '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' + safe(species.resistances && species.resistances.text || 'PSX resistance values have not yet been verified for this reference.') + '</p>' +
       '<p>' + safe(species.location_coverage || 'Encounter coverage is incomplete.') + '</p>' +
       (root.DQMReference?.sourceSummaryMarkup ? root.DQMReference.sourceSummaryMarkup() : '') +

@@ -2,6 +2,19 @@
    follows the same two axes without introducing hundreds of new shortcuts. */
 (() => {
   'use strict';
+  const mobile = matchMedia('(max-width:700px)');
+  const display = document.getElementById('matrix-view');
+  let chosen = false;
+  function layout() {
+    for (const drawer of document.querySelectorAll('.matrix-filter-drawer')) drawer.open = !mobile.matches;
+    if (!chosen) {
+      display.value = mobile.matches ? 'list' : 'grid';
+      display.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+  }
+  display.addEventListener('change', event => { if (event.isTrusted) chosen = true; });
+  mobile.addEventListener('change', layout);
+  layout();
   for (const grid of document.querySelectorAll('.planner-grid')) {
     function highlight(cell) {
       grid.querySelectorAll('.planner-crosshair').forEach(el => el.classList.remove('planner-crosshair'));

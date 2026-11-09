@@ -303,7 +303,8 @@ test.describe('served', () => {
     await addMonster(page, 89, 'farm');
 
     await page.locator('#breeding-nav-trigger').click();
-    await page.click('.nav a[href="#offspring-finder"]');
+    await page.click('.nav a[href="#pair-finder"]');
+    await page.locator('#pair-finder [data-parent-mode]').click();
     await page.selectOption('#target', '2');
     await page.click('#target-pin');
     await page.click('#target-view-plan');

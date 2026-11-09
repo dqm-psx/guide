@@ -26,7 +26,7 @@
     try {
       // Relative to the page, so an install under a subpath scopes to that
       // subpath instead of the whole origin.
-      var registration = root.navigator.serviceWorker.register("sw.js", { scope: "./" });
+      var registration = root.navigator.serviceWorker.register(new URL("sw.js", document.baseURI), { scope: new URL("./",document.baseURI).href });
       if (registration && typeof registration.catch === "function") {
         registration.catch(function () {
           // Offline support is an enhancement; a failure must not affect the
@@ -39,6 +39,57 @@
   }
 
   if (!canRegister()) return;
+
+  const serviceWorker = root.navigator.serviceWorker;
+  const button = document.getElementById('download-offline');
+  const status = document.getElementById('offline-status');
+  const seen = new Set();
+  function warm(urls) {
+    const controller = serviceWorker.controller;
+    if (!controller) return;
+    const added = urls.filter(url => !seen.has(url));
+    if (added.length) {
+      added.forEach(url=>seen.add(url));
+      controller.postMessage({type:'warm',urls:added});
+    }
+  }
+  function warmVisited() { warm(performance.getEntriesByType('resource').map(entry=>entry.name)); }
+  if (typeof PerformanceObserver !== 'undefined') {
+    new PerformanceObserver(list=>warm(list.getEntries().map(entry=>entry.name))).observe({entryTypes:['resource']});
+  }
+  function request(type) {
+    return new Promise((resolve,reject)=>{
+      const channel = new MessageChannel();
+      const worker = serviceWorker.controller;
+      if (!worker) return reject(Error('No active worker'));
+      channel.port1.onmessage = e=>{ channel.port1.close(); e.data.error ? reject(Error()) : resolve(e.data); };
+      worker.postMessage({type},[channel.port2]);
+    });
+  }
+  function ready() {
+    if (!serviceWorker.controller) return;
+    seen.clear();
+    warmVisited();
+    if (!button) return;
+    button.hidden=false;
+    request('status').then(({complete})=>{
+      if (complete) { button.disabled=true; button.textContent='Offline guide downloaded'; }
+    }).catch(()=>{});
+  }
+  serviceWorker.addEventListener('controllerchange',ready);
+  ready();
+  button?.addEventListener('click',async()=>{
+    button.disabled=true;
+    status.textContent='Downloading guide tools and maps…';
+    try {
+      await request('download');
+      status.textContent='Ready to use offline.';
+      button.textContent='Offline guide downloaded';
+    } catch {
+      status.textContent='Download interrupted. Reconnect and try again.';
+      button.disabled=false;
+    }
+  });
 
   // Wait for load so registration never competes with the page's own assets.
   if (root.document && root.document.readyState === "complete") register();

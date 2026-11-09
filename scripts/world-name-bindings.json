@@ -1,6 +1,25 @@
 {
   "schema_version": 1,
   "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
+  "nickname_articles": {
+    "patches/starter_name.json:sura": "npc-surabou",
+    "patches/boss_names.json:boss_72_0011.english": "npc-healie",
+    "patches/boss_names.json:boss_73_0015.english": "boss-dragon",
+    "patches/boss_names.json:boss_74_0011.english": "boss-golem",
+    "patches/boss_names.json:boss_75_0011.english": "boss-great-sabrecat",
+    "patches/boss_names.json:boss_76_0429.english": "boss-treeface",
+    "patches/boss_names.json:boss_78_001d.english": "boss-fang-slime",
+    "patches/boss_names.json:boss_83_0011.english": "boss-funky-bird",
+    "patches/boss_names.json:boss_84_0019.english": "boss-battle-rex",
+    "patches/boss_names.json:boss_87_0011.english": "boss-demon-servant",
+    "patches/boss_names.json:gift_131_37a4.english": "npc-petitbou",
+    "patches/boss_names.json:gift_131_37b1.english": "npc-warubou",
+    "patches/boss_names.json:gift_5688_0453.english": "npc-surao",
+    "patches/boss_names.json:gift_5688_0dc4.english": "npc-watabou",
+    "patches/gift_names.json:machiko.nickname": "npc-machiko",
+    "patches/gift_names.json:gift_names.132.english": "npc-slash",
+    "patches/gift_names.json:gift_names.151.english": "boss-western-cape-dancer"
+  },
   "terms": [
     {
       "spelling": "Demon King's Castle Shrine",
@@ -1840,11 +1859,8 @@
     },
     {
       "spelling": "Surabou",
-      "source_id": "s0b113000_0658",
-      "catalog": "dialogue/main/4000_6131.json",
-      "extract": "phrase",
-      "prefix": "I'm Surao. Old ",
-      "suffix": " is my grandfather.",
+      "nickname": "patches/starter_name.json:sura",
+      "extract": "nickname",
       "affected_entries": [
         "story-terry-opening",
         "npc-pulio",
@@ -1911,6 +1927,8 @@
     },
     {
       "spelling": "Healie",
+      "nickname": "patches/boss_names.json:boss_72_0011.english",
+      "paired_in": ["story-terry-opening", "npc-healie"],
       "source_id": "s001af000_00d3",
       "catalog": "dialogue/main/0000_1999.json",
       "extract": "speaker",

@@ -31,6 +31,8 @@ test('previews a local card, creates a team in its campaign and uses it in both 
   await expect(team).toHaveValue(original);
   await page.getByRole('button', {name: 'Create team from save'}).click();
   await expect(team.locator('option:checked')).toHaveText('DQM2 · Tara · Slot 7');
+  await expect(page.getByRole('tab', {name: 'Team breeding'})).toHaveAttribute('aria-selected', 'true');
+  await page.getByRole('tab', {name: 'My monsters'}).click();
   await expect(page.locator('#planner-males')).toContainText('Lv 30');
   await expect(page.locator('#planner-males').getByRole('link', {name: 'Bob'})).toHaveAttribute('href', '#monster?id=26');
   await page.getByRole('tab', {name: 'Team breeding'}).click();

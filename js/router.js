@@ -30,55 +30,75 @@
     { id: "breeding-table", heading: "breeding-table-heading" },
     { id: "species-index", heading: "species-heading" },
     { id: "team-planner", heading: "planner-heading" },
+    { id: "sources", heading: "sources-heading" },
   ];
-  const aliases = { "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "species-index" };
-  const aliasTargets = { "rules-guide": "offspring-heading", "conditional-rules": "breeding-conditions", "about": "name-guide" };
+  const aliases = { "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "sources" };
+  const aliasTargets = { "rules-guide": "offspring-heading", "conditional-rules": "breeding-conditions", "about": "sources-heading" };
   const known = new Set(views.map(view => view.id));
   const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
   const skipLink = document.querySelector("a.skip");
-  const trigger = P("breeding-nav-trigger");
-  const submenu = P("breeding-nav-links");
-  const group = trigger.parentElement;
+  const groups = Array.from(document.querySelectorAll(".nav-group"));
+  let openGroup = null;
   let pinned = false;
-  function setBreedingOpen(open) {
-    trigger.setAttribute("aria-expanded", String(open));
-    submenu.hidden = !open;
-    if (!open) pinned = false;
+
+  function closeMenu() {
+    if (!openGroup) return;
+    openGroup.querySelector(".nav-trigger").setAttribute("aria-expanded", "false");
+    openGroup.querySelector(".nav-links").hidden = true;
+    openGroup = null;
+    pinned = false;
   }
-  trigger.addEventListener("click", () => {
-    pinned = !pinned;
-    setBreedingOpen(pinned);
-  });
-  group.addEventListener("pointerenter", event => {
-    if (event.pointerType === "mouse") setBreedingOpen(true);
-  });
-  group.addEventListener("pointerleave", () => {
-    if (!pinned && !submenu.contains(document.activeElement)) setBreedingOpen(false);
-  });
-  group.addEventListener("focusout", event => {
-    if (!group.contains(event.relatedTarget)) setBreedingOpen(false);
-  });
+  function openMenu(group) {
+    if (group === openGroup) return;
+    closeMenu();
+    group.querySelector(".nav-trigger").setAttribute("aria-expanded", "true");
+    group.querySelector(".nav-links").hidden = false;
+    openGroup = group;
+  }
+  for (const group of groups) {
+    const trigger = group.querySelector(".nav-trigger");
+    const menu = group.querySelector(".nav-links");
+    trigger.addEventListener("click", () => {
+      if (group === openGroup && pinned) {
+        closeMenu();
+      } else {
+        openMenu(group);
+        pinned = true;
+      }
+    });
+    group.addEventListener("pointerenter", event => {
+      if (event.pointerType === "mouse") openMenu(group);
+    });
+    group.addEventListener("pointerleave", () => {
+      if (group === openGroup && !pinned && !menu.contains(document.activeElement)) closeMenu();
+    });
+    group.addEventListener("focusout", event => {
+      if (group === openGroup && !group.contains(event.relatedTarget)) closeMenu();
+    });
+    group.addEventListener("keydown", event => {
+      const key = event.key;
+      if (key !== "ArrowDown" && key !== "ArrowUp") return;
+      event.preventDefault();
+      openMenu(group);
+      const links = Array.from(menu.querySelectorAll("a"));
+      const index = links.indexOf(document.activeElement);
+      const step = key === "ArrowDown" ? 1 : -1;
+      links[index < 0 ? (step > 0 ? 0 : links.length - 1) : (index + step + links.length) % links.length].focus();
+    });
+  }
   document.addEventListener("pointerdown", event => {
-    if (!group.contains(event.target)) setBreedingOpen(false);
+    if (openGroup && !openGroup.contains(event.target)) closeMenu();
   });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && !submenu.hidden) {
-      if (group.contains(document.activeElement)) trigger.focus();
-      setBreedingOpen(false);
-    }
-  });
-  group.addEventListener("keydown", event => {
-    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-    event.preventDefault();
-    setBreedingOpen(true);
-    const links = Array.from(submenu.querySelectorAll("a"));
-    const direction = event.key === "ArrowDown" ? 1 : -1;
-    const index = links.indexOf(document.activeElement);
-    links[index < 0 ? (direction > 0 ? 0 : links.length - 1) : (index + direction + links.length) % links.length].focus();
+    if (event.key !== "Escape" || !openGroup) return;
+    if (openGroup.contains(document.activeElement)) openGroup.querySelector(".nav-trigger").focus();
+    closeMenu();
   });
 
   let activeView = null;
   let pendingFocusId = null;
+  let navigation = 0;
+  const currentHash = () => window.DQMEntryHash?.() || location.hash;
 
   // Only the leading view id is parsed. Whatever follows the first separator
   // is returned as params, so a future route can read it without changing how
@@ -108,20 +128,27 @@
     }
   }
   function markNav(viewId) {
+    const params = new URLSearchParams(parse(currentHash()).params);
+    let section = "#" + ({monster: "species-index", "offspring-finder": "pair-finder"}[viewId] || viewId);
+    if (viewId === "field-guide") {
+      const kind = window.DQMField?.kindForEntry(params.get("entry")) || params.get("kind");
+      if (kind && navLinks.some(link => link.hash === "#field-guide?kind=" + kind)) section = "#field-guide?kind=" + kind;
+    }
+    if (viewId === "atlas" && params.get("tab") === "encounters") section = "#atlas?tab=encounters";
     for (const link of navLinks) {
-      const active = viewFor(link.hash) === (viewId === "monster" ? "species-index" : viewId);
-      if (active) {
-        link.setAttribute("aria-current", "page");
-      }
+      const active = link.hash === section;
+      if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
       link.classList.toggle("nav-link-active", active);
     }
-    trigger.classList.toggle("nav-link-active", Boolean(submenu.querySelector('[aria-current="page"]')));
+    for (const group of groups) {
+      group.querySelector(".nav-trigger").classList.toggle("nav-link-active", group.querySelector('[aria-current="page"]') !== null);
+    }
   }
   // The nav label is the view's title, so one edit renames both.
   function setTitle(viewId) {
-    const link = navLinks.find(candidate => viewFor(candidate.hash) === viewId);
-    const label = link ? link.getAttribute("aria-label") || link.textContent.trim() : viewId;
+    const link = navLinks.find(candidate => candidate.hash === "#" + viewId);
+    const label = link ? link.getAttribute("aria-label") || link.textContent.trim() : ({"offspring-finder":"Find parents", sources:"Sources & coverage"}[viewId] || viewId);
     document.title = label + " · " + TITLE_SUFFIX;
   }
   // A hash that names an element inside the revealed view keeps the browser's
@@ -143,16 +170,59 @@
   // click, and go() all end up here. The destination is revealed before
   // anything is scrolled or focused, so focus can never land in a hidden view.
   function render(viewId, options) {
+    if (viewId === "field-guide") {
+      const query = new URLSearchParams(parse(currentHash()).params);
+      if (query.get("kind") === "monster" && !query.has("entry")) {
+        const search = query.get("q");
+        viewId = "species-index";
+        history.replaceState(null, "", "#species-index" + (search ? "?q="+encodeURIComponent(search) : ""));
+      }
+    }
+    const ticket = ++navigation;
+    const status = P("view-load-status");
+    if (status) status.remove();
+    const waiting = window.DQMAssets.ready(viewId, currentHash());
+    if (!waiting) { showView(viewId, options); return; }
+    const main = document.querySelector("main");
+    main.setAttribute("aria-busy","true");
+    waiting.then(() => {
+      if (ticket === navigation) showView(viewId, options);
+    }, () => {
+      if (ticket !== navigation) return;
+      main.removeAttribute("aria-busy");
+      const notice = document.createElement("div");
+      notice.id = "view-load-status";
+      notice.className = "panel";
+      notice.setAttribute("role","alert");
+      notice.textContent = "This section couldn’t load. Reconnect and try again. ";
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.textContent = "Reload";
+      retry.onclick = () => location.reload();
+      notice.append(retry);
+      main.prepend(notice);
+      if (options?.focus) retry.focus();
+    });
+  }
+  function showView(viewId, options) {
+    document.querySelector("main").removeAttribute("aria-busy");
     const settings = options || {};
     const view = P(viewId);
     if (!view) return;
-    setBreedingOpen(false);
+    closeMenu();
     reveal(viewId);
     if (window.DQMApp && typeof window.DQMApp.viewShown === "function") window.DQMApp.viewShown(viewId);
+    if (viewId === "species-index") {
+      const q = new URLSearchParams(parse(currentHash()).params).get("q");
+      if (q !== null && q !== P("species-search").value) {
+        P("species-search").value = q;
+        P("species-search").dispatchEvent(new Event("input",{bubbles:true}));
+      }
+    }
     markNav(viewId);
     setTitle(viewId);
     if (viewId === "field-guide" || viewId === "atlas") {
-      const title = viewId === "atlas" ? window.DQMAtlas.show() : window.DQMField.show();
+      const title = viewId === "atlas" ? window.DQMAtlas.show() : (window.DQMField || window.DQMGuideShell).show();
       if (title) document.title = title + " · " + TITLE_SUFFIX;
     }
     if (viewId === "monster" && window.DQMMonsters) { window.DQMMonsters.renderRoute(); document.title = window.DQMMonsters.title() + " · " + TITLE_SUFFIX; }
@@ -161,13 +231,17 @@
       P("planner-tab-roster").click();
       if (settings.focus) settings.focusId = "save-import-file";
     }
+    if (viewId === "team-planner" && new URLSearchParams(parse(location.hash).params).get("manage") === "teams") {
+      settings.focusId = "manage-teams";
+    }
     activeView = viewId;
+    window.dispatchEvent(new Event('guide-view-rendered'));
     if (settings.scroll === false) return;
     const heading = headingFor(viewId);
     const requested = settings.focusId ? P(settings.focusId) : null;
     const focusTarget = focusable(requested || heading);
     const scrollTarget = requested || fragmentIn(view) || heading || view;
-    if (scrollTarget) scrollTarget.scrollIntoView({ block: "start" });
+    if (scrollTarget) scrollTarget.scrollIntoView({ block: "start", behavior: "instant" });
     if (settings.focus && focusTarget) focusTarget.focus({ preventScroll: true });
   }
 
@@ -176,21 +250,23 @@
   function go(viewId, options) {
     if (!known.has(viewId)) return;
     const focusId = (options && options.focusId) || null;
+    const query = new URLSearchParams(options?.params || {}).toString();
+    const hash = "#" + viewId + (query ? "?" + query : "");
     // A handoff always lands on the bare view id. A parameterised hash for the
     // same view (a shared pairing, say) must not read as "already here", or its
     // parameters would linger after a "Try pair" / "Use as pedigree" jump.
-    if (location.hash === "#" + viewId) {
+    if (location.hash === hash) {
       render(viewId, { focus: true, focusId });
       return;
     }
     pendingFocusId = focusId;
-    location.hash = viewId;
+    location.hash = hash;
   }
 
   window.addEventListener("hashchange", () => {
     const focusId = pendingFocusId;
     pendingFocusId = null;
-    render(viewFor(location.hash), { focus: true, focusId });
+    render(viewFor(currentHash()), { focus: true, focusId });
   });
 
   for (const link of navLinks) {
@@ -202,10 +278,7 @@
         render(viewFor(link.hash), { focus: true });
         return;
       }
-      // Reveal the destination before the browser follows the anchor, so its
-      // own scroll lands on a view that is actually displayed. The hashchange
-      // above then owns the scroll and the focus.
-      reveal(viewFor(link.hash));
+      // The hashchange reveals and focuses the tool after its controls are ready.
     });
   }
 
@@ -223,5 +296,5 @@
   // Normal loads leave position and focus to the browser. Old guide fragments
   // no longer name DOM elements, so scroll their replacement help into view
   // explicitly without moving keyboard focus.
-  render(viewFor(location.hash), { focus: false, scroll: Boolean(aliasTargets[parse(location.hash).id]) });
+  render(viewFor(currentHash()), { focus: false, scroll: Boolean(aliasTargets[parse(currentHash()).id]) });
 })();

@@ -12,13 +12,39 @@ test('a linked monster opens its native library, stats and campaign reference', 
   await expect(page.locator('#monster')).toBeVisible();
   await expect(page.locator('#species-index')).toBeHidden();
   await expect(page.locator('#monster-heading')).toHaveText(await page.evaluate(() => DATA.species.find(s => s.index === 11).display_name));
+  await expect(page.locator('.monster-acquire h3')).toContainText('How to get');
+  expect(await page.locator('.monster-acquire').evaluate(card => !!(card.compareDocumentPosition(document.querySelector('#monster-growth')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   await expect(page.locator('.monster-library-quote p')).toHaveText(await page.evaluate(() => MONSTER_REFERENCE.species.find(s => s.index === 11).library.text));
   await expect(page.locator('#monster-growth-level')).toHaveValue('40');
-  await expect(page.locator('#monster-skills li')).toHaveCount(3);
+  await expect(page.locator('.monster-library-quote + .monster-natural-skills h3')).toHaveText('Natural skills');
+  await expect(page.locator('#monster-skills .skill-minimum')).toHaveText(['Min. level 3', 'Min. level 38', 'Min. level 12']);
+  await expect(page.locator('#monster-skills li a').first()).toHaveAttribute('href', '#field-guide?kind=skill&entry=skill-e0c1d');
   await page.locator('#monster-campaign').selectOption('cobi');
+  await expect(page.locator('#monster-skills li a')).toHaveText(await page.evaluate(() => MONSTER_REFERENCE.species[11].skills.cobi.map(skill => skill.name)));
   await expect(page.locator('#monster-locations')).toContainText(await page.evaluate(() => MONSTER_REFERENCE.species.find(s => s.index === 11).locations.find(place => place.game === 'cobi').name));
   await expect(page.locator('.monster-growth-row')).toHaveCount(6);
   expect(errors).toEqual([]);
+});
+
+test('first-copy profile recipes carry their verified conditions through to the parent lookup', async ({ page }) => {
+  await page.goto(serverUrl + '#monster?id=17');
+  await expect(page.locator('.first-copy-list li').first()).toBeVisible();
+  const condition = await page.evaluate(() => DATA.runtime_rules.rules.find(rule => rule.offspring_index === 17 && rule.kind === 'plus_threshold'));
+  const recipe = page.locator('.first-copy-list li').filter({hasText: 'Either parent +' + condition.minimum_parent_plus}).first();
+  await expect(recipe.locator('a').nth(0)).toHaveAttribute('href', '#monster?id=' + condition.pedigree_index);
+  await expect(recipe.locator('a').nth(1)).toHaveAttribute('href', '#monster?id=' + condition.mate_index);
+  for (const id of [condition.pedigree_index, condition.mate_index]) {
+    await expect(recipe.locator('a[href="#monster?id=' + id + '"] [data-monster-index="' + id + '"]').first()).toBeVisible();
+  }
+  await page.locator('#guide-settings > summary').click();
+  await page.locator('#guide-settings [data-sprite-style="overworld"]').click();
+  await page.locator('#guide-settings > summary').click();
+  await expect(recipe.locator('a [data-sprite-kind="overworld"]')).toHaveCount(2);
+  await expect(page.locator('.first-copy-list a[href="#monster?id=17"]')).toHaveCount(0);
+  await expect(page.locator('#monster-campaign option[value="terry"]')).toContainText(/DQM1 · Terry · \d+ encounters?/);
+  await page.locator('.monster-acquire a[href^="#offspring-finder"]').click();
+  await expect(page.locator('#target')).toHaveValue('17');
+  await expect(page.locator('#reverse-copy-mode')).toHaveValue('first');
 });
 
 test('growth controls show accumulated base gains without counting level-one starting stats', async ({ page }) => {
@@ -76,10 +102,15 @@ test('both pairing result headings link to the correct profiles and update after
 });
 
 test('unknown profiles recover and narrow screens keep the reference within the viewport', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 320, height: 780 });
   await page.goto(serverUrl + '#monster?id=99999');
   await expect(page.locator('#monster-heading')).toHaveText('Monster not found');
-  await page.goto(serverUrl + '#monster?id=11');
+  await page.locator('#monster .monster-back').click();
+  await page.fill('#species-search', await page.evaluate(() => DATA.species[11].japanese));
+  const card = page.locator('#species-rows tr').filter({has:page.locator('a[href="#monster?id=11"]')});
+  await expect(card.locator('.species-actions-cell')).toBeHidden();
+  expect(await card.evaluate(el => el.getBoundingClientRect().right <= innerWidth)).toBe(true);
+  await card.locator('a[href="#monster?id=11"]').click();
   await expect(page.locator('#monster-heading')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.locator('[data-monster-role="mate"]').click();
@@ -92,6 +123,7 @@ test('legacy profile URLs work and internal slots omit unsupported breeding tree
   await expect(page.locator('#monster-heading')).toHaveText(await page.evaluate(() => DATA.species.find(s => s.index === 11).display_name));
   await page.goto(serverUrl + '#monster?id=315');
   await expect(page.locator('.monster-internal')).toBeVisible();
+  await expect(page.locator('#monster-skills')).toHaveText('Skills unverified for this entry.');
   await expect(page.locator('#monster .monster-primary')).toHaveCount(0);
   await expect(page.locator('#monster [data-species-parents]')).toHaveCount(0);
   await page.goto(serverUrl + '#monster/nonsense');
@@ -121,7 +153,7 @@ test.describe('source provenance', () => {
       baseline: DATA.metadata.version,
     }));
     expect(expected.proof).not.toBe(newerRelease);
-    await page.getByText('Source, coverage, and verification', { exact: true }).click();
+    await expect(page.locator('#sources')).toBeVisible();
     const sources = page.locator('#source-version-summary');
     const value = (parent, label) => parent.locator('.source-versions > div').filter({ has: page.getByText(label, { exact: true }) }).locator('dd');
     await expect(value(sources, 'Latest English patch')).toHaveText(newerRelease);
@@ -141,7 +173,7 @@ test.describe('source provenance', () => {
     omitMetadata = true;
     await page.goto(serverUrl + '#about');
     await page.reload();
-    await page.getByText('Source, coverage, and verification', { exact: true }).click();
+    await expect(page.locator('#sources')).toBeVisible();
     await expect(value(sources, 'Latest English patch')).toHaveText('Not supplied by this snapshot');
     await expect(value(sources, 'Names & text snapshot')).toHaveText('Not recorded');
     await expect(value(sources, 'Breeding & stats last verified')).toHaveText(expected.baseline);

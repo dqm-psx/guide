@@ -82,6 +82,31 @@ function skillDescription(index, sourceId) {
   return description;
 }
 
+// These builder tables store the name assigned on recruitment, independently of dialogue.
+function nicknameRecords(comparison, index, bindings, world) {
+  const records = new Map();
+  const catalogs = ['patches/starter_name.json', 'patches/boss_names.json', 'patches/gift_names.json'];
+  for (const candidate of comparison.rows) {
+    if (!catalogs.includes(candidate.catalog)) continue;
+    const row = index.get(candidate.catalog, candidate.id);
+    const kind = row.labels?.includes('Starter nickname') ? 'starter' :
+      row.labels?.includes('Boss nicknames') ? 'boss' : row.labels?.includes('Gift monster names') ? 'gift' : null;
+    const id = row.catalog + ':' + row.id;
+    check(kind && row.table === row.catalog, 'unexpected nickname identity ' + id);
+    const names = row.raw.translations;
+    const title = label(names.current, id);
+    const japanese = label(row.raw.japanese, id);
+    const aliases = distinct([title, japanese, ...EDITIONS.filter(edition => names[edition] !== undefined)
+      .map(edition => label(names[edition], id))]);
+    records.set(id, {id, title, japanese, aliases, kind});
+  }
+  for (const [id, article] of Object.entries(bindings || {})) {
+    check(records.has(id) && world.entries.some(entry => entry.id === article), 'missing nickname or article for ' + id);
+    records.get(id).article_id = article;
+  }
+  return records;
+}
+
 function extractTerm(index, binding) {
   const row = index.get(binding.catalog, binding.source_id);
   if (binding.extract === 'full') {
@@ -143,6 +168,7 @@ function matcher(terms) {
 
 function buildGuideNames({comparison, revision, field, world, atlas, skillBindings, worldBindings, species, originalSpecies}) {
   const index = sourceIndex(comparison, revision);
+  const nicknames = nicknameRecords(comparison, index, worldBindings.nickname_articles, world);
   const items = {}, skills = {}, maps = {}, entries = {};
   const allRows = [...field.entries, ...world.entries];
   const itemIds = new Set(field.entries.filter(row => row.kind === 'item' || row.kind === 'tool').map(row => row.id));
@@ -167,6 +193,9 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
   }
   for (const bind of skillBindings) {
     const name=systemRecord(index,bind.source_id,473+bind.id,bind.spelling,'Skills and spells');
+    const level = field.skill_requirements[bind.id]?.level;
+    check(Number.isInteger(level) && level >= 1 && level <= 99, 'invalid learning level for skill ' + bind.id);
+    name.minimum_level = level;
     name.description_source_id = bind.description_source_id;
     name.description = skillDescription(index,bind.description_source_id);
     skills[bind.id]=name;
@@ -178,15 +207,23 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
     placeTerms.push({spelling:map.title,title:record.title});
   }
   for (const bind of worldBindings.terms) {
-    const title=extractTerm(index,bind);
+    const nickname = nicknames.get(bind.nickname);
+    if (bind.nickname || bind.extract === 'nickname' || bind.paired_in) check(nickname, 'missing nickname for ' + bind.spelling);
+    const title=bind.extract === 'nickname' ? nickname.title : extractTerm(index,bind);
     const scope=bind.affected_entries;
     check(Array.isArray(scope) && scope.length > 0, 'empty scope for ' + bind.spelling);
     const affects = FIELD_TERMS.has(bind.spelling) ? [...scope,...fieldIds] : scope;
-    for (const spelling of [bind.spelling,...(bind.aliases || [])]) add(spelling,title,affects);
+    const paired = nickname && distinct([title,nickname.title]).join(' / ');
+    const pairedEntries = bind.paired_in || [];
+    check(pairedEntries.every(id => affects.includes(id)), 'unbound nickname mention for ' + bind.spelling);
+    for (const spelling of [bind.spelling,...(bind.aliases || [])]) {
+      add(spelling,title,affects.filter(id => !pairedEntries.includes(id)));
+      add(spelling,paired,pairedEntries);
+    }
     for (const id of scope) {
       const entry = world.entries.find(entry => entry.id === id);
       if (!entry || canon(entry.title) !== canon(bind.spelling)) continue;
-      sourceAliases.set(id,distinct([...(sourceAliases.get(id) || []),bind.spelling,...(bind.aliases || [])]));
+      sourceAliases.set(id,distinct([...(sourceAliases.get(id) || []),bind.spelling,title,...(bind.aliases || []),...(nickname?.aliases || [])]));
     }
   }
   for (const row of world.entries) {
@@ -247,7 +284,7 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
   }
   check(Object.keys(items).length===itemIds.size, 'incomplete item identity coverage');
   for (const id of Object.keys(field.skill_requirements || {})) check(skills[id], 'missing native skill ' + id);
-  return {schema_version:1,items,skills,maps,entries,coverage:{items:Object.keys(items).length,skills:Object.keys(skills).length,
+  return {schema_version:1,items,skills,maps,entries,default_nicknames:[...nicknames.values()],coverage:{items:Object.keys(items).length,skills:Object.keys(skills).length,
     maps:Object.keys(maps).length,world_name_bindings:worldBindings.terms.length}};
 }
 

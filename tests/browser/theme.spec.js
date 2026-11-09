@@ -43,6 +43,7 @@ test.describe('served', () => {
   test('choosing Dark applies and persists', async ({ page }) => {
     await page.goto(url());
     const initialBg = await bgOf(page);
+    await page.locator('#guide-settings > summary').click();
     await page.click('button[data-theme-choice="dark"]');
     expect(await themeOf(page)).toBe('dark');
     await expect(page.locator('button[data-theme-choice="dark"]')).toHaveAttribute('aria-pressed', 'true');
@@ -63,6 +64,7 @@ test.describe('served', () => {
     await page.goto(url());
     const lightMeta = await themeColor();
     expect(lightMeta).toMatch(/^#[0-9a-f]{6}$/i);
+    await page.locator('#guide-settings > summary').click();
     await page.click('button[data-theme-choice="dark"]');
     const darkMeta = await themeColor();
     expect(darkMeta).not.toBe(lightMeta);
@@ -76,6 +78,7 @@ test.describe('served', () => {
 
   test('choosing System follows the emulated system', async ({ page }) => {
     await page.goto(url());
+    await page.locator('#guide-settings > summary').click();
     await page.click('button[data-theme-choice="system"]');
     await expect(page.locator('button[data-theme-choice="system"]')).toHaveAttribute('aria-pressed', 'true');
 

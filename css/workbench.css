@@ -86,3 +86,47 @@ footer{padding:16px 0;font-size:12px}footer .footer-links{display:flex;gap:8px 2
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 @media print{.masthead{background:white}.brand,.title-line h1{color:#111}.workbench-tools,.theme-picker{display:none}.wrap{max-width:none;padding:0}.nav{display:none}.section{margin:12px 0}.planner-axis-controls{display:none}}
 
+.monster-combo{position:relative;min-width:0;flex:1}
+.monster-combo input{width:100%;padding-right:30px}
+.monster-combo::after{content:"▾";position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+select.monster-combo-native{position:absolute!important;clip-path:inset(50%);width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important}
+.monster-choices{position:absolute;z-index:12;left:0;right:0;top:100%;min-width:min(240px,100%);max-height:240px;overflow:auto;background:var(--white);border:1px solid var(--line);box-shadow:0 5px 14px #0002}
+.monster-choices[hidden]{display:none}
+.monster-combo-above .monster-choices{top:auto;bottom:100%}
+.monster-choices [role=option]{display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 7px;padding:7px 9px;cursor:pointer}
+.monster-choices [role=option]:hover,.monster-choices [aria-selected=true]{background:var(--light)}
+.monster-choices small{font-size:11px;color:var(--muted)}
+.monster-choices p{margin:8px;font-size:13px}
+.lookup-modes{display:inline-flex;flex-wrap:wrap;gap:3px;align-items:center;margin-bottom:12px}
+.lookup-modes a{font-size:13px;font-weight:600;padding:5px 9px;border-radius:4px}
+.lookup-modes a[aria-current=page]{color:var(--white);background:var(--teal);text-decoration:none}
+.lookup-glossary{font-size:13px;margin-top:12px}
+.lookup-glossary dl{display:grid;grid-template-columns:max-content 1fr;gap:5px 12px}
+.lookup-glossary dt{font-weight:700}.lookup-glossary dd{margin:0}
+.matrix-filter-drawer{margin-bottom:10px}
+.matrix-filter-drawer>summary{font-weight:650;cursor:pointer;padding:7px 0}
+.matrix-filter-drawer[open]>summary{margin-bottom:8px}
+@media(min-width:701px){.matrix-filter-drawer>summary{display:none}}
+@media(max-width:700px){
+  #species-index .table-scroll{overflow:visible}
+  #species-index table,#species-index tbody{display:block;width:100%;min-width:0}
+  #species-index thead{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+  #species-rows tr{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:4px 7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  #species-rows td{border:0;padding:0;min-width:0;white-space:normal}
+  #species-rows td:nth-child(2){grid-column:2;grid-row:1}
+  #species-rows td:nth-child(3){grid-column:2;grid-row:2;font-size:11px;color:var(--muted)}
+  #species-rows td:nth-child(4){grid-column:3;grid-row:1}
+  #species-rows td:nth-child(5){grid-column:3;grid-row:2;font-size:11px;color:var(--muted)}
+  #species-rows .species-actions-cell{display:none}
+  #species-rows td[colspan]{grid-column:1/-1}
+  #planner-all-grid.matrix-list table,#planner-all-grid.matrix-list tbody{display:block;width:100%;min-width:0}
+  #planner-all-grid.matrix-list thead{position:absolute;clip-path:inset(50%);height:1px;width:1px;overflow:hidden}
+  #planner-all-grid.matrix-list tbody tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px;padding:10px;border-bottom:1px solid var(--line)}
+  #planner-all-grid.matrix-list tbody td{display:block;min-width:0;white-space:normal;border:0;padding:0}
+  #planner-all-grid.matrix-list tbody td:nth-child(-n+3)::before{display:block;color:var(--muted);font-size:10px}
+  #planner-all-grid.matrix-list tbody td:nth-child(1)::before{content:"Pedigree"}
+  #planner-all-grid.matrix-list tbody td:nth-child(2)::before{content:"Mate"}
+  #planner-all-grid.matrix-list tbody td:nth-child(3)::before{content:"Offspring"}
+  #planner-all-grid.matrix-list tbody td:nth-child(4){display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+}
+

@@ -25,7 +25,10 @@ const VIEWS = [
   { hash: '#breeding-table', id: 'breeding-table' },
   { hash: '#species-index', id: 'species-index' },
   { hash: '#team-planner', id: 'team-planner' },
+  { hash: '#sources', id: 'sources' },
 ];
+
+const TOP_VIEWS = VIEWS.filter(view => !['offspring-finder', 'sources'].includes(view.id));
 
 // Every view id must be one of the view wrappers, and exactly one is displayed.
 async function expectSingleView(page, id) {
@@ -52,20 +55,20 @@ test.describe('served', () => {
 
   test('guidance appears beside the tool it explains and source details remain available', async ({ page }) => {
     await page.goto(url() + '#pair-finder');
-    await expect(page.locator('#pair-finder #pair-guidance')).toBeVisible();
-    await expect(page.locator('#pair-guidance')).toContainText(/pedigree|parent|order/i);
+    await expect(page.locator('#pair-finder .lookup-modes')).toBeVisible();
     await expect(page.locator('#rules-guide, #plus-rules, #flag-rules')).toHaveCount(0);
 
     await page.locator('#breeding-nav-trigger').click();
-    await page.click('.nav a[href="#offspring-finder"]');
+    await page.click('.nav a[href="#pair-finder"]');
+    await page.click('#pair-finder [data-parent-mode]');
     await expect(page.locator('#offspring-finder #breeding-conditions')).toBeVisible();
     await expect(page.locator('#breeding-conditions')).toContainText('+');
     await expect(page.locator('#breeding-conditions')).toContainText(/Breeding room/i);
 
     await page.click('.nav a[href="#species-index"]');
     await expect(page.locator('#species-index #name-guide')).toBeVisible();
-    const sources = page.locator('#species-index details').filter({ has: page.locator('#coverage-summary') });
-    await sources.locator(':scope > summary').click();
+    await page.locator('footer a[href="#sources"]').click();
+    const sources = page.locator('#sources');
     await expect(page.locator('#coverage-summary')).toBeVisible();
     const slots = await page.evaluate(() => DATA.species.length);
     const version = await page.evaluate(() => DATA.metadata.version);
@@ -77,22 +80,23 @@ test.describe('served', () => {
     await expect(page.locator('#source-metadata')).toContainText(version);
   });
 
-  test('each guide nav link opens, titles and distinctly marks its own view', async ({ page }) => {
+  test('each primary view link opens, titles and distinctly marks its destination', async ({ page }) => {
     await page.goto(url());
     const expected = {
       '#field-guide': 'Field guide',
       '#atlas': 'Map atlas',
-      '#pair-finder': 'Find a pairing',
-      '#offspring-finder': 'Find parents',
+      '#pair-finder': 'Breeding lookup',
       '#breeding-tree': 'Breeding tree',
       '#breeding-table': 'Breeding table',
       '#species-index': 'Monster library',
       '#team-planner': 'My game',
     };
-    for (const view of VIEWS) {
+    for (const view of TOP_VIEWS) {
       await test.step(view.id, async () => {
         const link = page.locator('.nav a[href="' + view.hash + '"]');
-        if (await link.locator('xpath=..').getAttribute('id') === 'breeding-nav-links') await page.locator('#breeding-nav-trigger').click();
+        const menuId = await link.evaluate(a => a.closest('.nav-links')?.id);
+        const menuButton = menuId && page.locator('.nav-trigger[aria-controls="' + menuId + '"]');
+        if (menuButton) await menuButton.click();
         await expect(link).toBeVisible();
         await link.click();
         await expectSingleView(page, view.id);
@@ -110,8 +114,10 @@ test.describe('served', () => {
             };
           })
         );
-        expect(marks.filter(mark => mark.href.startsWith('#')).map(mark => mark.href))
-          .toEqual(VIEWS.map(entry => entry.hash));
+        expect(marks.filter(mark => /^#[\w-]+$/.test(mark.href)).map(mark => mark.href))
+          .toEqual(TOP_VIEWS.map(entry => entry.hash));
+        await expect(page.locator('.nav-trigger.nav-link-active')).toHaveCount(menuButton ? 1 : 0);
+        if (menuButton) await expect(menuButton).toHaveClass(/\bnav-link-active\b/);
         // The clicked link alone owns both the semantic and visual marks.
         expect(marks.filter(mark => mark.current === 'page').map(mark => mark.href)).toEqual([view.hash]);
         const marked = marks.filter(mark => mark.active);
@@ -170,11 +176,11 @@ test.describe('served', () => {
     await expectSingleView(page, 'species-index');
     // An alias with a parameter still resolves through the same rule.
     await page.goto(url() + '#about');
-    await expectSingleView(page, 'species-index');
+    await expectSingleView(page, 'sources');
     expect(await page.evaluate(() => DQMViews.parse('#team-planner?tab=roster')))
       .toEqual({ id: 'team-planner', params: '?tab=roster' });
     expect(await page.evaluate(() => DQMViews.viewFor('#about')))
-      .toBe('species-index');
+      .toBe('sources');
     expect(await page.evaluate(() => DQMViews.viewFor('#nope')))
       .toBe('field-guide');
   });
@@ -209,8 +215,7 @@ test.describe('served', () => {
     await page.goto(url());
     await page.keyboard.press('Tab');
     await expect(page.locator('a.skip')).toBeFocused();
-    // Tab forward through any controls above the nav (the theme picker) and
-    // the links, stopping when Name index takes focus.
+    // Closed dropdowns should leave the library reachable through the main tab order.
     let reached = false;
     for (let i = 0; i < 12 && !reached; i++) {
       await page.keyboard.press('Tab');
@@ -251,14 +256,14 @@ test.describe('served', () => {
     const aliases = [
       { hash: '#rules-guide', view: 'offspring-finder', target: 'offspring-heading', heading: 'offspring-heading', title: 'Find parents' },
       { hash: '#conditional-rules', view: 'offspring-finder', target: 'breeding-conditions', heading: 'offspring-heading', title: 'Find parents' },
-      { hash: '#about', view: 'species-index', target: 'name-guide', heading: 'species-heading', title: 'Monster library' },
+      { hash: '#about', view: 'sources', target: 'sources-heading', heading: 'sources-heading', title: 'Sources & coverage' },
     ];
     for (const alias of aliases) {
       await page.evaluate(hash => { location.hash = hash; }, alias.hash);
       await expectSingleView(page, alias.view);
-      const link = page.locator('.nav a[href="#' + alias.view + '"]');
-      await expect(link).toHaveClass(/\bnav-link-active\b/);
-      await expect(link).toHaveAttribute('aria-current', 'page');
+      const active = page.locator('.nav a[aria-current="page"]');
+      if (alias.view === 'sources') await expect(active).toHaveCount(0);
+      else await expect(active).toHaveAttribute('href', '#pair-finder');
       await expect(page).toHaveTitle(new RegExp('^' + alias.title + ' · '));
       await expect(page.locator('#' + alias.target)).toBeVisible();
       await expect(page.locator('#' + alias.heading)).toBeFocused();
@@ -326,13 +331,14 @@ test.describe('served', () => {
       });
     });
     await page.goto(url() + '#pair-finder');
-    await expect(page.locator('#pair-guidance')).toBeVisible();
+    await expect(page.locator('#pair-finder .lookup-modes')).toBeVisible();
     await page.locator('#breeding-nav-trigger').click();
-    await page.click('.nav a[href="#offspring-finder"]');
+    await page.click('.nav a[href="#pair-finder"]');
+    await page.click('#pair-finder [data-parent-mode]');
     await expectSingleView(page, 'offspring-finder');
     await expect(page.locator('#breeding-conditions')).toBeVisible();
     await expect(page.locator('#reverse-rows tr').first()).toBeVisible();
-    await expect(page.locator('#reverse-rows')).toContainText('Base table pairs');
+    await expect(page.locator('#reverse-rows')).toContainText(/base table|first copy/i);
     await expect(page.locator('#reverse-rows')).not.toContainText('Confirmed + value recipes');
     await expect(page.locator('#offspring-heading')).toBeFocused();
     await page.click('.nav a[href="#species-index"]');
@@ -354,27 +360,49 @@ test.describe('served', () => {
 // Layout and media queries. These rules are the same whether the page was
 // opened from disk or served, so they run once, against the shipped file.
 test.describe('narrow screens and print', () => {
-  test('the five primary destinations fit at 320px and breeding opens by keyboard', async ({ page }) => {
+  test('all five primary controls and their open menus fit at 320px and work by keyboard', async ({ page }) => {
     await page.setViewportSize({width:320, height:640});
     await page.goto(FILE_URL);
-    const primary = page.locator('.nav nav > a, #breeding-nav-trigger');
-    expect(await primary.count()).toBe(5);
+    const primary = page.locator('.nav nav > a, .nav .nav-trigger');
+    const names = ['Adventure guide', 'Reference', 'Breeding', 'Monster library', 'My game'];
+    await expect(primary).toHaveCount(names.length);
+    for (const [index,name] of names.entries()) await expect(primary.nth(index)).toHaveAccessibleName(name);
     const bounds = await primary.evaluateAll(items => items.map(a => {
       const r = a.getBoundingClientRect();
       return [r.left, r.right, r.top];
     }));
     expect(new Set(bounds.map(r=>Math.round(r[2]))).size).toBe(1);
     expect(bounds.every(([l,r])=>l>=0 && r<=320)).toBe(true);
-    const trigger = page.getByRole('button', {name:'Breeding',exact:true});
-    await trigger.focus();
-    await page.keyboard.press('ArrowDown');
-    await expect(page.locator('#breeding-nav-links').getByRole('link',{name:'Find a pairing',exact:true})).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expect(trigger).toBeFocused();
-    await expect(trigger).toHaveAttribute('aria-expanded','false');
+    for (const name of ['adventure','reference','breeding']) {
+      const button = page.locator('#' + name + '-nav-trigger');
+      const menu = page.locator('#' + name + '-nav-links');
+      await button.focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(menu.locator('a').first()).toBeFocused();
+      await expect(button).toHaveAttribute('aria-expanded','true');
+      const box = await menu.boundingBox();
+      expect(box.x).toBeGreaterThanOrEqual(-1);
+      expect(box.x + box.width).toBeLessThanOrEqual(321);
+      await page.keyboard.press('ArrowUp');
+      await expect(menu.locator('a').last()).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(button).toBeFocused();
+      await expect(menu).toBeHidden();
+    }
+    const reference = page.locator('#reference-nav-trigger');
+    await reference.click();
+    const skills = page.locator('#reference-nav-links a[href="#field-guide?kind=skill"]');
+    await skills.click();
+    await expect(page).toHaveURL(/#field-guide\?kind=skill$/);
+    await expect(page.locator('#directory-title')).toHaveText('Skills');
+    await expect(page).toHaveTitle(/^Skills · /);
+    await expect(page.locator('.nav a[aria-current="page"]')).toHaveAttribute('href','#field-guide?kind=skill');
+    await expect(reference).toHaveClass(/\bnav-link-active\b/);
+    await expect(reference).toHaveAttribute('aria-expanded','false');
+    const trigger = page.locator('#breeding-nav-trigger');
     await trigger.click();
-    await page.locator('#breeding-nav-links a').nth(1).click();
-    await expectSingleView(page,'offspring-finder');
+    await page.locator('#breeding-nav-links a[href="#breeding-tree"]').click();
+    await expectSingleView(page,'breeding-tree');
     await expect(trigger).toHaveClass(/nav-link-active/);
     await expect(trigger).toHaveAttribute('aria-expanded','false');
     await page.getByRole('navigation',{name:'Views',exact:true}).getByRole('link',{name:'Monster library',exact:true}).click();

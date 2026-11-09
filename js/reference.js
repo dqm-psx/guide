@@ -54,12 +54,9 @@ function paramIndex(params, key) {
   return Number.isInteger(value) && value >= 0 ? value : null;
 }
 
-function resetParentFilters() { for (const id of ["pedigree","mate"]) { $(id + "-family").value = ""; $(id + "-search").value = ""; } }
 function saveSession() {
   const a = current("pedigree"), b = current("mate"), target = current("target");
   session.pair = { a: a ? a.index : null, b: b ? b.index : null };
-  session.pedigree = { family: $("pedigree-family").value, search: $("pedigree-search").value };
-  session.mate = { family: $("mate-family").value, search: $("mate-search").value };
   session.target = target ? target.index : null;
   session.reverse = { pedigreeFamily: $("reverse-pedigree-family").value, mateFamily: $("reverse-mate-family").value, search: $("reverse-search").value };
   session.species = { search: $("species-search").value, family: $("species-family").value, favoritesOnly: $("species-favorites-only").checked };
@@ -68,10 +65,6 @@ function saveSession() {
 }
 function applySessionFilters() {
   $("show-internal").checked = session.showInternal === true;
-  $("pedigree-family").value = session.pedigree.family;
-  $("pedigree-search").value = session.pedigree.search;
-  $("mate-family").value = session.mate.family;
-  $("mate-search").value = session.mate.search;
   $("reverse-pedigree-family").value = session.reverse.pedigreeFamily;
   $("reverse-mate-family").value = session.reverse.mateFamily;
   $("reverse-search").value = session.reverse.search;
@@ -105,21 +98,8 @@ function filterEmptyMarkup(message, chips, scope) {
     (chips.length ? '<p class="filter-empty-active">Active filters:</p><p class="filter-chips">' + chips.join("") + "</p>" : "") +
     '<button class="filter-clear" type="button" data-clear-filters="' + scope + '">Clear filters</button></div>';
 }
-function filterEmptyInlineMarkup(message, chips, scope) {
-  return '<span class="filter-empty-inline">' + escapeHTML(message) +
-    (chips.length ? ' <span class="filter-chips">' + chips.join("") + "</span>" : "") +
-    ' <button class="filter-clear" type="button" data-clear-filters="' + scope + '">Clear filters</button></span>';
-}
 function selectChip(select, label) {
   return select.value ? chip(label + ": " + select.options[select.selectedIndex].textContent) : "";
-}
-function parentChips(id) {
-  const chips = [];
-  const family = selectChip($(id + "-family"), "Family");
-  const search = $(id + "-search").value.trim();
-  if (family) chips.push(family);
-  if (search) chips.push(chip("Name: " + search));
-  return chips;
 }
 function reverseChips() {
   const chips = [];
@@ -147,11 +127,6 @@ function clearFilters(scope) {
   } else if (scope === "reverse") {
     $("reverse-pedigree-family").value = ""; $("reverse-mate-family").value = ""; $("reverse-search").value = "";
     renderReverse();
-  } else if (scope === "target") {
-    $("target-search").value = ""; updateTarget();
-  } else if (scope === "pedigree" || scope === "mate") {
-    $(scope + "-family").value = ""; $(scope + "-search").value = "";
-    updateParent(scope); renderPair();
   }
   saveSession();
 }
@@ -238,8 +213,16 @@ function useSpeciesAs(role, index) {
 function openParents(index) {
   if (!byId.has(index)) return;
   selectTarget(index);
+  $("target").dispatchEvent(new Event("change", {bubbles:true}));
   saveSession();
-  DQMViews.go("offspring-finder", { focusId: "target" });
+  DQMViews.go("offspring-finder", {focusId:"target-combobox", params:{target:index}});
+}
+
+function addGlossary(host) {
+  if (host.querySelector(".lookup-glossary")) return;
+  const glossary = $("lookup-glossary").cloneNode(true);
+  glossary.removeAttribute("id");
+  host.append(glossary);
 }
 
 function setOptions(id, species, selected) {
@@ -247,23 +230,19 @@ function setOptions(id, species, selected) {
   select.replaceChildren();
   if (!species.length) {
     const option = document.createElement("option"); option.value = ""; option.textContent = "No matching species";
-    select.append(option); select.disabled = true; return;
+    select.append(option); select.disabled = true; window.DQMMonsterPicker?.get(select)?.refresh(); return;
   }
   select.disabled = false;
   for (const s of species) { const option = document.createElement("option"); option.value = s.index; option.textContent = nameLabel(s); select.append(option); }
   if (species.some(s => String(s.index) === String(old))) select.value = String(old);
+  window.DQMMonsterPicker?.get(select)?.refresh();
 }
 function setFamilies(id) {
   const select = $(id), any = document.createElement("option"); any.value = ""; any.textContent = "All families"; select.append(any);
   for (const f of DATA.families) { const option = document.createElement("option"); option.value = f.id; option.textContent = f.display_name || f.name; select.append(option); }
 }
 function updateParent(id, selected) {
-  const species = allSpecies().filter(s => familyMatches(s, $(id + "-family").value) && matchesName(s, $(id + "-search").value));
-  setOptions(id, species, selected);
-  const hint = $(id + "-hint");
-  hint.hidden = species.length > 0 && !$(id + "-family").value && !$(id + "-search").value.trim();
-  if (species.length) hint.textContent = species.length.toLocaleString() + " matching species";
-  else hint.innerHTML = filterEmptyInlineMarkup("No monsters match these filters.", parentChips(id), id);
+  setOptions(id, allSpecies(), selected);
 }
 function offspring(a, b) {
   if (!a || !b) return undefined;
@@ -290,6 +269,7 @@ function renderPair() {
   $("result-detail").textContent = a && b ? resultDetail(forward) : "Adjust the name or family filters to select two species.";
   $("reverse-detail").textContent = a && b ? resultDetail(reverse) : "";
   $("pair-description").textContent = a && b ? displayName(a) + " + " + displayName(b) : "";
+  $("pair-finder").querySelector("[data-parent-mode]").href = forward ? "#offspring-finder?target=" + forward.index : "#offspring-finder";
   $("reverse-comparison").textContent = a && b ? (forward && reverse && forward.index === reverse.index ? "Same offspring in both orders." : displayName(b) + " + " + displayName(a)) : "";
   const plusRule = a && b ? plusRuleFor(a, b) : undefined;
   $("pair-plus-note").hidden = !plusRule;
@@ -318,25 +298,7 @@ function renderPair() {
   if (sessionReady) { recordRecent(); saveSession(); syncPairUrl(); }
 }
 function choosePair(a, b) {
-  resetParentFilters(); updateParent("pedigree", a); updateParent("mate", b); renderPair();
-}
-function selectParentWithFallback(id, index) {
-  if (index === null || !byId.has(index)) { updateParent(id); return; }
-  updateParent(id, index);
-  const selected = current(id);
-  if (!selected || selected.index !== index) {
-    // The saved filter hid the saved species; show every name for that parent.
-    $(id + "-family").value = ""; $(id + "-search").value = "";
-    updateParent(id, index);
-  }
-}
-function selectTargetWithFallback(index) {
-  updateTarget(index);
-  const selected = current("target");
-  if (!selected || selected.index !== index) {
-    $("target-search").value = "";
-    updateTarget(index);
-  }
+  updateParent("pedigree", a); updateParent("mate", b); renderPair();
 }
 function renderMonster(s, marker = "") { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon"><a class="monster-link" href="#monster?id=' + s.index + '">' + escapeHTML(displayName(s)) + '</a>' + marker + '</span><span class="detail">' + escapeHTML(s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
 function plusRuleFor(a, b) {
@@ -399,7 +361,8 @@ function baseRowHtml(a, b) {
 }
 function renderReversePage() {
   const baseRows = reverseMatches.slice(reversePage * PAGE_SIZE, (reversePage + 1) * PAGE_SIZE).map(([a,b]) => baseRowHtml(a, b)).join("");
-  const groups = [{ label: "Base table pairs", count: reverseMatches.length, body: baseRows, empty: current("target") ? filterEmptyMarkup("No base table pairs match these filters.", reverseChips(), "reverse") : "Choose a desired offspring to list parent pairs." }];
+  const isFirst = $("reverse-copy-mode").value === "first";
+  const groups = [{ label: isFirst ? "Base table pairs · first copy" : "Base table pairs requiring the target", count: reverseMatches.length, body: baseRows, empty: current("target") ? filterEmptyMarkup("No base table pairs match these filters.", reverseChips(), "reverse") : "Choose a desired offspring to list parent pairs." }];
   if (reverseConditional.plus.length) groups.push({ label: "Confirmed + value recipes", count: reverseConditional.plus.length, body: reverseConditional.plus.map(r => conditionalRowHtml(r, false)).join(""), empty: "No + value recipes." });
   if (reverseConditional.room.length) groups.push({ label: "Breeding room recipes", count: reverseConditional.room.length, body: reverseConditional.room.map(r => conditionalRowHtml(r, true)).join(""), empty: "No Breeding room recipes." });
   $("reverse-rows").innerHTML = groups.map(group => {
@@ -413,20 +376,46 @@ function renderReverse() {
   const target = current("target"), species = allSpecies(), pedigreeFamily = $("reverse-pedigree-family").value, mateFamily = $("reverse-mate-family").value, query = $("reverse-search").value;
   const pedigrees = species.filter(s => familyMatches(s, pedigreeFamily));
   const mates = species.filter(s => familyMatches(s, mateFamily));
+  const first = [];
+  const repeat = [];
   $("target-sprite").innerHTML = spriteMarkup(target?.index);
-  reverseMatches = [];
-  if (target) for (const a of pedigrees) for (const b of mates) if (DATA.matrix[a.index]?.[b.index] === target.index && (matchesName(a,query) || matchesName(b,query))) reverseMatches.push([a,b]);
-  reverseConditional = conditionalGroups(target);
+  if (target) for (const a of pedigrees) for (const b of mates) {
+    if (DATA.matrix[a.index]?.[b.index] !== target.index || !(matchesName(a,query) || matchesName(b,query))) continue;
+    (a.index === target.index || b.index === target.index ? repeat : first).push([a,b]);
+  }
+  const mode = $("reverse-copy-mode");
+  const isFirst = mode.value === "first";
+  reverseMatches = isFirst ? first : repeat;
+  const conditional = conditionalGroups(target);
+  const totals = [first.length, repeat.length];
+  reverseConditional = {plus: [], room: []};
+  for (const [group, rules] of Object.entries(conditional)) for (const rule of rules) {
+    const a = byId.get(rule.pedigree_index);
+    if (!pedigrees.includes(a)) continue;
+    const partners = mates.filter(b => (rule.mate_index == null ? b.family_id === rule.mate_family_index : b.index === rule.mate_index) && (matchesName(a,query) || matchesName(b,query)));
+    if (!partners.length) continue;
+    const needsTarget = a.index === target.index || partners.every(b => b.index === target.index);
+    totals[needsTarget ? 1 : 0]++;
+    if (needsTarget !== isFirst) reverseConditional[group].push(rule);
+  }
+  mode.options[0].textContent = "For a first copy (" + totals[0].toLocaleString() + ")";
+  mode.options[1].textContent = "Already have the target (" + totals[1].toLocaleString() + ")";
+  $("target-tree").hidden = !target || !isPlayable(target);
+  if (target) {
+    $("target-tree").href = "#breeding-tree?target=" + target.index + "&context=shrine";
+    $("offspring-finder").querySelector("[data-parent-mode]").href = "#offspring-finder?target=" + target.index;
+  }
   reversePage = 0;
   const conditionalTotal = reverseConditional.plus.length + reverseConditional.room.length;
   $("reverse-count").textContent = reverseMatches.length.toLocaleString() + " base ordered pair" + (reverseMatches.length === 1 ? "" : "s") + (target ? " for " + displayName(target) : "") + (conditionalTotal ? " · " + conditionalTotal + " conditional recipe" + (conditionalTotal === 1 ? "" : "s") : "");
   renderReversePage();
 }
-function updateTarget(selected) { setOptions("target", allSpecies().filter(s => matchesName(s, $("target-search").value)), selected); renderReverse(); }
+function updateTarget(selected) { setOptions("target", allSpecies(), selected); renderReverse(); }
 function selectTarget(index) {
   const species = byId.get(Number(index));
   if (!species) return;
-  if (!matchesName(species, $("target-search").value)) $("target-search").value = "";
+  ensureSpeciesSelectable(index);
+  if (currentTargetIndex() !== species.index) $("reverse-copy-mode").value = "first";
   updateTarget(species.index);
 }
 function currentTargetIndex() {
@@ -456,20 +445,26 @@ function renderSpeciesPage() {
   pageControls("species", speciesPage, speciesMatches.length);
 }
 function renderSpecies() {
+  $("library-extra-slots").checked = $("show-internal").checked;
   speciesMatches = allSpecies().filter(s => familyMatches(s, $("species-family").value) && matchesName(s, $("species-search").value) && (!favoritesOnly() || isFavorite(s.index)));
   const sort = $("species-sort")?.value || "id";
   if (sort !== "id") speciesMatches.sort((a,b) => (sort === "family" ? Number(a.family_id)-Number(b.family_id) : 0) || displayName(a).localeCompare(displayName(b)) || a.index-b.index);
   speciesPage = 0; $("species-count").textContent = speciesMatches.length + " matching species"; renderSpeciesPage();
 }
-for (const id of ["pedigree-family","mate-family","reverse-pedigree-family","reverse-mate-family","species-family"]) setFamilies(id);
+for (const id of ["reverse-pedigree-family","reverse-mate-family","species-family"]) setFamilies(id);
 for (const id of ["pedigree","mate"]) {
   $(id).addEventListener("change", renderPair);
-  $(id + "-family").addEventListener("change", () => { updateParent(id); renderPair(); });
-  $(id + "-search").addEventListener("input", () => { updateParent(id); renderPair(); });
 }
 $("swap").addEventListener("click", () => choosePair(current("mate").index, current("pedigree").index));
-$("target").addEventListener("change", () => { renderReverse(); saveSession(); });
-$("target-search").addEventListener("input", () => { updateTarget(); saveSession(); });
+$("target").addEventListener("change", () => {
+  $("reverse-copy-mode").value = "first";
+  renderReverse();
+  saveSession();
+  if (sessionReady && currentViewId() === "offspring-finder") {
+    try { history.replaceState(null, "", "#offspring-finder?target=" + currentTargetIndex()); } catch {}
+  }
+});
+$("reverse-copy-mode").addEventListener("change", renderReverse);
 for (const id of ["reverse-pedigree-family","reverse-mate-family"]) $(id).addEventListener("change", () => { renderReverse(); saveSession(); });
 $("reverse-search").addEventListener("input", () => { renderReverse(); saveSession(); });
 $("reverse-prev").addEventListener("click", () => { reversePage--; renderReversePage(); });
@@ -542,9 +537,7 @@ function sharedSpecies(index, fallbackName, fallbackPosition) {
   const base = allSpecies();
   return base.find(s => normalize(s.name) === fallbackName) || base[fallbackPosition] || base[0];
 }
-// Apply a shared pairing without discarding saved filters the requested species
-// still satisfies; selectParentWithFallback clears only the filter that actually
-// hides it. Returns false when the route names no pair to apply.
+// A shared pairing takes precedence over the saved selections.
 function applyPairParams(params) {
   const a = paramIndex(params, "a");
   const b = paramIndex(params, "b");
@@ -553,8 +546,8 @@ function applyPairParams(params) {
   const revealedB = b !== null && ensureSpeciesSelectable(b);
   const pedigree = sharedSpecies(a, "slime", 0);
   const mate = sharedSpecies(b, "dracky", 1);
-  selectParentWithFallback("pedigree", pedigree.index);
-  selectParentWithFallback("mate", mate.index);
+  updateParent("pedigree", pedigree.index);
+  updateParent("mate", mate.index);
   if (sessionReady && (revealedA || revealedB)) {
     // Other mounted views also use the shared visibility setting. Startup
     // builds them below, but a same-document route needs to refresh them here.
@@ -567,7 +560,7 @@ function applyPairParams(params) {
 function applyTargetParam(params) {
   const target = paramIndex(params, "target");
   if (target === null || !byId.has(target)) return false;
-  selectTargetWithFallback(target);
+  selectTarget(target);
   // Notify the same listeners as an ordinary selection, including the planner's
   // pin label, availability, and target summary, and the saved reference session.
   $("target").dispatchEvent(new Event("change", { bubbles: true }));
@@ -581,13 +574,12 @@ const hasSessionPair = session.pair.a !== null || session.pair.b !== null;
 if (applyPairParams(initialRoute.params)) {
   // The shared URL supplied the pair.
 } else if (hasSessionPair) {
-  selectParentWithFallback("pedigree", session.pair.a);
-  selectParentWithFallback("mate", session.pair.b);
+  updateParent("pedigree", session.pair.a);
+  updateParent("mate", session.pair.b);
 } else {
   const base = allSpecies();
   const a = base.find(s => normalize(s.name) === "slime") || base[0];
   const b = base.find(s => normalize(s.name) === "dracky") || base[1] || base[0];
-  resetParentFilters();
   updateParent("pedigree", a.index);
   updateParent("mate", b.index);
 }
@@ -595,9 +587,14 @@ renderPair();
 const chosenA = current("pedigree"), chosenB = current("mate");
 const sharedTarget = paramIndex(initialRoute.params, "target");
 const wantedTarget = (initialRoute.id === "offspring-finder" && sharedTarget !== null) ? sharedTarget : session.target;
-if (wantedTarget !== null && byId.has(wantedTarget)) selectTargetWithFallback(wantedTarget);
+if (wantedTarget !== null && byId.has(wantedTarget)) selectTarget(wantedTarget);
 else updateTarget(offspring(chosenA, chosenB)?.index);
 renderSpecies();
+addGlossary($("pair-finder"));
+addGlossary($("breeding-table"));
+for (const [id, label] of [["pedigree","Pedigree"],["mate","Mate"],["target","Desired offspring"]]) {
+  DQMMonsterPicker.attach($(id), {label});
+}
 sessionReady = true;
 // Startup is not the only source of parameters: a same-document link, Back, or
 // Forward changes the hash without reloading, so re-apply the route's pair or
@@ -611,7 +608,7 @@ window.addEventListener("hashchange", () => {
 });
 renderRecent();
 function sourceSummaryMarkup() {
-  const metadata = globalThis.MONSTER_REFERENCE?.metadata || {};
+  const metadata = (globalThis.MONSTER_REFERENCE || globalThis.BREEDING_NAMES)?.metadata || {};
   const patch = metadata.current_patch;
   const proof = metadata.gameplay_verification;
   const revision = metadata.public_revision;
@@ -626,8 +623,9 @@ function sourceSummaryMarkup() {
 }
 $("source-version-summary").innerHTML = sourceSummaryMarkup();
 $("coverage-summary").textContent = DATA.species.length.toLocaleString() + " table slots; " + DATA.species.filter(isPlayable).length.toLocaleString() + " standard roster entries; " + DATA.families.length + " families; " + DATA.matrix.reduce((n,row) => n + row.length, 0).toLocaleString() + " ordered base entries.";
-$("source-metadata").textContent = JSON.stringify({ current_reference: globalThis.MONSTER_REFERENCE?.metadata, original_table_extraction: DATA.metadata, runtime_rules: DATA.runtime_rules }, null, 2);
+$("source-metadata").textContent = JSON.stringify({ current_reference: (globalThis.MONSTER_REFERENCE || globalThis.BREEDING_NAMES)?.metadata, original_table_extraction: DATA.metadata, runtime_rules: DATA.runtime_rules }, null, 2);
 window.DQMReference = Object.freeze({
+  addGlossary,
   sourceSummaryMarkup,
   refresh,
   selectTarget,

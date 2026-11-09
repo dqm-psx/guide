@@ -9,6 +9,26 @@ const { DATA, MONSTER_REFERENCE } = loadScripts([
 ]);
 const model = create(DATA, MONSTER_REFERENCE);
 
+test('first-copy examples exclude the target from both roles and resolve to the profiled species', () => {
+  const attainable = new Set();
+  for (const a of model.playable) for (const b of model.playable) {
+    const target = DATA.matrix[a.index][b.index];
+    if (target !== a.index && target !== b.index) attainable.add(target);
+  }
+  for (const entry of model.playable) {
+    const recipes = model.firstRecipes(entry.index);
+    assert.ok(recipes.length || !attainable.has(entry.index));
+    for (const recipe of recipes) {
+      assert.notEqual(recipe.a, entry.index);
+      assert.notEqual(recipe.b, entry.index);
+      const baseResult = DATA.matrix[recipe.a][recipe.b];
+      if (baseResult === entry.index) continue;
+      const matching = DATA.runtime_rules.rules.filter(r => r.offspring_index === entry.index && r.pedigree_index === recipe.a && r.mate_index === recipe.b);
+      assert.ok(matching.some(rule => recipe.condition.includes(rule.kind === 'plus_threshold' ? '+' + rule.minimum_parent_plus : 'Breeding room')));
+    }
+  }
+});
+
 test('profile routes use stable non-negative species IDs and reject malformed IDs', () => {
   assert.equal(routeIndex('#monster?id=0'), 0);
   assert.equal(routeIndex('#monster?id=11'), 11);

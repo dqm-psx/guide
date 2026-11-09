@@ -55,6 +55,7 @@ test.describe('file mode', () => {
     await page.goto(FILE_URL);
     const bgOf = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     const initialBg = await bgOf();
+    await page.locator('#guide-settings > summary').click();
     await page.click('button[data-theme-choice="dark"]');
     expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark');
     expect(brightness(await bgOf())).toBeLessThan(80);

@@ -9,6 +9,10 @@ const digest = value => crypto.createHash('sha256').update(value).digest('hex').
 
 function versionAssets(input) {
   const assets = new Map(input);
+  // The lossless native PNG sources are build inputs. Only sprite sheets and
+  // their frame coordinates are used by the published application.
+  assets.delete('data/overworld-sprites.js');
+  assets.delete('data/monster-sprites.js');
   function read(file) {
     if (!assets.has(file)) throw new Error(`Missing publication asset: ${file}`);
     return assets.get(file).toString('utf8');
@@ -23,21 +27,35 @@ function versionAssets(input) {
   const manifest = JSON.parse(read('manifest.webmanifest'));
   manifest.icons = manifest.icons.map(icon => ({...icon, src: versionedURL(icon.src)}));
   assets.set('manifest.webmanifest', Buffer.from(JSON.stringify(manifest, null, 2) + '\n'));
-  const html = read('index.html').replace(/(<(?:script|link|img)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi,
+  const sheetScript = read('data/sprite-sheets.js');
+  assets.set('data/sprite-sheets.js', Buffer.from(sheetScript.replace(/"media\/sprites-[\w-]+\.webp"/g,
+    value => JSON.stringify(versionedURL(JSON.parse(value))))));
+  const html = read('index.html').replace(/(<script type="application\/json" id="guide-assets">)([\s\S]*?)(<\/script>)/,
+    (match,open,json,close) => {
+      const groups = JSON.parse(json);
+      for (const [key, urls] of Object.entries(groups)) groups[key] = urls.map(versionedURL);
+      return open + JSON.stringify(groups) + close;
+    }).replace(/(<(?:script|link|img)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi,
     (match, prefix, quote, url) => /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url)
       ? match : prefix + quote + versionedURL(url) + quote);
-  assets.set('index.html', Buffer.from(html));
+  const shell = html.includes('id="entry-permalink"') ? html : html.replace('aria-label="Resources">','aria-label="Resources"><a href="entries/">Guide index</a><a id="entry-permalink" hidden>Share this entry</a>');
+  assets.set('index.html', Buffer.from(shell));
 
   const originalWorker = read('sw.js');
   const match = originalWorker.match(/const PRECACHE = (\[[\s\S]*?\]);/);
   if (!match) throw new Error('Missing worker precache declaration');
-  const precache = JSON.parse(match[1]).map(url => url === './index.html' ? url : versionedURL(url));
+  const precache = JSON.parse(match[1]).filter(url => !url.startsWith('./maps/') && !url.startsWith('./entries/index.html'))
+    .map(url => url === './index.html' ? url : versionedURL(url));
+  // Map filenames already contain native image digests. Keep their exact
+  // runtime URLs valid offline, including arrivals reachable only by a door.
+  precache.push(...Array.from(assets.keys()).filter(file => /^maps\/[0-9a-f]{20}\.webp$/.test(file)).sort().map(file => './'+file));
+  if (assets.has('entries/index.html')) precache.push('./' + versionedURL('entries/index.html'));
   let worker = originalWorker.replace(match[0], 'const PRECACHE = ' + JSON.stringify(precache, null, 2) + ';');
   // Hash all application identities plus the shell and worker implementation.
   // Changing only the translation snapshot therefore rotates the offline cache.
   const versionDeclaration = /const CACHE_VERSION = "[^"]+";/;
   if (!versionDeclaration.test(worker)) throw new Error('Missing worker version declaration');
-  const version = 'content-' + digest(html + '\n' + worker.replace(versionDeclaration, 'const CACHE_VERSION = "CONTENT";'));
+  const version = 'content-' + digest(shell + '\n' + worker.replace(versionDeclaration, 'const CACHE_VERSION = "CONTENT";'));
   worker = worker.replace(versionDeclaration, `const CACHE_VERSION = "${version}";`);
   assets.set('sw.js', Buffer.from(worker));
   return assets;
@@ -57,6 +75,7 @@ function stageSite() {
       assets.set(directory + '/' + entry.name, fs.readFileSync(path.join(root, directory, entry.name)));
     }
   }
+  require('./build-entry-pages').addEntryPages(assets);
   const published = versionAssets(assets);
   if (fs.existsSync(destination)) {
     if (fs.lstatSync(destination).isSymbolicLink()) throw new Error('Publication directory must not be a symlink');

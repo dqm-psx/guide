@@ -68,7 +68,8 @@ test.describe('served', () => {
   // the planner, where the target list and the plan are.
   const pinTarget = async (page, speciesIndex) => {
     await page.locator('#breeding-nav-trigger').click();
-    await page.click('.nav a[href="#offspring-finder"]');
+    await page.click('.nav a[href="#pair-finder"]');
+    await page.click('#pair-finder [data-parent-mode]');
     await expect(page.locator('#offspring-finder')).toBeVisible();
     await page.selectOption('#target', String(speciesIndex));
     await page.click('#target-pin');

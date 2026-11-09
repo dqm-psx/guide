@@ -14,7 +14,9 @@ function sourceAssets() {
   return new Map(files.map(file => [file, fs.readFileSync(path.join(root, file))]));
 }
 function scriptURL(html, file) {
-  return [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(match => match[1]).find(url => url.split('?')[0] === file);
+  const shell = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(match => match[1]);
+  const lazy = Object.values(JSON.parse(html.match(/<script type="application\/json" id="guide-assets">([\s\S]*?)<\/script>/)[1])).flat();
+  return [...shell,...lazy].find(url => url.split('?')[0] === file);
 }
 
 test('published assets, manifest icons and offline keys share exact fingerprinted URLs', () => {
@@ -69,51 +71,45 @@ test('packaging rejects a missing referenced file instead of publishing a broken
   assert.throws(() => versionAssets(files), /Missing referenced asset: js\/router.js/);
 });
 
-test('worker revalidates the HTTP cache and keeps cache writes alive through completion', async () => {
-  const handlers = {}, pending = [], cached = new Map();
-  const url = 'https://example.com/guide/data/monster-reference.js';
-  const stale = {ok: true, type: 'basic', body: 'old HTTP-cache snapshot', clone() {return this;}};
-  const fresh = {ok: true, type: 'basic', body: 'current network snapshot', clone() {return this;}};
-  cached.set(url, stale);
-  let fetchOptions, releaseWrite, putStarted;
-  const writing = new Promise(resolve => { putStarted = resolve; });
-  const writeGate = new Promise(resolve => { releaseWrite = resolve; });
+test('a fresh install caches the shell, coalesces immutable misses and serves subsequent hits locally', async () => {
+  const {webcrypto} = require('node:crypto');
+  const handlers = {}, storage = new Map(), requests = [];
+  const base = 'https://example.com/guide/';
+  const published = versionAssets(sourceAssets());
+  const shell = published.get('index.html').toString();
+  const url = new URL(scriptURL(shell,'data/monster-reference.js'),base).href;
+  const responses = new Map([...published].map(([file,bytes])=>[file,bytes]));
   const cache = {
-    async match(key) {return cached.get(typeof key === 'string' ? key : key.url);},
-    async put(key, value) {putStarted(); await writeGate; cached.set(typeof key === 'string' ? key : key.url, value);},
+    async match(key) { return storage.get(key)?.clone(); },
+    async put(key,response) { storage.set(key,response); },
   };
-  const context = vm.createContext({URL, Request, Response,
-    self: {location: {href: 'https://example.com/guide/sw.js', origin: 'https://example.com'}, addEventListener(name, listener) {handlers[name] = listener;}},
-    caches: {async open() {return cache;}},
-    fetch: async (_request, options) => {fetchOptions = options; return options?.cache === 'no-cache' ? fresh : stale;},
+  const context = vm.createContext({URL,Request,Response,crypto:webcrypto,
+    self:{location:{href:base+'sw.js'},addEventListener(name,callback){handlers[name]=callback;},async skipWaiting(){}},
+    caches:{async keys(){return [];},async open(){return cache;}},
+    fetch:async (input,options)=>{
+      requests.push([input, options.cache]);
+      const bytes=responses.get(new URL(input).pathname.slice('/guide/'.length));
+      return new Response(bytes,{status:bytes ? 200 : 404});
+    },
   });
-  vm.runInContext(workerSource, context);
-  let response;
-  const request = {method: 'GET', mode: 'no-cors', url};
-  handlers.fetch({request, respondWith(value) {response = value;}, waitUntil(value) {pending.push(value);}});
-  assert.equal((await response).body, 'current network snapshot');
-  assert.equal(fetchOptions.cache, 'no-cache');
-  await writing;
-  assert.equal(pending.length, 1);
-  assert.equal(cached.get(url).body, 'old HTTP-cache snapshot');
-  releaseWrite(); await Promise.all(pending);
-  assert.equal(cached.get(url).body, 'current network snapshot');
-  context.fetch = async () => {throw new Error('offline');};
-  handlers.fetch({request, respondWith(value) {response = value;}, waitUntil() {}});
-  assert.equal((await response).body, 'current network snapshot');
-});
-
-test('installation reloads precached files instead of copying stale browser HTTP responses', async () => {
-  const handlers = {}; let completion, requests, skipped = false;
-  const context = vm.createContext({URL, Request,
-    self: {location: {href: 'https://example.com/guide/sw.js'}, addEventListener(name, listener) {handlers[name] = listener;}, async skipWaiting() {skipped = true;}},
-    caches: {async open() {return {async addAll(value) {requests = value;}};}},
-  });
-  vm.runInContext(workerSource, context);
-  handlers.install({waitUntil(value) {completion = value;}});
-  await completion;
-  assert.equal(skipped, true);
-  assert.equal(requests.length, precacheOf(workerSource).length);
-  assert.ok(requests.every(request => request.cache === 'reload'));
-  assert.ok(requests.some(request => request.url === 'https://example.com/guide/data/monster-reference.js'));
+  vm.runInContext(published.get('sw.js').toString(),context);
+  let complete;
+  handlers.install({waitUntil(value){complete=value;}});
+  await complete;
+  assert.ok(storage.has(base+'index.html'));
+  assert.ok(!storage.has(url));
+  function read() {
+    let result;
+    handlers.fetch({request:new Request(url),respondWith(response){result=response;}});
+    return result;
+  }
+  const [one,two]=await Promise.all([read(),read()]);
+  const first=await one.text();
+  assert.equal(await two.text(),first);
+  assert.equal(await (await read()).text(),first);
+  assert.deepEqual(requests.filter(([input])=>input===url),[[url,'force-cache']]);
+  storage.delete(url);
+  responses.set('data/monster-reference.js',Buffer.from('a later deployment'));
+  await assert.rejects(read(),/updated/);
+  assert.ok(!storage.has(url));
 });
