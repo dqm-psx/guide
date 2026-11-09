@@ -184,3 +184,7 @@
 .nickname-table :is(th,td){white-space:normal;overflow-wrap:anywhere}
 .nickname-table thead th:last-child{width:44%}
 .nickname-table tbody th{text-transform:none;letter-spacing:normal;font:inherit;font-weight:650}
+@media(max-width:420px){
+  .guide-stock .nickname-table :is(th,td){padding:.45rem .35rem}
+  .nickname-table thead th{text-transform:none;letter-spacing:normal}
+}

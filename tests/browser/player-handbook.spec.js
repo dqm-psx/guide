@@ -14,8 +14,10 @@ test('starter and recruit names connect the walkthrough, character search and ni
   await expect(page.locator('.guide-row').first()).toContainText('Slib');
   await page.goto(url+'#field-guide?q=Biino');
   await page.locator('.guide-row').filter({hasText:'Default monster nicknames'}).click();
+  await page.setViewportSize({width:320,height:780});
   const table=page.getByRole('table',{name:'Default monster nicknames'});
   await expect(table.getByRole('rowheader',{name:'Biino'})).toBeVisible();
+  expect(await table.evaluate(node=>node.scrollWidth <= node.parentElement.clientWidth)).toBe(true);
   await table.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Hale',exact:true})})
     .getByRole('link',{name:'Healie / Hale'}).click();
   await expect(page.locator('#article-title')).toHaveText('Healie / Hale');
