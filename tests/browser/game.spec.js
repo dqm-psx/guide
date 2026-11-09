@@ -165,9 +165,9 @@ test.describe('served', () => {
     // DQM1 now has no team of its own, so switching creates a fresh empty one.
     await page.click('#planner-game-dqm1');
     await expect(page.locator('#planner-message')).toContainText('DQM1');
-    await expect(page.locator('#planner-team-summary')).toContainText('My team');
+    await expect(page.locator('#planner-team-summary')).toHaveText('No monsters in My team.');
     await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
-    await expect(page.locator('#planner-females .planner-empty')).toBeVisible();
+    await expect(page.locator('#planner-females .planner-card')).toHaveCount(0);
     await expect(page.locator('#planner-team-game')).toHaveValue('dqm1');
     await expectTeamGroups(page.locator('#planner-team-select'), [
       ['DQM1 teams', ['My team']],
@@ -302,6 +302,7 @@ test.describe('served', () => {
     await page.check('#planner-sex-female');
     await addMonster(page, 89, 'farm');
 
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#offspring-finder"]');
     await page.selectOption('#target', '2');
     await page.click('#target-pin');

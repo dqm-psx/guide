@@ -18,6 +18,7 @@ test.describe('file mode', () => {
   test('a bare load from disk renders the reference and parses its data', async ({ page }) => {
     await page.goto(FILE_URL);
     await expect(page.locator('#field-guide')).toBeVisible();
+    await page.locator('#breeding-nav-trigger').click();
     await page.locator('.nav a[href="#pair-finder"]').click();
     await expect(page.locator('#pair-finder')).toBeVisible();
     const slots = await page.evaluate(() => DATA.species.length);

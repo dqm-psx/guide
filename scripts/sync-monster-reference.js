@@ -227,7 +227,11 @@ async function main(argv) {
   const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/monster-baseline.json'), 'utf8'));
   const proofPath = path.join(ROOT, 'data/gameplay-verification.json');
   const gameplayVerification = fs.existsSync(proofPath) ? JSON.parse(fs.readFileSync(proofPath, 'utf8')) : null;
-  const reference = buildReference(baseline, readBreeding(), comparison, manifest, publicRevision, gameplayVerification);
+  const breeding = readBreeding();
+  const reference = buildReference(baseline, breeding, comparison, manifest, publicRevision, gameplayVerification);
+  const {buildGuideNames, guideInputs} = require('./guide-names');
+  reference.guide_names = buildGuideNames({...guideInputs(ROOT), comparison, revision:manifest.translation_revision,
+    species:reference.species, originalSpecies:breeding.species});
   const script = generateScript(reference);
   const output = path.resolve(options['--output'] || path.join(ROOT, 'data/monster-reference.js'));
   if (options['--check']) {
@@ -236,7 +240,8 @@ async function main(argv) {
     fs.writeFileSync(output + '.tmp', script, 'utf8');
     fs.renameSync(output + '.tmp', output);
   }
-  console.log(`Validated ${reference.metadata.coverage.named_species} names, ${reference.metadata.coverage.library_entries} captions, and 315 native stat profiles; public source ${publicRevision}.`);
+  const coverage = reference.guide_names.coverage;
+  console.log(`Validated ${reference.metadata.coverage.named_species} monster names, ${coverage.items} items, ${coverage.skills} skills, ${coverage.maps} maps, and ${coverage.world_name_bindings} world-name bindings; public source ${publicRevision}.`);
 }
 
 module.exports = {verifySnapshot, validateBaseline, validateCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest, STATS};

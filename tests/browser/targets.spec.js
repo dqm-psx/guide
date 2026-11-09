@@ -233,7 +233,7 @@ test.describe('served', () => {
     const link = page.locator('#planner-open-target');
     await expect(link).toBeVisible();
     await expect(link).toContainText(/parents/i);
-    await expect(link).toContainText('Slime');
+    await expect(link).toHaveAttribute('href','#offspring-finder?target=11');
     await link.click();
     await expect(page.locator('#offspring-finder')).toBeVisible();
     await expect(page.locator('#team-planner')).toBeHidden();

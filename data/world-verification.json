@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "version": "v1.0.73",
+  "edition": "current",
+  "source_revision": "dbf5b12cc419268e5dda0d227ab273ba702be53d",
+  "package_sha256": "652ae16c06cc2291495b592bde5a2737e68e483879b4dc684ed4d58a56e1493a",
+  "patched_bin_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
+  "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
+  "comparison_sha256": "d9666b598773aec100e0c7fb9d42a61f941d252b5e38b3122cf165328a4d2788",
+  "world_entries_sha256": "b2fee1109d64cb5fbfccb516d3ce81280b9e5ceb95f46a2c262f6eb269bfbac9",
+  "native_index_sha256": "f29ece54f8e5bf0b526b2a8849b68ce0ee32a9bdad99ff0c756cfa3eab1f2455",
+  "verified": {
+    "articles": 161,
+    "articles_by_kind": {
+      "boss": 29,
+      "location": 28,
+      "npc": 43,
+      "quest": 38,
+      "story": 23
+    },
+    "cited_records": 1262,
+    "source_categories": {
+      "script_slots": 1227,
+      "system_slots": 28,
+      "service_descriptor_slots": 1,
+      "menu_pointer_offsets": 6
+    },
+    "native_slots": {
+      "dialogue": 1291,
+      "key_descriptions": 6,
+      "service": 1,
+      "system": 28
+    },
+    "dialogue_resources": 76,
+    "abbreviated_system_names": 23,
+    "progression_spans": {
+      "arena_rounds": 1,
+      "fixed_world_keys": 9,
+      "spirit_rewards": 18
+    }
+  },
+  "wording_differences": [
+    {
+      "release_spelling": "Hale",
+      "public_spelling": "Healie",
+      "source_ids": [
+        "s0ac3d800_330b",
+        "s0ac3d800_3332",
+        "s0ac3d800_335c",
+        "s0ac3d800_33cd",
+        "s0ac3d800_3440",
+        "s0ac3d800_3466",
+        "s0ac3d800_38f4",
+        "s0ac3d800_3bc0",
+        "s0b1d9000_011c"
+      ]
+    }
+  ],
+  "scope": "All cited records for the campaign, quest, NPC, boss and location articles were resolved in the v1.0.73 Current disc. Text verification compares visible wording and substitutions across all native slots. Native guards cover the two spirit rewards, fixed story keys and the arena round selector. The articles summarize script clues; this proof does not simulate every event path, validate boss stats, or verify map and sprite art."
+}

@@ -67,6 +67,7 @@ test.describe('served', () => {
   // Pin an offspring in Find parents, then take the "View plan" path into
   // the planner, where the target list and the plan are.
   const pinTarget = async (page, speciesIndex) => {
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#offspring-finder"]');
     await expect(page.locator('#offspring-finder')).toBeVisible();
     await page.selectOption('#target', String(speciesIndex));
@@ -359,14 +360,13 @@ test.describe('served', () => {
     await expect(firstShrine2).toHaveAttribute('data-suggestion-use', 'base:shrine:11:222');
   });
 
-  test('base recipes show the unknown caveat and plus recipes show the required +N condition', async ({ page }) => {
+  test('recipes share one eligibility note and plus recipes show the required +N condition', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await pinTarget(page, 2); // Winged Slime
     await useSuggestionById(page, 'base:shrine:0:89');
 
-    // The base recipe shows the unknown caveat.
-    const rootCard = page.locator('#plan-tree .plan-node').first();
-    await expect(rootCard.locator('.plan-node-unknowns').first()).not.toHaveText('');
+    await expect(page.locator('#plan-limits')).toBeVisible();
+    await expect(page.locator('#plan-body').getByText(/check availability, offspring sex/i)).toHaveCount(1);
 
     // Pin Spotted King and expand with the plus recipe.
     await pinTarget(page, 17); // Spotted King
@@ -781,7 +781,7 @@ test.describe('served', () => {
     await expect(page.locator('#plan-mismatch')).toBeHidden();
     await expect(page.locator('#plan-clear')).toBeHidden();
     await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
-    await expect(page.locator('#plan-tree .plan-node').first().locator(':scope > .plan-node-recipe > .plan-node-context')).toContainText(/Breeding room/i);
+    await expect(page.locator('#plan-context option:checked')).toContainText(/Breeding room/i);
   });
 
   test('a stored plan for a different species is flagged on load', async ({ page }) => {

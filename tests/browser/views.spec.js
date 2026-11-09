@@ -56,6 +56,7 @@ test.describe('served', () => {
     await expect(page.locator('#pair-guidance')).toContainText(/pedigree|parent|order/i);
     await expect(page.locator('#rules-guide, #plus-rules, #flag-rules')).toHaveCount(0);
 
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#offspring-finder"]');
     await expect(page.locator('#offspring-finder #breeding-conditions')).toBeVisible();
     await expect(page.locator('#breeding-conditions')).toContainText('+');
@@ -91,6 +92,7 @@ test.describe('served', () => {
     for (const view of VIEWS) {
       await test.step(view.id, async () => {
         const link = page.locator('.nav a[href="' + view.hash + '"]');
+        if (await link.locator('xpath=..').getAttribute('id') === 'breeding-nav-links') await page.locator('#breeding-nav-trigger').click();
         await expect(link).toBeVisible();
         await link.click();
         await expectSingleView(page, view.id);
@@ -144,6 +146,7 @@ test.describe('served', () => {
 
   test('DQMViews.go routes to a view, a handoff target, and an already open view', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#pair-finder"]');
     await page.selectOption('#pedigree', '11');
     await page.click('.nav a[href="#species-index"]');
@@ -324,6 +327,7 @@ test.describe('served', () => {
     });
     await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pair-guidance')).toBeVisible();
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#offspring-finder"]');
     await expectSingleView(page, 'offspring-finder');
     await expect(page.locator('#breeding-conditions')).toBeVisible();
@@ -335,29 +339,11 @@ test.describe('served', () => {
     await expect(page.locator('#name-guide')).toBeVisible();
   });
 
-  test('the nav separates its links with CSS, not spacer text', async ({ page }) => {
-    await page.goto(url());
-    const nav = page.locator('.nav nav');
-    for (const link of await nav.locator('a').all()) await expect(link).not.toHaveText('');
-    // Only element children: no spacer text nodes left between the links.
-    const childTypes = await page.evaluate(() => [...document.querySelector('.nav nav').childNodes].map(n => n.nodeType));
-    expect(childTypes).toEqual(childTypes.map(() => 1));
-    const gap = await page.evaluate(() => {
-      const links = [...document.querySelectorAll('.nav nav a')].map(a => a.getBoundingClientRect());
-      return {
-        declared: parseFloat(getComputedStyle(document.querySelector('.nav nav')).columnGap),
-        rendered: links[1].left - links[0].right,
-      };
-    });
-    expect(gap.declared).toBeGreaterThan(0);
-    // Layout rounds fractional CSS pixels to layout units.
-    expect(gap.rendered).toBeCloseTo(gap.declared, 1);
-  });
-
   test('views stay mounted across a switch, so their controls keep their state', async ({ page }) => {
     await page.goto(url());
     await page.goto(url() + '#species-index');
     await page.fill('#species-search', 'Slime');
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#pair-finder"]');
     await expectSingleView(page, 'pair-finder');
     await page.click('.nav a[href="#species-index"]');
@@ -368,46 +354,32 @@ test.describe('served', () => {
 // Layout and media queries. These rules are the same whether the page was
 // opened from disk or served, so they run once, against the shipped file.
 test.describe('narrow screens and print', () => {
-  test('the compact nav scrolls at 320px without overflowing the page', async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 640 });
+  test('the five primary destinations fit at 320px and breeding opens by keyboard', async ({ page }) => {
+    await page.setViewportSize({width:320, height:640});
     await page.goto(FILE_URL);
-    const links = page.locator('.nav nav a');
-    expect(await links.count()).toBeGreaterThanOrEqual(VIEWS.length);
-    for (const link of await links.all()) await expect(link).toBeVisible();
-    // One scrollable row preserves space for the reference on phones.
-    const rows = new Set(await links.evaluateAll(items => items.map(a => Math.round(a.getBoundingClientRect().top))));
-    expect(rows.size).toBe(1);
-    const box = await page.evaluate(() => {
-      const nav = document.querySelector('.nav nav');
-      const navBox = nav.getBoundingClientRect();
-      return {
-        navScroll: nav.scrollWidth,
-        navClient: nav.clientWidth,
-        docScroll: document.documentElement.scrollWidth,
-        docClient: document.documentElement.clientWidth,
-        // Each link must sit inside the nav, with room for its own label.
-        links: [...nav.querySelectorAll('a')].map(a => {
-          const rect = a.getBoundingClientRect();
-          const range = document.createRange();
-          range.selectNodeContents(a);
-          return {
-            text: a.textContent,
-            inside: rect.left >= navBox.left - 1 && rect.right <= navBox.right + 1,
-            labelFits: range.getBoundingClientRect().height <= rect.height + 1,
-          };
-        }),
-      };
-    });
-    // Only the navigation scrolls horizontally; the document stays within the viewport.
-    expect(box.navScroll).toBeGreaterThan(box.navClient);
-    expect(box.docScroll).toBeLessThanOrEqual(box.docClient + 1);
-    for (const link of box.links) {
-      expect(link.labelFits, link.text + ' label is clipped').toBe(true);
-    }
-    // An offscreen link scrolls into view when activated and remains usable.
-    await page.locator('.nav a[href="#team-planner"]').click();
-    await expectSingleView(page, 'team-planner');
-    await expect(page.locator('.nav a[href="#team-planner"]')).toHaveClass(/\bnav-link-active\b/);
+    const primary = page.locator('.nav nav > a, #breeding-nav-trigger');
+    expect(await primary.count()).toBe(5);
+    const bounds = await primary.evaluateAll(items => items.map(a => {
+      const r = a.getBoundingClientRect();
+      return [r.left, r.right, r.top];
+    }));
+    expect(new Set(bounds.map(r=>Math.round(r[2]))).size).toBe(1);
+    expect(bounds.every(([l,r])=>l>=0 && r<=320)).toBe(true);
+    const trigger = page.getByRole('button', {name:'Breeding',exact:true});
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('#breeding-nav-links').getByRole('link',{name:'Find a pairing',exact:true})).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded','false');
+    await trigger.click();
+    await page.locator('#breeding-nav-links a').nth(1).click();
+    await expectSingleView(page,'offspring-finder');
+    await expect(trigger).toHaveClass(/nav-link-active/);
+    await expect(trigger).toHaveAttribute('aria-expanded','false');
+    await page.getByRole('navigation',{name:'Views',exact:true}).getByRole('link',{name:'Monster library',exact:true}).click();
+    await expectSingleView(page,'species-index');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
   });
 
   test('a hidden view stays out of the way on a narrow screen too', async ({ page }) => {

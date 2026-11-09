@@ -5,6 +5,7 @@ body{font-size:14px;line-height:1.5}
 .masthead{padding:17px 0;border-bottom:3px solid var(--gold);background:#132e40}
 .masthead .wrap{flex-wrap:nowrap;gap:20px}
 .brand{display:flex;align-items:center;gap:13px;text-decoration:none;color:#fff}
+.table-scroll{position:relative}
 .brand img{width:48px;height:48px;image-rendering:pixelated}
 .title-line{display:block;letter-spacing:0;text-transform:none}
 .title-line .eyebrow{font-size:10px;letter-spacing:.14em}
@@ -22,7 +23,7 @@ body{font-size:14px;line-height:1.5}
 .section-head{margin-bottom:15px;align-items:center}
 .section-head h2{font:750 27px/1.25 system-ui,sans-serif;letter-spacing:-.04em}
 .section-head p{margin:5px 0 0;font-size:13px}
-.section-number{display:none}
+
 .panel{box-shadow:0 2px 6px #16314305}
 .field label{font-size:11px;margin-top:8px}
 input,select{min-height:39px;padding:7px 10px;font-size:13px}
@@ -52,7 +53,7 @@ td,th{padding:9px 15px}td{vertical-align:middle}
 .recent-pairs .planner-panel-heading{display:flex;align-items:baseline;gap:14px;padding:12px 16px 0}
 .recent-pairs h3{font-size:13px}.recent-pairs .hint{font-size:11px}
 .recent-pairs-list{padding:8px 16px}.recent-pairs-actions{padding:0 16px 12px}
-.target-row{padding:16px;gap:20px}.target-explain{font-size:12px}
+.target-row{padding:16px;gap:20px}
 .target-row .target-toolbar{margin-top:8px}
 .workbench-tools{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .workbench-tools .field{min-width:140px;flex:1}.workbench-tools .field:first-child{flex:2}
@@ -79,8 +80,7 @@ td,th{padding:9px 15px}td{vertical-align:middle}
 .matrix-list caption{text-align:left;padding:8px 0;font-weight:650;color:var(--muted)}
 .planner-pair-detail{padding:14px 18px;gap:16px}.planner-pair-detail h3{font:700 19px/1.4 system-ui,sans-serif}
 .planner-pair-detail{flex-wrap:wrap}.planner-pair-detail>div{flex:1;min-width:240px}
-footer{padding:18px 0;font-size:11px}footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.footer-links{display:flex;gap:16px}
+footer{padding:16px 0;font-size:12px}footer .footer-links{display:flex;gap:8px 20px;flex-wrap:wrap}
 @media(min-width:1200px){#pair-finder>.panel:not(.recent-pairs){display:grid;grid-template-columns:1.2fr 1fr}.pair-layout{gap:16px}.result{border-top:0;border-left:1px solid var(--line);grid-template-columns:1fr 1fr;gap:16px;align-items:start}.result h3{font-size:23px}.reverse-result{padding-left:16px}.result .result-portrait{float:none;display:block;margin-bottom:8px}.result-portrait .monster-sprite{width:56px;height:56px}.result .short{min-height:36px}.swap{width:38px;height:38px}.filters{grid-template-columns:1fr}.parent-title{margin-bottom:6px}}
 @media(max-width:800px){.masthead .wrap{flex-wrap:wrap;gap:10px}.masthead .offline{display:none}.masthead .theme-picker{margin-left:auto}.brand img{width:38px;height:38px}.title-line h1{font-size:19px}.title-line .eyebrow{font-size:9px}.title-line .version{font-size:10px}.theme-picker>span{display:none}.theme-options button{padding:5px 7px;font-size:10px}.nav nav{gap:18px;flex-wrap:nowrap;overflow:auto;scrollbar-width:thin}.nav a:last-child{margin-left:0}.nav a{font-size:12px;padding:12px 0}.section{margin-top:18px}.section-head h2{font-size:24px}.species-toolbar{grid-template-columns:1fr 1fr}.species-toolbar .field:first-child{grid-column:1/-1}.species-toolbar .settings-inline{grid-column:1/-1}.planner-axis-fields{grid-template-columns:1fr 1fr}.planner-axis-search{grid-column:1/-1}.planner-all-pagination{gap:10px}.workbench-tools{gap:8px}.workbench-tools .field{min-width:110px}.workbench-tools .field:first-child{flex-basis:100%}.result{padding:16px}.pair-layout{padding:16px}.reverse-result{border-color:var(--line)}.table-scroll{max-width:100%}.recent-pairs .planner-panel-heading{display:block}.recent-pairs .hint{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}

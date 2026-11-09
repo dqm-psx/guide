@@ -28,13 +28,18 @@ test.describe('served', () => {
     await page.click('#planner-team-name-save');
     await expect(page.locator('#planner-targets')).toBeVisible();
     await expect(page.locator('#target-list li')).toHaveCount(0);
+    await expect(page.locator('#plan-empty a')).toHaveAttribute('href', '#offspring-finder');
+    await expect(page.locator('#saved-targets-panel')).toBeHidden();
     await page.selectOption('#planner-team-select', originalId);
     await expect(page.locator('#planner-targets')).toBeVisible();
     await expect(page.locator('#target-list li')).toHaveCount(1);
     await expect(page.locator('#target-list')).toContainText('Slime');
     await page.click('#planner-tab-breeding');
+    await expect(page.locator('#planner-breeding-summary')).toContainText('a male and a female');
+    await expect(page.locator('#planner-breeding .planner-matrix-panel:visible')).toHaveCount(0);
     await expect(page.locator('#planner-team-select')).toBeVisible();
     await expect(page.locator('#team-planner [role="tab"]')).toHaveText([/My monsters/, /Targets/, /breeding/i]);
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#breeding-table"]');
     await expect(page.locator('#breeding-table')).toBeVisible();
     await expect(page.locator('#planner-team-select')).toBeHidden();

@@ -4,9 +4,7 @@
    --radius). dark-mode.css repaints those variables and these rules follow.
    The only literals are translucent shadows, which read on either theme.
 
-   This file touches no markup and changes no measured widths: the nav links
-   stay direct flex children of .nav nav, and the matrix sticky offsets stay
-   exactly as guide.css sets them. */
+   The matrix sticky offsets are set by guide.css. */
 
 /* -------------------------------------------------------------------------
    Sticky main navigation
