@@ -16,8 +16,11 @@ test('a linked monster opens its native library, stats and campaign reference', 
   expect(await page.locator('.monster-acquire').evaluate(card => !!(card.compareDocumentPosition(document.querySelector('#monster-growth')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
   await expect(page.locator('.monster-library-quote p')).toHaveText(await page.evaluate(() => MONSTER_REFERENCE.species.find(s => s.index === 11).library.text));
   await expect(page.locator('#monster-growth-level')).toHaveValue('40');
-  await expect(page.locator('#monster-skills li')).toHaveCount(3);
+  await expect(page.locator('.monster-library-quote + .monster-natural-skills h3')).toHaveText('Natural skills');
+  await expect(page.locator('#monster-skills .skill-minimum')).toHaveText(['Min. level 3', 'Min. level 38', 'Min. level 12']);
+  await expect(page.locator('#monster-skills li a').first()).toHaveAttribute('href', '#field-guide?kind=skill&entry=skill-e0c1d');
   await page.locator('#monster-campaign').selectOption('cobi');
+  await expect(page.locator('#monster-skills li a')).toHaveText(await page.evaluate(() => MONSTER_REFERENCE.species[11].skills.cobi.map(skill => skill.name)));
   await expect(page.locator('#monster-locations')).toContainText(await page.evaluate(() => MONSTER_REFERENCE.species.find(s => s.index === 11).locations.find(place => place.game === 'cobi').name));
   await expect(page.locator('.monster-growth-row')).toHaveCount(6);
   expect(errors).toEqual([]);
@@ -25,10 +28,18 @@ test('a linked monster opens its native library, stats and campaign reference', 
 
 test('first-copy profile recipes carry their verified conditions through to the parent lookup', async ({ page }) => {
   await page.goto(serverUrl + '#monster?id=17');
+  await expect(page.locator('.first-copy-list li').first()).toBeVisible();
   const condition = await page.evaluate(() => DATA.runtime_rules.rules.find(rule => rule.offspring_index === 17 && rule.kind === 'plus_threshold'));
   const recipe = page.locator('.first-copy-list li').filter({hasText: 'Either parent +' + condition.minimum_parent_plus}).first();
   await expect(recipe.locator('a').nth(0)).toHaveAttribute('href', '#monster?id=' + condition.pedigree_index);
   await expect(recipe.locator('a').nth(1)).toHaveAttribute('href', '#monster?id=' + condition.mate_index);
+  for (const id of [condition.pedigree_index, condition.mate_index]) {
+    await expect(recipe.locator('a[href="#monster?id=' + id + '"] [data-monster-index="' + id + '"]').first()).toBeVisible();
+  }
+  await page.locator('#guide-settings > summary').click();
+  await page.locator('#guide-settings [data-sprite-style="overworld"]').click();
+  await page.locator('#guide-settings > summary').click();
+  await expect(recipe.locator('a [data-sprite-kind="overworld"]')).toHaveCount(2);
   await expect(page.locator('.first-copy-list a[href="#monster?id=17"]')).toHaveCount(0);
   await expect(page.locator('#monster-campaign option[value="terry"]')).toContainText(/DQM1 · Terry · \d+ encounters?/);
   await page.locator('.monster-acquire a[href^="#offspring-finder"]').click();
@@ -112,6 +123,7 @@ test('legacy profile URLs work and internal slots omit unsupported breeding tree
   await expect(page.locator('#monster-heading')).toHaveText(await page.evaluate(() => DATA.species.find(s => s.index === 11).display_name));
   await page.goto(serverUrl + '#monster?id=315');
   await expect(page.locator('.monster-internal')).toBeVisible();
+  await expect(page.locator('#monster-skills')).toHaveText('Skills unverified for this entry.');
   await expect(page.locator('#monster .monster-primary')).toHaveCount(0);
   await expect(page.locator('#monster [data-species-parents]')).toHaveCount(0);
   await page.goto(serverUrl + '#monster/nonsense');

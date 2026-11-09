@@ -6,10 +6,16 @@ The v1.0.73 walkthrough audit resolved all 1,262 cited records for the 161
 campaign, quest, boss, character and location articles. It also checked the
 native conditions behind the fixed story keys, spirit rewards and arena rounds.
 The v1.0.73 disc uses **Hale** in nine cited lines. The current published text
-uses **Healie**, and both names find the character.
+uses **Healie** in dialogue and **Hale** as the default recruit nickname. Both names find the character.
 
 All 43 character pages show PSX artwork. The portraits include 38 field actors,
-the three playable heroes, and species sprites for Healie and Surabou.
+the three playable heroes, and species sprites for Healie and Terry’s starter, Slib.
+
+Default monster nicknames follow the builder’s starter, boss and gift name tables
+in the same four-hour refresh as species names. Each row keeps its native ID,
+Japanese name and English variants. The starter’s walkthrough name comes from
+its recruitment record. Healie’s speaker name and recruit nickname come from
+separate records and appear together when they differ.
 
 The atlas groups 406 fixed layouts into 183 named places. Each layout keeps
 its own link and doors. The v1.0.73 disc check verified the static background

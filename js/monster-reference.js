@@ -4,7 +4,8 @@
   'use strict';
 
   const STATS = [['hp', 'HP'], ['mp', 'MP'], ['attack', 'Attack'], ['defense', 'Defense'], ['agility', 'Agility'], ['intelligence', 'Intelligence']];
-  const CAMPAIGNS = { terry: 'DQM1 · Terry', cobi: 'DQM2 · Cobi', tara: 'DQM2 · Tara' };
+  const campaignNames = root.GUIDE_HOME?.campaigns || {terry: 'Terry', cobi: 'Cobi', tara: 'Tara'};
+  const CAMPAIGNS = { terry: 'DQM1 · ' + campaignNames.terry, cobi: 'DQM2 · ' + campaignNames.cobi, tara: 'DQM2 · ' + campaignNames.tara };
   const safe = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const named = species => species ? (species.display_name || species.current_name || species.name || '') : 'Unknown monster';
 
@@ -144,10 +145,26 @@
   }
 
   function skillsMarkup(species) {
-    const skills = species.skills && species.skills[campaign];
-    return skills && skills.length ? '<ul class="monster-skill-list">' + skills.map(skill =>
-      '<li><a href="#field-guide?kind=skill&amp;entry=skill-' + safe(skill.system_entry_id) + '">' + safe(skill.name) + '</a></li>').join('') +
-      '</ul>' : '<p class="monster-empty">Skills unverified for this entry.</p>';
+    const skills = species.skills?.[campaign];
+    if (!skills?.length) return '<p class="monster-empty">Skills unverified for this entry.</p>';
+    const names = root.MONSTER_REFERENCE?.guide_names?.skills || {};
+    return '<ul class="monster-skill-list">' + skills.map(skill => {
+      const minimum = names[skill.id]?.minimum_level;
+      const entry = skill.system_entry_id || names[skill.id]?.id;
+      const title = entry ? '<a href="#field-guide?kind=skill&amp;entry=skill-' + safe(entry) + '">' + safe(skill.name) + '</a>' : safe(skill.name);
+      return '<li>' + title + (Number.isInteger(minimum) && minimum > 0 ? '<span class="skill-minimum">Min. level ' + minimum + '</span>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function naturalSkillsCard(species) {
+    const campaigns = Object.entries(CAMPAIGNS).map(([key,label]) => {
+      const count = groupedLocations(species.locations, key).length;
+      const coverage = count === 1 ? '1 encounter' : count + ' encounters';
+      return '<option value="' + key + '"' + (key === campaign ? ' selected' : '') + '>' + safe(label) + ' · ' + coverage + '</option>';
+    }).join('');
+    return '<section class="monster-card monster-natural-skills"><div class="monster-card-heading"><h3>Natural skills</h3>' +
+      '<label class="sr-only" for="monster-campaign">Adventure for skills and encounters</label><select id="monster-campaign">' + campaigns +
+      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div></section>';
   }
 
   function locationsMarkup(species) {
@@ -162,16 +179,12 @@
     const recipes = model.firstRecipes(species.index);
     const examples = recipes.map(recipe => {
       const family = DATA.families.find(item => item.id === recipe.family);
-      const mate = recipe.b == null ? 'Any ' + safe(family?.display_name || family?.name || 'matching') + ' monster' : link(recipe.b);
-      return '<li>' + link(recipe.a) + ' + ' + mate + (recipe.condition ? '<small>' + safe(recipe.condition) + '</small>' : '') + '</li>';
+      const mate = recipe.b == null ? 'Any ' + safe(family?.display_name || family?.name || 'matching') + ' monster' : link(recipe.b, null, {sprite:true});
+      return '<li><div class="first-copy-parents">' + link(recipe.a, null, {sprite:true}) + '<span>+</span>' + mate + '</div>' +
+        (recipe.condition ? '<small>' + safe(recipe.condition) + '</small>' : '') + '</li>';
     }).join('');
-    const campaigns = Object.entries(CAMPAIGNS).map(([key,label]) => {
-      const count = groupedLocations(species.locations, key).length;
-      const coverage = count === 1 ? '1 encounter' : count + ' encounters';
-      return '<option value="' + key + '"' + (key === campaign ? ' selected' : '') + '>' + label + ' · ' + coverage + '</option>';
-    }).join('');
-    return '<section class="monster-card monster-acquire"><div class="monster-card-heading"><h3>How to get ' + safe(named(species)) + '</h3><label class="sr-only" for="monster-campaign">Adventure and recorded encounters</label><select id="monster-campaign">' + campaigns +
-      '</select></div><div class="acquire-columns"><div><h4>First-copy breeding</h4>' + (examples ? '<p class="hint">Pedigree + mate</p><ul class="first-copy-list">' + examples + '</ul>' : '<p>No recorded pairing produces a first copy.</p>') +
+    return '<section class="monster-card monster-acquire"><div class="monster-card-heading"><h3>How to get ' + safe(named(species)) + '</h3></div>' +
+      '<div class="acquire-columns"><div><h4>First-copy breeding</h4>' + (examples ? '<p class="hint">Pedigree + mate</p><ul class="first-copy-list">' + examples + '</ul>' : '<p>No recorded pairing produces a first copy.</p>') +
       '<a href="#offspring-finder?target=' + species.index + '">All parent recipes ↗</a></div><div><h4>Recorded encounters</h4><div id="monster-locations">' + locationsMarkup(species) + '</div></div></div></section>';
   }
 
@@ -220,11 +233,11 @@
       '<header class="monster-profile-header"><div class="monster-profile-art">' + sprite(index) + '</div><div class="monster-profile-identity"><p class="monster-eyebrow">' + safe(species.family_display || species.family) + ' family <span>· #' + String(index).padStart(3, '0') + '</span></p><h2 id="monster-heading" tabindex="-1">' + safe(named(species)) + '</h2><p class="monster-japanese" lang="ja">' + safe(species.japanese) + '</p>' + aliasesMarkup(species) + '</div>' +
       '<div class="monster-profile-actions">' + (species.playable === false ? '' : '<a class="monster-primary" href="#breeding-tree?target=' + index + '&context=shrine">Build breeding tree</a><button type="button" data-species-parents="' + index + '">Find all parents</button>') + '<div><button type="button" data-species-pedigree="' + index + '">Use as pedigree</button><button type="button" data-species-mate="' + index + '">Use as mate</button></div></div></header>' +
       '<div class="monster-library-quote"><span class="monster-eyebrow">In-game library</span><p>' + safe(library.text || 'No in-game library entry.') + '</p></div>' +
+      naturalSkillsCard(species) +
       (species.playable === false ? '<p class="monster-internal">Extra table slot. Availability in normal play is unconfirmed.</p>' : '') +
       acquisitionMarkup(species) +
-      '<div class="monster-profile-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">Base level limit ' + safe(species.stats.base_level_limit) + '</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
-      '<section class="monster-card"><div class="monster-card-heading"><h3>Natural skills</h3></div><div id="monster-skills">' + skillsMarkup(species) + '</div></section></div>' +
-      '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint"><a href="#offspring-finder?target=' + index + '">' + parents.toLocaleString() + ' base-table parent pairings</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section>' +
+      '<div class="monster-profile-grid monster-lower-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">Base level limit ' + safe(species.stats.base_level_limit) + '</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
+      '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint"><a href="#offspring-finder?target=' + index + '">' + parents.toLocaleString() + ' base-table parent pairings</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section></div>' +
       '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' + safe(species.resistances && species.resistances.text || 'PSX resistance values have not yet been verified for this reference.') + '</p>' +
       '<p>' + safe(species.location_coverage || 'Encounter coverage is incomplete.') + '</p>' +
       (root.DQMReference?.sourceSummaryMarkup ? root.DQMReference.sourceSummaryMarkup() : '') +

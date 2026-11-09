@@ -69,6 +69,7 @@ test('a current patch rename propagates to stable cards, search aliases, reviewe
   assert.ok(f.atlas.maps[0].aliases.includes('Reed Vlg'));
   assert.deepEqual(f.atlas.maps[0].exits,[{to:'map-3-4'}]);
   assert.deepEqual(f.field.skill_requirements,{1:{level:2}});
+  assert.equal(f.field.skill_names[1].minimum_level,2);
   assert.equal(f.field.skill_names[1].description,'Puts one enemy to sleep.');
   assert.equal(f.field.skill_names[1].description_source_id,'m_exe_123456');
   assert.ok(skill.aliases.includes('Sleep'));
@@ -92,4 +93,29 @@ test('missing, stale, duplicated or ambiguous source data cannot replace the rel
     assert.throws(()=>buildGuideNames(f),/Guide name sync/);
     assert.equal(f.field.entries[0].title,'Medicinal Herb');
   }
+});
+
+test('default nicknames track creation records independently of speakers, species and saved names', () => {
+  const f=fixture();
+  const catalog='patches/boss_names.json', id='boss_72_0011.english', nickname=catalog+':'+id;
+  const seed={catalog,table:catalog,id,source_revision:f.revision,labels:['Boss nicknames'],
+    raw:{id,japanese:'ホイミン',translations:{current:'Hale',delocalized:'Heal'}}};
+  f.comparison.rows.push(seed);
+  f.worldBindings.nickname_articles={[nickname]:'npc'};
+  Object.assign(f.worldBindings.terms[0],{nickname,paired_in:['chapter','npc']});
+  const generate=()=>buildGuideNames(f);
+  assert.equal(generate().entries.npc.title,'Mira / Hale');
+  seed.raw.translations.current='Nova';
+  const update=generate();
+  assert.equal(update.entries.npc.title,'Mira / Nova');
+  assert.match(update.entries.chapter.summary,/Find Mira \/ Nova,/);
+  assert.ok(update.entries.npc.aliases.includes('Heal'));
+  f.worldBindings.terms[0].extract='nickname';
+  assert.equal(generate().entries.npc.title,'Nova');
+  const ref={guide_names:update,species:[]};
+  apply(ref,f.field,f.world,f.atlas);
+  apply(ref,f.field,f.world,f.atlas);
+  assert.deepEqual(f.world.entries[2].default_nicknames,[f.field.default_nicknames[0]]);
+  f.comparison.rows.pop();
+  assert.throws(generate,/missing nickname/);
 });

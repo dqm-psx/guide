@@ -13,7 +13,8 @@
     const effect = SKILL_DESCRIPTIONS[nativeId];
     const id = 'skill-' + name.id;
     skills.set(id, {id, kind:'skill', title:name.title, nativeId:Number(nativeId), game:'system',
-      summary:name.description || effect.description, effect, aliases:name.aliases, source_ids:[name.id,effect.description_source_id].filter(Boolean), learners:{terry:[],cobi:[],tara:[]}});
+      summary:name.description || effect.description, effect, aliases:name.aliases, names:name.names,
+      source_ids:[name.id,effect.description_source_id].filter(Boolean), learners:{terry:[],cobi:[],tara:[]}});
   }
   for (const monster of GUIDE_REFERENCE.species) {
     for (const [campaign,list] of Object.entries(monster.skills)) {
@@ -28,7 +29,8 @@
     const dqm2 = row.learners.cobi.length || row.learners.tara.length;
     row.game = row.learners.terry.length ? (dqm2 ? 'both' : 'dqm1') : (dqm2 ? 'dqm2' : 'system');
   }
-  const rows = [...world, ...field, ...Array.from(skills.values()).sort((a,b)=>a.title.localeCompare(b.title))];
+  const sortedSkills = Array.from(skills.values()).sort((a,b)=>a.title.localeCompare(b.title));
+  const rows = [...world, ...field, ...sortedSkills];
   const byId = new Map(rows.map(row => [row.id, row]));
   const pageSize = 24;
   const spoilerKey = 'dqm-guide-story-spoilers';
@@ -45,6 +47,7 @@
   }
   function normalized(value) { return String(value ?? '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’']/g, ''); }
   const searchIndex = new Map(rows.map(row => [row.id, normalized([row.title, row.region, row.summary, row.category,row.effect?.target,
+    ...(row.nickname_rows || []).flatMap(name => name.aliases), ...(row.default_nicknames || []).flatMap(name => name.aliases),
     ...(row.details || []), ...(row.aliases || []), ...(row.places || []), ...(row.prices || []).flatMap(price=>price.locations)].join(' '))]));
   const monsters = GUIDE_REFERENCE.species.filter(row => row.current_name && (row.system_entry_id || row.playable)).map(row => ({
     id: 'monster-' + row.index, index: row.index, kind: 'monster', game: 'both', title: row.display_name,
@@ -62,11 +65,11 @@
     if (row.kind === 'quest' && row.spoiler !== 'ending' && row.region) return row.region + ' · quest';
     return (row.kind === 'boss' ? 'Boss encounter' : row.kind === 'quest' ? 'Quest' : categories[row.kind] || 'Entry') + ' · spoiler hidden';
   }
-  function itemNames(row) {
-    if (!row.names || (row.kind !== 'item' && row.kind !== 'tool')) return '';
+  function otherNames(row) {
+    if (!row.names) return '';
     const {japanese, current, short, editions} = row.names;
     const labels = {gameboy:'Game Boy-style patch', delocalized:'Delocalized patch', vibecoded:'Vibecoded patch'};
-    const lines = [['Current menu', short !== current ? short : ''], ['Japanese', japanese]].filter(([,v]) => v);
+    const lines = [['Current menu', short !== current ? short : ''], ['Japanese', row.kind === 'skill' ? '' : japanese]].filter(([,v]) => v);
     const variants = new Map();
     for (const [edition, value] of Object.entries(editions || {})) {
       if (value.full === current && value.short === short) continue;
@@ -82,7 +85,6 @@
       '<div><dt>' + safe(k) + '</dt><dd>' + safe(v) + '</dd></div>').join('') + '</dl></details>';
   }
   function learnerLists(row) {
-    if (!row.learners) return '';
     const groups = new Map();
     for (const [campaign, ids] of Object.entries(row.learners)) {
       if (!ids.length) continue;
@@ -90,14 +92,48 @@
       if (!groups.has(key)) groups.set(key, {ids, campaigns:[]});
       groups.get(key).campaigns.push(campaign);
     }
-    if (!groups.size) return '<p class="hint">No recorded natural learners.</p>';
+    if (!groups.size) return '<p class="hint">No monster lists this as a natural skill.</p>';
     return Array.from(groups.values()).map((group, index) => {
-      const label = group.campaigns.length === Object.keys(campaigns).length ? 'Natural learners' :
-        'Natural learners · ' + group.campaigns.map(key => campaigns[key]).join(' & ');
+      const label = group.campaigns.map(key=>campaigns[key]).join(' · ');
+      const learners = group.ids.map(id=>GUIDE_REFERENCE.species[id]).sort((a,b)=>a.display_name.localeCompare(b.display_name));
       return '<details class="skill-campaign"' + (index === 0 ? ' open' : '') + '><summary>' + safe(label) + ' · ' +
-        group.ids.length + ' species</summary><div>' + group.ids.map(id => '<a href="#monster?id=' + id + '">' +
-        safe(GUIDE_REFERENCE.species[id].display_name) + '</a>').join('') + '</div></details>';
+        learners.length + ' species</summary><ul class="skill-learner-list">' + learners.map(monster =>
+        '<li>'+spriteLabel(monster.index,monster.display_name)+'</li>').join('') + '</ul></details>';
     }).join('');
+  }
+  function skillProfile(row,p) {
+    const skillLink = nativeId => {
+      const skill=FIELD_GUIDE.skill_names[nativeId];
+      return '<a href="'+linked(p,{entry:'skill-'+skill.id})+'">'+safe(skill.title)+'</a>';
+    };
+    const ordinal=sortedSkills.indexOf(row);
+    const adjacent=(r,direction)=>r ? '<a href="'+linked(p,{entry:r.id})+'" aria-label="'+direction+' skill: '+safe(r.title)+'">'+
+      (direction==='Previous' ? '← ' : '')+safe(r.title)+(direction==='Next' ? ' →' : '')+'</a>' : '';
+    const kind=p.get('kind') || (p.has('q') ? '' : 'skill');
+    const back=p.has('q') ? 'Search results' : categories[kind] || 'Skills';
+    const trail='<div class="monster-breadcrumb"><a href="'+linked(p,{entry:'',kind})+'">← '+safe(back)+'</a><nav aria-label="Adjacent skills">'+
+      adjacent(sortedSkills[ordinal-1],'Previous')+adjacent(sortedSkills[ordinal+1],'Next')+'</nav></div>';
+    const facts=[['MP cost',row.effect.mpCost],['Target',row.effect.target]].filter(([,v])=>v!=null);
+    const header='<header class="monster-profile-header skill-profile-header"><div class="monster-profile-identity">'+
+      '<h2 id="article-title" tabindex="-1">'+safe(row.title)+'</h2>'+
+      (row.names?.japanese ? '<p class="monster-japanese" lang="ja">'+safe(row.names.japanese)+'</p>' : '')+otherNames(row)+'</div>'+
+      '<dl class="skill-facts skill-combat-facts">'+facts.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+safe(value)+'</dd></div>').join('')+'</dl></header>'+
+      '<div class="monster-library-quote"><p class="article-lead">'+safe(row.summary)+'</p></div>';
+    const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
+    const stats=Object.entries(FIELD_GUIDE.skill_requirements?.[row.nativeId] || {}).filter(([,value])=>value>0);
+    const requirements=stats.length ? '<section class="monster-card learning skill-thresholds"><div class="monster-card-heading"><h3>Minimum learning stats</h3></div><dl>'+
+      stats.map(([key,n])=>'<div><dt>'+safe(labels[key] || key)+'</dt><dd>'+safe(n)+'</dd></div>').join('')+'</dl></section>' : '';
+    const progression=[];
+    if (row.effect.upgradesFrom) progression.push(['Upgrades from',skillLink(row.effect.upgradesFrom)]);
+    const next=sortedSkills.filter(skill=>skill.effect.upgradesFrom===row.nativeId);
+    if (next.length) progression.push(['Upgrades to',next.map(skill=>skillLink(skill.nativeId)).join(' · ')]);
+    if (row.effect.combination?.length) progression.push(['Requires skills',row.effect.combination.map(skillLink).join(' + ')]);
+    const combinations=sortedSkills.filter(skill=>skill.effect.combination?.includes(row.nativeId));
+    if (combinations.length) progression.push(['Used in combinations',combinations.map(skill=>skillLink(skill.nativeId)).join(' · ')]);
+    const related=progression.length ? '<section class="monster-card skill-progression"><div class="monster-card-heading"><h3>Related skills</h3></div><dl class="skill-facts">'+
+      progression.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl></section>' : '';
+    return trail+header+'<div class="monster-profile-grid skill-profile-grid"><div class="skill-learning-column">'+requirements+related+'</div>'+
+      '<section class="monster-card skill-learners"><div class="monster-card-heading"><h3>Natural learners</h3></div>'+learnerLists(row)+'</section></div>';
   }
   function artwork(row, thumbnail) {
     if (row.kind === 'boss') {
@@ -204,6 +240,11 @@
   }
   function renderArticle(row, p) {
     const article = el('guide-article');
+    article.classList.toggle('skill-profile',row?.kind === 'skill');
+    if (row?.kind === 'skill') {
+      article.innerHTML=skillProfile(row,p);
+      return row.title;
+    }
     const back = '<a class="guide-back" href="' + linked(p, {entry:''}) + '">Back to guide</a>';
     if (!row) {
       article.innerHTML = back + '<h2 tabindex="-1" id="article-title">Entry unavailable</h2><p>This link does not identify an entry in this edition.</p>';
@@ -224,29 +265,14 @@
       const otherPlaces = (row.places || []).filter(name => !linkedNames.has(normalized(name)));
       const prices = (row.prices || []).map(price=>'<tr><th scope="row">'+safe(games[price.game])+'</th><td>'+safe(price.locations.join(' · '))+
         '</td><td>'+safe(price.buy)+' G</td><td>'+safe(price.gold_pass)+' G</td></tr>').join('');
-      const skillFacts = [];
-      if (row.effect) {
-        if (row.effect.mpCost != null) skillFacts.push(['MP cost',safe(row.effect.mpCost)]);
-        if (row.effect.target) skillFacts.push(['Target',safe(row.effect.target)]);
-        const previous = FIELD_GUIDE.skill_names[row.effect.upgradesFrom];
-        if (previous) skillFacts.push(['Upgrades from','<a href="'+linked(p,{entry:'skill-'+previous.id})+'">'+safe(previous.title)+'</a>']);
-        const combination = (row.effect.combination || []).map(id=>FIELD_GUIDE.skill_names[id]).filter(Boolean);
-        if (combination.length) skillFacts.push(['Requires skills',combination.map(s=>'<a href="'+linked(p,{entry:'skill-'+s.id})+'">'+safe(s.title)+'</a>').join(' + ')]);
-      }
-      const facts = skillFacts.length ? '<dl class="skill-facts">'+skillFacts.map(([label,value])=>
-        '<div><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>' : '';
-      const stats = row.learners && FIELD_GUIDE.skill_requirements?.[row.nativeId];
-      const minimums = Object.entries(stats || {}).filter(([,value])=>value > 0);
-      const statLabels = {level:'Level', hp:'HP', mp:'MP', attack:'Attack', defense:'Defense', agility:'Agility', intelligence:'Intelligence'};
-      const requirements = minimums.length ? '<div class="learning"><h3>Minimum learning stats</h3><dl>' + minimums.map(([key,value])=>
-        '<div><dt>'+safe(statLabels[key] || key)+'</dt><dd>'+safe(value)+'</dd></div>').join('')+'</dl></div>' : '';
       const nextChapter = row.kind === 'story' && world.find(other=>other.kind==='story' && other.game===row.game && other.order===row.order+1);
       const details=(row.details || []).filter(line=>!(prices && /shops sell it for \d+ G/i.test(line)) && !(routeData?.gate && /^Encounter: /u.test(line)));
       body = artwork(row, false) +
-        '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>' + facts +
+        '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>' +
+        DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? (row.kind==='story' ? '<ol class="article-steps">' : '<ul class="article-steps">') + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + (row.kind==='story' ? '</ol>' : '</ul>') : '') +
         routeMarkup(row,routeData,p) +
-        (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + itemNames(row) + requirements + learnerLists(row) +
+        (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + otherNames(row) +
         (otherPlaces.length ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
         (mapLinks.length ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
         (profileLinks.length || related.length ? '<div class="article-related"><h3>Related entries</h3>' +

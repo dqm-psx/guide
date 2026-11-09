@@ -3,6 +3,24 @@ let url;
 test.beforeAll(async () => { url = await (await import('../helpers/modes')).startGuideServer(); });
 test.afterAll(async () => { await (await import('../helpers/modes')).stopGuideServer(); });
 
+test('starter and recruit names connect the walkthrough, character search and nickname directory', async ({page}) => {
+  await page.goto(url+'#field-guide?kind=story&entry=story-terry-opening');
+  const steps=page.locator('#guide-article .article-steps');
+  await expect(steps.getByRole('link',{name:'Slib',exact:true})).toHaveAttribute('href',/entry=npc-surabou/);
+  await steps.getByRole('link',{name:'Healie / Hale',exact:true}).click();
+  await expect(page.locator('#article-title')).toHaveText('Healie / Hale');
+  await expect(page.locator('#guide-article')).toContainText('Default nickname · Hale');
+  await page.goto(url+'#field-guide?q=Surabou');
+  await expect(page.locator('.guide-row').first()).toContainText('Slib');
+  await page.goto(url+'#field-guide?q=Biino');
+  await page.locator('.guide-row').filter({hasText:'Default monster nicknames'}).click();
+  const table=page.getByRole('table',{name:'Default monster nicknames'});
+  await expect(table.getByRole('rowheader',{name:'Biino'})).toBeVisible();
+  await table.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Hale',exact:true})})
+    .getByRole('link',{name:'Healie / Hale'}).click();
+  await expect(page.locator('#article-title')).toHaveText('Healie / Hale');
+});
+
 test('item abbreviations lead to PSX shop prices and a shareable result', async ({page}) => {
   await page.goto(url);
   await page.getByLabel('Search the guide').fill('MedHerb');
@@ -53,15 +71,34 @@ test('skill profiles explain the effect and link upgrades and learner profiles',
   await page.goto(url+'#field-guide?kind=skill&entry=skill-e0c2b');
   await expect(page.locator('#article-title')).toHaveText('Bang');
   await expect(page.locator('.article-lead')).toContainText(/explos|blast|explod/i);
-  await expect(page.locator('.skill-facts')).toContainText('MP cost');
-  await expect(page.locator('.skill-facts')).toContainText('All enemies');
+  await expect(page.locator('.skill-combat-facts')).toContainText('MP cost');
+  await expect(page.locator('.skill-combat-facts')).toContainText('All enemies');
   await page.goto(url+'#field-guide?kind=skill&q=Blazemore');
   await page.locator('.guide-row').first().click();
-  await page.locator('.skill-facts a').filter({hasText:'Blaze'}).click();
+  await expect(page.locator('.skill-learners')).toContainText('No monster lists this as a natural skill');
+  await expect(page.locator('.skill-progression').getByRole('link',{name:'Blazemost',exact:true})).toBeVisible();
+  await page.locator('.skill-progression').getByRole('link',{name:'Blaze',exact:true}).click();
   await expect(page.locator('#article-title')).toHaveText('Blaze');
+  await expect(page.locator('.skill-learner-list svg').first()).toBeVisible();
+  await expect(page.locator('.skill-profile .monster-japanese')).toHaveText('メラ');
   await page.locator('.skill-campaign[open] a').first().click();
   await page.locator('#monster-skills a').filter({hasText:/^Blaze$/}).click();
   await expect(page.locator('#article-title')).toHaveText('Blaze');
+});
+
+test('the offline skill profile fits a narrow screen and connects combination ingredients', async ({page}) => {
+  const {FILE_URL}=await import('../helpers/modes');
+  await page.setViewportSize({width:320,height:760});
+  await page.emulateMedia({colorScheme:'dark'});
+  await page.goto(FILE_URL+'#field-guide?entry=skill-e0d3b');
+  await expect(page.locator('#article-title')).toHaveText('MegaMagic');
+  await expect(page.locator('.skill-combat-facts')).toContainText('All remaining MP');
+  const related=page.locator('.skill-progression');
+  await expect(related.getByRole('link')).toHaveCount(5);
+  await expect(page.getByRole('navigation',{name:'Adjacent skills'})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await related.getByRole('link',{name:'Blazemost',exact:true}).click();
+  await expect(page.locator('.skill-progression').getByRole('link',{name:'MegaMagic',exact:true})).toBeVisible();
 });
 
 test('a character links to its native map, and doors continue into the atlas', async ({page}) => {

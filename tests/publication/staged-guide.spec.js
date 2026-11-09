@@ -134,7 +134,9 @@ test('current-name search opens the matching library, growth, and provenance pro
   const stats = ['hp', 'mp', 'attack', 'defense', 'agility', 'intelligence'];
   await expect(page.locator('.monster-growth-row strong')).toHaveText(stats.map(stat =>
     '+' + record.stats.growth[stat].slice(1, level).reduce((sum, gain) => sum + gain, 0)));
-  await expect(page.locator('#monster-skills li')).toHaveText(record.skills.terry.map(skill => skill.name));
+  await expect(page.locator('#monster-skills li a')).toHaveText(record.skills.terry.map(skill => skill.name));
+  await expect(page.locator('#monster-skills .skill-minimum')).toHaveText(record.skills.terry.map(skill =>
+    'Min. level ' + shipped.reference.guide_names.skills[skill.id].minimum_level));
 
   await page.locator('.monster-source > summary').click();
   const values = page.locator('.monster-source .source-versions dd');

@@ -63,6 +63,7 @@
 .hero-map>span{position:absolute;z-index:1;bottom:14px;left:18px;right:18px;text-shadow:0 1px 3px black;display:flex;align-items:center;justify-content:space-between;color:white;font:700 21px/1.2 Georgia,serif}
 .hero-map:hover>span,.hero-map:focus-visible>span{text-decoration:underline}
 .guide-toolbar{display:flex;gap:16px;align-items:flex-end;border-bottom:1px solid var(--guide-rule);padding-bottom:12px}
+.guide-toolbar:has(>.guide-filters[hidden]){display:none}
 .guide-toolbar .guide-filters{flex:1;min-width:0;border:0;padding:0}
 .guide-toolbar .story-setting{flex:none;align-self:flex-end;margin:0;min-height:40px}
 .guide-context{font-size:13px;color:var(--muted)}
@@ -124,7 +125,36 @@
 .map-doors{columns:2;padding-left:20px;margin:8px 0 14px}.map-doors li{break-inside:avoid;padding:3px}
 .encounters ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));padding:0;gap:5px 16px}.encounters li{border-top:1px solid var(--guide-rule);display:flex;align-items:center;justify-content:space-between;gap:6px}
 .save-import-panel{padding:16px;margin:0 0 14px}.save-import-panel p{margin:4px 0}.save-import-panel input[type=file]{max-width:100%}.save-import-panel .controls{display:flex;gap:8px;flex-wrap:wrap}
-.field-view .learning{margin:15px 0;padding:12px 15px;background:var(--guide-soft);border-radius:8px}.learning h3{font:700 16px Georgia,serif}.learning dl{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0}.learning dt{font-size:11px}.learning dd{font-size:17px;margin:0;font-weight:700}.field-view .next-chapter{margin-top:16px}.next-chapter a{font-weight:700}
+.field-view .next-chapter{margin-top:16px}.next-chapter a{font-weight:700}
+.guide-article.skill-profile{max-width:none;padding:0;border:0;background:transparent}
+.skill-profile .skill-profile-header{grid-template-columns:minmax(0,1fr) auto}
+.skill-profile .monster-profile-identity h2{margin:0;color:var(--ink);font:600 clamp(26px,3vw,32px)/1.15 Georgia,serif;letter-spacing:-.025em}
+.skill-profile .monster-japanese{margin:4px 0 0}
+.skill-profile .item-names{margin:5px 0 0}.skill-profile .item-names summary{padding:4px 0;font-size:12px}
+.skill-profile .skill-combat-facts{margin:0;border:0;border-left:1px solid var(--line);padding:6px 0 6px 20px;gap:8px 22px}
+.skill-combat-facts dd{font-size:17px}
+.skill-profile .article-lead{margin:0;font:italic 18px/1.55 Georgia,serif;white-space:pre-line;color:var(--ink)}
+.skill-learning-column{display:grid;gap:18px;min-width:0}
+.skill-thresholds dl{margin:0;display:flex;gap:8px;flex-wrap:wrap}
+.skill-thresholds dl>div{padding:8px 12px;min-width:65px;background:var(--light);border-radius:6px}
+.skill-thresholds dt,.skill-profile .skill-facts dt{font-size:12px;color:var(--muted)}
+.skill-thresholds dd{margin:2px 0 0;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.skill-progression .skill-facts{display:grid;gap:0;margin:0;padding:0;border:0}
+.skill-progression .skill-facts>div{display:grid;grid-template-columns:minmax(94px,.7fr) minmax(0,1fr);align-items:baseline;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.skill-progression a,.skill-profile .skill-learner-list a{color:var(--teal)}
+.skill-learners .skill-campaign{margin:0;border:0;background:transparent;padding:0}
+.skill-learners .skill-campaign+.skill-campaign{margin-top:12px}
+.skill-learners .skill-campaign summary{font-size:13px;color:var(--muted);padding:4px 0}
+.skill-learner-list{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:0 12px;margin:7px 0 0;padding:0}
+.skill-learner-list li{min-width:0;border-top:1px solid var(--line)}
+.skill-learner-list a{width:100%;min-height:42px;padding:4px 0;font-size:14px}
+@media(max-width:650px){
+  .skill-profile .skill-profile-header{grid-template-columns:minmax(0,1fr);gap:12px}
+  .skill-profile .skill-combat-facts{border-left:0;border-top:1px solid var(--line);padding:10px 0 0}
+  .skill-profile .monster-breadcrumb nav{max-width:68%;gap:4px 10px}
+  .skill-profile .monster-breadcrumb nav a{max-width:115px;padding-block:5px}
+  .skill-profile-grid,.skill-learning-column{gap:12px}
+}
 .atlas-filters{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin:8px 0}.atlas-filters label{min-width:0;font-size:12px;font-weight:650}
 .atlas-scroll h4{margin:11px 0 4px;padding-inline:8px;font-size:13px;color:var(--guide-green)}
 .atlas-caption .atlas-layout-picker{max-width:100%;font-size:13px}.atlas-layout-picker select{max-width:min(100%,20rem)}

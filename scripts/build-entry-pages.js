@@ -14,8 +14,8 @@ function addEntryPages(assets) {
     vm.runInContext(assets.get('data/'+file+'.js').toString(),db,{timeout:5000});
   }
   vm.runInContext(assets.get('js/current-names.js').toString(),db,{timeout:5000});
-  vm.runInContext(assets.get('js/planner-core.js').toString(),db,{timeout:5000});
-  const planner = db.DQMPlannerCore.create(db.DATA);
+  vm.runInContext(assets.get('js/monster-reference.js').toString(),db,{timeout:5000});
+  const profiles = db.DQMMonsterCore.create(db.DATA,db.MONSTER_REFERENCE);
   const script='js/entry-page.js';
   const versioned = file => file+'?v='+crypto.createHash('sha256').update(assets.get(file)).digest('hex').slice(0,16);
   const pages=[];
@@ -31,7 +31,38 @@ function addEntryPages(assets) {
   const skillLink = n=>link('skills/'+n.id+'/',n.title);
   const monsterLink = m=>link('monsters/'+m.index+'/',m.display_name);
   const mapLink = m=>link('places/'+(m.placeId || m.id)+'/',m.title);
-  const readable = {terry:'Terry',cobi:'Cobi',tara:'Tara'};
+  const campaigns = ['terry','cobi','tara'];
+  const readable = Object.fromEntries(campaigns.map(key=>[key,articles.get('npc-'+key).title]));
+  const portraits = db.SPRITE_SHEETS.portrait;
+  const sheets = portraits.sheets.map(([url,width,height])=>[versioned(url),width,height]);
+  function portrait(index) {
+    const frame = portraits.frames[index];
+    if (!frame) return '';
+    const [sheet,x,y,width,height] = frame;
+    const [url,sheetWidth,sheetHeight] = sheets[sheet];
+    return '<svg class="entry-portrait" aria-hidden="true" focusable="false" viewBox="0 0 '+width+' '+height+'"><svg width="'+width+'" height="'+height+
+      '" viewBox="'+[x,y,width,height].join(' ')+'" overflow="hidden"><image href="'+escape(url)+'" width="'+sheetWidth+'" height="'+sheetHeight+'"/></svg></svg>';
+  }
+  function illustratedMonster(index) {
+    const monster = bySpecies.get(index);
+    return '<a class="entry-monster-link" href="monsters/'+index+'/">'+portrait(index)+'<span>'+escape(monster.display_name)+'</span></a>';
+  }
+  function campaignLists(title,idsForCampaign,renderId,empty) {
+    const groups = new Map();
+    for (const campaign of campaigns) {
+      const ids = idsForCampaign(campaign);
+      const key = ids.join(',');
+      if (!groups.has(key)) groups.set(key,{ids,labels:[]});
+      groups.get(key).labels.push(readable[campaign]);
+    }
+    return '<section><h2>'+escape(title)+'</h2>'+Array.from(groups.values(),({ids,labels})=>{
+      const heading = groups.size > 1 ? '<h3>'+escape(labels.join(' & '))+'</h3>' : '';
+      return heading+(ids.length ? '<ul class="entry-links">'+ids.map(id=>'<li>'+renderId(id)+'</li>').join('')+'</ul>' : paragraph(empty));
+    }).join('')+'</section>';
+  }
+  function facts(entries) {
+    return '<dl class="entry-facts">'+entries.map(([label,markup])=>'<div><dt>'+escape(label)+'</dt><dd>'+markup+'</dd></div>').join('')+'</dl>';
+  }
   const articleLink = id => {
     const article = articles.get(id);
     return article ? link('articles/'+id+'/',article.title) : '';
@@ -72,38 +103,48 @@ function addEntryPages(assets) {
     const guideLinks=[routeData.gate,routeData.boss,routeData.arena,...(routeData.supplies || [])].filter(Boolean).map(articleLink)
       .concat((routeData.skills || []).map(id=>names[id]).filter(Boolean).map(skillLink));
     const details=(row.details || []).filter(line=>!stock.length || !/shops sell it for/i.test(line));
-    add('articles',row.id,row.title,row.summary,art+details.map(paragraph).join('')+
+    const nicknameNote=db.DQMNicknameMarkup(row,escape,articleLink);
+    add('articles',row.id,row.title,row.summary,art+nicknameNote+details.map(paragraph).join('')+
       list('Walkthrough',steps)+list('Wild encounters',[...new Set(encounterList(routeData.encounters))])+
       list('Encounter base stats',battleList(routeData.fights))+list('In this guide',guideLinks)+list('Shops',stock)+list('Maps',places)+list('Monsters',(row.species_ids || []).map(id=>bySpecies.get(id)).filter(Boolean).map(monsterLink))+
       list('Related entries',related),'#field-guide?entry='+row.id,['story','ending'].includes(row.spoiler));
   }
   for (const [id,name] of Object.entries(names)) {
     const effect=db.SKILL_DESCRIPTIONS[id];
-    const learner=species.filter(m=>Object.values(m.skills).some(group=>group.some(s=>s.id===Number(id))));
-    const prereq=[effect.upgradesFrom,...(effect.combination || [])].filter(Boolean).map(k=>names[k]).filter(Boolean);
+    const skillFacts = [];
+    if (effect.mpCost != null) skillFacts.push(['MP cost',escape(effect.mpCost)]);
+    if (effect.target) skillFacts.push(['Target',escape(effect.target)]);
+    if (names[effect.upgradesFrom]) skillFacts.push(['Upgrades from',skillLink(names[effect.upgradesFrom])]);
+    const prereqs=(effect.combination || []).map(k=>names[k]).filter(Boolean);
+    if (prereqs.length) skillFacts.push(['Requires skills',prereqs.map(skillLink).join(' + ')]);
     const stats=db.FIELD_GUIDE.skill_requirements[id] || {};
+    const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
+    const minimums=Object.entries(stats).filter(([,value])=>value>0).map(([key,value])=>[labels[key] || key,escape(value)]);
+    const learners=campaignLists('Natural learners',campaign=>species.filter(m=>m.skills[campaign]?.some(s=>s.id===Number(id))).map(m=>m.index),
+      illustratedMonster,'No natural learners recorded.');
     add('skills',name.id,name.title,name.description || effect.description,
-      paragraph('MP cost: '+effect.mpCost+' · Target: '+effect.target)+list('Minimum learning stats',Object.entries(stats).map(([k,v])=>escape(k+' · '+v)))+
-      list('Related skills',prereq.map(skillLink))+list('Natural learners',learner.map(monsterLink)),'#field-guide?kind=skill&entry=skill-'+name.id);
-  }
-  const firstParents=new Map();
-  for (const a of db.DATA.species.filter(s=>s.playable)) {
-    for (const b of db.DATA.species.filter(s=>s.playable)) {
-      const outcome=planner.result(a.index,b.index).resultIndex;
-      if (outcome===a.index || outcome===b.index) continue;
-      if (!firstParents.has(outcome)) firstParents.set(outcome,[]);
-      const pairs=firstParents.get(outcome);
-      if (pairs.length<3) pairs.push([a.index,b.index]);
-    }
+      (skillFacts.length ? facts(skillFacts) : '')+
+      (minimums.length ? '<section><h2>Minimum learning stats</h2>'+facts(minimums)+'</section>' : '')+
+      learners,'#field-guide?kind=skill&entry=skill-'+name.id);
   }
   for (const m of species.filter(m=>m.current_name && (m.system_entry_id || db.DATA.species[m.index]?.playable))) {
-    const skillIds=new Set(Object.values(m.skills).flat().map(s=>s.id));
+    const skills=campaignLists('Natural skills',campaign=>(m.skills[campaign] || []).map(s=>s.id),id=>{
+      const level=db.FIELD_GUIDE.skill_requirements[id]?.level;
+      const skill=names[id];
+      return '<a class="entry-skill-link" href="skills/'+escape(skill.id)+'/"><span>'+escape(skill.title)+'</span><small>'+
+        (Number.isInteger(level) ? 'Min. level '+level : 'Minimum level unverified')+'</small></a>';
+    },'Natural skills unverified for this entry.');
     const locations=(m.locations || []).filter(l=>l.kind==='wild').map(l=>escape([readable[l.game],l.name,l.floors,'Lv. '+l.levels.join(', ')].filter(Boolean).join(' · ')));
-    const pairs=(firstParents.get(m.index) || []).map(([a,b])=>monsterLink(bySpecies.get(a))+' × '+monsterLink(bySpecies.get(b)));
+    const pairs=profiles.firstRecipes(m.index).map(recipe=>{
+      const family=db.DATA.families.find(f=>f.id===recipe.family);
+      const mate=recipe.b == null ? 'Any '+escape(family?.display_name || family?.name || 'matching')+' monster' : illustratedMonster(recipe.b);
+      return '<li><div class="entry-parents">'+illustratedMonster(recipe.a)+'<span>+</span>'+mate+'</div>'+
+        (recipe.condition ? '<small>'+escape(recipe.condition)+'</small>' : '')+'</li>';
+    });
     const desc=m.library?.text || [m.display_name, db.DATA.species[m.index]?.family_display, 'PlayStation monster profile'].filter(Boolean).join(' · ');
-    add('monsters',m.index,m.display_name,desc,paragraph([m.short_name,m.japanese].filter(Boolean).join(' · '))+list('Wild encounters',[...new Set(locations)])+
-      list('Parents for a first copy at the ordinary shrine (+0)',pairs)+paragraph(m.stats?.base_level_limit ? 'Base level limit: '+m.stats.base_level_limit : '')+
-      list('Natural skills',[...skillIds].map(id=>names[id]).filter(Boolean).map(skillLink)),'#monster?id='+m.index);
+    add('monsters',m.index,m.display_name,desc,skills+
+      '<section><h2>First-copy breeding</h2>'+(pairs.length ? '<p class="entry-note">Pedigree + mate</p><ul class="entry-recipes">'+pairs.join('')+'</ul>' : paragraph('No recorded pairing produces a first copy.'))+'</section>'+
+      list('Wild encounters',[...new Set(locations)])+paragraph(m.stats?.base_level_limit ? 'Base level limit: '+m.stats.base_level_limit : ''),'#monster?id='+m.index);
   }
   const places=new Map();
   for (const row of maps.values()) {
@@ -125,11 +166,19 @@ function addEntryPages(assets) {
     const url=base+p.path;
     const depth='../'.repeat(p.path.split('/').filter(Boolean).length);
     const description=escape(p.description);
+    const profile=p.kind==='skills' || p.kind==='monsters';
+    const monster=p.kind==='monsters' ? bySpecies.get(p.id) : null;
+    let introduction='<h1>'+escape(p.title)+'</h1>'+paragraph(p.description);
+    if (monster) {
+      const identity=[db.DATA.species[monster.index]?.family_display,monster.short_name!==monster.display_name && monster.short_name,monster.japanese].filter(Boolean);
+      introduction='<div class="entry-identity">'+portrait(monster.index)+'<div><h1>'+escape(p.title)+'</h1>'+paragraph(identity.join(' · '))+'</div></div>'+
+        '<div class="entry-library"><h2>In-game library</h2>'+paragraph(monster.library?.text || 'No in-game library entry.')+'</div>';
+    }
     const spoilerPreference = p.guarded ? '<script>try{if(localStorage.getItem("dqm-guide-story-spoilers")==="hide"){document.documentElement.classList.add("hide-story");document.title="Story entry · DQM1&2 PSX Player Guide"}}catch{}</script>' : '';
     const shield = p.guarded ? '<section class="entry-shield"><h1>Story entry</h1><button type="button" onclick="document.documentElement.classList.remove(\'hide-story\')">Reveal this entry</button></section>' : '';
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><base href="'+depth+'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title>'+
       '<meta name="description" content="'+description+'"><link rel="canonical" href="'+url+'"><meta property="og:url" content="'+url+'"><meta property="og:type" content="article"><meta property="og:title" content="'+title+'"><meta property="og:description" content="'+description+'"><meta property="og:image" content="'+base+'icons/guide-card.png"><meta name="twitter:card" content="summary_large_image">'+
-      spoilerPreference+'<link rel="stylesheet" href="'+versioned('css/entry-page.css')+'"></head><body><header>'+link('./','DQM1&2 PSX Player Guide')+'</header><main><nav>'+link('entries/','Guide index')+'</nav>'+shield+'<div class="entry-content"><h1>'+escape(p.title)+'</h1>'+paragraph(p.description)+p.body+
+      spoilerPreference+'<link rel="stylesheet" href="'+versioned('css/entry-page.css')+'"></head><body><header>'+link('./','DQM1&2 PSX Player Guide')+'</header><main><nav>'+link('entries/','Guide index')+'</nav>'+shield+'<div class="entry-content'+(profile ? ' entry-profile' : '')+'">'+introduction+p.body+
       (p.route ? '<p>'+link('index.html'+p.route,'Open in the player guide')+'</p>' : '')+'</div></main>'+
       (p.route ? '<script defer src="'+versioned(script)+'" data-route="'+escape(p.route)+'"></script>' : '')+'</body></html>';
   }

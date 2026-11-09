@@ -270,7 +270,7 @@ async function main(argv) {
     }
   }
   const coverage = reference.guide_names.coverage;
-  console.log(`Validated ${reference.metadata.coverage.named_species} monster names, ${coverage.items} items, ${coverage.skills} skills, ${coverage.maps} maps, and ${coverage.world_name_bindings} world-name bindings; public source ${publicRevision}.`);
+  console.log(`Validated ${reference.metadata.coverage.named_species} monster names, ${reference.guide_names.default_nicknames.length} default nicknames, ${coverage.items} items, ${coverage.skills} skills, ${coverage.maps} maps, and ${coverage.world_name_bindings} world-name bindings; public source ${publicRevision}.`);
 }
 
 module.exports = {verifySnapshot, validateBaseline, validateCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest, STATS};
