@@ -64,7 +64,7 @@
       const kinds = {starter:'Starter', boss:'Boss', gift:'Gift'};
       const body = row.nickname_rows.map(name => '<tr><th scope="row">'+escape(name.title)+'</th><td lang="ja">'+
         escape(name.japanese)+'</td><td>'+kinds[name.kind]+(name.article_id ? ' · '+articleLink(name.article_id) : '')+'</td></tr>').join('');
-      return '<div class="guide-stock"><table aria-label="Default monster nicknames"><thead><tr><th>Nickname</th><th>Japanese</th><th>Source</th></tr></thead><tbody>'+body+'</tbody></table></div>';
+      return '<div class="guide-stock"><table class="nickname-table" aria-label="Default monster nicknames"><thead><tr><th>Nickname</th><th>Japanese</th><th>Source</th></tr></thead><tbody>'+body+'</tbody></table></div>';
     }
     const nicknames = (row.default_nicknames || []).filter(name => name.title !== row.title);
     if (!nicknames.length) return '';

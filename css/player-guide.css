@@ -180,3 +180,7 @@
 @media print{.guide-filters,.map-controls,.atlas-browser,.atlas-tabs,.guide-back,.guide-pager{display:none}.atlas-layout{display:block}.map-scroll{height:auto;background:none}.field-view,.guide-article{margin:0}}
 .home-import{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;padding:9px 12px;margin-bottom:8px;border-radius:6px;background:var(--light);color:var(--teal);text-decoration:none}
 .home-import span{font-size:.82rem}.home-import:hover,.home-import:focus-visible{text-decoration:underline}
+.guide-stock .nickname-table{min-width:0;table-layout:fixed}
+.nickname-table :is(th,td){white-space:normal;overflow-wrap:anywhere}
+.nickname-table thead th:last-child{width:44%}
+.nickname-table tbody th{text-transform:none;letter-spacing:normal;font:inherit;font-weight:650}
