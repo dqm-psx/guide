@@ -188,6 +188,7 @@ test.describe('served', () => {
     await page.locator('#planner-male-grid button[data-planner-pair]').first().click();
     await expect(page.locator('#planner-team-detail-host #planner-pair-detail')).toBeVisible();
     await expect(page.locator('#breeding-table')).toBeHidden();
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#breeding-table"]');
     await expect(page.locator('#planner-row-range')).toHaveText(rowRange);
     await page.locator('#planner-all-grid button[data-planner-pair]').first().click();
@@ -229,6 +230,7 @@ test.describe('served', () => {
     await expect(page.locator('#planner-male-grid tbody tr')).toHaveCount(2);
     await expect(page.locator('#planner-female-grid tbody tr')).toHaveCount(3);
 
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#breeding-table"]');
     await expect(page.locator('#breeding-table')).toBeVisible();
     await expect(page.locator('#team-planner')).toBeHidden();

@@ -1,0 +1,2219 @@
+{
+  "schema_version": 1,
+  "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
+  "terms": [
+    {
+      "spelling": "Demon King's Castle Shrine",
+      "source_id": "s0028f000_0015",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Stubborn Old Man's Room",
+      "source_id": "s0ab53000_0ad4",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-optional-gates"
+      ]
+    },
+    {
+      "spelling": "Travelers' Gate Chamber",
+      "source_id": "s0b1d9000_0000",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-opening",
+        "story-terry-early-arena",
+        "story-terry-upper-arena",
+        "story-terry-postgame",
+        "quest-rescue-healie"
+      ]
+    },
+    {
+      "spelling": "Mirror of Destruction",
+      "source_id": "e0ad7",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mirror",
+        "story-between-worlds",
+        "quest-the-mirror-of-destruction",
+        "quest-find-the-ice-key",
+        "quest-confront-darck",
+        "boss-dark-master",
+        "npc-warubou",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Underground Waterway",
+      "source_id": "s004c3000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-assia",
+        "quest-assia-circus-and-water-shortage",
+        "boss-dam-builder",
+        "npc-king-of-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Volcanic Island Cave",
+      "source_id": "s00521800_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mirror",
+        "quest-the-mirror-of-destruction",
+        "npc-kameha",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "World Between Worlds",
+      "source_id": "s002cb000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-between-worlds",
+        "quest-confront-darck",
+        "boss-dark-master",
+        "boss-darck",
+        "location-world-between-worlds"
+      ]
+    },
+    {
+      "spelling": "Demon King's Castle",
+      "source_id": "s002e4800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-treasures",
+        "story-sky-demon-lord",
+        "boss-sky-impostor",
+        "location-sky-world",
+        "location-world-between-worlds"
+      ]
+    },
+    {
+      "spelling": "Demon King’s Castle",
+      "source_id": "s002e4800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-treasures",
+        "story-sky-demon-lord",
+        "boss-sky-impostor",
+        "location-sky-world",
+        "location-world-between-worlds"
+      ]
+    },
+    {
+      "spelling": "Between Worlds Key",
+      "source_id": "s002e4800_0c90",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "{PLAYER} received the ",
+      "suffix": ".",
+      "affected_entries": [
+        "story-sky-demon-lord",
+        "story-between-worlds",
+        "location-world-between-worlds"
+      ]
+    },
+    {
+      "spelling": "Castle of the Dead",
+      "source_id": "s002d3000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-treasures",
+        "quest-gather-the-three-zenithian-treasures",
+        "boss-dead-king",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Name Master's Room",
+      "source_id": "s0ab53000_0fd5",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "npc-greattree-name-master"
+      ]
+    },
+    {
+      "spelling": "Townsperson's Gate",
+      "source_id": "e169f",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-dragon",
+        "location-townsperson-s-gate"
+      ]
+    },
+    {
+      "spelling": "Townsperson’s Gate",
+      "source_id": "e169f",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-dragon",
+        "location-townsperson-s-gate"
+      ]
+    },
+    {
+      "spelling": "Hell Cloud Castle",
+      "source_id": "s0023b800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-mirror",
+        "quest-see-the-future-in-the-mirror-gate",
+        "boss-durran"
+      ]
+    },
+    {
+      "spelling": "Manipulation Gate",
+      "source_id": "e1761",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-manipulation-gate"
+      ]
+    },
+    {
+      "spelling": "Northern Mountain",
+      "source_id": "s0046b000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-eastoria",
+        "quest-eastoria-s-lost-voices",
+        "location-ice-world",
+        "npc-eastoria-botanist"
+      ]
+    },
+    {
+      "spelling": "Suspension Bridge",
+      "source_id": "s0028f000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Bandits' Hideout",
+      "source_id": "s00488000_0018",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-mirage",
+        "quest-mirage-lake-and-the-sea-bell",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Destruction Gate",
+      "source_id": "e1759",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-destruction-gate"
+      ]
+    },
+    {
+      "spelling": "GreatLog Storage",
+      "source_id": "s003f6800_0015",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "npc-greatlog-storage-clerk",
+        "npc-greatlog-storage-customer"
+      ]
+    },
+    {
+      "spelling": "GreatLog's Navel",
+      "source_id": "s003b7800_0018",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "story-desert-mirage",
+        "story-ice-shield",
+        "story-between-worlds",
+        "story-greatlog-spirit-rewards",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "GreatTree Castle",
+      "source_id": "s0ac3d800_0000",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-opening"
+      ]
+    },
+    {
+      "spelling": "GreatTree Tavern",
+      "source_id": "s0adf7000_01b8",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-upper-arena",
+        "story-terry-collection"
+      ]
+    },
+    {
+      "spelling": "Home in GreatLog",
+      "source_id": "s003d6000_0035",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "npc-mother",
+        "location-greatlog"
+      ]
+    },
+    {
+      "spelling": "Medal Man's Room",
+      "source_id": "s0ab53000_0016",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-optional-gates",
+        "npc-medal-man"
+      ]
+    },
+    {
+      "spelling": "Mysterious Navel",
+      "source_id": "s002f4000_0910",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "{PLAYER} obtained the ",
+      "suffix": "!",
+      "affected_entries": [
+        "story-between-worlds",
+        "quest-confront-darck",
+        "boss-darck"
+      ]
+    },
+    {
+      "spelling": "Northden Dungeon",
+      "source_id": "s0044a800_027b",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Port Ritz Tavern",
+      "source_id": "s004ae000_0055",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Tunnel to Hitano",
+      "source_id": "s0028f000_000a",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Western Mountain",
+      "source_id": "s0054d000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Westernia Castle",
+      "source_id": "s004ee000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-westernia",
+        "boss-yuna-puppet",
+        "npc-king-of-westernia",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Domination Gate",
+      "source_id": "e176a",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-domination-gate"
+      ]
+    },
+    {
+      "spelling": "East Lighthouse",
+      "source_id": "s00300000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mirror",
+        "quest-recover-the-moonstone",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Eastoria Castle",
+      "source_id": "s00555000_021d",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-eastoria",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Extinction Gate",
+      "source_id": "e1772",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-extinction-gate"
+      ]
+    },
+    {
+      "spelling": "GreatLog Castle",
+      "source_id": "s0038d800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-shield",
+        "story-between-worlds",
+        "quest-sky-shield-and-flight",
+        "npc-king-of-greatlog",
+        "location-greatlog"
+      ]
+    },
+    {
+      "spelling": "Inside the Well",
+      "source_id": "s0ab53000_0841",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-optional-gates"
+      ]
+    },
+    {
+      "spelling": "Kalkara Village",
+      "source_id": "s000d8000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Magic Door Room",
+      "source_id": "s003b7800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "location-greatlog"
+      ]
+    },
+    {
+      "spelling": "Medal Collector",
+      "source_id": "s003f6800_2a2c",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "I'm the ",
+      "suffix": ". I collect tiny medals.",
+      "affected_entries": [
+        "npc-medal-collector"
+      ]
+    },
+    {
+      "spelling": "Mermaid Kingdom",
+      "source_id": "s0049f000_00ba",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Mud Hand's Room",
+      "source_id": "s0ab53000_0ef5",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "npc-mud-hand-s-room-rock-paper-scissors-opponent"
+      ]
+    },
+    {
+      "spelling": "Northden Castle",
+      "source_id": "s0044a800_0097",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "boss-northden-impostor",
+        "npc-king-of-northden",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Polonia Village",
+      "source_id": "s0049f000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Southern Forest",
+      "source_id": "s00538800_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-westernia",
+        "quest-restore-yuna-s-soul-and-peace",
+        "boss-yuna-puppet",
+        "npc-yuna",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Spirit's Spring",
+      "source_id": "s00208000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "story-ice-shield",
+        "boss-spring-attacker",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Spirit’s Spring",
+      "source_id": "s00208000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "story-ice-shield",
+        "boss-spring-attacker",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Temptation Gate",
+      "source_id": "e1720",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-demon-servant",
+        "location-temptation-gate"
+      ]
+    },
+    {
+      "spelling": "Transform Staff",
+      "source_id": "e0ac8",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "story-sky-demon-lord"
+      ]
+    },
+    {
+      "spelling": "Traveler's Cave",
+      "source_id": "s00200800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-anger"
+      ]
+    },
+    {
+      "spelling": "Zenithian Sword",
+      "source_id": "e0af9",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-dead-king",
+        "boss-sky-impostor"
+      ]
+    },
+    {
+      "spelling": "Assia Treasury",
+      "source_id": "s03e9f000_0149",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-mirage",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Confusion Gate",
+      "source_id": "e16b9",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-treeface",
+        "location-confusion-gate"
+      ]
+    },
+    {
+      "spelling": "Departure Gate",
+      "source_id": "e1696",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-opening",
+        "quest-rescue-healie",
+        "npc-pulio",
+        "location-departure-gate",
+        "npc-healie"
+      ]
+    },
+    {
+      "spelling": "Great Sabrecat",
+      "source_id": "e026d",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-great-sabrecat"
+      ]
+    },
+    {
+      "spelling": "Happiness Gate",
+      "source_id": "e1717",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-jamiras",
+        "location-happiness-gate"
+      ]
+    },
+    {
+      "spelling": "Nameless Place",
+      "source_id": "s00288800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-postgame",
+        "boss-darkdrium"
+      ]
+    },
+    {
+      "spelling": "Old Man's Room",
+      "source_id": "s003f6800_094f",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-optional-gates",
+        "story-greatlog-postgame"
+      ]
+    },
+    {
+      "spelling": "Port Ritz Town",
+      "source_id": "s004ae000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mirror",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Tunnel to Nofo",
+      "source_id": "s004d6000_0012",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden"
+      ]
+    },
+    {
+      "spelling": "Zenithian Helm",
+      "source_id": "e0ae7",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-small-cave-guardian"
+      ]
+    },
+    {
+      "spelling": "Ambition Gate",
+      "source_id": "e1751",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-ambition-gate"
+      ]
+    },
+    {
+      "spelling": "Assia Dungeon",
+      "source_id": "s03e9f000_0162",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-mirage",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Birdsong Herb",
+      "source_id": "e0ac1",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-eastoria",
+        "quest-eastoria-s-lost-voices",
+        "npc-eastoria-botanist"
+      ]
+    },
+    {
+      "spelling": "Darck's Manor",
+      "source_id": "s002f4000_000a",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-between-worlds",
+        "quest-confront-darck",
+        "boss-dark-master",
+        "boss-darck",
+        "location-world-between-worlds"
+      ]
+    },
+    {
+      "spelling": "Darck’s Manor",
+      "source_id": "s002f4000_000a",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-between-worlds",
+        "quest-confront-darck",
+        "boss-dark-master",
+        "boss-darck",
+        "location-world-between-worlds"
+      ]
+    },
+    {
+      "spelling": "Demon Servant",
+      "source_id": "e0632",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-demon-servant"
+      ]
+    },
+    {
+      "spelling": "Egg Appraiser",
+      "source_id": "s003f6800_0112",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "npc-greatlog-egg-appraiser",
+        "npc-greattree-egg-appraiser"
+      ]
+    },
+    {
+      "spelling": "Guardian Gate",
+      "source_id": "e16a8",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-golem",
+        "location-guardian-gate"
+      ]
+    },
+    {
+      "spelling": "Hitano Castle",
+      "source_id": "s00329800_01b6",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-treasures",
+        "quest-gather-the-three-zenithian-treasures",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Hitano Tavern",
+      "source_id": "s00329800_019f",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Judgment Gate",
+      "source_id": "e1738",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-akbar",
+        "location-judgment-gate"
+      ]
+    },
+    {
+      "spelling": "Key Appraiser",
+      "source_id": "s003f6800_0129",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-greatlog-postgame"
+      ]
+    },
+    {
+      "spelling": "Living Statue",
+      "source_id": "e06fb",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-collection",
+        "boss-living-statue",
+        "npc-machiko"
+      ]
+    },
+    {
+      "spelling": "Master School",
+      "source_id": "s0adf7000_01cf",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-early-arena"
+      ]
+    },
+    {
+      "spelling": "Monster Arena",
+      "source_id": "s0039f000_0376",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-early-arena",
+        "story-terry-anger",
+        "story-terry-upper-arena",
+        "story-terry-mirror",
+        "story-terry-collection",
+        "story-terry-postgame",
+        "story-greatlog-postgame"
+      ]
+    },
+    {
+      "spelling": "Monster Elder",
+      "source_id": "s0adf7000_f943",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "phrase",
+      "prefix": "Well, will you challenge the ",
+      "suffix": "?",
+      "affected_entries": [
+        "story-terry-optional-gates",
+        "story-terry-postgame",
+        "npc-monster-elder",
+        "npc-queen-of-greattree"
+      ]
+    },
+    {
+      "spelling": "Northden Town",
+      "source_id": "s0044a800_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Port Ritz Inn",
+      "source_id": "s004ae000_006e",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Starry Shrine",
+      "source_id": "s003b7800_0067",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-mirror",
+        "story-desert-mirage",
+        "quest-win-the-pirate-key",
+        "npc-monster-elder",
+        "npc-monster-professor",
+        "location-water-world",
+        "quest-arena-dqm2-kids"
+      ]
+    },
+    {
+      "spelling": "Strength Gate",
+      "source_id": "e16e5",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-anger",
+        "boss-living-statue",
+        "location-strength-gate"
+      ]
+    },
+    {
+      "spelling": "Assia Castle",
+      "source_id": "s03e9f000_00a8",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Courage Gate",
+      "source_id": "e16d6",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-big-eye",
+        "location-courage-gate"
+      ]
+    },
+    {
+      "spelling": "Desert World",
+      "source_id": "s00046000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "story-desert-assia",
+        "story-desert-mirage",
+        "quest-save-greatlog-the-first-keys",
+        "quest-assia-circus-and-water-shortage",
+        "quest-mirage-lake-and-the-sea-bell",
+        "boss-dam-builder",
+        "boss-bandit-leader",
+        "npc-king-of-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Eastoria Inn",
+      "source_id": "s00555000_016f",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Funt Village",
+      "source_id": "s0031d800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "GreatLog Key",
+      "source_id": "s003b7800_091f",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "{PLAYER} received the ",
+      "suffix": ".",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "quest-save-greatlog-the-first-keys",
+        "location-greatlog"
+      ]
+    },
+    {
+      "spelling": "Northden Inn",
+      "source_id": "s0044a800_005a",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Queen's Room",
+      "source_id": "s0adf7000_05e2",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-collection"
+      ]
+    },
+    {
+      "spelling": "Sage's Tower",
+      "source_id": "s00336800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Spring Water",
+      "source_id": "e0aa5",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-mirage",
+        "quest-mirage-lake-and-the-sea-bell"
+      ]
+    },
+    {
+      "spelling": "Starry Night",
+      "source_id": "s0ab53000_1886",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "phrase",
+      "prefix": "Win the ",
+      "suffix": " tournament for us!",
+      "affected_entries": [
+        "story-terry-mirror",
+        "story-terry-postgame",
+        "quest-climb-greattree-arena-classes",
+        "boss-durran",
+        "npc-monster-elder",
+        "quest-arena-dqm1-s"
+      ]
+    },
+    {
+      "spelling": "Yord Village",
+      "source_id": "s004ae000_0087",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Border Mine",
+      "source_id": "s00340000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-westernia",
+        "quest-restore-yuna-s-soul-and-peace",
+        "npc-king-of-westernia",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Kalkara Inn",
+      "source_id": "s000d8000_0033",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Laurel Leaf",
+      "source_id": "e096f",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-treeface"
+      ]
+    },
+    {
+      "spelling": "Main Street",
+      "source_id": "s00419800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-greatlog-spirit-rewards"
+      ]
+    },
+    {
+      "spelling": "Memory Gate",
+      "source_id": "e16b0",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-great-sabrecat",
+        "location-memory-gate"
+      ]
+    },
+    {
+      "spelling": "Mirage Lake",
+      "source_id": "s00488000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-assia",
+        "story-desert-mirage",
+        "quest-mirage-lake-and-the-sea-bell",
+        "boss-dam-builder",
+        "boss-bandit-leader",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Mirror Gate",
+      "source_id": "e1749",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-mirror",
+        "quest-see-the-future-in-the-mirror-gate",
+        "boss-durran",
+        "npc-king-of-greattree",
+        "location-mirror-gate"
+      ]
+    },
+    {
+      "spelling": "Nofo Tavern",
+      "source_id": "s00434000_0083",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Polonia Inn",
+      "source_id": "s0049f000_005e",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Sailor Ring",
+      "source_id": "e0be3",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "npc-queen-of-the-mermaids"
+      ]
+    },
+    {
+      "spelling": "Spirit Mark",
+      "source_id": "e0ab0",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "story-ice-shield",
+        "quest-sky-shield-and-flight",
+        "boss-spring-attacker",
+        "npc-king-of-northden"
+      ]
+    },
+    {
+      "spelling": "Water World",
+      "source_id": "s002ae800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "story-pirate-mirror",
+        "quest-win-the-pirate-key",
+        "quest-recover-the-moonstone",
+        "quest-the-mirror-of-destruction",
+        "boss-western-cape-dancer",
+        "boss-ghost-ship-pirates",
+        "npc-queen-of-the-mermaids",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Wisdom Gate",
+      "source_id": "e1707",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-sky-dragon",
+        "location-wisdom-gate"
+      ]
+    },
+    {
+      "spelling": "Anger Gate",
+      "source_id": "e16ed",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-anger",
+        "quest-anger-gate-outbreak",
+        "boss-battle-rex",
+        "npc-king-of-greattree",
+        "location-anger-gate",
+        "quest-arena-dqm1-d"
+      ]
+    },
+    {
+      "spelling": "Battle Rex",
+      "source_id": "e0186",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-anger",
+        "quest-anger-gate-outbreak",
+        "boss-battle-rex"
+      ]
+    },
+    {
+      "spelling": "Fang Slime",
+      "source_id": "e006d",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-fang-slime"
+      ]
+    },
+    {
+      "spelling": "Funky Bird",
+      "source_id": "e0324",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-funky-bird"
+      ]
+    },
+    {
+      "spelling": "Ghost Ship",
+      "source_id": "s00494000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "quest-recover-the-moonstone",
+        "boss-ghost-ship-pirates",
+        "npc-queen-of-the-mermaids",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Hitano Inn",
+      "source_id": "s00329800_0188",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Lake Tower",
+      "source_id": "s00368000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-shield",
+        "story-ice-eastoria",
+        "quest-eastoria-s-lost-voices",
+        "boss-lake-tower-wizard",
+        "location-ice-world",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Peace Gate",
+      "source_id": "e16cd",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-fang-slime",
+        "location-peace-gate"
+      ]
+    },
+    {
+      "spelling": "Pirate Key",
+      "source_id": "s0039f000_26a1",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "{PLAYER} received the ",
+      "suffix": ".",
+      "affected_entries": [
+        "story-desert-mirage",
+        "quest-win-the-pirate-key",
+        "location-water-world",
+        "quest-arena-dqm2-kids"
+      ]
+    },
+    {
+      "spelling": "Sky Dragon",
+      "source_id": "e018e",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-collection",
+        "boss-sky-dragon"
+      ]
+    },
+    {
+      "spelling": "Sky Shield",
+      "source_id": "e0adf",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-shield",
+        "story-between-worlds",
+        "quest-sky-shield-and-flight",
+        "quest-confront-darck",
+        "boss-spring-attacker",
+        "boss-dark-master",
+        "npc-warubou",
+        "npc-king-of-greatlog"
+      ]
+    },
+    {
+      "spelling": "Sleep Gate",
+      "source_id": "e177b",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-sleep-gate"
+      ]
+    },
+    {
+      "spelling": "Sluice Hut",
+      "source_id": "s000d8000_004a",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Small Cave",
+      "source_id": "s00373000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-treasures",
+        "quest-gather-the-three-zenithian-treasures",
+        "boss-small-cave-guardian",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Wind Tower",
+      "source_id": "s0035e800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-treasures",
+        "quest-gather-the-three-zenithian-treasures",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Wiston Inn",
+      "source_id": "s0050c000_007c",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Assia Inn",
+      "source_id": "s03e9f000_0091",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Cape Cave",
+      "source_id": "s00530000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "boss-western-cape-dancer",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Dark Horn",
+      "source_id": "e01f0",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-dark-horn"
+      ]
+    },
+    {
+      "spelling": "Darkdrium",
+      "source_id": "e0895",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-darkdrium"
+      ]
+    },
+    {
+      "spelling": "GreatTree",
+      "source_id": "s0ab53000_0000",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-opening",
+        "story-terry-early-arena",
+        "story-terry-anger",
+        "story-terry-upper-arena",
+        "story-terry-mirror",
+        "story-terry-optional-gates",
+        "story-terry-collection",
+        "story-terry-postgame",
+        "quest-rescue-healie",
+        "quest-climb-greattree-arena-classes",
+        "quest-anger-gate-outbreak",
+        "quest-see-the-future-in-the-mirror-gate",
+        "quest-recruit-watabou",
+        "quest-open-the-library-s-inner-room",
+        "quest-show-the-golden-slime",
+        "quest-explore-the-third-basement-floor",
+        "quest-the-well-professor-s-experiment",
+        "quest-fire-at-the-bazaar",
+        "quest-summon-entertainment-at-the-bazaar",
+        "quest-the-queen-s-monster-collection-requests",
+        "boss-dragon",
+        "boss-golem",
+        "boss-great-sabrecat",
+        "boss-treeface",
+        "boss-fang-slime",
+        "boss-big-eye",
+        "boss-living-statue",
+        "boss-battle-rex",
+        "boss-funky-bird",
+        "boss-sky-dragon",
+        "boss-jamiras",
+        "boss-demon-servant",
+        "boss-dark-horn",
+        "boss-akbar",
+        "boss-durran",
+        "boss-darkdrium",
+        "npc-pulio",
+        "npc-king-of-greattree",
+        "npc-monster-elder",
+        "npc-watabou",
+        "npc-queen-of-greattree",
+        "npc-sanchi",
+        "npc-medal-man",
+        "npc-teto",
+        "npc-machiko",
+        "npc-surao",
+        "npc-tife",
+        "npc-greattree-name-master",
+        "npc-terry",
+        "location-departure-gate",
+        "location-townsperson-s-gate",
+        "location-guardian-gate",
+        "location-memory-gate",
+        "location-confusion-gate",
+        "location-peace-gate",
+        "location-courage-gate",
+        "location-strength-gate",
+        "location-anger-gate",
+        "location-joy-gate",
+        "location-wisdom-gate",
+        "location-happiness-gate",
+        "location-temptation-gate",
+        "location-lost-gate",
+        "location-judgment-gate",
+        "location-mirror-gate",
+        "location-ambition-gate",
+        "location-destruction-gate",
+        "location-manipulation-gate",
+        "location-domination-gate",
+        "location-extinction-gate",
+        "location-sleep-gate",
+        "quest-arena-dqm1-g",
+        "quest-arena-dqm1-f",
+        "quest-arena-dqm1-e",
+        "quest-arena-dqm1-d",
+        "quest-arena-dqm1-c",
+        "quest-arena-dqm1-b",
+        "quest-arena-dqm1-a",
+        "quest-arena-dqm1-s",
+        "npc-greattree-egg-appraiser",
+        "npc-greattree-librarian",
+        "npc-greattree-storage-clerk",
+        "npc-mud-hand-s-room-rock-paper-scissors-opponent",
+        "npc-healie",
+        "npc-surabou"
+      ]
+    },
+    {
+      "spelling": "Ice World",
+      "source_id": "s08255000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "story-ice-westernia",
+        "story-ice-shield",
+        "story-ice-eastoria",
+        "quest-the-mirror-of-destruction",
+        "quest-restore-yuna-s-soul-and-peace",
+        "quest-sky-shield-and-flight",
+        "quest-eastoria-s-lost-voices",
+        "boss-northden-impostor",
+        "boss-yuna-puppet",
+        "boss-spring-attacker",
+        "boss-lake-tower-wizard",
+        "npc-king-of-northden",
+        "npc-king-of-westernia",
+        "npc-queen-of-eastoria",
+        "npc-yuna",
+        "location-ice-world",
+        "npc-eastoria-botanist"
+      ]
+    },
+    {
+      "spelling": "Lost Gate",
+      "source_id": "e1730",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-upper-arena",
+        "boss-dark-horn",
+        "location-lost-gate",
+        "location-judgment-gate"
+      ]
+    },
+    {
+      "spelling": "Medal Man",
+      "source_id": "s0ab53000_5cd6",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "phrase",
+      "prefix": "The ",
+      "suffix": " says you can use this passage!",
+      "affected_entries": [
+        "story-terry-upper-arena",
+        "story-terry-optional-gates",
+        "npc-medal-man",
+        "quest-arena-dqm1-s"
+      ]
+    },
+    {
+      "spelling": "Moonstone",
+      "source_id": "e0aaa",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "story-pirate-mirror",
+        "quest-recover-the-moonstone",
+        "boss-ghost-ship-pirates",
+        "npc-queen-of-the-mermaids"
+      ]
+    },
+    {
+      "spelling": "Oasis Key",
+      "source_id": "s003b7800_0834",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "{PLAYER} was made to take the ",
+      "suffix": ".",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "quest-save-greatlog-the-first-keys",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Port Ritz",
+      "source_id": "s004ae000_017f",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "phrase",
+      "prefix": "This is ",
+      "suffix": ", a harbor town where ships gather.",
+      "affected_entries": [
+        "story-pirate-mirror",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Sky World",
+      "source_id": "s002bd000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "story-sky-treasures",
+        "story-sky-demon-lord",
+        "quest-gather-the-three-zenithian-treasures",
+        "boss-dead-king",
+        "boss-small-cave-guardian",
+        "boss-sky-impostor",
+        "npc-kameha",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Westernia",
+      "source_id": "s004ee000_02db",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "phrase",
+      "prefix": "This is ",
+      "suffix": " Castle, in the kingdom west of the lake.",
+      "affected_entries": [
+        "story-ice-westernia",
+        "quest-restore-yuna-s-soul-and-peace",
+        "boss-yuna-puppet",
+        "npc-king-of-westernia",
+        "npc-yuna",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "BigTrunk",
+      "source_id": "s0ab53000_2377",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "phrase",
+      "prefix": "I have relatives in a kingdom called ",
+      "suffix": ".",
+      "affected_entries": [
+        "story-terry-mirror"
+      ]
+    },
+    {
+      "spelling": "Eastoria",
+      "source_id": "s00555000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-shield",
+        "story-ice-eastoria",
+        "quest-eastoria-s-lost-voices",
+        "boss-lake-tower-wizard",
+        "npc-queen-of-eastoria",
+        "location-ice-world",
+        "npc-eastoria-botanist"
+      ]
+    },
+    {
+      "spelling": "Funt Inn",
+      "source_id": "s0031d800_0504",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "GreatLog",
+      "source_id": "s003f6800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-mirror",
+        "story-cobi-tara-opening",
+        "story-desert-mirage",
+        "story-pirate-mirror",
+        "story-ice-shield",
+        "story-sky-demon-lord",
+        "story-between-worlds",
+        "story-greatlog-postgame",
+        "story-greatlog-spirit-rewards",
+        "quest-save-greatlog-the-first-keys",
+        "quest-win-the-pirate-key",
+        "quest-find-the-ice-key",
+        "quest-sky-shield-and-flight",
+        "quest-greatlog-after-the-story",
+        "npc-cobi",
+        "npc-tara",
+        "npc-father",
+        "npc-mother",
+        "npc-kameha",
+        "npc-warubou",
+        "npc-monster-professor",
+        "npc-medal-collector",
+        "npc-king-of-greatlog",
+        "npc-milly",
+        "npc-terry",
+        "npc-slash",
+        "npc-petitbou",
+        "location-greatlog",
+        "location-desert-world",
+        "location-water-world",
+        "location-sky-world",
+        "quest-arena-dqm2-kids",
+        "quest-arena-dqm2-c",
+        "quest-arena-dqm2-b",
+        "quest-arena-dqm2-a",
+        "quest-arena-dqm2-s",
+        "npc-greatlog-egg-appraiser",
+        "npc-greatlog-hibernation-attendant",
+        "npc-greatlog-librarian",
+        "npc-greatlog-storage-clerk",
+        "npc-greatlog-storage-customer"
+      ]
+    },
+    {
+      "spelling": "Joy Gate",
+      "source_id": "e16fe",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-funky-bird",
+        "location-joy-gate"
+      ]
+    },
+    {
+      "spelling": "Nofo Inn",
+      "source_id": "s00434000_00dd",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Pei Town",
+      "source_id": "s0047e000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Petitbou",
+      "source_id": "s003b7800_2713",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "story-greatlog-spirit-rewards",
+        "npc-petitbou"
+      ]
+    },
+    {
+      "spelling": "Sea Bell",
+      "source_id": "e0acf",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-mirage",
+        "story-between-worlds",
+        "quest-mirage-lake-and-the-sea-bell",
+        "quest-confront-darck",
+        "boss-bandit-leader",
+        "boss-dark-master",
+        "npc-warubou",
+        "npc-king-of-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Treeface",
+      "source_id": "e03f0",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-treeface"
+      ]
+    },
+    {
+      "spelling": "Big Eye",
+      "source_id": "e0275",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-big-eye"
+      ]
+    },
+    {
+      "spelling": "Jamiras",
+      "source_id": "e0584",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-jamiras"
+      ]
+    },
+    {
+      "spelling": "Kalkara",
+      "source_id": "s03e9f000_20e0",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "phrase",
+      "prefix": "King: Enough! I'll go to ",
+      "suffix": " and tell the caretaker myself!",
+      "affected_entries": [
+        "story-desert-assia",
+        "quest-assia-circus-and-water-shortage",
+        "npc-king-of-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Machiko",
+      "source_id": "s0adf7000_0c40",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-collection",
+        "npc-machiko",
+        "quest-arena-dqm1-a"
+      ]
+    },
+    {
+      "spelling": "Pei Inn",
+      "source_id": "s0047e000_0085",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Polonia",
+      "source_id": "s0049f000_056b",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "phrase",
+      "prefix": "This is ",
+      "suffix": " Village.",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "boss-western-cape-dancer",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Sky Key",
+      "source_id": "s0038d800_0212",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "{PLAYER} obtained the ",
+      "suffix": ".",
+      "affected_entries": [
+        "story-ice-shield",
+        "quest-sky-shield-and-flight",
+        "npc-king-of-greatlog",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Storage",
+      "source_id": "s0ab53000_082c",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "npc-mother",
+        "npc-greatlog-storage-clerk",
+        "npc-greatlog-storage-customer",
+        "npc-greattree-storage-clerk"
+      ]
+    },
+    {
+      "spelling": "Surabou",
+      "source_id": "s0b113000_0658",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "phrase",
+      "prefix": "I'm Surao. Old ",
+      "suffix": " is my grandfather.",
+      "affected_entries": [
+        "story-terry-opening",
+        "npc-pulio",
+        "npc-surabou"
+      ]
+    },
+    {
+      "spelling": "Warubou",
+      "source_id": "e0405",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "story-desert-mirage",
+        "story-pirate-mirror",
+        "story-ice-shield",
+        "story-between-worlds",
+        "story-greatlog-spirit-rewards",
+        "quest-save-greatlog-the-first-keys",
+        "quest-mirage-lake-and-the-sea-bell",
+        "quest-the-mirror-of-destruction",
+        "quest-sky-shield-and-flight",
+        "quest-confront-darck",
+        "boss-darck",
+        "npc-warubou",
+        "npc-petitbou",
+        "location-greatlog",
+        "location-desert-world",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Watabou",
+      "source_id": "e040a",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-mirror",
+        "story-terry-postgame",
+        "quest-recruit-watabou",
+        "npc-watabou"
+      ]
+    },
+    {
+      "spelling": "Bazaar",
+      "source_id": "s0afae000_0000",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-optional-gates",
+        "quest-fire-at-the-bazaar",
+        "quest-summon-entertainment-at-the-bazaar"
+      ]
+    },
+    {
+      "spelling": "Durran",
+      "source_id": "e058a",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-mirror",
+        "boss-durran"
+      ]
+    },
+    {
+      "spelling": "Healie",
+      "source_id": "s001af000_00d3",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "aliases": [
+        "Hale"
+      ],
+      "affected_entries": [
+        "story-terry-opening",
+        "quest-rescue-healie",
+        "npc-pulio",
+        "location-departure-gate",
+        "npc-healie"
+      ]
+    },
+    {
+      "spelling": "Hitano",
+      "source_id": "s00329800_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-ugor",
+        "story-sky-treasures",
+        "quest-gather-the-three-zenithian-treasures",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Kameha",
+      "source_id": "s00521800_0130",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "story-pirate-mirror",
+        "story-sky-demon-lord",
+        "quest-the-mirror-of-destruction",
+        "boss-sky-impostor",
+        "npc-kameha"
+      ]
+    },
+    {
+      "spelling": "Mickey",
+      "source_id": "s0adf7000_0924",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-anger",
+        "quest-arena-dqm1-d"
+      ]
+    },
+    {
+      "spelling": "Sanchi",
+      "source_id": "s0ab53000_2f12",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "story-terry-optional-gates",
+        "quest-show-the-golden-slime",
+        "npc-sanchi"
+      ]
+    },
+    {
+      "spelling": "Wiston",
+      "source_id": "s0050c000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-westernia",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Akbar",
+      "source_id": "e057f",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "boss-akbar"
+      ]
+    },
+    {
+      "spelling": "Assia",
+      "source_id": "s03e9f000_0000",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-desert-assia",
+        "story-desert-mirage",
+        "quest-assia-circus-and-water-shortage",
+        "quest-mirage-lake-and-the-sea-bell",
+        "boss-dam-builder",
+        "npc-king-of-assia",
+        "location-desert-world"
+      ]
+    },
+    {
+      "spelling": "Darck",
+      "source_id": "e08af",
+      "catalog": "text/system.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-sky-demon-lord",
+        "story-between-worlds",
+        "quest-confront-darck",
+        "boss-dark-master",
+        "boss-darck",
+        "location-world-between-worlds"
+      ]
+    },
+    {
+      "spelling": "Milly",
+      "source_id": "s0adf7000_0b40",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "npc-milly"
+      ]
+    },
+    {
+      "spelling": "Pulio",
+      "source_id": "s0ac3d800_32e8",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "story-terry-opening",
+        "quest-rescue-healie",
+        "npc-pulio",
+        "location-departure-gate",
+        "npc-healie",
+        "npc-surabou"
+      ]
+    },
+    {
+      "spelling": "Slash",
+      "source_id": "s003d6000_0791",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "boss-battle-rex",
+        "npc-slash"
+      ]
+    },
+    {
+      "spelling": "Surao",
+      "source_id": "s0b113000_06f3",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "npc-surao"
+      ]
+    },
+    {
+      "spelling": "Terry",
+      "source_id": "x0ab1e0",
+      "catalog": "text/static.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-opening",
+        "story-terry-anger",
+        "story-terry-mirror",
+        "story-terry-collection",
+        "quest-rescue-healie",
+        "quest-recruit-watabou",
+        "boss-darkdrium",
+        "npc-pulio",
+        "npc-king-of-greattree",
+        "npc-watabou",
+        "npc-medal-man",
+        "npc-teto",
+        "npc-surao",
+        "npc-milly",
+        "npc-terry",
+        "location-departure-gate",
+        "location-strength-gate",
+        "npc-healie",
+        "npc-surabou"
+      ]
+    },
+    {
+      "spelling": "Cobi",
+      "source_id": "x0ab1e6",
+      "catalog": "text/static.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "npc-cobi",
+        "npc-tara"
+      ]
+    },
+    {
+      "spelling": "Nofo",
+      "source_id": "s00434000_0000",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-ice-northden",
+        "story-ice-westernia",
+        "location-ice-world"
+      ]
+    },
+    {
+      "spelling": "Tara",
+      "source_id": "x0ab1ec",
+      "catalog": "text/static.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-cobi-tara-opening",
+        "npc-cobi",
+        "npc-tara"
+      ]
+    },
+    {
+      "spelling": "Teto",
+      "source_id": "s0adf7000_0e48",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "full",
+      "affected_entries": [
+        "story-terry-early-arena",
+        "npc-teto",
+        "quest-arena-dqm1-e",
+        "quest-arena-dqm1-c"
+      ]
+    },
+    {
+      "spelling": "Tife",
+      "source_id": "s0adf7000_4fd8",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "story-terry-upper-arena",
+        "npc-medal-man",
+        "npc-tife",
+        "quest-arena-dqm1-s"
+      ]
+    },
+    {
+      "spelling": "Yord",
+      "source_id": "s004ae000_178f",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "phrase",
+      "prefix": "This is ",
+      "suffix": " Village.",
+      "affected_entries": [
+        "story-pirate-mermaids",
+        "quest-recover-the-moonstone",
+        "boss-ghost-ship-pirates",
+        "npc-queen-of-the-mermaids",
+        "location-water-world"
+      ]
+    },
+    {
+      "spelling": "Yuna",
+      "source_id": "s004ee000_10d3",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "speaker",
+      "speaker_line": 0,
+      "affected_entries": [
+        "story-ice-westernia",
+        "quest-restore-yuna-s-soul-and-peace",
+        "npc-king-of-westernia",
+        "npc-yuna"
+      ]
+    },
+    {
+      "spelling": "Pei",
+      "source_id": "s0047e000_038d",
+      "catalog": "dialogue/main/2000_3999.json",
+      "extract": "phrase",
+      "prefix": "This is the town of ",
+      "suffix": ".",
+      "affected_entries": [
+        "story-sky-ugor",
+        "location-sky-world"
+      ]
+    },
+    {
+      "spelling": "Ugor",
+      "source_id": "s0031d800_00db",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "Here rests ",
+      "suffix": ", the great sage who saved the world.",
+      "affected_entries": [
+        "story-sky-ugor"
+      ]
+    },
+    {
+      "spelling": "Monster Professor",
+      "source_id": "s003b7800_2be2",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "I'm the ",
+      "suffix": "'s number-one pupil!",
+      "affected_entries": [
+        "npc-monster-professor"
+      ]
+    }
+  ]
+}

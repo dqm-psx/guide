@@ -67,6 +67,7 @@ test.describe('served', () => {
   // Pin an offspring in Find parents, then take the "View plan" path into
   // the planner, where the target list and the plan are.
   const pinTarget = async (page, speciesIndex) => {
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#offspring-finder"]');
     await expect(page.locator('#offspring-finder')).toBeVisible();
     await page.selectOption('#target', String(speciesIndex));

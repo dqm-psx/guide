@@ -36,6 +36,46 @@
   const known = new Set(views.map(view => view.id));
   const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
   const skipLink = document.querySelector("a.skip");
+  const trigger = P("breeding-nav-trigger");
+  const submenu = P("breeding-nav-links");
+  const group = trigger.parentElement;
+  let pinned = false;
+  function setBreedingOpen(open) {
+    trigger.setAttribute("aria-expanded", String(open));
+    submenu.hidden = !open;
+    if (!open) pinned = false;
+  }
+  trigger.addEventListener("click", () => {
+    pinned = !pinned;
+    setBreedingOpen(pinned);
+  });
+  group.addEventListener("pointerenter", event => {
+    if (event.pointerType === "mouse") setBreedingOpen(true);
+  });
+  group.addEventListener("pointerleave", () => {
+    if (!pinned && !submenu.contains(document.activeElement)) setBreedingOpen(false);
+  });
+  group.addEventListener("focusout", event => {
+    if (!group.contains(event.relatedTarget)) setBreedingOpen(false);
+  });
+  document.addEventListener("pointerdown", event => {
+    if (!group.contains(event.target)) setBreedingOpen(false);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !submenu.hidden) {
+      if (group.contains(document.activeElement)) trigger.focus();
+      setBreedingOpen(false);
+    }
+  });
+  group.addEventListener("keydown", event => {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    setBreedingOpen(true);
+    const links = Array.from(submenu.querySelectorAll("a"));
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    const index = links.indexOf(document.activeElement);
+    links[index < 0 ? (direction > 0 ? 0 : links.length - 1) : (index + direction + links.length) % links.length].focus();
+  });
 
   let activeView = null;
   let pendingFocusId = null;
@@ -72,20 +112,16 @@
       const active = viewFor(link.hash) === (viewId === "monster" ? "species-index" : viewId);
       if (active) {
         link.setAttribute("aria-current", "page");
-        const nav = link.parentElement;
-        if (nav.scrollWidth > nav.clientWidth) {
-          const left = link.getBoundingClientRect().left - nav.getBoundingClientRect().left;
-          if (left < 0 || left + link.offsetWidth > nav.clientWidth) nav.scrollLeft += left - (nav.clientWidth-link.offsetWidth)/2;
-        }
       }
       else link.removeAttribute("aria-current");
       link.classList.toggle("nav-link-active", active);
     }
+    trigger.classList.toggle("nav-link-active", Boolean(submenu.querySelector('[aria-current="page"]')));
   }
   // The nav label is the view's title, so one edit renames both.
   function setTitle(viewId) {
     const link = navLinks.find(candidate => viewFor(candidate.hash) === viewId);
-    const label = link ? link.textContent.replace(/\s+/g, " ").trim() : viewId;
+    const label = link ? link.getAttribute("aria-label") || link.textContent.trim() : viewId;
     document.title = label + " · " + TITLE_SUFFIX;
   }
   // A hash that names an element inside the revealed view keeps the browser's
@@ -110,6 +146,7 @@
     const settings = options || {};
     const view = P(viewId);
     if (!view) return;
+    setBreedingOpen(false);
     reveal(viewId);
     if (window.DQMApp && typeof window.DQMApp.viewShown === "function") window.DQMApp.viewShown(viewId);
     markNav(viewId);

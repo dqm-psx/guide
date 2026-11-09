@@ -1,0 +1,26 @@
+{
+  "version": "v1.0.73",
+  "baseline": "v1.0.66",
+  "maps": 406,
+  "places": 183,
+  "scenes": 119,
+  "images": 239,
+  "doorwaySelectors": 983,
+  "exitPins": 829,
+  "verifiedDestinations": 829,
+  "arrivalVariants": 1,
+  "runtimeSpans": 10,
+  "sourceRevision": "dbf5b12cc419268e5dda0d227ab273ba702be53d",
+  "baselineBinSha256": "69213c55d5c2957d2c0509ab7fc40f0e41d5ac2402adb2465fac63356da555ad",
+  "patchedBinSha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
+  "nativeIndexSha256": "c49c4233f9ffdc2706fd6cc75c77719c2f6c0d51b40e3bc2bbdc2a5cca3be9dd",
+  "mapEvidenceSha256": "88866e88445e10b7ccdd653c051584c017723f94dbcb15c1b5be42a6acc47298",
+  "destinationEvidenceSha256": "62ee4088af19fc65d64c86d2802317a976b84b486fee3dc3f4084d458d81c44f",
+  "changesFromBaseline": {
+    "titles": [
+      "map-52-2",
+      "map-52-3"
+    ]
+  },
+  "scope": "Fixed named layouts, static background tile layers and palettes, scene title strings, and grid-backed native doorway selectors. Scripted events, generated floors, animated layers and story-state access are outside this proof."
+}

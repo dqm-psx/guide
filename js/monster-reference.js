@@ -128,7 +128,9 @@
 
   function skillsMarkup(species) {
     const skills = species.skills && species.skills[campaign];
-    return skills && skills.length ? '<ul class="monster-skill-list">' + skills.map(skill => '<li>' + safe(skill.name) + '</li>').join('') + '</ul><p class="hint">Native species skills. Learning conditions and inherited skills are separate.</p>' : '<p class="monster-empty">No verified native skill list for this entry.</p>';
+    return skills && skills.length ? '<ul class="monster-skill-list">' + skills.map(skill =>
+      '<li><a href="#field-guide?kind=skill&amp;entry=skill-' + safe(skill.system_entry_id) + '">' + safe(skill.name) + '</a></li>').join('') +
+      '</ul><p class="hint">Open a skill for its effects and learning requirements.</p>' : '<p class="monster-empty">No verified native skill list for this entry.</p>';
   }
 
   function locationsMarkup(species) {

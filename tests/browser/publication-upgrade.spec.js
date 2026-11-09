@@ -160,6 +160,7 @@ test('a returning browser upgrades fresh cached assets under the old worker, the
     await expect(page.locator('#monster-heading')).toHaveText(heading);
     await expect(page.locator('.monster-library-quote p')).not.toBeEmpty();
     expect(await page.locator('.brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+    await page.locator('#breeding-nav-trigger').click();
     await page.locator('.nav a[href="#breeding-tree"]').click();
     await expect(page.locator('#breeding-tree')).toBeVisible();
     await expect(page.locator('.tree-node')).toHaveCount(3);

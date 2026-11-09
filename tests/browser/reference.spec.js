@@ -157,6 +157,7 @@ test.describe('served', () => {
       await expect(page.locator('#planner-roster')).toBeHidden();
     }
     await expect(page.locator('#planner-tab-everything')).toHaveCount(0);
+    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#breeding-table"]');
     await expect(page.locator('#breeding-table')).toBeVisible();
     await expect(page.locator('#team-planner')).toBeHidden();

@@ -26,7 +26,14 @@ selects explicit public wording fields; it never copies the full comparison,
 source evidence, filesystem paths, user information, or arbitrary metadata into
 the guide. It does not execute any code from the translation repository.
 
-The workflow first refreshes names, captions, natural skill names, fixed-encounter
+The same public snapshot supplies item and skill names and aliases, map titles,
+character names, and reviewed place and character references in walkthroughs.
+The handbook binds these names to native system slots and translation records.
+The publisher checks the source identity and expected context before applying
+each binding. Authored articles, image assets and release-specific verification
+receipts are versioned in the guide repository.
+
+The workflow first refreshes names, captions, field-guide wording, fixed-encounter
 labels, and the current patch summary, then packages the site on a lightweight
 runner. Before starting a browser job, it compares the result with the last
 successful deployment:

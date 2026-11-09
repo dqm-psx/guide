@@ -45,14 +45,29 @@
     <button id="app-storage-error-fresh" type="button" hidden>Start fresh (replaces saved data)</button>
   </div>
 </div>
-<div class="nav"><nav class="wrap" aria-label="Views"><a href="#field-guide">Field guide</a><a href="#atlas">Map atlas</a><a href="#pair-finder">Find a pairing</a><a href="#offspring-finder">Find parents</a><a href="#breeding-tree">Breeding tree</a><a href="#breeding-table">Breeding table</a><a href="#species-index">Monster library</a><a id="planner-nav-link" href="#team-planner">My game</a><a href="https://dqm-psx.github.io/translations/">Translations</a></nav></div>
+<div class="nav"><nav class="wrap" aria-label="Views">
+  <a href="#field-guide" aria-label="Field guide"><span class="nav-wide">Field guide</span><span class="nav-short">Guide</span></a>
+  <a href="#atlas" aria-label="Map atlas"><span class="nav-wide">Map atlas</span><span class="nav-short">Atlas</span></a>
+  <div class="breeding-nav">
+    <button type="button" id="breeding-nav-trigger" aria-controls="breeding-nav-links" aria-expanded="false">Breeding</button>
+    <div id="breeding-nav-links" hidden>
+      <a href="#pair-finder">Find a pairing</a>
+      <a href="#offspring-finder">Find parents</a>
+      <a href="#breeding-tree">Breeding tree</a>
+      <a href="#breeding-table">Breeding table</a>
+    </div>
+  </div>
+  <a href="#species-index" aria-label="Monster library"><span class="nav-wide">Monster library</span><span class="nav-short">Monsters</span></a>
+  <a id="planner-nav-link" href="#team-planner">My game</a>
+</nav></div>
 <main class="wrap">
 <noscript><div class="noscript">This offline reference needs JavaScript for its lookup tools. Enable JavaScript to use the guide.</div></noscript>
 <section id="field-guide" class="view field-view" data-view="field-guide" aria-labelledby="field-heading">
   <div id="guide-hero" class="guide-hero">
-    <div class="hero-copy"><span class="guide-overline">GreatTree &amp; GreatLog</span><h2 id="field-heading" tabindex="-1">The Monster Master’s<br><em>field guide.</em></h2><p>Find your next quest, explore a map, or plan the next generation of your team.</p></div>
-    <a class="hero-map" href="#atlas?map=map-6-0" aria-label="Explore the GreatTree map"><img src="media/greattree.webp" width="640" height="360" alt=""><span>GreatTree <b>Explore map ↗</b></span></a>
+    <div class="hero-copy"><span class="guide-overline"><span data-place="map-6-0">GreatTree</span> &amp; <span data-place="map-12-0">GreatLog</span></span><h2 id="field-heading" tabindex="-1">The Monster Master’s<br><em>field guide.</em></h2><p>Find your next quest, explore a map, or plan the next generation of your team.</p></div>
+    <a class="hero-map" href="#atlas?map=map-6-0"><img src="media/greattree.webp" width="640" height="360" alt=""><span><span data-place="map-6-0">GreatTree</span> <b>Explore map ↗</b></span></a>
   </div>
+  <div class="story-setting"><label><input type="checkbox" id="guide-spoilers" checked> Show story spoilers</label><span id="spoiler-state"></span></div>
   <div id="guide-browser">
     <form id="guide-filters" class="guide-filters" role="search">
       <label class="guide-query">Search the guide<input id="guide-search" type="search" placeholder="Quest, item, character, monster…" autocomplete="off" maxlength="120"></label>
@@ -61,8 +76,8 @@
       <button type="submit" class="guide-action">Search</button>
     </form>
     <div id="guide-home"><div class="home-columns"><div class="campaigns"><h3>Your adventure</h3>
-    <a class="campaign terry" href="#field-guide?game=dqm1&amp;kind=story"><span class="campaign-art"><img src="media/terry.webp" width="40" height="64" alt=""></span><span><small>Dragon Quest Monsters</small><strong>Terry’s adventure</strong><span>GreatTree · Travelers’ Gates</span></span><b aria-hidden="true">→</b></a>
-    <a class="campaign siblings" href="#field-guide?game=dqm2&amp;kind=story"><span class="campaign-art"><img src="media/cobi.webp" width="34" height="54" alt=""><img src="media/tara.webp" width="34" height="54" alt=""></span><span><small>Dragon Quest Monsters 2</small><strong>Cobi &amp; Tara’s adventures</strong><span>GreatLog · Magic Keys</span></span><b aria-hidden="true">→</b></a></div>
+    <a class="campaign terry" href="#field-guide?game=dqm1&amp;kind=story"><span class="campaign-art"><img src="media/terry.webp" width="40" height="64" alt=""></span><span><small>Dragon Quest Monsters</small><strong><span data-character="terry">Terry</span>’s adventure</strong><span><span data-place="map-6-0">GreatTree</span> · Travelers’ Gates</span></span><b aria-hidden="true">→</b></a>
+    <a class="campaign siblings" href="#field-guide?game=dqm2&amp;kind=story"><span class="campaign-art"><img src="media/cobi.webp" width="34" height="54" alt=""><img src="media/tara.webp" width="34" height="54" alt=""></span><span><small>Dragon Quest Monsters 2</small><strong><span data-character="cobi">Cobi</span> &amp; <span data-character="tara">Tara</span>’s adventures</strong><span><span data-place="map-12-0">GreatLog</span> · Magic Keys</span></span><b aria-hidden="true">→</b></a></div>
     <div class="home-topics"><h3>Browse by topic</h3><div id="topic-links" class="topic-links"></div></div></div>
     <div class="ranch-links"><h3>At the ranch</h3><a href="#team-planner?import=save">Import a memory card <span>↗</span></a><a href="#breeding-tree">Plan a breeding tree <span>↗</span></a><a href="#species-index">Look up a monster <span>↗</span></a></div></div><div id="guide-directory" hidden></div>
   </div>
@@ -306,7 +321,7 @@
   </div>
 </section>
 
-</main><footer><div class="wrap"><span>DQM1&amp;2 · PlayStation English reference<br>PSX rules · Current patch names · Saved teams stay on your device</span><span class="footer-links"><a href="#about">Sources &amp; coverage</a><a href="https://github.com/dqm-psx/guide">Source &amp; feedback ↗</a></span></div></footer>
+</main><footer><div class="wrap"><span>DQM1&amp;2 · PlayStation English reference<br>PSX rules · Current patch names · Saved teams stay on your device</span><span class="footer-links"><a href="#about">Sources &amp; coverage</a><a href="https://dqm-psx.github.io/translations/">Translations ↗</a><a href="https://github.com/dqm-psx/guide">Source &amp; feedback ↗</a></span></div></footer>
 <script src="data/overworld-sprites.js"></script>
 <script src="data/monster-sprites.js"></script>
 <script src="data/breeding-data.js"></script>
@@ -326,6 +341,9 @@
 <script src="data/player-atlas.js"></script>
 <script src="data/world-guide.js"></script>
 <script src="data/field-guide.js"></script>
+<script src="data/npc-sprites.js"></script>
+<script src="data/skill-descriptions.js"></script>
+<script src="js/current-names.js"></script>
 <script src="js/player-guide.js"></script>
 <script src="js/player-atlas.js"></script>
 <script src="js/router.js"></script>

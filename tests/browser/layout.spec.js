@@ -46,34 +46,16 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(new Set(offsets).size).toBe(1);
   });
 
-  test('the nav holds direct links to the guide views and translation tool', async ({ page }) => {
+  test('breeding tools open on hover and the translations link remains available', async ({ page }) => {
     await page.goto(FILE_URL);
-
-    const shape = await page.evaluate(() => {
-      const nav = document.querySelector('.nav nav');
-      const children = [...nav.childNodes];
-      return {
-        childTypes: children.map(node => node.nodeType),
-        hrefs: [...nav.children].map(child => child.getAttribute('href')),
-        allLinks: [...nav.children].every(child => child.tagName === 'A'),
-        gap: parseFloat(getComputedStyle(nav).columnGap),
-      };
-    });
-    // Only element children: no spacer text nodes between the links.
-    expect(shape.childTypes).toEqual(shape.childTypes.map(() => 1));
-    expect(shape.allLinks).toBe(true);
-    expect(shape.hrefs).toEqual([
-      '#field-guide',
-      '#atlas',
-      '#pair-finder',
-      '#offspring-finder',
-      '#breeding-tree',
-      '#breeding-table',
-      '#species-index',
-      '#team-planner',
-      'https://dqm-psx.github.io/translations/',
-    ]);
-    expect(shape.gap).toBeGreaterThan(0);
+    const trigger=page.getByRole('button',{name:'Breeding',exact:true});
+    await expect(page.locator('#breeding-nav-links')).toBeHidden();
+    await trigger.hover();
+    await expect(page.locator('#breeding-nav-links a')).toHaveText(['Find a pairing','Find parents','Breeding tree','Breeding table']);
+    await page.locator('#breeding-nav-links a').nth(1).hover();
+    await expect(trigger).toHaveAttribute('aria-expanded','true');
+    await page.locator('.masthead').hover();
+    await expect(trigger).toHaveAttribute('aria-expanded','false');
+    await expect(page.locator('footer a[href="https://dqm-psx.github.io/translations/"]')).toBeVisible();
   });
-
 });

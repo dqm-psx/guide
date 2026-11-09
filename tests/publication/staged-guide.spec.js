@@ -90,6 +90,21 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   }
   const currentNames = await page.evaluate(() => DATA.species.map(entry => [entry.index, entry.name, entry.display_name]));
   expect(currentNames).toEqual(shipped.data.species.map(entry => [entry.index, entry.name, entry.display_name]));
+  const guideNames = shipped.reference.guide_names;
+  expect(guideNames.coverage.items).toBe(Object.keys(guideNames.items).length);
+  expect(guideNames.coverage.maps).toBe(Object.keys(guideNames.maps).length);
+  const named = await page.evaluate(() => ({
+    item: FIELD_GUIDE.entries.find(row => row.id === 'item-41'),
+    skill: FIELD_GUIDE.skill_names[1],
+    map: PLAYER_ATLAS.maps[0],
+    revision: WORLD_GUIDE.provenance.name_public_revision
+  }));
+  expect(named.item.title).toBe(guideNames.items['item-41'].title);
+  expect(named.item.names).toEqual(guideNames.items['item-41'].names);
+  expect(named.skill).toMatchObject({title: guideNames.skills[1].title, description: guideNames.skills[1].description});
+  expect(named.skill.description.length).toBeGreaterThan(0);
+  expect(named.map.title).toBe(guideNames.maps[named.map.id].title);
+  expect(named.revision).toBe(shipped.reference.metadata.public_revision);
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
   expect(await page.locator('.brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await page.locator('.hero-map').click();

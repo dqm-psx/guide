@@ -13,8 +13,9 @@ GitHub Pages, with no account or backend.
 
 | Tool | What it does |
 | --- | --- |
-| [Field guide](https://dqm-psx.github.io/guide/#field-guide) | Search walkthroughs, quests, NPCs, bosses, gate and world locations, items, tools, natural skills and gameplay mechanics. Filter by adventure. Reveal story spoilers individually or across a directory. |
-| [Map atlas](https://dqm-psx.github.io/guide/#atlas) | Explore 406 named static layouts, zoom the map, and follow recorded exits. Character profiles link directly to verified locations. |
+| [Field guide](https://dqm-psx.github.io/guide/#field-guide) | Search walkthroughs, quests, NPCs, bosses, locations, items and tools, natural skills, and game mechanics. The **Show story spoilers** switch above the search and on article pages remembers your choice. |
+| [Map atlas](https://dqm-psx.github.io/guide/#atlas) | Browse 183 places, switch between distinct layouts, zoom in, and follow recorded exits. Character profiles link directly to locations. |
+| [Skills](https://dqm-psx.github.io/guide/#field-guide?kind=skill) | Look up what a skill does, its MP cost and target, its learning requirements, and the monsters that learn it naturally. |
 | [Wild encounters](https://dqm-psx.github.io/guide/#atlas?tab=encounters) | Look up an area, floor range or monster, filter by Terry, Cobi or Tara, and open the profiles of recorded wild monsters. |
 | [Find a pairing](https://dqm-psx.github.io/guide/#pair-finder) | Look up ordered parents, compare the reversed pairing, inspect special conditions, and copy or share a pairing. |
 | [Find parents](https://dqm-psx.github.io/guide/#offspring-finder) | Choose an offspring and filter its parent combinations. Special `+` and two-save recipes appear with their conditions. |
@@ -37,17 +38,33 @@ a different format. The guide never uploads or writes back to the card.
 
 ### Handbook sources
 
-Walkthroughs and field maps use the English PSX v1.0.66 native extraction.
-Article records cite the public translation entries checked for their wording.
-The map atlas includes named static scenes; exit markers indicate recorded
-transitions. Runtime actors and generated dungeon floors do not have fixed
-layouts here. Map images load on demand and can be revisited offline once cached.
+The v1.0.73 walkthrough audit resolved all 1,262 cited records for the 161
+campaign, quest, boss, character and location articles. It also checked the
+native conditions behind the fixed story keys, spirit rewards and arena rounds.
+The v1.0.73 disc uses **Hale** in nine cited lines. The current published text
+uses **Healie**, and both names find the character.
+
+All 43 character pages show PSX artwork. The portraits include 38 field actors,
+the three playable heroes, and species sprites for Healie and Surabou.
+
+The atlas groups 406 fixed layouts into 183 named places. Each layout keeps
+its own link and doors. The v1.0.73 disc check verified the static background
+art, native map titles and 829 linked doorway destinations, including a
+different Small Cave background when returning from the cave interior.
+The atlas follows recorded doorways. Story triggers, moving actors and
+generated dungeon floors fall outside its scope. Map images load on demand
+and can be revisited offline once cached.
 
 Items distinguish verified effects from evidence of availability in a
 particular adventure. Shop stock, prices and skill-learning thresholds were
-checked against v1.0.73. Natural skill names, encounter labels and monster
-profiles use the automatically refreshed translation snapshot. Edited
-walkthrough prose and older map labels retain their recorded source versions.
+checked against v1.0.73. Item pages list Japanese names, menu abbreviations and
+the English names used in each published patch edition. Any of these names can
+be used in the field-guide search.
+
+All 169 learnable skills include PSX tooltip text, MP cost and target. The
+directory links skill upgrades and combinations to their component skills.
+Each monster profile links its natural skills to those entries. The
+source-disc check can be repeated with `scripts/build-skill-descriptions.py`.
 
 Monster links open profiles containing the current and alternate names,
 Japanese name, sprite, library text, stats and growth, natural skills,
@@ -173,16 +190,27 @@ The [publication workflow](.github/workflows/publish-guide.yml) runs on pushes t
 `main`, manually, and every four hours. It reads the public
 [translation export](https://github.com/dqm-psx/translations), pins both source
 files to one commit, validates their hashes and identities, and refreshes monster
-names, library text, skill names, encounter labels, and the latest published
+names, library text, item and skill names, map and encounter labels, and the latest published
 patch's release metadata. The upstream publisher updates that release metadata
 when a stable patch release is published or edited. The guide needs no
 private-repository access or additional repository secret.
+
+NPC names, named locations and reviewed mentions in walkthrough prose follow
+the same snapshot through stable translation record IDs. Four breeding tools
+share the **Breeding** navigation menu. Hover, tap, or focus the button and
+press an arrow key to choose a tool.
 
 **Translation wording, latest patch release, gameplay verification, and site
 deployment are separate versions.** A newer release label or translation snapshot
 does not itself verify that patch's breeding rules or native stats. The original
 extraction label records where the tables came from; a separate release-matched
 disc check identifies the later patch against which they were verified.
+
+The [world verification record](data/world-verification.json) documents the
+campaign script checks. Run `python scripts/verify-world-guide.py --help`
+for the disc, release manifest and public text inputs. To reproduce
+NPC artwork, run `python scripts/build-npc-sprites.py --help` with the character
+research directory and the release-matched disc.
 
 The [gameplay verification record](data/gameplay-verification.json) binds the
 checked release to its package and patched-disc hashes and the guide's exact
@@ -262,6 +290,22 @@ revision are pinned throughout validation, and the tested artifact is deployed.
 Scripts, test output, local inputs, Git history, and the native extraction
 baseline are excluded from the hosted files.
 
+### Verify the map atlas
+
+With Python and Pillow installed, run the decoder against the archived English
+v1.0.66 disc and a current-edition target disc with its release manifest.
+
+```sh
+python scripts/build-player-atlas.py --baseline-bin v66.bin --bin target.bin --release-manifest manifest.json
+```
+
+The default run verifies the checked-in receipt and shipped images. Add
+`--write` to regenerate them after reviewing a release. The decoder checks the
+native doorway selector, destination entrance, title ordinal, tile bank and
+graphic layers for each applicable map. Its baseline pixel digest comes from
+the original reference export. To reconstruct the native address index from
+that export and the translation catalogs, see `scripts/prepare-atlas-index.py --help`.
+
 ### Repository map
 
 | Path | Purpose |
@@ -270,7 +314,8 @@ baseline are excluded from the hosted files.
 | `data/breeding-data.js` | Species identities, ordered breeding matrix, and conditional rules |
 | `data/monster-reference.js` | Generated current names and monster profile data |
 | `data/world-guide.js`, `data/field-guide.js` | Campaign articles, translation references, item records and learning thresholds |
-| `data/player-atlas.js`, `maps/` | Named layout index, linked doors and content-addressed map images. Rebuild with `python scripts/build-player-atlas.py path/to/reference/site/dist` and Pillow. |
+| `data/player-atlas.js`, `maps/` | Named places, individual layouts, doorways and content-addressed map images |
+| `scripts/build-player-atlas.py`, `scripts/atlas-native-index.json`, `scripts/atlas-verification.json` | Native atlas decoder, stable map and title addresses, and verified release receipt |
 | `js/save-import.js` | Read-only PSX card and Adventure Log decoder |
 | `data/monster-baseline.json` | Native extraction records used by the sync and verifier; not a browser asset |
 | `data/gameplay-verification.json` | Release-matched gameplay proof, bound to the guide's data and source hashes |
