@@ -3,7 +3,7 @@
   'use strict';
   const el = id => document.getElementById(id);
   const categories = {story:'Walkthroughs',quest:'Quests',npc:'Characters',boss:'Bosses',location:'Locations',
-    item:'Items',tool:'Tools',mechanic:'Mechanics',skill:'Skills',monster:'Monsters'};
+    item:'Items',tool:'Travel & exploration items',mechanic:'Mechanics',skill:'Skills',monster:'Monsters'};
   const {campaigns,places} = GUIDE_HOME;
   for (const node of document.querySelectorAll('[data-character]')) node.textContent = campaigns[node.dataset.character];
   for (const node of document.querySelectorAll('[data-place]')) node.textContent = places[node.dataset.place];

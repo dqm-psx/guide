@@ -75,7 +75,7 @@ test.describe('sticky chrome and feature surfaces', () => {
 
     const tools = home.getByRole('region', {name:'Breeding tools'});
     const destinations = [
-      ['Find a pairing', '#pair-finder'],
+      ['Find offspring', '#pair-finder'],
       ['Find parents', '#offspring-finder'],
       ['Plan a breeding tree', '#breeding-tree'],
       ['Compare parent pairs', '#breeding-table'],

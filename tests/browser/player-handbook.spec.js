@@ -47,6 +47,65 @@ test('item abbreviations lead to PSX shop prices and a shareable result', async 
   await expect(page.locator('.guide-row').first()).toHaveAttribute('href','#pair-finder');
 });
 
+test('Items includes travel supplies and preserves filters when narrowing the list', async ({page}) => {
+  await page.goto(url+'#field-guide?kind=item&page=2');
+  const directory = page.locator('#guide-directory');
+  const count = directory.getByRole('status');
+  await expect(count).toContainText('91 entries · Page 2');
+  await directory.getByRole('link',{name:'Travel & exploration items'}).click();
+  await expect(count).toHaveText('8 entries');
+  await expect(directory.getByText('Chimera Wing',{exact:true})).toBeVisible();
+  await expect(directory.getByText('Travel Bookmark',{exact:true})).toBeVisible();
+  await page.locator('#guide-game').selectOption('dqm1');
+  await expect(count).toHaveText('6 entries');
+  await page.getByLabel('Search the guide').fill('ChimWing');
+  await directory.getByRole('link',{name:'All items'}).click();
+  await expect(page.locator('#guide-kind')).toHaveValue('item');
+  await expect(page.locator('#guide-game')).toHaveValue('dqm1');
+  await expect(page.locator('#guide-search')).toHaveValue('ChimWing');
+  await expect(count).toHaveText('1 entry');
+  await directory.getByRole('link',{name:/Chimera Wing/}).click();
+  await expect(page.locator('#article-title')).toHaveText('Chimera Wing');
+  await page.getByRole('link',{name:'← Search results'}).click();
+  await expect(page.locator('#guide-kind')).toHaveValue('item');
+  await page.getByLabel('Search the guide').fill('Travel Bookmark');
+  await expect(directory.getByText('Travel Bookmark',{exact:true})).toBeVisible();
+});
+
+test('Mechanics sorts by adventure or article and preserves the reader’s place', async ({page}) => {
+  await page.setViewportSize({width:320,height:760});
+  await page.goto(url);
+  await page.getByRole('link',{name:'Browse all mechanics'}).click();
+  const index = page.getByRole('table',{name:'Mechanics articles'});
+  const sections = index.locator('tbody td');
+  await expect(index.getByRole('link')).toHaveCount(19);
+  expect([...new Set(await sections.allTextContents())]).toEqual(['General','Terry','Cobi & Tara']);
+  await expect(index.getByRole('columnheader',{name:'Section'})).toHaveAttribute('aria-sort','ascending');
+  const articleSort = index.getByRole('button',{name:'Article'});
+  await articleSort.click();
+  await expect(articleSort).toBeFocused();
+  const titles = await index.getByRole('link').allTextContents();
+  expect(titles).toEqual([...titles].sort(new Intl.Collator('en',{sensitivity:'base',numeric:true}).compare));
+  await index.getByRole('link',{name:'Default monster nicknames'}).click();
+  await page.getByRole('link',{name:'← Mechanics'}).click();
+  await expect(index.getByRole('columnheader',{name:'Article'})).toHaveAttribute('aria-sort','ascending');
+  await articleSort.click();
+  await page.reload();
+  await expect(index.getByRole('columnheader',{name:'Article'})).toHaveAttribute('aria-sort','descending');
+  const search = page.getByLabel('Search the guide');
+  await search.fill('Bard');
+  await expect(search).toBeFocused();
+  await expect(index.getByRole('link')).toHaveCount(1);
+  await expect(index.locator('tbody')).toContainText('Bard');
+  await search.fill('zzzzzz');
+  await expect(page.getByRole('link',{name:'Search all topics for “zzzzzz”'})).toBeVisible();
+  await search.fill('');
+  await page.locator('#guide-settings summary').click();
+  await page.getByLabel('Show story spoilers').uncheck();
+  await expect(index.locator('a[href*="entry=field-default-nicknames"]')).toHaveText('Mechanics · spoiler hidden');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
+});
+
 test('short searches keep their spelling and scoped searches can reach other topics', async ({page}) => {
   await page.setViewportSize({width:375,height:780});
   await page.goto(url+'#field-guide?kind=npc&q=bard');

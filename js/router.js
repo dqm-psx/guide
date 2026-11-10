@@ -99,13 +99,14 @@
   }
   function markNav(viewId) {
     const params = new URLSearchParams(parse(currentHash()).params);
-    let section = "#" + ({monster: "species-index", "offspring-finder": "pair-finder"}[viewId] || viewId);
+    let section = "#" + (viewId === "monster" ? "species-index" : viewId);
     if (viewId === "field-guide") {
       const row = window.DQMField?.entryForNav(params.get("entry"));
       const kind = row?.kind || params.get("kind");
       const game = row?.game || params.get("game");
       if (kind === "story") section = "#field-guide?game=" + (game || "dqm1") + "&kind=story";
       else if (kind === "location" && (game === "dqm1" || game === "dqm2")) section = "#field-guide?kind=location&game=" + game;
+      else if (kind === "tool") section = "#field-guide?kind=item";
       else if (kind && navLinks.some(link => link.hash === "#field-guide?kind=" + kind)) section = "#field-guide?kind=" + kind;
     }
     if (viewId === "atlas" && params.get("tab") === "encounters") section = "#atlas?tab=encounters";
@@ -119,7 +120,7 @@
   // The nav label is the view's title, so one edit renames both.
   function setTitle(viewId) {
     const link = navLinks.find(candidate => candidate.hash === "#" + viewId);
-    const label = link ? link.getAttribute("aria-label") || link.textContent.trim() : ({"offspring-finder":"Find parents", sources:"Sources & coverage"}[viewId] || viewId);
+    const label = link ? link.getAttribute("aria-label") || link.textContent.trim() : (viewId === "sources" ? "Sources & coverage" : viewId);
     document.title = label + " · " + TITLE_SUFFIX;
   }
   // A hash that names an element inside the revealed view keeps the browser's

@@ -53,6 +53,7 @@ const PRECACHE = [
   "./js/current-names.js",
   "./js/walkthrough.js",
   "./js/locations.js",
+  "./js/mechanics-index.js",
   "./js/save-import.js",
   "./js/player-guide.js",
   "./js/player-atlas.js",

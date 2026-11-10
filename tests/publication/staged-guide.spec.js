@@ -276,6 +276,14 @@ test('published quests and characters can be followed with JavaScript disabled',
   try {
     const reader=await context.newPage();
     await reader.goto(url+'entries/');
+    const articles = reader.getByRole('table',{name:'Mechanics articles'});
+    await expect(articles.getByRole('link')).toHaveCount(19);
+    await expect(articles.getByRole('button')).toHaveCount(0);
+    await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');
+    const items=reader.getByRole('heading',{name:'Items',exact:true}).locator('..');
+    await expect(items.getByRole('link')).toHaveCount(91);
+    await expect(items.locator('a[href="articles/item-41/"]')).toBeVisible();
+    await expect(items.locator('a[href="articles/item-43/"]')).toBeVisible();
     await reader.getByRole('link',{name:'Show monsters to the queen',exact:true}).click();
     const requests=reader.getByRole('heading',{name:'Monsters in request order'}).locator('..');
     await expect(requests.locator('ol li a')).toHaveCount(16);
@@ -289,6 +297,10 @@ test('published quests and characters can be followed with JavaScript disabled',
     await expect(route).not.toContainText('bookcase');
     await reader.getByRole('link',{name:'Find the egg from the message in a bottle'}).click();
     await expect(reader.locator('.entry-content > ol')).toContainText('bookcase');
+    await reader.getByRole('navigation',{name:'Walkthrough chapters'}).getByRole('link',{name:'The Sky Shield and flight'}).click();
+    await expect(reader.locator('#story-ice-shield')).toBeInViewport();
+    await reader.getByRole('link',{name:'Cobi & Tara quests',exact:true}).click();
+    await expect(reader.locator('#quests-dqm2 h2')).toBeInViewport();
   } finally {await context.close();}
 });
 
