@@ -27,12 +27,12 @@ test('field reference preserves native item identities and skips magic-key and r
   }
 });
 
-test('the Silver Harp illustration is distinct from the coin used for gold and the Tiny Medal', () => {
+test('the Silver Harp uses the cave harp artwork and the Tiny Medal retains its native pickup sprite', () => {
   const harp = entries.get('item-33');
   const medal = entries.get('item-44');
   assert.match(DQMItemArt.imageFor(harp), /^data:image\/png;base64,/);
   assert.notEqual(DQMItemArt.imageFor(harp), DQMItemArt.imageFor(medal));
-  assert.equal(DQMItemArt.creditFor(harp), 'AI-generated illustration for the guide.');
+  assert.equal(DQMItemArt.creditFor(harp), 'Related PS1 art: the gold harp in the Volcanic Island Cave treasure room.');
   assert.equal(DQMItemArt.creditFor(medal), 'PS1 field pickup sprite.');
 });
 
