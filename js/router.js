@@ -256,7 +256,7 @@
     }
     const kind = next.get("kind");
     if (kind === "quest" && prior.has("purpose")) next.set("purpose",prior.get("purpose"));
-    if (kind === prior.get("kind") && ["skill","mechanic"].includes(kind) && prior.has("sort")) {
+    if (kind === prior.get("kind") && ["skill","mechanic","item","tool"].includes(kind) && prior.has("sort")) {
       next.set("sort",prior.get("sort"));
     }
     const hash = "#field-guide" + (next.size ? "?" + next : "");

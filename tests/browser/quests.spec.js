@@ -77,12 +77,13 @@ test('taking a quest from either walkthrough stage returns to that stage', async
 
 test('Terry’s item search connects Miracle Sign to the queen and her final request', async ({page}) => {
   await page.goto(guide+'#field-guide?kind=item&game=dqm1&q=Miracle+Sign');
-  const results = page.locator('.guide-row');
+  const results = page.getByRole('table',{name:'Items',exact:true}).locator('tbody th a');
   await expect(results).toHaveCount(1);
   await results.first().click();
   const article = page.locator('#guide-article');
   await expect(article.getByRole('heading', {name:'Miracle Mark'})).toBeVisible();
-  await expect(article).toContainText('How Cobi or Tara can obtain one is unconfirmed');
+  await expect(article).toContainText('Divine Dragon');
+  await expect(article.locator('.item-sources')).not.toContainText('Silver');
   await article.getByRole('link', {name:'Show monsters to the queen'}).click();
   await expect(article.locator('.quest-species a').last()).toHaveText('Divine Dragon');
   await article.locator('.article-steps').getByRole('link', {name:'Miracle Mark'}).click();

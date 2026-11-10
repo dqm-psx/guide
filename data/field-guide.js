@@ -8,7 +8,7 @@ globalThis.FIELD_GUIDE = {
     "patch_version": "v1.0.73",
     "disc_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
     "release_url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73",
-    "scope": "Item attributes, base prices and 18 fixed-town shop inventories checked against the v1.0.73 PSX disc. Town stock can change with story progress. Shared item data does not establish a Terry acquisition route. Locations are listed only where supported by shop stock or game text.",
+    "scope": "Item attributes, base prices and 18 fixed-town shop inventories and Terry’s gate shop checked against the v1.0.73 PSX disc. Town stock can change with story progress. The item directory also covers story gifts, arena rewards, fixed chests and random Magic Key treasure.",
     "source_ids_note": "Item and dialogue IDs identify rows in the public translation catalog. PSX shop IDs identify the archive scene and byte offset of a stock list.",
     "skill_requirements": "Minimum level and stats for 169 PSX skill-learning records, checked against v1.0.73. Species, inheritance and skill evolution determine eligibility."
   },
@@ -23,7 +23,7 @@ globalThis.FIELD_GUIDE = {
       "details": [
         "Cobi / Tara: Mom gives you one at the farm. Terry can receive one at GreatTree Castle; leave space in your bag for the gift.",
         "Single use.",
-        "Terry shops sell it for 10 G (9 G with a Gold Pass). GreatTree / Bazaar.",
+        "Terry shops sell it for 10 G (9 G with a Gold Pass). GreatTree / Bazaar · Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 10 G (9 G with a Gold Pass). GreatLog / Main Street · Port Ritz Town · Assia."
       ],
       "spoiler": "none",
@@ -36,7 +36,8 @@ globalThis.FIELD_GUIDE = {
         "PSX shop 5671/8",
         "PSX shop 134/8",
         "PSX shop 142/4",
-        "PSX shop 2162/4"
+        "PSX shop 2162/4",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "aliases": [
@@ -48,7 +49,8 @@ globalThis.FIELD_GUIDE = {
           "buy": 10,
           "gold_pass": 9,
           "locations": [
-            "GreatTree / Bazaar"
+            "GreatTree / Bazaar",
+            "Travelers’ Gate item-shop floor"
           ]
         },
         {
@@ -73,7 +75,7 @@ globalThis.FIELD_GUIDE = {
       "summary": "Restores 60–70 HP to one ally.",
       "details": [
         "Single use.",
-        "Terry shops sell it for 50 G (45 G with a Gold Pass). GreatTree / Bazaar.",
+        "Terry shops sell it for 50 G (45 G with a Gold Pass). GreatTree / Bazaar · Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 50 G (45 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo · Northden Town · Pei Town · Port Ritz Town · Wiston · Eastoria."
       ],
       "spoiler": "none",
@@ -89,7 +91,8 @@ globalThis.FIELD_GUIDE = {
         "PSX shop 142/16",
         "PSX shop 142/4",
         "PSX shop 149/8",
-        "PSX shop 154/8"
+        "PSX shop 154/8",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "aliases": [
@@ -101,7 +104,8 @@ globalThis.FIELD_GUIDE = {
           "buy": 50,
           "gold_pass": 45,
           "locations": [
-            "GreatTree / Bazaar"
+            "GreatTree / Bazaar",
+            "Travelers’ Gate item-shop floor"
           ]
         },
         {
@@ -223,7 +227,7 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-5",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Elfin Elixir",
       "category": "Consumable",
       "summary": "Fully restores one ally’s MP.",
@@ -262,7 +266,7 @@ globalThis.FIELD_GUIDE = {
       "summary": "Cures poison in one ally.",
       "details": [
         "Single use.",
-        "Terry shops sell it for 4 G (3 G with a Gold Pass). GreatTree / Bazaar.",
+        "Terry shops sell it for 4 G (3 G with a Gold Pass). GreatTree / Bazaar · Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 4 G (3 G with a Gold Pass). GreatLog / Main Street · Northden Town · Port Ritz Town · Assia."
       ],
       "spoiler": "none",
@@ -274,7 +278,8 @@ globalThis.FIELD_GUIDE = {
         "PSX shop 136/8",
         "PSX shop 142/16",
         "PSX shop 142/4",
-        "PSX shop 2162/4"
+        "PSX shop 2162/4",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "aliases": [
@@ -286,7 +291,8 @@ globalThis.FIELD_GUIDE = {
           "buy": 4,
           "gold_pass": 3,
           "locations": [
-            "GreatTree / Bazaar"
+            "GreatTree / Bazaar",
+            "Travelers’ Gate item-shop floor"
           ]
         },
         {
@@ -306,12 +312,13 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-7",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Moonwort",
       "category": "Consumable",
       "summary": "Cures paralysis in one ally.",
       "details": [
         "Single use.",
+        "Terry shops sell it for 20 G (18 G with a Gold Pass). Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Northden Town · Wiston · Eastoria."
       ],
       "spoiler": "none",
@@ -321,10 +328,19 @@ globalThis.FIELD_GUIDE = {
         "PSX shop 134/24",
         "PSX shop 136/8",
         "PSX shop 149/8",
-        "PSX shop 154/8"
+        "PSX shop 154/8",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "prices": [
+        {
+          "game": "dqm1",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "Travelers’ Gate item-shop floor"
+          ]
+        },
         {
           "game": "dqm2",
           "buy": 20,
@@ -342,12 +358,13 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-8",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Laurel Leaf",
       "category": "Consumable",
       "summary": "Lifts a curse from one ally.",
       "details": [
         "Single use.",
+        "Terry shops sell it for 20 G (18 G with a Gold Pass). Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Nofo · Northden Town."
       ],
       "spoiler": "none",
@@ -356,13 +373,22 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08b734",
         "PSX shop 134/24",
         "PSX shop 135/20",
-        "PSX shop 136/8"
+        "PSX shop 136/8",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "aliases": [
         "LaurelLf"
       ],
       "prices": [
+        {
+          "game": "dqm1",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "Travelers’ Gate item-shop floor"
+          ]
+        },
         {
           "game": "dqm2",
           "buy": 20,
@@ -379,12 +405,13 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-9",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Awakening Powder",
       "category": "Consumable",
       "summary": "Wakes up one ally.",
       "details": [
         "Single use.",
+        "Terry shops sell it for 20 G (18 G with a Gold Pass). Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Port Ritz Town · Assia."
       ],
       "spoiler": "none",
@@ -394,13 +421,22 @@ globalThis.FIELD_GUIDE = {
         "PSX shop 134/24",
         "PSX shop 142/16",
         "PSX shop 142/4",
-        "PSX shop 2162/4"
+        "PSX shop 2162/4",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "aliases": [
         "AwakePwdr"
       ],
       "prices": [
+        {
+          "game": "dqm1",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "Travelers’ Gate item-shop floor"
+          ]
+        },
         {
           "game": "dqm2",
           "buy": 20,
@@ -417,12 +453,13 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-10",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Angel Bell",
       "category": "Consumable",
       "summary": "Cures one ally’s confusion.",
       "details": [
         "Single use.",
+        "Terry shops sell it for 20 G (18 G with a Gold Pass). Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 20 G (18 G with a Gold Pass). GreatLog / Main Street · Nofo · Wiston · Eastoria."
       ],
       "spoiler": "none",
@@ -432,13 +469,22 @@ globalThis.FIELD_GUIDE = {
         "PSX shop 134/24",
         "PSX shop 135/8",
         "PSX shop 149/8",
-        "PSX shop 154/8"
+        "PSX shop 154/8",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "aliases": [
         "AngelBell"
       ],
       "prices": [
+        {
+          "game": "dqm1",
+          "buy": 20,
+          "gold_pass": 18,
+          "locations": [
+            "Travelers’ Gate item-shop floor"
+          ]
+        },
         {
           "game": "dqm2",
           "buy": 20,
@@ -456,7 +502,7 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-11",
       "kind": "item",
-      "game": "dqm1",
+      "game": "both",
       "title": "Sage's Stone",
       "category": "Reusable item",
       "summary": "Restores about 60 HP to every ally.",
@@ -499,7 +545,7 @@ globalThis.FIELD_GUIDE = {
       "summary": "Revives one ally.",
       "details": [
         "Single use.",
-        "Terry shops sell it for 1,000 G (900 G with a Gold Pass). GreatTree / Bazaar.",
+        "Terry shops sell it for 1,000 G (900 G with a Gold Pass). GreatTree / Bazaar · Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 1,000 G (900 G with a Gold Pass). Hitano · GreatLog / Main Street · Nofo."
       ],
       "spoiler": "none",
@@ -509,7 +555,8 @@ globalThis.FIELD_GUIDE = {
         "PSX shop 5671/21",
         "PSX shop 122/8",
         "PSX shop 134/40",
-        "PSX shop 135/20"
+        "PSX shop 135/20",
+        "PSX shop 117/655853"
       ],
       "availability": "shop",
       "aliases": [
@@ -521,7 +568,8 @@ globalThis.FIELD_GUIDE = {
           "buy": 1000,
           "gold_pass": 900,
           "locations": [
-            "GreatTree / Bazaar"
+            "GreatTree / Bazaar",
+            "Travelers’ Gate item-shop floor"
           ]
         },
         {
@@ -545,15 +593,14 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Raises one ally’s Attack by 3.",
       "details": [
-        "Single use.",
-        "No confirmed purchase location in the fixed-town shop survey."
+        "Single use."
       ],
       "spoiler": "none",
       "source_ids": [
         "e0994",
         "m_exe_08b7a4"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
         "StrSeed"
       ],
@@ -567,15 +614,14 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Raises one ally’s Defense by 3.",
       "details": [
-        "Single use.",
-        "No confirmed purchase location in the fixed-town shop survey."
+        "Single use."
       ],
       "spoiler": "none",
       "source_ids": [
         "e099b",
         "m_exe_08b7c0"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
         "DefSeed"
       ],
@@ -589,15 +635,14 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Raises one ally’s Agility by 3.",
       "details": [
-        "Single use.",
-        "No confirmed purchase location in the fixed-town shop survey."
+        "Single use."
       ],
       "spoiler": "none",
       "source_ids": [
         "e09a2",
         "m_exe_08b7dc"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
         "AgiSeed"
       ],
@@ -611,15 +656,14 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Raises one ally’s Wisdom by 3.",
       "details": [
-        "Single use.",
-        "No confirmed purchase location in the fixed-town shop survey."
+        "Single use."
       ],
       "spoiler": "none",
       "source_ids": [
         "e09aa",
         "m_exe_08b7f4"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
         "WisSeed"
       ],
@@ -633,15 +677,14 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Raises one ally’s maximum HP by 5.",
       "details": [
-        "Single use.",
-        "No confirmed purchase location in the fixed-town shop survey."
+        "Single use."
       ],
       "spoiler": "none",
       "source_ids": [
         "e09b2",
         "m_exe_08b80c"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA9ElEQVR42s2UsQ3CMBBFPQIjsAal12AEt5SUrMAIlF4jJWVWYIS0Qf/EN1/2YSUKQkQ62b7YL/+f7YTw6yfuw6yxGZRTmIdrtEB/NZgLxnya83lnoMf9ZoH+JQaLRWAqAgwAtNM0GBgBEN7bOL3BXSAVqTKFoaX6LpAwTFa7zAEGuIFVbXKgSHCiwhRerIpdtsdDBS2bIBNZR6rgZhDMMWAYN0Ba4uJi9aXIjo2oU5irkMVWVaquhjFHmKtQoVqCOlhLhbkbU9eQcH5AbRPW2P0ELTVKba6rzD0+qT0Sdbi1691lVcMbsUrdEvBXf2ObQX/zPAF0OsCrCuj+qwAAAABJRU5ErkJggg=="
     },
     {
@@ -652,15 +695,14 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Raises one ally’s maximum MP by 5.",
       "details": [
-        "Single use.",
-        "No confirmed purchase location in the fixed-town shop survey."
+        "Single use."
       ],
       "spoiler": "none",
       "source_ids": [
         "e09ba",
         "m_exe_08b828"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
         "MysticNut"
       ],
@@ -1154,15 +1196,16 @@ globalThis.FIELD_GUIDE = {
       "game": "both",
       "title": "BadMeat",
       "category": "Consumable",
-      "summary": "Poisons a monster.",
+      "summary": "Field use lowers a living ally’s wildness.",
       "details": [
-        "Single use.",
-        "No confirmed purchase location in the fixed-town shop survey."
+        "The PS1 menu describes poison. The field-use routine lowers wildness and leaves poison status unchanged.",
+        "Warubou offers Terry his leftovers at the GreatTree Monster Farm. The scene gives no item for your bag."
       ],
       "spoiler": "none",
       "source_ids": [
         "e0a13",
-        "m_exe_08b914"
+        "m_exe_08b914",
+        "s0b113000_3861"
       ],
       "availability": "unconfirmed",
       "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAxElEQVR42t2UsQ2DQAxFGYGSkhVSpmSNlClpKRmBNiWrXMkIrJA1LvpI/2RZvtjQJZa+hHTyk+/jf03z93Xv+0ydanzcuqxFICqlPQ5FcxqHIgIBmJ5jXpbXoRBQwt7rdAjf89AWIOUCAUMjYXnfCpCTuh5KjySMklCcE3pqInlVCfsK5FQapieyYC6w5pkEuf5p36y/qiHuQuPQAoen0vHhkhJYu6KbRcSG8eGCWlELAzGVhFGWZ6HXohafyy/J5cafrA/KoXUnCsIa2wAAAABJRU5ErkJggg=="
@@ -1419,7 +1462,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Reusable item",
       "summary": "Deals damage with a vacuum wave.",
       "details": [
-        "The GreatTree bazaar compares its effect to Infernos. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Infernos.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 1,500 G (1,350 G with a Gold Pass). GreatTree / Bazaar.",
         "Cobi / Tara shops sell it for 1,500 G (1,350 G with a Gold Pass). GreatLog / Main Street."
@@ -1464,7 +1507,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Reusable item",
       "summary": "Deals damage with a lightning bolt.",
       "details": [
-        "The GreatTree bazaar compares its effect to Bolt. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Bolt.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 3,000 G (2,700 G with a Gold Pass). GreatTree / Bazaar.",
         "Cobi / Tara shops sell it for 3,000 G (2,700 G with a Gold Pass). GreatLog / Main Street."
@@ -1504,12 +1547,12 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-38",
       "kind": "item",
-      "game": "dqm1",
+      "game": "both",
       "title": "Blizzard Staff",
       "category": "Reusable item",
       "summary": "Deals damage with a blizzard.",
       "details": [
-        "The GreatTree bazaar compares its effect to Freezing Blizzard. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Freezing Blizzard.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 4,000 G (3,600 G with a Gold Pass). GreatTree / Bazaar."
       ],
@@ -1539,12 +1582,12 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-39",
       "kind": "item",
-      "game": "dqm1",
+      "game": "both",
       "title": "Flame Staff",
       "category": "Reusable item",
       "summary": "Deals damage with flames.",
       "details": [
-        "The GreatTree bazaar compares its effect to Scorch. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Scorch.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 5,000 G (4,500 G with a Gold Pass). GreatTree / Bazaar."
       ],
@@ -2071,7 +2114,8 @@ globalThis.FIELD_GUIDE = {
       "category": "Key item",
       "summary": "Summons a shell to cross the sea.",
       "details": [
-        "The king rewards you after the trouble at Mirage Lake. Return to Warubou with the bell, then press Triangle beside water to cross it."
+        "The king rewards you after the trouble at Mirage Lake. Return to Warubou with the bell, then press Triangle beside water to cross it.",
+        "Warubou later returns the three treasures. Bring them to Darck’s Manor for the trade."
       ],
       "spoiler": "story",
       "source_ids": [
@@ -2092,7 +2136,8 @@ globalThis.FIELD_GUIDE = {
       "category": "Key item",
       "summary": "A mirror that destroys what it reflects.",
       "details": [
-        "Recover it from Volcanic Island Cave and show it to Warubou. Face a breakable rock and press Triangle to clear it."
+        "Recover it from Volcanic Island Cave and show it to Warubou. Face a breakable rock and press Triangle to clear it.",
+        "Warubou later returns the three treasures. Bring them to Darck’s Manor for the trade."
       ],
       "spoiler": "story",
       "source_ids": [
@@ -2116,7 +2161,8 @@ globalThis.FIELD_GUIDE = {
       "category": "Key item",
       "summary": "Summons a cloud to fly through the sky.",
       "details": [
-        "Return to the spirit after restoring peace. Take the shield to Warubou, then press Triangle at a gap where you can fly across."
+        "Return to the spirit after restoring peace. Take the shield to Warubou, then press Triangle at a gap where you can fly across.",
+        "Warubou later returns the three treasures. Bring them to Darck’s Manor for the trade."
       ],
       "spoiler": "story",
       "source_ids": [
@@ -2261,8 +2307,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Max HP increased by 30.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2270,7 +2315,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bc68",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "StamBelt"
       ]
@@ -2283,8 +2328,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Max HP increased by 80.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2292,7 +2336,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bc7c",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "DrgnBelt"
       ]
@@ -2305,8 +2349,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Max MP increased by 30.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2314,7 +2357,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bc90",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "MagicBelt"
       ]
@@ -2327,8 +2370,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Max MP increased by 80.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2336,7 +2378,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bca4",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "MystBelt"
       ]
@@ -2349,8 +2391,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Attack increased by 10.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2358,7 +2399,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bcb8",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "StoneFang"
       ]
@@ -2371,8 +2412,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Attack increased by 50.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2380,7 +2420,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bccc",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "SteelFang"
       ]
@@ -2393,8 +2433,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Defense increased by 10.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2402,7 +2441,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bce0",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "MermScale"
       ]
@@ -2415,8 +2454,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Defense increased by 50.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2424,7 +2462,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bcf4",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "DivDScale"
       ]
@@ -2437,8 +2475,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Agility increased by 10.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2446,7 +2483,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bd08",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "GaleBrac"
       ]
@@ -2459,8 +2496,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Agility increased by 50.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2468,7 +2504,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bd1c",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "MeteoBrac"
       ]
@@ -2481,8 +2517,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Wisdom increased by 50.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2490,7 +2525,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bd30",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "WisdomCap"
       ]
@@ -2503,8 +2538,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Wisdom increased by 100.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2512,7 +2546,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bd44",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "KnowCap"
       ]
@@ -2525,8 +2559,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Resists offensive spells.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2534,7 +2567,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bd58",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "MagCloak"
       ]
@@ -2547,8 +2580,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Resists fire and blizzards.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2556,7 +2588,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bd70",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "DrgnCloak"
       ]
@@ -2569,8 +2601,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Resists sleep, poison and confusion.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2578,7 +2609,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bd88",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "SilvCloak"
       ]
@@ -2591,8 +2622,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Resists sleep, curse, Surround and paralysis.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2600,7 +2630,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bda4",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "GoldCloak"
       ]
@@ -2613,8 +2643,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Resists Beat, Sacrifice, curse and paralysis.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2622,7 +2651,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bdc4",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "PlatCloak"
       ]
@@ -2635,8 +2664,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Resists Water-based attacks.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2644,7 +2672,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08bde4",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "DolfCloak"
       ]
@@ -2657,8 +2685,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Makes attacks harder to seal.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2666,7 +2693,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08be00",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "FortCloak"
       ]
@@ -2712,8 +2739,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Restores HP as you walk.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2721,7 +2747,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08be2c",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented"
+      "availability": "event"
     },
     {
       "id": "item-85",
@@ -2731,8 +2757,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Accessory",
       "summary": "Restores MP as you walk.",
       "details": [
-        "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock."
+        "Equip in the monster’s accessory slot."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -2740,7 +2765,7 @@ globalThis.FIELD_GUIDE = {
         "m_exe_08be44",
         "s003f6800_04d2"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "GodesRing"
       ]
@@ -2754,7 +2779,6 @@ globalThis.FIELD_GUIDE = {
       "summary": "Improves Max HP growth.",
       "details": [
         "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
         "Keep it equipped when gaining a level to improve the matching stat gain."
       ],
       "spoiler": "none",
@@ -2764,7 +2788,7 @@ globalThis.FIELD_GUIDE = {
         "s003f6800_04d2",
         "s003f6800_0709"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "WarRing"
       ]
@@ -2778,7 +2802,6 @@ globalThis.FIELD_GUIDE = {
       "summary": "Improves Max MP growth.",
       "details": [
         "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
         "Keep it equipped when gaining a level to improve the matching stat gain."
       ],
       "spoiler": "none",
@@ -2788,7 +2811,7 @@ globalThis.FIELD_GUIDE = {
         "s003f6800_04d2",
         "s003f6800_0709"
       ],
-      "availability": "class-documented"
+      "availability": "event"
     },
     {
       "id": "item-88",
@@ -2799,7 +2822,6 @@ globalThis.FIELD_GUIDE = {
       "summary": "Improves Attack growth.",
       "details": [
         "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
         "Keep it equipped when gaining a level to improve the matching stat gain."
       ],
       "spoiler": "none",
@@ -2809,7 +2831,7 @@ globalThis.FIELD_GUIDE = {
         "s003f6800_04d2",
         "s003f6800_0709"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "FightRing"
       ]
@@ -2823,7 +2845,6 @@ globalThis.FIELD_GUIDE = {
       "summary": "Improves Defense growth.",
       "details": [
         "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
         "Keep it equipped when gaining a level to improve the matching stat gain."
       ],
       "spoiler": "none",
@@ -2833,7 +2854,7 @@ globalThis.FIELD_GUIDE = {
         "s003f6800_04d2",
         "s003f6800_0709"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "SailRing"
       ]
@@ -2847,7 +2868,6 @@ globalThis.FIELD_GUIDE = {
       "summary": "Improves Agility growth.",
       "details": [
         "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
         "Keep it equipped when gaining a level to improve the matching stat gain."
       ],
       "spoiler": "none",
@@ -2857,7 +2877,7 @@ globalThis.FIELD_GUIDE = {
         "s003f6800_04d2",
         "s003f6800_0709"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "ThiefRing"
       ]
@@ -2871,7 +2891,6 @@ globalThis.FIELD_GUIDE = {
       "summary": "Improves Wisdom growth.",
       "details": [
         "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
         "Keep it equipped when gaining a level to improve the matching stat gain."
       ],
       "spoiler": "none",
@@ -2881,7 +2900,7 @@ globalThis.FIELD_GUIDE = {
         "s003f6800_04d2",
         "s003f6800_0709"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "PristRing"
       ]
@@ -2895,7 +2914,6 @@ globalThis.FIELD_GUIDE = {
       "summary": "Improves Max HP and MP growth.",
       "details": [
         "Equip in the monster’s accessory slot.",
-        "GreatLog’s library documents this equipment category. A location for this accessory has not been confirmed in the audited shop stock.",
         "Keep it equipped when gaining a level to improve the matching stat gain."
       ],
       "spoiler": "none",
@@ -2905,7 +2923,7 @@ globalThis.FIELD_GUIDE = {
         "s003f6800_04d2",
         "s003f6800_0709"
       ],
-      "availability": "class-documented",
+      "availability": "event",
       "aliases": [
         "SpelbRing"
       ]
@@ -2919,8 +2937,7 @@ globalThis.FIELD_GUIDE = {
       "summary": "Changes one monster's sex.",
       "details": [
         "Terry can earn one from the Queen of GreatTree. Complete her requests in order and bring Divine Dragon for the last one. Leave one slot free in your bag to collect the mark.",
-        "Use it on a hatched monster. The mark is consumed.",
-        "A GreatLog resident describes Miracle Mark. How Cobi or Tara can obtain one is unconfirmed."
+        "Use it on a hatched monster. The mark is consumed."
       ],
       "spoiler": "none",
       "source_ids": [

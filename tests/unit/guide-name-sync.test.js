@@ -15,6 +15,8 @@ function fixture() {
       raw:{id,japanese:'テスト<END>',translations:{current:edition,gameboy:{english:'Classic '+title+'<END>'}}}});
   }
   source(system,'items','herb','Healing Herb',['Items'],[362]);
+  source('menus/general.json','menu_text.json','m_exe_08b68c','One ally: 30-40 HP restored.',['Menus']);
+  rows.at(-1).raw.translations.current={english_lines:['One ally:', '30-40 HP restored.']};
   source(system,'system','sleep','Slumber',['Skills and spells'],[474]);
   source('menus/general.json','menu_text.json','m_exe_123456','Drifts into sleep.',['Menus']);
   rows.at(-1).raw.translations.current={english_lines:['Puts one','enemy to sleep.']};
@@ -22,7 +24,7 @@ function fixture() {
   source('text/location_titles.json','location_titles','village','Reed Vlg',['Location names']);
   source(dialogue,'dialogue','npc','Mira: Welcome, traveler.');
   source(dialogue,'dialogue','name','You found the Crystal Bell!');
-  const item={id:'item-1',kind:'item',title:'Medicinal Herb',source_ids:['herb'],summary:'Heals an ally.',
+  const item={id:'item-1',kind:'item',title:'Medicinal Herb',source_ids:['herb','m_exe_08b68c'],summary:'Heals an ally.',
     details:['Take Medicinal Herbs.','Terry shops sell it for 25 G. Willow Village.'],prices:[{game:'dqm1',buy:25,gold_pass:22,locations:['Willow Village']}]};
   const field={provenance:{},entries:[item],skill_requirements:{1:{level:2}}};
   const world={provenance:{},entries:[
@@ -52,6 +54,7 @@ test('a current patch rename propagates to stable cards, search aliases, reviewe
   const item=f.field.entries[0], chapter=f.world.entries[0];
   assert.equal(item.id,'item-1');
   assert.equal(item.title,'Healing Herb');
+  assert.equal(item.menuDescription,'One ally: 30-40 HP restored.');
   assert.ok(item.aliases.includes('Medicinal Herb'));
   assert.equal(item.names.editions.gameboy.full,'Classic Healing Herb');
   assert.equal(item.names.japanese,'テスト');

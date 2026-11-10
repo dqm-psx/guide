@@ -55,6 +55,22 @@ checked against v1.0.73. Item pages list Japanese names, menu abbreviations and
 the English names used in each published patch edition. Any of these names can
 be used in the field-guide search.
 
+The Items table includes all 91 numbered guide items, including the eight travel
+supplies. Run `python scripts/build-item-reference.py --bin <current-disc.bin> --comparison <comparison.json> --check` to check the menu text,
+prices, and acquisition records against the pinned v1.0.73 inputs. An item's
+base value is not evidence that a shop sells it. Buy prices require a merchant;
+sell prices use the shop's purchase-from-player rate and the item's sale flag.
+
+`scripts/item_acquisitions.py` reads GreatLog arena prizes from `0x800B6D10`
+and joins the random Magic Key layout and item tables at `0x800A65F4` and
+`0x800A68BC`. The chest can yield another key instead. The lookup was
+cross-checked with [a PS1 player's analysis of key-world chests](https://w.atwiki.jp/sansara_naga2_sfc/pages/224.html).
+Terry's gate shop is in resource 117, and the restored Treasure/Mimic prizes are in resource 114. Terry’s other recorded gate-floor finds are corroborated by [Renge’s PS1 item list](https://renge-record-book.com/【ps】ドラゴンクエストモンスターズ1・2-アイテム-2/). Selected
+fixed chests in Cobi and Tara's story worlds join atlas event-grid slots to the prize table used at `0x80016FB8`. Access notes are corroborated by
+[Renge's PS1 playthrough](https://renge-record-book.com/%E3%80%90ps%E3%80%91%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1%E3%83%BB2-%E6%94%BB%E7%95%A5%E3%83%81%E3%83%A3-2/);
+their location links use the guide's PS1 atlas. The source list is not a
+complete list of all possible floor drops or chests.
+
 The Skills table covers all 169 learnable skills. The in-game description
 follows the current English patch. Effect describes the PSX behavior, and
 Type groups skills by their primary use. MP cost and targeting come from the

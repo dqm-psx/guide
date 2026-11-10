@@ -321,10 +321,13 @@ test('published quests and characters can be followed with JavaScript disabled',
     await expect(articles.getByRole('link')).toHaveCount(19);
     await expect(articles.getByRole('button')).toHaveCount(0);
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');
-    const items=reader.getByRole('heading',{name:'Items',exact:true}).locator('..');
-    await expect(items.getByRole('link')).toHaveCount(91);
-    await expect(items.locator('a[href="articles/item-41/"]')).toBeVisible();
-    await expect(items.locator('a[href="articles/item-43/"]')).toBeVisible();
+    const items=reader.getByRole('table',{name:'Items',exact:true});
+    await expect(items.locator('tbody th a')).toHaveCount(91);
+    for (const name of ['Type','Uses','Where to get it']) {
+      await expect(items.getByRole('columnheader',{name,exact:true})).toBeVisible();
+    }
+    await expect(items.locator('tbody th a[href="articles/item-41/"]')).toBeVisible();
+    await expect(items.locator('tbody th a[href="articles/item-43/"]')).toBeVisible();
     await reader.getByRole('link',{name:'Show monsters to the queen',exact:true}).click();
     const requests=reader.getByRole('heading',{name:'Monsters in request order'}).locator('..');
     await expect(requests.locator('ol li a')).toHaveCount(16);

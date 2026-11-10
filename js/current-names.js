@@ -19,6 +19,8 @@
       const row = rows.get(id);
       if (!row || row.source_ids[0] !== item.id) throw new Error('Item name identity differs for ' + id);
       row.title = item.title;
+      if (item.description) row.menuDescription = item.description;
+      if (item.descriptions) row.menuDescriptions = item.descriptions;
       row.names = item.names;
       row.aliases = [...new Set([...(row.aliases || []), ...item.aliases])];
     }
