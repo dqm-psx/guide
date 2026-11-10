@@ -238,7 +238,21 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
     if (!sourceId) continue;
     const source=index.get('text/system.json',sourceId);
     const title=label(source.raw.translations.current.english,sourceId);
-    if (source.labels?.includes('Gate names')) add(row.title,title);
+    if (source.labels?.includes('Gate names')) {
+      add(row.title,title);
+      // A gate's route ID remains the same when its displayed name changes.
+      // Keep each published edition searchable, including older/full names
+      // that differ from the guide's original authored title.
+      const aliases = [row.title, title, label(source.raw.japanese,sourceId)];
+      for (const edition of ['current',...EDITIONS]) {
+        const translated = source.raw.translations[edition];
+        if (!translated) continue;
+        for (const key of ['english','english_short']) {
+          if (translated[key]) aliases.push(label(translated[key],sourceId));
+        }
+      }
+      sourceAliases.set(row.id,distinct([...(sourceAliases.get(row.id) || []),...aliases]));
+    }
     else if (row.key && source.labels?.includes('Fixed keys')) {
       const suffix = index.get('text/static.json','x0b7904');
       const keyWord=label(suffix.raw.translations.current.english,suffix.id);

@@ -65,6 +65,24 @@ test('a translation-only update changes its URL and offline cache but retains un
   assert.ok(!precacheOf(after.get('sw.js').toString()).includes('./' + scriptURL(firstHTML, 'data/monster-reference.js')));
 });
 
+test('a gate translation reaches static titles, portal labels, indexes and boss references without changing links', () => {
+  const assets=sourceAssets();
+  const id='location-townsperson-s-gate';
+  assets.set('data/handbook-reference.js',Buffer.from(assets.get('data/handbook-reference.js').toString()+
+    '\nGUIDE_REFERENCE.guide_names.entries["'+id+'"] = {title:"Gate of Awaiting",aliases:["Townsperson’s Gate"]};'+
+    '\nGUIDE_REFERENCE.guide_names.entries["boss-dragon"] = {details:["Encounter: Gate of Awaiting."],places:["Gate of Awaiting"]};\n'));
+  require('../../scripts/build-entry-pages').addEntryPages(assets);
+  const article=assets.get('articles/'+id+'/index.html').toString();
+  assert.match(article,/<h1[^>]*>Gate of Awaiting<\/h1>/);
+  assert.match(article,/aria-label="Entrance to Gate of Awaiting"/);
+  assert.match(article,/href="places\/map-72-0\/"/);
+  const chamber=assets.get('places/map-9-0/index.html').toString();
+  assert.match(chamber,new RegExp('href="articles/'+id+'/"[^>]*>Gate of Awaiting<'));
+  const index=assets.get('entries/index.html').toString();
+  assert.match(index,new RegExp('href="articles/'+id+'/"[^>]*>Gate of Awaiting<'));
+  assert.match(assets.get('articles/boss-dragon/index.html').toString(),/Encounter: Gate of Awaiting\./);
+});
+
 test('packaging rejects a missing referenced file instead of publishing a broken offline bundle', () => {
   const files = sourceAssets();
   files.delete('js/router.js');

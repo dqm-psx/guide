@@ -28,6 +28,13 @@ the guide. It does not execute any code from the translation repository.
 
 The same public snapshot supplies item and skill names and aliases, map titles,
 character names, and reviewed place and character references in walkthroughs.
+Gate names use their native system record IDs, so a rename such as
+Townsperson's Gate to Gate of Awaiting updates the article, directory and portal
+label without changing its URL, entrance coordinates or final-area association.
+Gate search retains the original guide spelling, Japanese name, and available
+Current, Game Boy, Delocalized and Vibecoded names. The ten gates whose articles
+are built from encounter records also retain original and edition encounter
+names as aliases. Standalone pages are rebuilt from the same translated rows.
 Character dialogue uses the speaker and scene assignments in
 `scripts/character-dialogue-bindings.json`. The sync resolves those IDs against
 the current English export and rebuilds `data/character-dialogue.js`.
@@ -36,6 +43,15 @@ The handbook binds these names to native system slots and translation records.
 The publisher checks the source identity and expected context before applying
 each binding. Authored articles, image assets and release-specific verification
 receipts are versioned in the guide repository.
+
+Routine wording changes to these existing records need no guide edit. Adding
+new dialogue, changing a speaker assignment, replacing a bound source record,
+or rewriting the surrounding sentence used to extract a name may need a
+binding review. New game features and changes to rules, stats or maps require
+an authored guide update and native verification; a new translation export
+does not create that coverage automatically. Publication tests use stable IDs
+and the refreshed names, so a legitimate rename does not fail an old spelling
+assertion.
 
 The workflow first refreshes names, captions, field-guide wording, fixed-encounter
 labels, and the current patch summary, then packages the site on a lightweight

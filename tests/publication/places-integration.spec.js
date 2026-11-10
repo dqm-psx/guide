@@ -1,8 +1,10 @@
 const path = require('node:path');
 const {test,expect} = require('@playwright/test');
-let server, url;
+const loadStagedData = require('./staged-data');
+let server, url, shipped;
 
 test.beforeAll(async () => {
+  shipped=loadStagedData(path.resolve(__dirname,'../../site-dist'));
   const {startServer} = await import('../helpers/serve.js');
   const started = await startServer({root:path.resolve(__dirname,'../../site-dist'),prefix:'/guide/'});
   server=started.server;
@@ -20,7 +22,7 @@ test('published location and map pages connect their maps and guide context with
     await page.goto(url+'articles/location-water-world/');
     const maps=page.locator('.location-maps');
     await expect(maps.locator('img')).toHaveCount(1);
-    await expect(maps.locator('img')).toHaveAttribute('alt','Water World map');
+    await expect(maps.locator('img')).toHaveAttribute('alt',shipped.map('map-18-1').title+' map');
     expect((await maps.boundingBox()).y).toBeLessThan((await page.locator('#location-encounters').boundingBox()).y);
     await maps.locator('a[href="places/map-29-1/"]').click();
     await expect(page.locator('.entry-map')).toBeVisible();
@@ -40,8 +42,14 @@ test('published location and map pages connect their maps and guide context with
     await expect(page.locator('.entry-gate-facts')).toContainText('Arena requirement');
     await expect(page.locator('.entry-gate-facts a[href="articles/quest-arena-dqm1-g/"]')).toHaveText('Win Class G or higher');
     await expect(page.locator('.entry-boss-link .entry-portrait')).toHaveCount(1);
-    await expect(page.locator('.entry-boss-link')).toHaveText('Golem');
+    await expect(page.locator('.entry-boss-link')).toHaveText(shipped.entry('boss-golem').title);
     await expect(page.locator('.entry-content > h1 + p')).toHaveCount(0);
+    const summary=page.locator('.entry-gate-summary');
+    await expect(summary.locator('#location-encounters table')).toBeVisible();
+    expect((await summary.boundingBox()).y+(await summary.boundingBox()).height).toBeLessThanOrEqual((await page.locator('.location-maps').boundingBox()).y);
+    await expect(page.getByRole('navigation',{name:'Locations and maps'}).locator('a').first()).toHaveAttribute('href','entries/#locations-dqm1');
+    await page.getByRole('navigation',{name:'Locations and maps'}).locator('a').first().click();
+    await expect(page.locator('#locations-dqm1')).toBeInViewport();
     await page.goto(url+'entries/');
     const locations=page.locator('#locations');
     await expect(locations.getByRole('heading',{name:'Locations & maps'})).toBeVisible();
@@ -98,13 +106,13 @@ test('a revealed canonical article keeps its path and reveal when opening a map 
   await page.goto(article);
   await page.locator('#guide-reveal').click();
   await expect(page.locator('#location-map-browser')).toBeVisible();
-  await page.locator('.article-lead').getByRole('link',{name:'Ghost Ship',exact:true}).click();
+  await page.locator('.article-lead').getByRole('link',{name:shipped.map('map-29-1').title,exact:true}).click();
   await expect(page).toHaveURL(article+'#field-guide?entry=location-water-world&map=map-29-1&section=maps');
   await expect(page.locator('#guide-reveal')).toHaveCount(0);
-  await expect(page.locator('#article-title')).toHaveText('Water World');
+  await expect(page.locator('#article-title')).toHaveText(shipped.entry('location-water-world').title);
   const viewer=page.locator('#location-map-browser');
   await expect(viewer.locator('[data-map-control="place"]')).toHaveValue('map-29-1');
-  await expect(viewer.locator('[data-map-control="title"]')).toHaveText('Ghost Ship');
+  await expect(viewer.locator('[data-map-control="title"]')).toHaveText(shipped.map('map-29-1').title);
   await expect(viewer).toBeFocused();
 });
 

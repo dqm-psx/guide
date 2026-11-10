@@ -383,11 +383,18 @@
       const art = artwork(row, false);
       const lead = DQMLocations.leadFor(row);
       if (item) heading = DQMItemIndex.profileHeading(row,{escape:safe, art, level:2});
-      body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + (lead ? '<p class="article-lead">' + linkedProse(lead,row,routeData,p) + '</p>' : '')) +
-        (gate ? routeFacts(row,routeData,p) : '')+
+      const relatedMarkup = (profileLinks.length || related.length ? '<div class="article-related"><h3>Related entries</h3>' +
+        related.map(r => '<a href="' + linked(p, {entry:r.id}) + '">' + safe(safeTitle(r)) + '</a>').join('') +
+        profileLinks.map(m => '<a href="#monster?id=' + m.index + '">' + safe(m.display_name) + '</a>').join('') + '</div>' : '');
+      if (gate) heading = '<div class="gate-summary"><header class="gate-overview">'+heading+
+        (lead ? '<p class="article-lead">'+linkedProse(lead,row,routeData,p)+'</p>' : '')+
+        routeFacts(row,routeData,p)+relatedMarkup+'</header>'+routeMarkup(row,routeData,p)+'</div>';
+      body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + (!gate && lead ? '<p class="article-lead">' + linkedProse(lead,row,routeData,p) + '</p>' : '')) +
+        (gate ? '<div class="gate-content">' : '')+
         (row.kind==='location' && mapLinks.length ? '<section class="location-maps" aria-label="Maps">'+(gate?'':'<h3 id="location-maps-heading">Maps</h3>')+
           '<div id="location-map-browser"></div></section>' : '')+
         (gate ? globalThis.DQMGateGeneration?.render(row.id,{escape:safe}) || '' : '')+
+        (gate ? '</div>' : '')+
         DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
@@ -397,19 +404,18 @@
           '<li><a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a></li>').join('') + '</ul></section>' : '') +
         (row.requested_species ? '<section class="route-section"><h3>Monsters in request order</h3><ol class="quest-species">' + row.requested_species.map(id =>
           '<li><a href="#monster?id='+id+'">'+safe(GUIDE_REFERENCE.species[id].display_name)+'</a></li>').join('') + '</ol></section>' : '') +
-        routeMarkup(row,routeData,p) +
+        (gate ? '' : routeMarkup(row,routeData,p)) +
         (row.kind === 'npc' ? DQMCharacterDialogue.markup(row,safe,questLinks,!reveal) : '') +
         (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + (item ? '' : otherNames(row)) +
         (item ? '<p class="hint item-art-credit">Artwork · '+safe(DQMItemArt.creditFor(row))+'</p>' : '')+
-        (otherPlaces.length ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
+        (otherPlaces.length && row.kind!=='location' ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
         (mapLinks.length && row.kind!=='location' ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
-        (profileLinks.length || related.length ? '<div class="article-related"><h3>Related entries</h3>' +
-          related.map(r => '<a href="' + linked(p, {entry:r.id}) + '">' + safe(safeTitle(r)) + '</a>').join('') +
-          profileLinks.map(m => '<a href="#monster?id=' + m.index + '">' + safe(m.display_name) + '</a>').join('') + '</div>' : '');
+        (gate ? '' : relatedMarkup);
     }
     const context = [games[row.game] && !['both','system'].includes(row.game) ? games[row.game] : '',
       row.kind === 'story' && !guarded(row) ? 'Chapter ' + row.order : ''].filter(Boolean).join(' · ');
-    article.innerHTML = (row.kind==='location'?DQMLocations.navigation(row.game,safe):'')+'<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>' +
+    const locationBack = '<a class="guide-back places-back" href="'+backUrl+'" aria-label="Back to '+safe(backLabel)+'" title="Back to '+safe(backLabel)+'"><span aria-hidden="true">←</span></a>';
+    article.innerHTML = (row.kind==='location' ? DQMLocations.navigation(row.game,safe,locationBack) : '<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>') +
       heading + body;
     if (el('location-map-browser')) DQMAtlas.mountLocationMaps(el('location-map-browser'),row.id,{
       mapId:p.get('map'),variant:p.get('variant'),href:(mapId,variant)=>{

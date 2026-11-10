@@ -252,6 +252,19 @@
       options.select(map,variant || '');
     });
     const image=detail.querySelector('.map-image img');
+    if (options.gateId) {
+      const fitPanel=()=>{
+        if (!image.naturalWidth || !image.naturalHeight) return;
+        // Fit the card to the map's displayed proportions instead of stretching
+        // a narrow entrance across half the article. CSS keeps controls usable
+        // and responds to viewport changes without resizing the map coordinates.
+        const panel=detail.closest('.location-map-section');
+        panel?.style.setProperty('--gate-map-native-width',(image.naturalWidth+2)+'px');
+        panel?.style.setProperty('--gate-map-fit-width','calc(var(--gate-map-height) * '+(image.naturalWidth/image.naturalHeight)+' + 2px)');
+      };
+      image.addEventListener('load',fitPanel,{once:true});
+      if (image.complete) fitPanel();
+    }
     image.onerror=()=>{ if (!image.isConnected) return; const message=document.createElement('p'); message.className='map-unavailable';
       message.textContent='Map image unavailable. Open this location online once to cache its image.'; image.closest('.map-scroll').replaceChildren(message); control('zoom').disabled=true;
       if (control('pins')) control('pins').disabled=true; if (control('gates')) control('gates').disabled=true; };

@@ -118,6 +118,14 @@ test('gate pages show entrance and final-area maps together without a map choose
   const entranceBox=await entrance.boundingBox(), finalBox=await final.boundingBox();
   expect(finalBox.x).toBeGreaterThan(entranceBox.x);
   expect(finalBox.y).toBeCloseTo(entranceBox.y,0);
+  // Narrow maps should not be stretched into half-page cards with large gutters.
+  for (const panel of [entrance,final]) {
+    const card=await panel.boundingBox(), image=await panel.locator('.map-image img').boundingBox();
+    expect(card.width-image.width).toBeLessThan(50);
+  }
+  const marker=await entrance.locator('.map-gate-selected').boundingBox();
+  expect(marker.width).toBeGreaterThanOrEqual(24);
+  expect(marker.height).toBeGreaterThanOrEqual(24);
   const ids=await maps.locator('[id]').evaluateAll(nodes=>nodes.map(node=>node.id));
   expect(new Set(ids).size).toBe(ids.length);
   await expect(page.locator('#location-encounters .route-roster')).toBeVisible();

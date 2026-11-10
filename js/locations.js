@@ -43,18 +43,18 @@
   for (const monster of GUIDE_REFERENCE.species) {
     for (const area of monster.locations || []) {
       if (area.game!=='terry' || area.kind!=='wild') continue;
-      if (!encounters.has(area.context_id)) encounters.set(area.context_id,{name:area.name,levels:[]});
+      if (!encounters.has(area.context_id)) encounters.set(area.context_id,{name:area.name,aliases:area.aliases || [],levels:[]});
       encounters.get(area.context_id).levels.push(...area.levels);
     }
   }
   for (const [slug,start,end,questId] of sideGates) {
-    const name=encounters.get(start).name;
+    const {name,aliases}=encounters.get(start);
     const contexts=Array.from({length:end-start+1},(_,i)=>start+i);
     const levels=contexts.flatMap(id=>encounters.get(id).levels);
     const levelRange='Lv. '+Math.min(...levels)+'–'+Math.max(...levels);
     const quest=WORLD_GUIDE.entries.find(row=>row.id===questId);
     const id=sideId(slug);
-    WORLD_GUIDE.entries.push({id,kind:'location',game:'dqm1',campaigns:['terry'],title:name,region:'GreatTree',
+    WORLD_GUIDE.entries.push({id,kind:'location',game:'dqm1',campaigns:['terry'],title:name,aliases,region:'GreatTree',
       summary:unverifiedEntrances.has(id) ? 'An entrance for this gate has not been verified. Its recorded wild monsters are '+levelRange+'.' :
         quest?.summary || 'Wild monsters in this gate are '+levelRange+'.',levelRange,
       related:quest ? [quest.id] : [], details:[], spoiler:quest?.spoiler || 'story',
@@ -107,12 +107,12 @@
     }
     return sections.join('');
   }
-  function navigation(active,escape) {
+  function navigation(active,escape,backLink='') {
     const links=[['all','#field-guide?kind=location','Overview'],
       ['dqm1','#field-guide?kind=location&game=dqm1','Terry’s gates'],
       ['dqm2','#field-guide?kind=location&game=dqm2','Cobi & Tara’s worlds'],
       ['maps','#atlas','All maps'],['encounters','#atlas?tab=encounters','Wild encounters']];
-    return '<nav class="places-nav" aria-label="Locations and maps">'+links.map(([key,href,label])=>
+    return '<nav class="places-nav" aria-label="Locations and maps">'+backLink+links.map(([key,href,label])=>
       '<a href="'+escape(href)+'"'+(['maps','encounters'].includes(key)?' data-atlas-tab="'+key+'"':'')+
       (active===key?' aria-current="page"':'')+'>'+escape(label)+'</a>').join('')+'</nav>';
   }

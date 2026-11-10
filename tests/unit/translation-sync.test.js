@@ -64,6 +64,7 @@ test('a wording refresh updates names, aliases, library, skills and locations by
   const location = baseline.species[0].locations.find(r => r.kind === 'wild');
   const menu = comparison.rows.find(r => r.id === location.source.text_id);
   const prefix = location.context_id.toString(16).toUpperCase().padStart(2, '0') + ':';
+  menu.raw.translations.gameboy = {english_lines:[prefix+'Classic Gate 6~8F']};
   menu.raw.translations.current.english_lines = menu.raw.translations.current.english_lines.map(line => line.startsWith(prefix) ? prefix + 'Reviewed Gate 6~8F' : line);
   const result = buildReference(baseline, breeding, comparison, manifest, publicRevision);
   assert.equal(result.species[0].current_name, 'New Drake Slime');
@@ -73,6 +74,9 @@ test('a wording refresh updates names, aliases, library, skills and locations by
   assert.equal(result.species[0].library.text, 'A newly reviewed description.');
   assert.equal(result.species[0].skills.terry[0].name, 'Reviewed skill');
   assert.ok(result.species[0].locations.some(r => r.name === 'Reviewed Gate' && r.floors === '6–8F'));
+  const renamedLocation = result.species[0].locations.find(r => r.context_id === location.context_id && r.game === location.game);
+  assert.ok(renamedLocation.aliases.includes(location.name));
+  assert.ok(renamedLocation.aliases.includes('Classic Gate'));
   assert.deepEqual(result.species.map(s => s.stats), baseline.species.map(s => s.stats));
   assert.equal(result.species[290].display_name, result.species[290].current_name + ' (form 1)');
   assert.equal(result.species[291].display_name, result.species[291].current_name + ' (form 2)');
