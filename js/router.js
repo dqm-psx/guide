@@ -229,7 +229,8 @@
     const stageId = viewId === 'field-guide' && new URLSearchParams(parse(currentHash()).params).get('entry');
     const stage = stageId && P(stageId)?.closest('.walk-stage') ? P(stageId) : null;
     const sectionId = {encounters:'location-encounters',maps:'location-map-browser'}[new URLSearchParams(parse(currentHash()).params).get('section')];
-    const locationSection = viewId === 'field-guide' && sectionId ? P(sectionId) : null;
+    const locationSection = viewId === 'field-guide' && sectionId ?
+      sectionId==='location-map-browser' ? P('gate-map-selected') || P(sectionId) : P(sectionId) : null;
     if (keepAtlasPosition && settings.focus && !previouslyFocused.isConnected) {
       const replacement = previouslyFocused.id && P(previouslyFocused.id);
       focusable(replacement || P('atlas-location'))?.focus({ preventScroll: true });

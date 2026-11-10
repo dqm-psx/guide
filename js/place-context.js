@@ -29,7 +29,7 @@
   };
   const values = rows => Array.from(rows?.values ? rows.values() : rows || []);
 
-  function create({entries = [], routes = {}, scenes = {}, maps = [], entrances = {}} = {}) {
+  function create({entries = [], routes = {}, scenes = {}, maps = [], entrances = {}, generation = {}} = {}) {
     const byEntry = new Map(values(entries).map(row=>[row.id,row]));
     const byMap = new Map(values(maps).map(map=>[map.id,map]));
     const gateEntrances = new Map();
@@ -44,7 +44,8 @@
       const map=byMap.get(id);
       return map && (byMap.get(map.placeId) || map);
     };
-    const mapIdsFor = row => [...(row.map_ids || []),...(routes[row.id]?.maps || [])];
+    const mapIdsFor = row => [...(row.map_ids || []),...(routes[row.id]?.maps || []),
+      ...(row.kind==='location' ? generation.entries?.[row.id]?.finalMaps || [] : [])];
     const canonicalMaps = ids => [...new Map(ids.map(mapFor).filter(Boolean).map(map=>[map.id,map])).values()];
     const byPlace = new Map();
     const byEncounter = new Map();

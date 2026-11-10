@@ -24,6 +24,17 @@
   const familyGates = ['extinction','manipulation','ambition','sleep','domination','destruction'];
   const sideId = slug => 'location-'+slug+'-gate';
   const unverifiedEntrances = new Set((globalThis.GATE_ENTRANCES?.unmapped || []).map(row=>row.location));
+  // These leads repeat the dedicated arena, map or encounter sections.
+  const redundantGateLeads = new Set(['townsperson-s','guardian','memory','peace','courage',
+    'strength','joy','wisdom','happiness','judgment','mirror','farm','arena-left','arena-right'].map(sideId));
+  function leadFor(row) {
+    if (row.kind!=='location' || row.game!=='dqm1') return row.summary || '';
+    if (redundantGateLeads.has(row.id)) return '';
+    if (familyGates.some(slug=>sideId(slug)===row.id)) return 'Available after the Starry Night Tournament.';
+    if (unverifiedEntrances.has(row.id)) return 'An entrance for this gate has not been verified.';
+    if (['location-confusion-gate','location-temptation-gate'].includes(row.id)) return row.summary.split('. ').slice(1).join('. ');
+    return row.summary || '';
+  }
 
   // These ten gate encounter groups have no separate story chapter.
   // Give them the same searchable, shareable floor-by-floor articles as the
@@ -105,5 +116,5 @@
       '<a href="'+escape(href)+'"'+(['maps','encounters'].includes(key)?' data-atlas-tab="'+key+'"':'')+
       (active===key?' aria-current="page"':'')+'>'+escape(label)+'</a>').join('')+'</nav>';
   }
-  globalThis.DQMLocations={render,navigation};
+  globalThis.DQMLocations={render,navigation,leadFor};
 })();

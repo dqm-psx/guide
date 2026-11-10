@@ -8,7 +8,7 @@
   for (const option of el('atlas-game').options) if (names[option.value]) option.textContent=names[option.value];
   const maps = new Map(PLAYER_ATLAS.maps.map(m => [m.id,m]));
   const context = DQMPlaceContext.create({entries:[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries],
-    routes:FIELD_ROUTES.routes,scenes:FIELD_ROUTES.scenes,maps:PLAYER_ATLAS.maps,entrances:globalThis.GATE_ENTRANCES});
+    routes:FIELD_ROUTES.routes,scenes:FIELD_ROUTES.scenes,maps:PLAYER_ATLAS.maps,entrances:globalThis.GATE_ENTRANCES,generation:globalThis.GATE_GENERATION});
   const places = new Map();
   const placeId = map => map.placeId || map.id;
   function exitKey(exit) {
@@ -237,7 +237,7 @@
     }
     const picker = layouts.length > 1 ? '<label class="atlas-layout-picker">'+(floorLabel(row)?'Floor':'Layout')+' <select id="'+prefix+'-layout-select" data-map-control="layout">'+
       layouts.map(l=>'<option value="'+safe(l.id)+'"'+(l.selected?' selected':'')+'>'+safe(l.label)+'</option>').join('')+'</select></label>' : '';
-    const region=subtitle(row, false);
+    const region=options.caption || subtitle(row, false);
     detail.innerHTML='<div class="atlas-caption"><div>'+(region ? '<small>'+safe(region)+'</small>' : '')+'<h'+level+' id="'+prefix+'-location" data-map-control="title" tabindex="-1">'+safe(row.title)+'</h'+level+'></div><div class="map-controls">'+
       picker+(pins ? '<label><input type="checkbox" id="'+prefix+'-pins" data-map-control="pins" checked> Exit pins</label>' : '')+
       (portalPins ? '<label><input type="checkbox" id="'+prefix+'-gates" data-map-control="gates" checked> Gate portals</label>' : '')+
@@ -278,6 +278,7 @@
     const choices=context.mapsForLocation(locationId);
     if (!root || !choices.length) return false;
     const entrances=context.entrancesForLocation?.(locationId) || [];
+    const gate=[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries].some(row=>row.id===locationId && row.game==='dqm1');
     const entranceFor=map=>entrances.find(entrance=>maps.has(entrance.map) && placeId(maps.get(entrance.map))===placeId(map));
     const choiceTarget=map=>entranceFor(map)?.map || map.id;
     const choiceLabel=map=>{
@@ -300,6 +301,45 @@
     });
     const mapHref=(map,variant)=>belongs(map) ? inlineHref(map,variant) :
       '#atlas?'+new URLSearchParams({map,...(variant ? {variant} : {})});
+    if (gate) {
+      // Entrances and final areas are separate destinations, not alternative
+      // views of one map. Keep both on the page and redraw only the place
+      // whose floor changed, leaving the other map and its controls intact.
+      root.classList.add('gate-map-grid');
+      const panels=new Map(choices.map((map,i)=>{
+        const entrance=entranceFor(map);
+        const requested=placeId(map)===placeId(selected);
+        return [placeId(map),{map:requested ? selected : maps.get(choiceTarget(map)),
+          variant:requested ? variant : '',prefix:prefix+'-'+i,
+          caption:entrance ? 'Entrance' : 'Final area',role:entrance ? 'entrance' : 'final'}];
+      }));
+      root.innerHTML=Array.from(panels,([id,panel])=>'<section class="location-map-section" data-map-place="'+safe(id)+
+        '" data-map-role="'+panel.role+'" aria-label="'+panel.caption+' · '+safe(panel.map.title)+'" tabindex="-1"'+
+        (id===placeId(selected) ? ' id="gate-map-selected"' : '')+'><div class="location-map-view"></div></section>').join('');
+      for (const [id,panel] of panels) panel.element=root.querySelector('[data-map-place="'+id+'"] .location-map-view');
+      function selectPanel(map,nextVariant='') {
+        if (!belongs(map)) return false;
+        const panel=panels.get(placeId(maps.get(map)));
+        const focused=panel.element.contains(document.activeElement) ? document.activeElement.dataset.mapControl || 'title' : null;
+        const scroll={left:window.scrollX,top:window.scrollY,behavior:'instant'};
+        panel.map=maps.get(map); panel.variant=nextVariant;
+        root.querySelector('#gate-map-selected')?.removeAttribute('id');
+        panel.element.parentElement.id='gate-map-selected';
+        history.replaceState(history.state,'',new URL(inlineHref(map,nextVariant),location.href));
+        drawPanel(panel);
+        if (focused) panel.element.querySelector('[data-map-control="'+focused+'"]')?.focus({preventScroll:true});
+        window.scrollTo(scroll);
+        window.dispatchEvent(new Event('guide-view-rendered'));
+        return true;
+      }
+      function drawPanel(panel) {
+        renderMap(panel.element,panel.map,{inline:true,prefix:panel.prefix,variant:panel.variant,caption:panel.caption,
+          href:mapHref,select:selectPanel,intercept:selectPanel,gateId:locationId});
+      }
+      for (const panel of panels.values()) drawPanel(panel);
+      return true;
+    }
+    root.classList.remove('gate-map-grid');
     function select(map,nextVariant='') {
       if (!belongs(map)) return false;
       const focused=root.contains(document.activeElement) ? document.activeElement.dataset.mapControl || 'title' : null;

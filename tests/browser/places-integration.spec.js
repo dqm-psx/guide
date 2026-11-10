@@ -94,25 +94,39 @@ test('one places navigation includes map-only rooms in the shared guide search',
   await expect(page.locator('#location-map-browser [data-map-control="place"]')).toHaveValue('map-19-1');
 });
 
-test('gate pages distinguish the entrance from the final area and generated floors', async ({page}) => {
+test('gate pages show entrance and final-area maps together without a map chooser', async ({page}) => {
   await page.goto(url+'#field-guide?kind=location&entry=location-townsperson-s-gate');
   const maps=page.locator('.location-maps');
-  await expect(maps.getByRole('heading',{name:'Maps',exact:true})).toBeVisible();
-  await expect(maps).toContainText('The gate’s regular floors are generated.');
-  const picker=maps.locator('[data-map-control="place"]');
-  await expect(picker).toHaveValue('map-9-0');
-  await expect(picker.locator('option')).toHaveText(["Entrance · Travelers' Gate Chamber",'Final area · Swamp Cave']);
-  await expect(maps.locator('.map-gate-selected')).toHaveAttribute('data-gate-id','location-townsperson-s-gate');
-  await picker.selectOption('map-72-0');
-  await expect(maps.locator('[data-map-control="title"]')).toHaveText('Swamp Cave');
-  await expect(maps.locator('.map-gate-pin')).toHaveCount(0);
+  const entrance=maps.getByRole('region',{name:"Entrance · Travelers' Gate Chamber",exact:true});
+  const final=maps.getByRole('region',{name:'Final area · Swamp Cave',exact:true});
+  await expect(maps.locator('[data-map-control="place"]')).toHaveCount(0);
+  await expect(maps.getByRole('heading',{name:'Maps',exact:true})).toHaveCount(0);
+  await expect(page.locator('#guide-article .article-lead')).toHaveCount(0);
+  const facts=page.locator('.gate-facts');
+  await expect(facts).toContainText('Arena requirement');
+  await expect(facts.getByRole('link',{name:'Win Class G or higher',exact:true})).toHaveAttribute('href',/entry=quest-arena-dqm1-g/);
+  const boss=facts.getByRole('link',{name:'Dragon',exact:true});
+  await expect(boss).toHaveAttribute('href',/entry=boss-dragon/);
+  await expect(boss.locator('[data-monster-index]')).toBeVisible();
+  expect((await facts.boundingBox()).y).toBeLessThan((await maps.boundingBox()).y);
+  await expect(entrance).toHaveAttribute('id','gate-map-selected');
+  await expect(entrance.locator('.map-image img')).toBeVisible();
+  await expect(final.locator('.map-image img')).toBeVisible();
+  await expect(entrance.locator('.map-gate-selected')).toHaveAttribute('data-gate-id','location-townsperson-s-gate');
+  await expect(final.locator('[data-map-control="title"]')).toHaveText('Swamp Cave');
+  await expect(final.locator('.map-gate-pin')).toHaveCount(0);
+  const entranceBox=await entrance.boundingBox(), finalBox=await final.boundingBox();
+  expect(finalBox.x).toBeGreaterThan(entranceBox.x);
+  expect(finalBox.y).toBeCloseTo(entranceBox.y,0);
+  const ids=await maps.locator('[id]').evaluateAll(nodes=>nodes.map(node=>node.id));
+  expect(new Set(ids).size).toBe(ids.length);
   await expect(page.locator('#location-encounters .route-roster')).toBeVisible();
   await expect(maps.locator('.route-roster')).toHaveCount(0);
   await page.goto(url+'#field-guide?kind=location&entry=location-medal-gate');
   const medal=page.locator('#location-map-browser .map-gate-selected');
   await expect(medal).toHaveAttribute('data-gate-id','location-medal-gate');
   await expect(medal).toHaveText('Medal Gate');
-  await expect(page.locator('#location-map-browser .map-image img')).toHaveAttribute('alt',/Medal Man's Room/);
+  await expect(page.locator('#location-map-browser [data-map-role="entrance"] .map-image img')).toHaveAttribute('alt',/Medal Man's Room/);
   await expect(page.locator('#location-encounters .route-roster')).toBeVisible();
 });
 
@@ -154,24 +168,149 @@ test('chamber gate markers follow the native floors and stay aligned when zoomin
   await expect(detail.locator('.map-gate-pin[data-gate-id="location-extinction-gate"]')).toBeVisible();
 });
 
-test('gate portal links open the correct entrance floor and keep it when returning from the final area', async ({page}) => {
+test('gate portal links open the correct entrance floor alongside the final area', async ({page}) => {
   await page.goto(url+'#atlas?map=map-9-1');
   await page.locator('#atlas-detail .map-gate-pin[data-gate-id="location-mirror-gate"]').click();
   await expect(page.locator('#article-title')).toHaveText('Mirror Gate');
   const viewer=page.locator('#location-map-browser');
-  const picker=viewer.locator('[data-map-control="place"]');
-  await expect(picker).toHaveValue('map-9-1');
+  await expect(viewer.locator('[data-map-control="place"]')).toHaveCount(0);
   await expect(viewer.getByRole('combobox',{name:'Floor',exact:true})).toHaveValue('map-9-1');
   await expect(viewer.locator('.map-gate-selected')).toHaveCount(1);
   await expect(viewer.locator('.map-gate-selected')).toHaveText('Mirror Gate');
-  await picker.selectOption('map-91-0');
-  await expect(viewer.locator('.map-gate-pin')).toHaveCount(0);
-  await picker.selectOption('map-9-1');
-  await expect(viewer.getByRole('combobox',{name:'Floor',exact:true})).toHaveValue('map-9-1');
+  await expect(viewer.locator('[data-map-role="final"] .map-image img')).toBeVisible();
+  await page.goto(url+'#field-guide?entry=location-mirror-gate&map=map-91-0');
+  await expect(viewer.locator('[data-map-role="final"] .map-image img')).toBeVisible();
+  await expect(viewer.locator('#gate-map-selected')).toHaveAttribute('data-map-place','map-91-0');
   await expect(viewer.locator('.map-gate-selected')).toHaveText('Mirror Gate');
+  await expect(viewer.getByRole('combobox',{name:'Floor',exact:true})).toHaveValue('map-9-1');
   await page.goto(url+'#field-guide?entry=location-extinction-gate');
   await expect(viewer.getByRole('combobox',{name:'Floor',exact:true})).toHaveValue('map-9-2');
   await expect(viewer.locator('.map-gate-selected')).toHaveText('Extinction Gate');
+});
+
+test('gate floor changes preserve the other map, focus and scroll and survive a shared URL', async ({page}) => {
+  await page.goto(url+'#field-guide?entry=location-lost-gate');
+  const viewer=page.locator('#location-map-browser');
+  const entrance=viewer.locator('[data-map-role="entrance"]');
+  const final=viewer.locator('[data-map-role="final"]');
+  await entrance.locator('[data-map-control="zoom"]').click();
+  const entranceImage=await entrance.locator('.map-image img').getAttribute('src');
+  const layout=final.getByRole('combobox',{name:'Layout',exact:true});
+  await layout.focus();
+  const scroll=await page.evaluate(()=>window.scrollY);
+  await layout.selectOption('map-88-1');
+  await expect(layout).toBeFocused();
+  await expect(viewer.locator('#gate-map-selected')).toHaveCount(1);
+  await expect(final).toHaveAttribute('id','gate-map-selected');
+  expect(await page.evaluate(()=>window.scrollY)).toBe(scroll);
+  await expect(entrance.locator('[data-map-control="zoom"]')).toHaveAttribute('aria-pressed','true');
+  await expect(entrance.locator('.map-image img')).toHaveAttribute('src',entranceImage);
+  await expect(page).toHaveURL(/entry=location-lost-gate.*map=map-88-1/);
+  const finalImage=await final.locator('.map-image img').getAttribute('src');
+  await page.reload();
+  await expect(final.getByRole('combobox',{name:'Layout',exact:true})).toHaveValue('map-88-1');
+  await expect(final.locator('.map-image img')).toHaveAttribute('src',finalImage);
+  await expect(entrance.getByRole('combobox',{name:'Floor',exact:true})).toHaveValue('map-9-1');
+  await expect(entrance.locator('.map-gate-selected')).toHaveText('Lost Gate');
+  await entrance.getByRole('combobox',{name:'Floor',exact:true}).selectOption('map-9-2');
+  await expect(entrance).toHaveAttribute('id','gate-map-selected');
+  await expect(final).not.toHaveAttribute('id','gate-map-selected');
+});
+
+test('Farm Gate marks the portal at the correct point on each native farm layout', async ({page}) => {
+  await page.goto(url+'#field-guide?entry=location-farm-gate');
+  const viewer=page.locator('#location-map-browser');
+  const layout=viewer.getByRole('combobox',{name:'Layout',exact:true});
+  const marker=viewer.locator('.map-gate-selected');
+  await expect(layout).toHaveValue('map-10-0');
+  await expect(marker).toHaveAttribute('style',/left:90%;top:15\.625%/);
+  await layout.selectOption('map-10-1');
+  await expect(marker).toHaveText('Farm Gate');
+  const point=await marker.evaluate(node=>({x:parseFloat(node.style.left)/100,y:parseFloat(node.style.top)/100}));
+  expect(point.x).toBeCloseTo(.9,6);
+  expect(point.y).toBeCloseTo(20/47,6);
+  await page.reload();
+  await expect(layout).toHaveValue('map-10-1');
+  await expect(marker).toHaveText('Farm Gate');
+});
+
+test('generated floors show native terrain samples and distinguish possible special rooms', async ({page}) => {
+  await page.goto(url+'#field-guide?entry=location-townsperson-s-gate');
+  const generation=page.getByRole('region',{name:'Generated floors',exact:true});
+  await expect(generation).toContainText('1–4F · The final area is on 5F.');
+  await expect(generation).toContainText('terrain samples; floor layouts are generated for each visit');
+  await expect(generation.locator('.gate-terrain-list strong')).toHaveText(['Rocky cave','Mossy cave','Forest paths','Grassland']);
+  await expect(generation.locator('.gate-special-floors')).toContainText('Special floors · English patch');
+  await expect(generation.locator('.gate-special-floors')).toContainText('3F. They are not guaranteed.');
+  await expect(generation.locator('.gate-special-floors li')).toHaveText(['Church']);
+  for (const image of await generation.locator('.gate-terrain-list img').all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(()=>image.evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
+    await expect(image).toHaveAttribute('src',/^maps\/.+\.webp$/);
+  }
+  await page.goto(url+'#field-guide?entry=location-departure-gate');
+  await expect(generation.locator('.gate-special-floors')).toHaveCount(0);
+  await expect(generation.locator('.gate-terrain-list strong')).toHaveText(['Rocky cave','Forest paths','Grassland']);
+});
+
+test('native final areas and boss fallbacks appear on the gate pages that lacked route records', async ({page}) => {
+  await page.goto(url+'#field-guide?entry=location-departure-gate');
+  const final=page.locator('#location-map-browser [data-map-role="final"]');
+  await expect(final.locator('[data-map-control="title"]')).toHaveText('Bottom of the Old Well');
+  await expect(final).toHaveAttribute('data-map-place','map-71-0');
+  const healie=page.locator('.gate-facts .gate-boss-link');
+  await expect(healie).toContainText('Healie');
+  await expect(healie).toHaveAttribute('href',/entry=npc-healie/);
+  await expect(healie.locator('[data-monster-index="13"]')).toBeVisible();
+  await healie.click();
+  await expect(page.locator('#article-title')).toContainText('Healie');
+
+  await page.goto(url+'#field-guide?entry=location-arena-left-gate');
+  await expect(final.locator('[data-map-control="title"]')).toHaveText("Spirit's Spring");
+  await expect(final).toHaveAttribute('data-map-place','map-84-0');
+  await expect.poll(()=>final.locator('.map-image img').evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
+  const boss=page.locator('.gate-facts .gate-boss-link');
+  await expect(boss).toHaveText('Dungeon Shrimp');
+  await expect(boss).toHaveAttribute('href','#monster?id=152');
+  await expect(boss.locator('[data-monster-index="152"]')).toBeVisible();
+  await boss.click();
+  await expect(page.locator('#monster')).toBeVisible();
+  await expect(page).toHaveURL(/#monster\?id=152$/);
+});
+
+test('a mobile map deep link focuses the requested final-area panel', async ({page}) => {
+  await page.setViewportSize({width:375,height:812});
+  await page.goto(url+'#field-guide?entry=location-arena-left-gate');
+  await page.goto(url+'#field-guide?entry=location-arena-left-gate&map=map-84-0&section=maps');
+  const selected=page.locator('#gate-map-selected');
+  await expect(selected).toHaveAttribute('data-map-place','map-84-0');
+  await expect(selected).toBeFocused();
+  await expect(selected.locator('[data-map-control="title"]')).toBeInViewport();
+  await expect(selected.locator('.map-image img')).toBeInViewport();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});
+
+test('gate boss alternatives and consecutive encounters keep their order and fit on mobile', async ({page}) => {
+  await page.setViewportSize({width:375,height:812});
+  for (const [gate,label,species,note] of [
+    ['medal','Boss choices',[9,149,122],'Choose one of three encounters.'],
+    ['destruction','Boss sequence',[293,294],/Defeat.*return.*second/i]
+  ]) {
+    await page.goto(url+'#field-guide?entry=location-'+gate+'-gate');
+    const facts=page.locator('.gate-facts');
+    await expect(facts.locator('dt').filter({hasText:label})).toBeVisible();
+    await expect(facts.locator('.gate-boss-note')).toHaveText(note);
+    const links=facts.locator('.gate-boss-list .gate-boss-link');
+    await expect(links).toHaveCount(species.length);
+    for (const [index,id] of species.entries()) {
+      await expect(links.nth(index)).toHaveAttribute('href','#monster?id='+id);
+      await expect(links.nth(index).locator('[data-monster-index="'+id+'"]').first()).toBeVisible();
+    }
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    await links.last().click();
+    await expect(page.locator('#monster')).toBeVisible();
+    await expect(page).toHaveURL(new RegExp('#monster\\?id='+species.at(-1)+'$'));
+  }
 });
 
 test('hidden story details do not leak through maps or contextual atlas links', async ({page}) => {
@@ -189,6 +328,9 @@ test('hidden story details do not leak through maps or contextual atlas links', 
   await page.goto(url+'#field-guide?kind=location&entry=location-water-world');
   await page.locator('#guide-reveal').click();
   await expect(page.locator('#location-map-browser')).toBeVisible();
+  await page.goto(url+'#field-guide?entry=location-townsperson-s-gate');
+  await expect(page.locator('#guide-reveal')).toBeVisible();
+  await expect(page.locator('.gate-generation')).toHaveCount(0);
 });
 
 for (const width of [320,375]) {
@@ -204,6 +346,14 @@ for (const width of [320,375]) {
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await page.goto(url+'#atlas?map=map-29-1');
     await expect(page.locator('#atlas-detail .map-guide-context')).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.goto(url+'#field-guide?entry=location-townsperson-s-gate');
+    const entrance=page.locator('[data-map-role="entrance"]');
+    const final=page.locator('[data-map-role="final"]');
+    await expect(entrance.locator('.map-image img')).toBeVisible();
+    await expect(final.locator('.map-image img')).toBeVisible();
+    const entranceBox=await entrance.boundingBox(), finalBox=await final.boundingBox();
+    expect(finalBox.y).toBeGreaterThanOrEqual(entranceBox.y+entranceBox.height);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
   });
 }

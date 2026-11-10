@@ -31,9 +31,17 @@ test('published location and map pages connect their maps and guide context with
     await expect(page.locator('#location-encounters')).toBeInViewport();
     await page.goto(url+'articles/location-guardian-gate/');
     await expect(page.locator('.location-maps')).toContainText('Entrance');
-    await expect(page.locator('.location-maps')).toContainText('gate floors are generated');
     await expect(page.locator('.location-maps .entry-gate-label')).toHaveText(await page.locator('.entry-content h1').textContent());
-    await expect(page.locator('.location-maps li').filter({has:page.locator('a[href="places/map-73-0/"]')})).toContainText('Final area');
+    await expect(page.locator('.location-maps .entry-map')).toHaveCount(2);
+    const finalArea=page.locator('.entry-gate-map[data-map-role="final"]');
+    await expect(finalArea).toContainText('Final area');
+    await expect(finalArea.locator('a[href="places/map-73-0/"]')).toBeVisible();
+    await expect(finalArea.locator('.entry-map')).toBeVisible();
+    await expect(page.locator('.entry-gate-facts')).toContainText('Arena requirement');
+    await expect(page.locator('.entry-gate-facts a[href="articles/quest-arena-dqm1-g/"]')).toHaveText('Win Class G or higher');
+    await expect(page.locator('.entry-boss-link .entry-portrait')).toHaveCount(1);
+    await expect(page.locator('.entry-boss-link')).toHaveText('Golem');
+    await expect(page.locator('.entry-content > h1 + p')).toHaveCount(0);
     await page.goto(url+'entries/');
     const locations=page.locator('#locations');
     await expect(locations.getByRole('heading',{name:'Locations & maps'})).toBeVisible();
@@ -108,7 +116,7 @@ test('gate entrance links identify the portal on its exact chamber floor',async 
     const gateName=await reader.locator('.entry-content h1').textContent();
     const maps=reader.locator('.location-maps');
     await expect(maps.locator('.entry-gate-label')).toHaveText(gateName);
-    const entranceImage=await maps.locator('.entry-map').getAttribute('src');
+    const entranceImage=await maps.locator('[data-map-role="entrance"] .entry-map').getAttribute('src');
     await maps.locator('a[href="places/map-9-0/#map-9-2"]').click();
     const thirdFloor=reader.locator('#map-9-2');
     await expect(thirdFloor.getByRole('heading',{name:/B3/})).toBeInViewport();
@@ -121,4 +129,59 @@ test('gate entrance links identify the portal on its exact chamber floor',async 
   } finally { await context.close(); }
   await page.goto(url+'places/map-9-0/#map-9-2');
   await expect(page.locator('#atlas-layout-select')).toHaveValue('map-9-2');
+});
+
+test('published gates include native boss portraits and terrain examples without JavaScript',async ({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const page=await context.newPage();
+    await page.goto(url+'articles/location-departure-gate/');
+    await expect(page.locator('.entry-boss-link')).toHaveAttribute('href','articles/npc-healie/');
+    await expect(page.locator('.entry-boss-link .entry-portrait')).toHaveCount(1);
+    const floors=page.locator('.gate-generation');
+    await expect(floors).toContainText('1–4F');
+    await expect(floors).toContainText('final area is on 5F');
+    await expect(floors.locator('.gate-terrain-list img')).toHaveCount(3);
+    const terrain=floors.locator('.gate-terrain-list img').first();
+    await terrain.scrollIntoViewIfNeeded();
+    await expect.poll(()=>terrain.evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
+    const bounds=await terrain.boundingBox();
+    expect(bounds.width/bounds.height).toBeCloseTo(5/4,2);
+    await page.goto(url+'articles/location-arena-left-gate/');
+    const final=page.locator('.entry-gate-map[data-map-role="final"]');
+    await expect(final.locator('a')).toHaveAttribute('href','places/map-84-0/');
+    await expect.poll(()=>final.locator('img').evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
+    await expect(page.locator('.entry-boss-link')).toHaveAttribute('href','monsters/152/');
+    await page.goto(url+'articles/location-farm-gate/');
+    await expect(page.locator('.entry-gate-map')).toHaveCount(2);
+    const farmFinal=page.locator('.entry-gate-map[data-map-role="final"]');
+    await expect(farmFinal.locator('a')).toHaveAttribute('href','places/map-6-11/');
+    await expect.poll(()=>farmFinal.locator('img').evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
+  } finally { await context.close(); }
+});
+
+test('published gate boss choices and return visits stay distinct from a single party',async ({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const page=await context.newPage();
+    for (const [gate,label,ids,note] of [
+      ['medal','Boss choices',[9,149,122],'Choose one of three encounters.'],
+      ['destruction','Boss sequence',[293,294],'Defeat the first boss, then return to fight the second.']
+    ]) {
+      await page.goto(url+'articles/location-'+gate+'-gate/');
+      const facts=page.locator('.entry-gate-facts');
+      await expect(facts.locator('dt')).toHaveText(label);
+      await expect(facts).toContainText(note);
+      const bosses=facts.locator('.entry-boss-list .entry-boss-link');
+      await expect(bosses).toHaveCount(ids.length);
+      for (const [index,id] of ids.entries()) {
+        await expect(bosses.nth(index)).toHaveAttribute('href','monsters/'+id+'/');
+        await expect(bosses.nth(index).locator('.entry-portrait')).toHaveCount(1);
+        const name=await bosses.nth(index).textContent();
+        await bosses.nth(index).click();
+        await expect(page.locator('.entry-identity h1')).toHaveText(name);
+        await page.goBack();
+      }
+    }
+  } finally { await context.close(); }
 });
