@@ -79,6 +79,49 @@ test('Items includes travel supplies and preserves filters when narrowing the li
   await expect(directory.getByText('Travel Bookmark',{exact:true})).toBeVisible();
 });
 
+test('Items remembers visible columns across reloads and travel supplies', async ({page}) => {
+  await page.setViewportSize({width:375,height:800});
+  await page.goto(url+'#field-guide?kind=item');
+  const directory=page.locator('#guide-directory');
+  const table=directory.getByRole('table');
+  const columns=directory.getByText('Columns',{exact:true});
+  const optional=['In-game description','Effect','Type','Uses','Buy price','Sell price','Where to get it'];
+  const option=name=>directory.getByRole('checkbox',{name,exact:true});
+  await expect(table.getByRole('columnheader')).toHaveCount(8);
+  await columns.focus();
+  await page.keyboard.press('Enter');
+  await expect(directory.getByRole('checkbox')).toHaveCount(7);
+  for (const label of optional) {
+    await expect(option(label)).toBeChecked();
+    if (label!=='Buy price') await option(label).uncheck();
+  }
+  await columns.click();
+  await expect(table.getByRole('columnheader')).toHaveCount(2);
+  const herb=table.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Medicinal Herb',exact:true})});
+  await expect(herb.getByRole('cell')).toHaveText(['10 G']);
+  await table.getByRole('button',{name:'Buy price',exact:true}).click();
+  const sortedNames=await table.getByRole('rowheader').allTextContents();
+  expect(sortedNames.filter(name=>name==='Medicinal Herb' || name==='Adventure Book')).toEqual(['Medicinal Herb','Adventure Book']);
+  await columns.click();
+  await option('Buy price').uncheck();
+  await columns.click();
+  await expect(table.getByRole('columnheader')).toHaveAccessibleName('Item name');
+  expect(await table.evaluate(node=>node.parentElement.scrollWidth<=node.parentElement.clientWidth)).toBe(true);
+  await page.reload();
+  await expect(table.getByRole('columnheader')).toHaveAccessibleName('Item name');
+  await directory.getByRole('link',{name:'Travel & exploration items'}).click();
+  await expect(directory.getByRole('status')).toHaveText('8 items');
+  await expect(table.getByRole('columnheader')).toHaveAccessibleName('Item name');
+  await columns.click();
+  await expect(option('Effect')).not.toBeChecked();
+  await option('Effect').check();
+  await columns.click();
+  await directory.getByRole('link',{name:'All items'}).click();
+  await expect(table.getByRole('columnheader')).toHaveCount(2);
+  await expect(table.getByRole('columnheader',{name:'Effect',exact:true})).toBeVisible();
+  await expect(herb.getByRole('cell')).toContainText(['HP']);
+});
+
 test('Items sorts real prices numerically, keeps missing values last and links to sourced profiles', async ({page}) => {
   await page.setViewportSize({width:375,height:800});
   await page.goto(url+'#field-guide?kind=item');

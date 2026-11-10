@@ -1,6 +1,8 @@
 // Artwork for inventory entries without a dedicated PS1 field pickup sprite.
 // Existing pickup icons remain on their catalog rows. The field renderer maps IDs 1–47;
-// eleven of these select the same treasure chest regardless of its contents.
+// eleven select a treasure chest. Field code 33 branches to a gold award at 0x800AF8A7,
+// while inventory slot 33 holds the Silver Harp.
+// Cave harp: scene 28, map 3, tileset 2184, tiles 454–462, palette 6 (206, 164; 28×35).
 // Source coordinates on v1.0.73: Northern Mountain flowers, scene 35 map 0 at (544, 96);
 // books, GreatTree library scene 6 map 5 at (309, 224), (312, 244) and (319, 237).
 // Native TEX archive/block pairs: sage stone 848/5, starry orb 2045/36, moonstone 793/1,
@@ -8,6 +10,7 @@
 // the sword, tail, mirror, two tusks and two caps from 5, 69, 232, 85, 260, 199 and 179.
 (() => {
   const images = {
+    "cave-harp-silver": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAjCAYAAACHIWrsAAAFSklEQVR4Aa3BMWjcWAKA4V+TSeeFpAg8FYb3Ch88FYFREZC6pLgFNQsZuINMsYWvOJiDKzLFFRNwOJfZcq6b6+LiYFwcrMoZ2ELqNMWCXuFCAhv8wIZMYYgLg07KjWAY7MTJ7vc5rAXPo4ot6SJ2+J051ILnUfWy/4ptx7MjNqWL2OE3coLnUXV4+E+ypaHh9zS3yZaG49kRjXQRO3yjB7tq7+BwPOL65gbXfUIrWxoG/e8pTs95EfqEz56y/+OAD1dw9fH64Kw8ecs3eLCr9g7iXxL+8be/oHZd1K6L2nUJnz1lnmRMplP+89+Y07MV1zc3DPrf8+EKrj5eH5yVJ2/5So4QsgqjiFbghxzPjmgUJkdpD1dJWoEfMhoOeDd5z/HsiHQRO3yFBzs7jw663Yd89/gRgR/SMOZXGqvLC1aXF3S7D7larfju8SPOzk85PVsxGg74cAVXH68PdtXewVl58pZ76FIrTE4j5f9cJTkvSlqFyWkUJkdpjxR4N4HRcIDf02RLQ63iC9JF7DjUhJAVNaU9CpOzzdrSoSaErKgp7eEqSSPwQ0bDAfMkI1sa7pJmCUkc02UtjCKG+/u8CH3mScZkOiWJY5T2sLakZW3pABVrKfBuAn5PMxoOuMs80SRxTJe1JI5pDPp97qK0h7Ul1pYOULF2XJSkmWQynXKbwA9Js4RGl5rSHq6SDPf3mU0nzJOMyXRKEsd8jrWlA1TUCpPTUtpjUwqcFyWNLrXC5BQmpzHo97kPpT2sLbG2dISQlbWlQ00IWRUmZ1thchodakp7vJ/NaIRRRBhFvJ/NuC+lPVpKe1hbOtaWDjWlPRpKezS61AqTky0Ns+mEVn9/SMNVEhZ84ioJCz5xlYQF9/Ky/4o0SyhMTpeataXz0+G4+ulwzH0Ffsjxv/9Fw1USFnziKgkL7tRhTWmPbdaWTuCHtAI/5DaBH9IK/JDbnBcl1pZOhw1KeyjtcRe/p/larpL4PU1hchodtrhKorRHy+9pbuP3NC2/p2n5Pc2mwA/Z1GGDqySBH+IqybfKloZNo+GA8fgN1pYOtQ4bAj/E72l+KyFkxYbC5LQ6bHkR+gR+yNfIloZWmiU0hJCV0h7zJGNThy/IloZWtjS0sqXhc5T2SOY/Mx6/wdrSYa3DN/J7mlaaJQghK7bMk4zC5Gzq8AV+T9Pye5pWtjQIISs2CCEr1pL5z4zHb7C2dNjQ4QuypUEIWVHLlgYhZEUtzRK2Ke2RxDGvx4fMk4zC5GzrsFaYnMY8yUizhPsSQlasFSbn9fiQ0XDAoN/nNh02HM+OaJwXJa00S2ilWUJDCFmxprRHEsc0Xo8PGQ0HuK6iobTHtgfUhJAVtcdPnmCKgl/ThMbOzqOD3b09Tk9O2Nl5dLC7t8fpyQlKe1ytVqwuL1hdXhBGEX/684+MhgNcV9F6/OQJu2rv4Kw8ecvaAyFkpbTH6vKC/b/+nR+iP6L+8JT0lzmNbvchq8sLlPa4Wq1YXV6wurxgdXlBI4wiZtMJ1zc3hM9CWkp7uEpytVpxVp68Za1LzVWSRpolpFnCpsLkNAqT0wqjiOH+Pi9Cn3mS4bqKhrWlQ00IWRUmx1WSl/1X1Kp0ETvUHCFkFUYRgR+SZgnnRUnDVZLGeVHiKkngh4yGAxrzJCNbGn46HNOwtnTYIoSsqIVRROCHHM+OSBex4wghK6U9XvZfMRoOaL2bvCfNEs6LEldJNiVxTMPa0uEzhJAVNaU9CpNjbek4QshKaY+GqySBH9JIs4TzoqQwOdusLR3uSQhZsWZt6TjUhJAVd7C2dPgd/Q/+uEgeo/CNPAAAAABJRU5ErkJggg==",
     "summit-flowers": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACMElEQVR42nWTv2sUQRTHP7lYjLDFWARmBeG2SLFXBFYwsCcit5VsYeFaXWGjIORKLQ0c5B+w8LpUFlfIRRDxyrsuFim2CHEFBdPdFlcMuHBTHIzF/kg0cZqZ92bee9/5vu+D/yzlS6t8aWtbMLGCif33Xeuy0ZZ7VjCxbbln44HEDSTKl01g0EsQTGydXPnSti4buY5QwifXEbM3MQutwasQCR+AV+9idHYIHuSZ3mjlmd4AiAcSJWfkJkPJGQB6eog47jcIo2TF7OhmcwewCeBsiWGxFujiBLl2yHXEdvga1+tQnHsU6yXFeolZ7bD4+g3nxhYv3+5yMg2GLSihLFKNWPTJ9fyvim7YQQkfJWd8GXggRrhhp0GyoXxpy8CoCttHyR4NHyYrOai+hRlUbRlhumMuOOgnBL0EOKhQ7JObpw2BFwXADTvkOsKVsuRAinvD9MRADp+ePeJ9equq2sMhxg07kAPrXdywQ5SsMKsdTj/fYVP50q53TjE/HuM4H/iYBTjCozDnFOY52w8eEiUrlr9vUyyH/PxuGjKL9ZJGKG1xZsOetbXiBL5ty73G3xZnVvmy8dXiapR490mHdH6EkjPifoIQCm0yECPS+RHGuw8emO4YxAgZvyi7UOteZ4elkPQcOGjOQiiEl4IHrpQE3bJgegwLrcs21nLlV7npzEXJXtm17hhXShapLi8vJZqOqgRuUD7IM31twjooHZ83iK+M7pVRji/GubavG/k/MncPCI5Kxu0AAAAASUVORK5CYII=",
     "violet-book": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAA/ElEQVR42o3RIW/CQBjG8X+7LqGC5OoOdyeZu0kcFslXqFxdcQvJEirBwdTqjm+w9GvgQLaOiomJ+ZtYYGz0lj3mxHu/e97kwBMphZNSuK5Z5APpMAegZOXa9j24nIc+oGMDQDrM+d0Y+sD2OEfHBh2bKxj6GkZiyvY4B7iCN10AILkd0I8Sqrdn+lECQPtxgB5PYRc4RceGkZiiY0NVl0x0+r1eeVjxVzb77AwGPfGFlss1m33WCaq65OFuzenxXdMEAYBRyuVFwWyWUdzbzoaqLtk1zY//wijlrLXOKOVeJq/n83G8cEYp5919bIyz1jopxf/AJbxs67r0CS23bfgSgj/MAAAAAElFTkSuQmCC",
     "green-book": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAALCAYAAACtWacbAAAAk0lEQVR42oWQIRLCMBBFX5iKjaMOXDlCZK/AdSpbWRy9DhIkMhJJHb1B1xXBNBNKgK8i3n/5s8YVxcSP+L43GYAe94yqWBFGVQCsCLezx52Ysrmx6/ybYajL8A7QvXJYEYCXNSpkyw2bwzWUPqDZMtRl2Jc0xaPjrJZAKubfncJ3Vdt+BbqmSZvWec5WhIcqF+/NE/WiMNKdzE9bAAAAAElFTkSuQmCC",
@@ -68,6 +71,7 @@
     "item-24": ["red-book", "Related PS1 art: a book on the GreatTree library desk."],
     "item-30": ["starry-orb", "Related PS1 art: a glowing orb from the field graphics."],
     "item-31": ["mommonja-tail", "Related PS1 art: the tail from Mommonja's portrait."],
+    "item-33": ["cave-harp-silver", "PS1 harp from the Volcanic Island Cave treasure room, recolored silver for the guide."],
     "item-43": ["green-book", "Related PS1 art: a book on the GreatTree library desk."],
     "item-45": ["guide-45", "AI-generated illustration for the guide."],
     "item-48": ["item-2", "Related PS1 art: a water bottle from the field pickup sprites."],

@@ -521,7 +521,7 @@
     if (matches.length) {
       root.insertAdjacentHTML('beforeend',DQMItemIndex.render(matches,{...itemLinks(p),title}));
       const table = root.querySelector('.item-index');
-      DQMItemIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
+      DQMItemIndex.enableTable(table,root.querySelector('.directory-head'),p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
     } else if (p.get('q')) {
       root.insertAdjacentHTML('beforeend','<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>');
     }

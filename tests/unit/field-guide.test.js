@@ -7,6 +7,7 @@ const path = require('node:path');
 require('../../data/world-guide');
 require('../../data/skill-descriptions');
 require('../../data/item-reference');
+require('../../data/item-art');
 
 const raw = fs.readFileSync(path.join(__dirname, '../../data/field-guide.js'), 'utf8');
 const guide = JSON.parse(raw.slice('globalThis.FIELD_GUIDE = '.length, raw.lastIndexOf(';')));
@@ -24,6 +25,18 @@ test('field reference preserves native item identities and skips magic-key and r
     assert.ok(entry.source_ids.length, entry.id);
     for (const id of entry.related || []) assert.ok(articles.has(id), entry.id + ' links to ' + id);
   }
+});
+
+test('the Silver Harp uses the cave harp artwork and the Tiny Medal retains its native pickup sprite', () => {
+  const harp = entries.get('item-33');
+  const medal = entries.get('item-44');
+  assert.match(DQMItemArt.imageFor(harp), /^data:image\/png;base64,/);
+  const png = Buffer.from(DQMItemArt.imageFor(harp).split(',')[1], 'base64');
+  assert.equal(png.readUInt32BE(16), 28);
+  assert.equal(png.readUInt32BE(20), 35);
+  assert.notEqual(DQMItemArt.imageFor(harp), DQMItemArt.imageFor(medal));
+  assert.equal(DQMItemArt.creditFor(harp), 'PS1 harp from the Volcanic Island Cave treasure room, recolored silver for the guide.');
+  assert.equal(DQMItemArt.creditFor(medal), 'PS1 field pickup sprite.');
 });
 
 test('campaign travel tools keep their alternate menu descriptions and exact shop prices', () => {

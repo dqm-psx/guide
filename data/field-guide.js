@@ -1375,8 +1375,7 @@ globalThis.FIELD_GUIDE = {
             "Nofo"
           ]
         }
-      ],
-      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAnUlEQVR42mNgGAU0A0GaDP9xYbIMu7fG6z8K+Dbl/7uzWf/3RpFoKLphIENAfBgGGUy0ofhcBsMkGQpSgOwqfIaCaKINPNusgPAiFkNhriTOQKh3UMINzVCSDITFJLKByIbCDAPRRBkI8i42V8INBcqRFCnNhqiGgjAsTJENA6kjOunADAV5H2YIzJskGYZuKMyFyJhkw2iSl4c3AAD19X15fBuaKwAAAABJRU5ErkJggg=="
+      ]
     },
     {
       "id": "item-34",

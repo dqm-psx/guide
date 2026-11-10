@@ -312,6 +312,18 @@ test('entry sharing selects the canonical URL when clipboard access is denied',a
   await expect(input).toBeHidden();
 });
 
+test('the published guide index shares item column choices with the interactive guide',async ({page})=>{
+  await page.goto(url+'entries/#items');
+  const catalog=page.locator('#items');
+  await catalog.getByText('Columns',{exact:true}).click();
+  await catalog.getByRole('checkbox',{name:'Where to get it',exact:true}).uncheck();
+  await expect(catalog.getByRole('columnheader',{name:'Where to get it',exact:true})).toHaveCount(0);
+  await page.goto(url+'#field-guide?kind=item');
+  const items=page.getByRole('table',{name:'Items',exact:true});
+  await expect(items.getByRole('columnheader')).toHaveCount(7);
+  await expect(items.getByRole('columnheader',{name:'Where to get it',exact:true})).toHaveCount(0);
+});
+
 test('published quests and characters can be followed with JavaScript disabled',async ({browser})=>{
   const context=await browser.newContext({javaScriptEnabled:false});
   try {
@@ -323,9 +335,8 @@ test('published quests and characters can be followed with JavaScript disabled',
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');
     const items=reader.getByRole('table',{name:'Items',exact:true});
     await expect(items.locator('tbody th a')).toHaveCount(91);
-    for (const name of ['Type','Uses','Where to get it']) {
-      await expect(items.getByRole('columnheader',{name,exact:true})).toBeVisible();
-    }
+    await expect(items.getByRole('columnheader')).toHaveText(['Item name','In-game description','Effect','Type','Uses','Buy price','Sell price','Where to get it']);
+    await expect(reader.locator('#items').getByText('Columns',{exact:true})).toBeHidden();
     await expect(items.locator('tbody th a[href="articles/item-41/"]')).toBeVisible();
     await expect(items.locator('tbody th a[href="articles/item-43/"]')).toBeVisible();
     await reader.getByRole('link',{name:'Show monsters to the queen',exact:true}).click();
