@@ -49,6 +49,20 @@ The atlas follows recorded doorways. Story triggers, moving actors and
 generated dungeon floors fall outside its scope. Map images load on demand
 and can be revisited offline once cached.
 
+Location articles embed their maps; atlas pages link back to the corresponding
+gate or world and explicitly associated quests, walkthrough sections and
+characters. These relationships use native map and encounter IDs. A world's
+encounter list describes the world, not every room inside it.
+
+Terry's gate entrances use a separate native portal index, including the three
+Gate Chamber floors and the gates around GreatTree. Run
+`python scripts/build-gate-entrances.py --bin <current-disc.bin> --check` to
+verify its 31 entrances. The event grids, dispatch tables and collision patches
+match on the Japanese original, the v1.0.66 atlas baseline and v1.0.73. Portal
+coordinates select an exact floor image; sharing a room does not mean one gate
+owns that room. Entrance markers do not assert that a gate is currently unlocked.
+The separate Hidden Gate encounter pool has no verified entrance marker.
+
 Items distinguish verified effects from evidence of availability in a
 particular adventure. Shop stock, prices and skill-learning thresholds were
 checked against v1.0.73. Item pages list Japanese names, menu abbreviations and

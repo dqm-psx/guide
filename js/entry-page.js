@@ -5,6 +5,10 @@
   const originalPath = location.pathname;
   if (!route || !/^https?:$/.test(location.protocol)) return;
   window.DQMEntryHash = () => {
+    if (location.pathname === originalPath && route.startsWith('#atlas?map=') &&
+        /^#map-\d+-\d+$/.test(location.hash)) return '#atlas?map='+location.hash.slice(1);
+    if (location.pathname === originalPath && route.startsWith('#field-guide?entry=location-') &&
+        location.hash === '#location-encounters') return route+'&section=encounters';
     if (location.pathname === originalPath && route.startsWith('#field-guide?kind=story&game=') &&
         /^#story-[\w-]+$/.test(location.hash)) {
       return route+'&entry='+location.hash.slice(1);

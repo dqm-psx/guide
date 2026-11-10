@@ -32,6 +32,27 @@
   const sortedSkills = Array.from(skills.values()).sort((a,b)=>a.title.localeCompare(b.title));
   const rows = [...world, ...field, ...sortedSkills];
   const byId = new Map(rows.map(row => [row.id, row]));
+  const placeContext = DQMPlaceContext.create({entries:rows,routes:FIELD_ROUTES.routes,scenes:FIELD_ROUTES.scenes,maps:PLAYER_ATLAS.maps,entrances:globalThis.GATE_ENTRANCES});
+  const mapGroups = new Map();
+  for (const map of PLAYER_ATLAS.maps) {
+    const id=map.placeId || map.id;
+    if (!mapGroups.has(id)) mapGroups.set(id,[]);
+    mapGroups.get(id).push(map);
+  }
+  const sceneRegions = new Map(Object.entries(FIELD_ROUTES.scenes).flatMap(([region,scenes])=>scenes.map(scene=>[scene,region])));
+  const mapRows = [...mapGroups].flatMap(([id,records])=>{
+    const map=records.find(record=>record.id===id) || records[0];
+    const owner=placeContext.locationForMap(id);
+    // The overview already opens its map. Give rooms and towns their own
+    // search result without duplicating an identically named overview.
+    if (owner && normalized(owner.title)===normalized(map.title)) return [];
+    const region=sceneRegions.get(map.scene);
+    const game=owner?.game || (['greattree','gate-ends'].includes(region) ? 'dqm1' : region ? 'dqm2' : 'both');
+    const aliases=[...new Set(records.flatMap(record=>record.aliases || []))];
+    return [{id:'place-'+id,mapId:id,locationId:owner?.id,kind:'location',game,title:map.title,
+      summary:owner ? owner.title+' · Map' : 'Map and connected places',aliases,spoiler:owner?.spoiler,
+      href:'#atlas?map='+encodeURIComponent(id),text:normalized([map.title,owner?.title,...aliases].filter(Boolean).join(' '))}];
+  });
   const pageSize = 24;
   const spoilerKey = 'dqm-guide-story-spoilers';
   let reveal = true;
@@ -42,6 +63,9 @@
   function change(p, key, value) { if (value) p.set(key, value); else p.delete(key); }
   function linked(p, changes) {
     const next = new URLSearchParams(p);
+    if ('entry' in changes && changes.entry!==next.get('entry')) {
+      for (const key of ['map','variant','section']) next.delete(key);
+    }
     for (const [key, value] of Object.entries(changes)) change(next, key, value);
     return safe(route(next));
   }
@@ -61,7 +85,7 @@
   const chapterNumbers = new Map();
   for (const game of ['dqm1', 'dqm2']) rows.filter(r => r.kind === 'story' && r.game === game)
     .forEach((r, index) => chapterNumbers.set(r.id, index + 1));
-  function guarded(row) { return !reveal && !individuallyRevealed.has(row.id) && (row.spoiler === 'ending' || row.spoiler === 'story'); }
+  function guarded(row) { return !reveal && !individuallyRevealed.has(row.id) && !individuallyRevealed.has(row.locationId) && (row.spoiler === 'ending' || row.spoiler === 'story'); }
   function safeTitle(row) {
     if (!guarded(row)) return row.title;
     if (chapterNumbers.has(row.id)) return 'Chapter ' + (row.order || chapterNumbers.get(row.id));
@@ -215,7 +239,7 @@
     return (stageLinks ? '<section class="route-section"><h3>Arena and gate order</h3><ol>'+stageLinks+'</ol></section>' : '')+
       (chapters ? '<section class="route-section"><h3>Walkthrough</h3><ol>'+chapters+'</ol></section>' : '')+
       (notes.length ? '<dl class="skill-facts">'+notes.map(([title,value])=>'<div><dt>'+title+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>' : '')+
-      battleMarkup(data.fights,p)+(tables ? '<section class="route-section"><h3>Wild encounters</h3>'+tables+'</section>' : '');
+      battleMarkup(data.fights,p)+(tables ? '<section class="route-section"'+(row.kind==='location'?' id="location-encounters" tabindex="-1"':'')+'><h3>Wild encounters</h3>'+tables+'</section>' : '');
   }
   function linkedProse(line, row, data, p, used) {
     const terms=new Map();
@@ -232,7 +256,7 @@
       for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id,chapter}),dest.id);
     }
     for (const map of window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(data?.maps || [])])) {
-      add(map.title,'#atlas?map='+safe(map.id));
+      add(map.title,row.kind==='location' ? linked(p,{entry:row.id,map:map.id,variant:'',section:'maps'}) : '#atlas?map='+safe(map.id));
     }
     if (!terms.size) return safe(line);
     const pattern=[...terms.keys()].sort((a,b)=>b.length-a.length)
@@ -253,7 +277,7 @@
   }
   function renderWalkthrough(game,p) {
     const article = el('guide-article');
-    article.classList.remove('skill-profile');
+    article.classList.remove('skill-profile','location-profile');
     const heading = games[game]+' walkthrough';
     const sectionParams = new URLSearchParams({kind:'story',game});
     const entryLink = (id,label,stage) => {
@@ -283,6 +307,7 @@
   function renderArticle(row, p) {
     const article = el('guide-article');
     article.classList.toggle('skill-profile',row?.kind === 'skill');
+    article.classList.toggle('location-profile',row?.kind === 'location');
     if (row?.kind === 'skill') {
       article.innerHTML=skillProfile(row,p);
       return row.title;
@@ -290,7 +315,7 @@
     const backKind = p.get('kind') || (!p.has('q') && row?.kind) || '';
     const questChapters = DQMWalkthrough.chaptersForQuest(row,byId);
     const origin = questChapters.find(stage=>stage.id===p.get('chapter'));
-    const backLabel = origin ? safeTitle(origin) : p.has('q') ? 'Search results' : categories[backKind] || 'Guide home';
+    const backLabel = origin ? safeTitle(origin) : p.has('q') ? 'Search results' : backKind==='location' ? 'Locations & maps' : categories[backKind] || 'Guide home';
     const backUrl = origin ? linked(new URLSearchParams({kind:'story',game:origin.game}),{entry:origin.id}) :
       linked(p, {entry:'',kind:backKind,chapter:''});
     const back = '<a class="guide-back" href="' + backUrl + '">← ' + safe(backLabel) + '</a>';
@@ -317,7 +342,8 @@
         '<a href="' + linked(p,{kind:'quest',entry:quest.id}) + '">' + safe(safeTitle(quest)) + '</a>');
       const related = (row.related || []).filter(id=>!direct.has(id)).map(id => byId.get(id)).filter(Boolean);
       const profileLinks = (row.species_ids || []).map(id => GUIDE_REFERENCE.species[id]).filter(Boolean);
-      const mapLinks = window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(routeData?.maps || [])]);
+      const mapLinks = row.kind==='location' ? placeContext.mapsForLocation(row.id) :
+        window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(routeData?.maps || [])]);
       const linkedNames = new Set(mapLinks.map(m => normalized(m.title)));
       const otherPlaces = (row.places || []).filter(name => !linkedNames.has(normalized(name)));
       const itemOptions = itemLinks(p);
@@ -330,6 +356,9 @@
       const art = artwork(row, false);
       if (item) heading = DQMItemIndex.profileHeading(row,{escape:safe, art, level:2});
       body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>') +
+        (row.kind==='location' && mapLinks.length ? '<section class="location-maps" aria-labelledby="location-maps-heading"><h3 id="location-maps-heading">'+
+          (row.game==='dqm1' && !placeContext.entrancesForLocation(row.id).length?'Final area maps':'Maps')+'</h3>'+(row.game==='dqm1'?'<p class="hint">The gate’s regular floors are generated.</p>':'')+
+          '<div id="location-map-browser"></div></section>' : '')+
         DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
@@ -344,15 +373,32 @@
         (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + (item ? '' : otherNames(row)) +
         (item ? '<p class="hint item-art-credit">Artwork · '+safe(DQMItemArt.creditFor(row))+'</p>' : '')+
         (otherPlaces.length ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
-        (mapLinks.length ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
+        (mapLinks.length && row.kind!=='location' ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
         (profileLinks.length || related.length ? '<div class="article-related"><h3>Related entries</h3>' +
           related.map(r => '<a href="' + linked(p, {entry:r.id}) + '">' + safe(safeTitle(r)) + '</a>').join('') +
           profileLinks.map(m => '<a href="#monster?id=' + m.index + '">' + safe(m.display_name) + '</a>').join('') + '</div>' : '');
     }
     const context = [games[row.game] && !['both','system'].includes(row.game) ? games[row.game] : '',
       row.kind === 'story' && !guarded(row) ? 'Chapter ' + row.order : ''].filter(Boolean).join(' · ');
-    article.innerHTML = '<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>' +
+    article.innerHTML = (row.kind==='location'?DQMLocations.navigation(row.game,safe):'')+'<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>' +
       heading + body;
+    if (el('location-map-browser')) DQMAtlas.mountLocationMaps(el('location-map-browser'),row.id,{
+      mapId:p.get('map'),variant:p.get('variant'),href:(mapId,variant)=>{
+        const next=new URLSearchParams(p);
+        next.set('map',mapId); change(next,'variant',variant); next.delete('section');
+        return route(next);
+      }
+    });
+    if (row.kind==='location') for (const link of article.querySelectorAll('a[href]')) {
+      if (link.closest('#location-map-browser')) continue;
+      const destination=new URLSearchParams(link.hash.split('?')[1]);
+      if (destination.get('entry')!==row.id || !destination.has('map')) continue;
+      link.addEventListener('click',event=>{
+        if (event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        DQMViews.go('field-guide',{params:destination,focusId:'location-map-browser'});
+      });
+    }
     el('guide-reveal')?.addEventListener('click', () => { individuallyRevealed.add(row.id); renderArticle(row,p); el('article-title').focus(); });
     return title;
   }
@@ -368,7 +414,7 @@
     {id:'action-import',kind:'tool',game:'both',title:'Import a memory card',href:'#team-planner?import=save',
       summary:'Choose an Adventure Log to see what your monsters can breed.', aliases:['import a save','save file','memory card import']},
   ];
-  const searchNames = new Map([...rows,...monsters,...actions].map(row => {
+  const searchNames = new Map([...rows,...monsters,...actions,...mapRows].map(row => {
     const labels=(row.sections || []).flatMap(section=>(section.rows || []).map(([label])=>label));
     return [row.id,Array.from(new Set([row.title,...(row.aliases || []),...labels].filter(Boolean).map(normalized)))];
   }));
@@ -549,7 +595,7 @@
   }
   function directory(p) {
     const kind = p.get('kind'), game = p.get('game'), q = normalized(p.get('q')).trim();
-    const pool = q && !kind ? rows.concat(monsters,actions) : rows;
+    const pool = q && !kind ? rows.concat(monsters,actions,mapRows) : kind==='location' ? rows.concat(mapRows) : rows;
     const filtered = pool.filter(r => (!kind || kind === r.kind || (kind === 'item' && r.kind === 'tool')) &&
       (!game || r.game === 'both' || r.game === game));
     if (kind === 'location' && !q) {
@@ -560,8 +606,8 @@
           return '<a href="#atlas?map='+safe(id)+'">'+safe(map.title)+'</a>';
         }
       });
-      const title=game==='dqm1' ? games.dqm1+'’s gates' : game==='dqm2' ? games.dqm2+'’s worlds' : 'Gates and worlds';
-      el('guide-directory').innerHTML=directoryHeading(title)+'<div class="place-directory">'+(places || '<p>No matching locations</p>')+'</div>';
+      const title=game==='dqm1' ? games.dqm1+'’s gates' : game==='dqm2' ? games.dqm2+'’s worlds' : 'Locations & maps';
+      el('guide-directory').innerHTML=directoryHeading(title)+DQMLocations.navigation(game || 'all',safe)+'<div class="place-directory">'+(places || '<p>No matching locations</p>')+'</div>';
       return title;
     }
     const questPurpose = kind === 'quest' && DQMWalkthrough.questPurposes.find(purpose => purpose.key===p.get('purpose'));
@@ -587,7 +633,7 @@
       const thumb = hidden ? '' : artwork(r, true);
       const match = hidden ? null : matchingSectionRow(r,q,game);
       const context = [!game && ['dqm1','dqm2'].includes(r.game) ? games[r.game] : '',
-        !kind ? (r.href ? 'Breeding tools' : categories[r.kind]) : '', match?.section, r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
+        r.mapId ? 'Map' : !kind ? (r.href ? 'Breeding tools' : categories[r.kind]) : '', match?.section, r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
       const shop=shopQuery && r.prices?.find(price=>!game || price.game===game);
       let summary=shop ? shop.locations[0]+' · '+shop.buy+' G' : r.summary;
       if (match) summary=match.label+' · '+match.detail;
@@ -607,6 +653,7 @@
     const count = matches.length ? matches.length + (matches.length === 1 ? ' entry' : ' entries') : 'No matching entries';
     const pageCount = pages > 1 ? ' · Page ' + page + ' of ' + pages : '';
     el('guide-directory').innerHTML = directoryHeading(heading,count+pageCount) +
+      (kind==='location' ? DQMLocations.navigation(game || 'all',safe) : '')+
       (kind==='quest' ? questPurposeNav(p,questPurpose) : '') +
       '<div class="directory-grid">' + (body || (q && (kind || game)
         ? '<a href="'+linked(p,{kind:'',game:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>'

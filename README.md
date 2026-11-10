@@ -7,7 +7,7 @@ Walkthroughs, maps, monster profiles and breeding tools for the English PlayStat
 | I want to… | Open |
 | --- | --- |
 | Find the next gate, key or boss | [Terry walkthrough](https://dqm-psx.github.io/guide/walkthroughs/terry/) · [Cobi and Tara walkthrough](https://dqm-psx.github.io/guide/walkthroughs/cobi-tara/) |
-| See which gates an arena class opens or which towns a world key connects | [Terry’s gates](https://dqm-psx.github.io/guide/#field-guide?kind=location&game=dqm1) · [Cobi & Tara’s worlds](https://dqm-psx.github.io/guide/#field-guide?kind=location&game=dqm2) |
+| Explore a gate or world, its maps, walkthrough and encounters | [Locations & maps](https://dqm-psx.github.io/guide/#field-guide?kind=location) |
 | Find a quest, its requirements or the person to speak to | [Quests](https://dqm-psx.github.io/guide/#field-guide?kind=quest) · [Characters and dialogue](https://dqm-psx.github.io/guide/#field-guide?kind=npc) |
 | Look up an item, skill or gameplay question | [Items](https://dqm-psx.github.io/guide/#field-guide?kind=item) · [Skills](https://dqm-psx.github.io/guide/#field-guide?kind=skill) · [Mechanics](https://dqm-psx.github.io/guide/#field-guide?kind=mechanic) |
 | Follow a doorway or see which monsters appear on a floor | [Map atlas](https://dqm-psx.github.io/guide/#atlas) |

@@ -23,8 +23,9 @@
   ];
   const familyGates = ['extinction','manipulation','ambition','sleep','domination','destruction'];
   const sideId = slug => 'location-'+slug+'-gate';
+  const unverifiedEntrances = new Set((globalThis.GATE_ENTRANCES?.unmapped || []).map(row=>row.location));
 
-  // Ten GreatTree gates have encounter tables but no separate story chapter.
+  // These ten gate encounter groups have no separate story chapter.
   // Give them the same searchable, shareable floor-by-floor articles as the
   // arena gates, reusing the unlock quest when its requirements are known.
   const encounters = new Map();
@@ -43,7 +44,8 @@
     const quest=WORLD_GUIDE.entries.find(row=>row.id===questId);
     const id=sideId(slug);
     WORLD_GUIDE.entries.push({id,kind:'location',game:'dqm1',campaigns:['terry'],title:name,region:'GreatTree',
-      summary:quest?.summary || 'Wild monsters in this gate are '+levelRange+'.',levelRange,
+      summary:unverifiedEntrances.has(id) ? 'An entrance for this gate has not been verified. Its recorded wild monsters are '+levelRange+'.' :
+        quest?.summary || 'Wild monsters in this gate are '+levelRange+'.',levelRange,
       related:quest ? [quest.id] : [], details:[], spoiler:quest?.spoiler || 'story',
       source_ids:quest?.source_ids || []});
     FIELD_ROUTES.routes[id]={encounters:{terry:contexts}};
@@ -64,14 +66,15 @@
         const note=row.summary.replace(/^Third basement floor, /i,'').replace(';',' ·').replace(/ monsters\.$/, '');
         return '<li>'+entryLink(row.id)+(hidden(row) ? '' : '<small>'+escape(note)+'</small>')+'</li>';
       });
-      const aroundTown=sideGates.map(([slug,,,questId,condition])=>{
+      const aroundTown=sideGates.filter(([slug])=>!unverifiedEntrances.has(sideId(slug))).map(([slug,,,questId,condition])=>{
         const row=byId.get(sideId(slug));
         const info=questId ? entryLink(questId,condition) : escape(row.levelRange);
         return '<li>'+entryLink(row.id)+(hidden(row) ? '' : '<small>'+info+'</small>')+'</li>';
       });
-      return heading('Travelers’ Gate Chamber')+'<dl class="gate-ranks">'+rankRow('First assignment',['location-departure-gate'])+ranks.join('')+'</dl>'+
+      return '<p class="place-hub-map">'+mapLink('map-6-0')+' · Town map and rooms</p>'+heading('Travelers’ Gate Chamber')+'<dl class="gate-ranks">'+rankRow('First assignment',['location-departure-gate'])+ranks.join('')+'</dl>'+
         heading('Gates around GreatTree')+'<ul class="town-gates">'+aroundTown.join('')+'</ul>'+
-        heading('Postgame · Gate Chamber B3')+'<ul class="family-gates">'+families.join('')+'</ul>';
+        heading('Postgame · Gate Chamber B3')+'<ul class="family-gates">'+families.join('')+'</ul>'+
+        (unverifiedEntrances.size ? heading('Unverified entrance')+compact([...unverifiedEntrances].filter(id=>byId.has(id)).map(id=>entryLink(id))) : '');
     }
     function siblings() {
       return worldStops.map(([slug,keyQuest,stops])=>{
@@ -93,5 +96,14 @@
     }
     return sections.join('');
   }
-  globalThis.DQMLocations={render};
+  function navigation(active,escape) {
+    const links=[['all','#field-guide?kind=location','Overview'],
+      ['dqm1','#field-guide?kind=location&game=dqm1','Terry’s gates'],
+      ['dqm2','#field-guide?kind=location&game=dqm2','Cobi & Tara’s worlds'],
+      ['maps','#atlas','All maps'],['encounters','#atlas?tab=encounters','Wild encounters']];
+    return '<nav class="places-nav" aria-label="Locations and maps">'+links.map(([key,href,label])=>
+      '<a href="'+escape(href)+'"'+(['maps','encounters'].includes(key)?' data-atlas-tab="'+key+'"':'')+
+      (active===key?' aria-current="page"':'')+'>'+escape(label)+'</a>').join('')+'</nav>';
+  }
+  globalThis.DQMLocations={render,navigation};
 })();

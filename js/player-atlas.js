@@ -7,6 +7,8 @@
   const names = window.DQMField.campaigns;
   for (const option of el('atlas-game').options) if (names[option.value]) option.textContent=names[option.value];
   const maps = new Map(PLAYER_ATLAS.maps.map(m => [m.id,m]));
+  const context = DQMPlaceContext.create({entries:[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries],
+    routes:FIELD_ROUTES.routes,scenes:FIELD_ROUTES.scenes,maps:PLAYER_ATLAS.maps,entrances:globalThis.GATE_ENTRANCES});
   const places = new Map();
   const placeId = map => map.placeId || map.id;
   function exitKey(exit) {
@@ -166,19 +168,66 @@
     if (requested && !previous && !q && !inputGame && !inputRegion) return null;
     return isMap ? (previous===selected ? requestedMap : maps.get(selected.id)) : choice(selected,q);
   }
-  function mapView(row) {
+  function articleHref(row, section) {
+    const query=new URLSearchParams({kind:row.kind,game:row.game,entry:row.id});
+    if (section) query.set('section',section);
+    return '#field-guide?'+query;
+  }
+  function contextMarkup(row) {
+    const info=context.contextForMap(row.id);
+    const visible=entry=>entry && !window.DQMField.guarded(entry);
+    const location=visible(info.location) ? info.location : null;
+    const articleLink=entry=>'<a href="'+safe(articleHref(entry))+'">'+safe(entry.title)+'</a>';
+    const groups=[['Walkthrough',info.chapters],['Quests',info.quests],['Bosses',info.bosses]]
+      .map(([label,entries])=>[label,entries.filter(visible)]).filter(([,entries])=>entries.length);
+    const encounterGroups=location && FIELD_ROUTES.routes[location.id]?.encounters;
+    const hasEncounters=encounterGroups && Object.values(encounterGroups).some(ids=>ids.length);
+    const owner=location ? '<p class="map-location-guide">'+articleLink(location)+
+      (hasEncounters ? ' · <a href="'+safe(articleHref(location,'encounters'))+'">'+safe(location.title)+' encounters</a>' : '')+'</p>' : '';
+    const summary=location?.summary ? '<p>'+safe(location.summary)+'</p>' : '';
+    const links=groups.length ? '<dl class="map-guide-links">'+groups.map(([label,entries])=>
+      '<div><dt>'+label+'</dt><dd>'+entries.map(articleLink).join(' · ')+'</dd></div>').join('')+'</dl>' : '';
+    return owner || links ? '<section class="map-guide-context" aria-label="Location guide">'+owner+summary+links+'</section>' : '';
+  }
+  function renderMap(detail,row,options={}) {
     const place = places.get(placeId(row));
     const layout = layoutFor.get(row.id);
-    const arrival = row.arrivalVariants?.find(v=>v.id===params().get('variant'));
+    const arrival = row.arrivalVariants?.find(v=>v.id===options.variant);
     const imageFile = arrival?.image || row.image;
+    const prefix=options.prefix || 'atlas';
+    const level=options.inline ? 4 : 3;
     const valid=Array.from(new Map(row.exits.filter(exit=>maps.has(exit.to)).map(exit=>[exitKey(exit),exit])).values());
-    const doorHref = exit => safe(href({map:exit.to,variant:exit.variant || '',q:'',page:'',region:'',game:''}));
+    const doorHref = exit => safe(options.href(exit.to,exit.variant || ''));
+    const doorData = exit => ' data-map-id="'+safe(exit.to)+'" data-map-variant="'+safe(exit.variant || '')+'"';
     const pins=valid.map((exit,i)=>Number.isFinite(exit.x) && Number.isFinite(exit.y) ?
-      '<a class="map-pin" style="left:'+exit.x*100+'%;top:'+exit.y*100+'%" href="'+doorHref(exit)+'" aria-label="Exit '+(i+1)+' to '+safe(maps.get(exit.to).title)+'">'+(i+1)+'</a>' : '').join('');
-    const doors=valid.map(exit=>'<li><a href="'+doorHref(exit)+'">'+safe(maps.get(exit.to).title)+'</a>'+
+      '<a class="map-pin" style="left:'+exit.x*100+'%;top:'+exit.y*100+'%" href="'+doorHref(exit)+'"'+doorData(exit)+' aria-label="Exit '+(i+1)+' to '+safe(maps.get(exit.to).title)+'">'+(i+1)+'</a>' : '').join('');
+    const doors=valid.map(exit=>'<li><a href="'+doorHref(exit)+'"'+doorData(exit)+'>'+safe(maps.get(exit.to).title)+'</a>'+
       (places.get(placeId(maps.get(exit.to))).layouts.length>1 ? ' <small>Layout '+layoutFor.get(exit.to).number+'</small>' : '')+'</li>').join('');
-    const npcs=WORLD_GUIDE.entries.filter(r=>r.kind==='npc' && r.map_ids?.some(id=>maps.has(id) && placeId(maps.get(id))===place.id) && !window.DQMField.guarded(r));
-    const layouts = place.layouts.map(l=>({id:l.map.id, label:String(l.number), selected:l===layout&&!arrival}));
+    const portals=(context.entrancesForMap?.(row.id) || []).filter(entrance=>entrance.location &&
+      Number.isFinite(entrance.x) && Number.isFinite(entrance.y) &&
+      entrance.x>=0 && entrance.x<=1 && entrance.y>=0 && entrance.y<=1 &&
+      (!options.gateId || entrance.location.id===options.gateId));
+    const portalName=entrance=>window.DQMField.guarded(entrance.location) ? 'Gate · spoiler hidden' : entrance.location.title;
+    const portalPins=portals.map((entrance,i)=>{
+      const title=portalName(entrance);
+      const position=' style="left:'+entrance.x*100+'%;top:'+entrance.y*100+'%"';
+      if (options.gateId) {
+        const edge=entrance.x<.25 ? ' gate-label-right' : entrance.x>.75 ? ' gate-label-left' : '';
+        return '<span class="map-pin map-gate-pin map-gate-selected'+edge+(entrance.y<.15?' gate-label-below':'')+'"'+position+
+          ' data-gate-id="'+safe(entrance.location.id)+'" role="img" aria-label="Entrance to '+safe(title)+'"><span class="gate-pin-label" aria-hidden="true">'+safe(title)+'</span></span>';
+      }
+      return '<a class="map-pin map-gate-pin"'+position+' data-gate-id="'+safe(entrance.location.id)+'" href="'+safe(articleHref(entrance.location))+
+        '" aria-label="Gate portal G'+(i+1)+': '+safe(title)+'" title="'+safe(title)+'">G'+(i+1)+'</a>';
+    }).join('');
+    const portalLegend=!options.gateId && portals.length ? '<section class="map-gate-legend" aria-label="Gate portals"><h4>Gate portals</h4><ul class="gate-portal-links">'+
+      portals.map((entrance,i)=>'<li><a href="'+safe(articleHref(entrance.location))+'"><span class="gate-marker-key">G'+(i+1)+'</span> '+safe(portalName(entrance))+'</a>'+
+        (entrance.note && !window.DQMField.guarded(entrance.location) ? '<small>'+safe(entrance.note)+'</small>' : '')+'</li>').join('')+'</ul></section>' : '';
+    const npcs=context.contextForMap(row.id).characters.filter(r=>!window.DQMField.guarded(r));
+    const floorLabel=map=>{
+      const floors=[...new Set((context.entrancesForMap?.(map.id) || []).map(entrance=>entrance.floor).filter(Boolean))];
+      return floors.length===1 ? floors[0] : '';
+    };
+    const layouts = place.layouts.map(l=>({id:l.map.id, label:floorLabel(l.map) || String(l.number), selected:l===layout&&!arrival}));
     for (const map of place.records) {
       for (const variant of map.arrivalVariants || []) {
         const from=variant.from.map(id=>layoutFor.get(id)).filter(Boolean);
@@ -186,27 +235,98 @@
         layouts.push({id:map.id+':'+variant.id, label, selected:arrival===variant});
       }
     }
-    const picker = layouts.length > 1 ? '<label class="atlas-layout-picker">Layout <select id="atlas-layout-select">'+
+    const picker = layouts.length > 1 ? '<label class="atlas-layout-picker">'+(floorLabel(row)?'Floor':'Layout')+' <select id="'+prefix+'-layout-select" data-map-control="layout">'+
       layouts.map(l=>'<option value="'+safe(l.id)+'"'+(l.selected?' selected':'')+'>'+safe(l.label)+'</option>').join('')+'</select></label>' : '';
-    const detail=el('atlas-detail');
     const region=subtitle(row, false);
-    detail.innerHTML='<div class="atlas-caption"><div>'+(region ? '<small>'+safe(region)+'</small>' : '')+'<h3 id="atlas-location" tabindex="-1">'+safe(row.title)+'</h3></div><div class="map-controls">'+
-      picker+(pins ? '<label><input type="checkbox" id="atlas-pins" checked> Exit pins</label>' : '')+'<button type="button" id="atlas-zoom" aria-pressed="false">Zoom in</button></div></div>'+
-      '<div class="map-scroll" tabindex="0" aria-label="Scrollable field map"><div class="map-image"><img src="maps/'+safe(imageFile)+'" alt="Static field layout of '+safe(row.title)+'"><div class="map-pins">'+pins+'</div></div></div>'+
-      '<div class="map-notes">'+(doors ? '<h4>Connected maps</h4><ol class="map-doors">'+doors+'</ol>' : '')+
-      (npcs.length ? '<p><strong>Characters</strong> · '+npcs.map(n=>'<a href="#field-guide?entry='+safe(n.id)+'">'+safe(n.title)+'</a>').join(' · ')+'</p>' : '')+'</div>';
-    el('atlas-layout-select')?.addEventListener('change',e=>{
+    detail.innerHTML='<div class="atlas-caption"><div>'+(region ? '<small>'+safe(region)+'</small>' : '')+'<h'+level+' id="'+prefix+'-location" data-map-control="title" tabindex="-1">'+safe(row.title)+'</h'+level+'></div><div class="map-controls">'+
+      picker+(pins ? '<label><input type="checkbox" id="'+prefix+'-pins" data-map-control="pins" checked> Exit pins</label>' : '')+
+      (portalPins ? '<label><input type="checkbox" id="'+prefix+'-gates" data-map-control="gates" checked> Gate portals</label>' : '')+
+      '<button type="button" id="'+prefix+'-zoom" data-map-control="zoom" aria-pressed="false">Zoom in</button></div></div>'+
+      '<div class="map-scroll" tabindex="0" aria-label="Scrollable field map"><div class="map-image"><img src="maps/'+safe(imageFile)+'" alt="Static field layout of '+safe(row.title)+'"><div class="map-pins">'+pins+'</div><div class="map-gate-pins">'+portalPins+'</div></div></div>'+
+      '<div class="map-notes">'+portalLegend+(doors ? '<h4>Connected maps</h4><ol class="map-doors">'+doors+'</ol>' : '')+
+      (npcs.length ? '<p><strong>Characters</strong> · '+npcs.map(n=>'<a href="#field-guide?entry='+safe(n.id)+'">'+safe(n.title)+'</a>').join(' · ')+'</p>' : '')+
+      (options.inline ? '' : contextMarkup(row))+'</div>';
+    const control=name=>detail.querySelector('[data-map-control="'+name+'"]');
+    control('layout')?.addEventListener('change',e=>{
       const [map,variant] = e.target.value.split(':');
-      location.hash=href({map,variant});
+      options.select(map,variant || '');
     });
     const image=detail.querySelector('.map-image img');
     image.onerror=()=>{ if (!image.isConnected) return; const message=document.createElement('p'); message.className='map-unavailable';
-      message.textContent='Map image unavailable. Open this location online once to cache its image.'; image.closest('.map-scroll').replaceChildren(message); el('atlas-zoom').disabled=true; if (el('atlas-pins')) el('atlas-pins').disabled=true; };
-    el('atlas-pins')?.addEventListener('change', e=>{ detail.querySelector('.map-pins').hidden=!e.target.checked; });
-    el('atlas-zoom').onclick=e=>{
+      message.textContent='Map image unavailable. Open this location online once to cache its image.'; image.closest('.map-scroll').replaceChildren(message); control('zoom').disabled=true;
+      if (control('pins')) control('pins').disabled=true; if (control('gates')) control('gates').disabled=true; };
+    control('pins')?.addEventListener('change', e=>{ detail.querySelector('.map-pins').hidden=!e.target.checked; });
+    control('gates')?.addEventListener('change', e=>{ detail.querySelector('.map-gate-pins').hidden=!e.target.checked; });
+    control('zoom').onclick=e=>{
       const on=detail.querySelector('.map-scroll').classList.toggle('zoomed');
       e.currentTarget.setAttribute('aria-pressed',String(on)); e.currentTarget.textContent=on ? 'Fit map' : 'Zoom in';
     };
+    if (options.intercept) for (const link of detail.querySelectorAll('a[data-map-id]')) link.onclick=e=>{
+      if (e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      if (options.intercept(link.dataset.mapId,link.dataset.mapVariant)) e.preventDefault();
+    };
+  }
+  function mapView(row) {
+    renderMap(el('atlas-detail'),row,{
+      variant:params().get('variant'),
+      href:(map,variant)=>href({map,variant,q:'',page:'',region:'',game:''}),
+      select:(map,variant)=>{ location.hash=href({map,variant}); }
+    });
+  }
+  let viewerNumber=0;
+  function mountLocationMaps(root,locationId,options={}) {
+    const choices=context.mapsForLocation(locationId);
+    if (!root || !choices.length) return false;
+    const entrances=context.entrancesForLocation?.(locationId) || [];
+    const entranceFor=map=>entrances.find(entrance=>maps.has(entrance.map) && placeId(maps.get(entrance.map))===placeId(map));
+    const choiceTarget=map=>entranceFor(map)?.map || map.id;
+    const choiceLabel=map=>{
+      const entrance=entranceFor(map);
+      const role=entrances.length ? entrance ? 'Entrance · ' : 'Final area · ' : '';
+      return role+map.title+
+        (places.get(placeId(map)).locationNumber ? ' · Location '+places.get(placeId(map)).locationNumber : '');
+    };
+    const available=new Set(choices.map(placeId));
+    const belongs=id=>maps.has(id) && available.has(placeId(maps.get(id)));
+    let selected=belongs(options.mapId) ? maps.get(options.mapId) : context.defaultMapForLocation(locationId);
+    let variant=options.variant || '';
+    const prefix='location-map-'+(++viewerNumber);
+    const inlineHref=options.href || ((map,variant)=>{
+      const query=params();
+      query.set('entry',locationId);
+      query.set('map',map);
+      if (variant) query.set('variant',variant); else query.delete('variant');
+      return '#field-guide?'+query;
+    });
+    const mapHref=(map,variant)=>belongs(map) ? inlineHref(map,variant) :
+      '#atlas?'+new URLSearchParams({map,...(variant ? {variant} : {})});
+    function select(map,nextVariant='') {
+      if (!belongs(map)) return false;
+      const focused=root.contains(document.activeElement) ? document.activeElement.dataset.mapControl || 'title' : null;
+      const scroll={left:window.scrollX,top:window.scrollY,behavior:'instant'};
+      selected=maps.get(map); variant=nextVariant;
+      history.replaceState(history.state,'',new URL(inlineHref(map,variant),location.href));
+      draw();
+      if (focused) root.querySelector('[data-map-control="'+focused+'"]')?.focus({preventScroll:true});
+      window.scrollTo(scroll);
+      window.dispatchEvent(new Event('guide-view-rendered'));
+      return true;
+    }
+    function draw() {
+      root.innerHTML='<div class="location-map-view"></div>';
+      renderMap(root.querySelector('.location-map-view'),selected,{inline:true,prefix,variant,href:mapHref,select,intercept:select,
+        gateId:entrances.length ? locationId : null});
+      if (choices.length>1) {
+        const title=root.querySelector('[data-map-control="title"]');
+        title.classList.add('sr-only');
+        title.parentElement.querySelector('small')?.remove();
+        title.insertAdjacentHTML('afterend','<label class="location-map-picker"><span class="sr-only">Map</span><select data-map-control="place">'+choices.map(map=>
+          '<option value="'+safe(choiceTarget(map))+'"'+(placeId(map)===placeId(selected) ? ' selected' : '')+'>'+safe(choiceLabel(map))+'</option>').join('')+'</select></label>');
+      }
+      root.querySelector('[data-map-control="place"]')?.addEventListener('change',e=>select(e.target.value));
+    }
+    draw();
+    return true;
   }
   function encounters(row) {
     const entries = [...row.roster].sort((a,b) => GUIDE_REFERENCE.species[a[0]].display_name.localeCompare(GUIDE_REFERENCE.species[b[0]].display_name));
@@ -218,9 +338,11 @@
         [...area.roster.keys()].slice(0,2).map(id=>GUIDE_REFERENCE.species[id].display_name).join(', ');
       return '<option value="'+safe(area.id)+'"'+(area===row.pool.area?' selected':'')+'>'+safe(label)+'</option>';
     }).join('')+'</select></label>' : '';
+    const owner=context.locationForEncounter(row.game,row.context);
+    const ownerLink=owner && !window.DQMField.guarded(owner) ? '<div class="map-notes"><p><a href="'+safe(articleHref(owner))+'">'+safe(owner.title)+' guide and maps</a></p></div>' : '';
     el('atlas-detail').innerHTML='<div class="atlas-caption"><div><small>'+safe(subtitle(row))+'</small><h3 id="atlas-location" tabindex="-1">'+safe(row.title)+'</h3></div>'+selector+'</div>'+
       '<div class="encounters"><ul aria-label="Wild monsters">'+entries.map(([id,levels])=>
-        '<li>'+spriteLabel(id,GUIDE_REFERENCE.species[id].display_name)+(levels.size ? '<small>Lv. '+[...levels].sort((a,b)=>a-b).join(', ')+'</small>' : '')+'</li>').join('')+'</ul></div>';
+        '<li>'+spriteLabel(id,GUIDE_REFERENCE.species[id].display_name)+(levels.size ? '<small>Lv. '+[...levels].sort((a,b)=>a-b).join(', ')+'</small>' : '')+'</li>').join('')+'</ul></div>'+ownerLink;
     el('atlas-pool')?.addEventListener('change', e=>{
       const area=areas.get(e.target.value);
       location.hash=href({area:area.id,q:poolMatches(area,searchText(el('atlas-search').value)) ? el('atlas-search').value : ''});
@@ -258,5 +380,5 @@
     return Object.entries(contexts || {}).map(([campaign,ids])=>({campaign,
       areas:ids.map(id=>areas.get(campaign+'-'+id)).filter(Boolean)}));
   }
-  window.DQMAtlas = {show, placesForMaps, routeAreas, get directoryKey() { return directoryKey; }};
+  window.DQMAtlas = {show, placesForMaps, routeAreas, mountLocationMaps, context, get directoryKey() { return directoryKey; }};
 })();

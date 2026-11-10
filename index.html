@@ -93,10 +93,7 @@
       <a href="#field-guide?kind=mechanic">Mechanics</a>
     </div>
     <div class="contents-group"><h2>Places</h2>
-      <a href="#field-guide?kind=location&amp;game=dqm1">Terry’s gates</a>
-      <a href="#field-guide?kind=location&amp;game=dqm2">Cobi &amp; Tara’s worlds</a>
-      <a href="#atlas">Map atlas</a>
-      <a href="#atlas?tab=encounters">Wild encounters</a>
+      <a href="#field-guide?kind=location">Locations &amp; maps</a>
     </div>
     <div class="contents-group"><h2>Walkthroughs</h2>
       <a href="#field-guide?game=dqm1&amp;kind=story">Terry</a>
@@ -158,7 +155,8 @@
   <article id="guide-article" class="guide-article" hidden></article>
 </section>
 <section id="atlas" class="view field-view" data-view="atlas" aria-labelledby="atlas-heading" hidden>
-  <div class="atlas-head"><h2 id="atlas-heading" tabindex="-1">Map atlas</h2><div class="atlas-tabs"><a href="#atlas" data-atlas-tab="maps">Field maps</a><a href="#atlas?tab=encounters" data-atlas-tab="encounters">Wild encounters</a></div></div>
+  <div id="atlas-places-nav"></div>
+  <div class="atlas-head"><h2 id="atlas-heading" tabindex="-1">Map atlas</h2></div>
   <div class="atlas-layout"><aside class="atlas-browser"><label for="atlas-search" id="atlas-search-label">Find a map</label><input id="atlas-search" type="search" autocomplete="off" maxlength="100"><div class="atlas-filters"><label id="atlas-game-label">Adventure<select id="atlas-game"><option value="">All</option><option value="terry">Terry</option><option value="cobi">Cobi</option><option value="tara">Tara</option></select></label><label>Region<select id="atlas-region"><option value="">All</option></select></label></div><div id="atlas-index"></div></aside><article id="atlas-detail" aria-live="off"></article></div>
 </section>
 <section id="pair-finder" hidden class="section view" data-view="pair-finder" aria-labelledby="pair-heading"><div class="section-head"><div><h2 id="pair-heading" tabindex="-1">Find offspring</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder" aria-current="page">Find offspring</a><a href="#offspring-finder" data-parent-mode>Find parents</a></nav></div></div>
@@ -412,7 +410,7 @@
 <script type="application/json" id="guide-assets">
 {"shared":["data/sprite-sheets.js","js/sprites.js"],
 "dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
-"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","js/current-names.js","js/walkthrough.js","js/locations.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/player-guide.js","js/player-atlas.js"],
+"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","js/current-names.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/player-guide.js","js/player-atlas.js"],
 "tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/reference.js","js/planner-core.js","js/recipe-planner.js","js/app-state.js","js/save-import.js","js/planner-ui.js"],
 "tree":["js/breeding-tree.js"],"matrix":["js/matrix-tools.js"],
 "profile":["data/monster-reference.js","js/monster-reference.js"]}

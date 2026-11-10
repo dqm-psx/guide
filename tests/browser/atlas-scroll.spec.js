@@ -77,14 +77,15 @@ test('entering the atlas from another view still starts at its heading', async (
   await expect(page.locator('#monster-heading')).toBeVisible();
   await page.evaluate(() => window.scrollTo({top:500,behavior:'instant'}));
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
-  await page.locator('#guide-contents').getByRole('link',{name:'Map atlas',exact:true}).click();
+  await page.locator('#guide-contents').getByRole('link',{name:'Locations & maps',exact:true}).click();
+  await page.locator('#guide-directory .places-nav').getByRole('link',{name:'All maps',exact:true}).click();
   await expect(page.locator('#atlas-heading')).toBeFocused();
   await expect(page.locator('#atlas-heading')).toBeInViewport();
   expect(await page.evaluate(() => window.scrollY)).toBeLessThan(200);
   await expect.poll(() => page.locator('.atlas-scroll').evaluate(node => node.scrollTop)).toBe(0);
 });
 
-test('mobile navigation closes the menu and focuses the atlas heading from a selected map', async ({page}) => {
+test('mobile navigation closes the menu and focuses locations from a selected map', async ({page}) => {
   await page.setViewportSize({width:375,height:700});
   await page.goto(url+'#atlas?map=map-8-0');
   await expect(page.locator('#atlas-location')).toHaveText('Bazaar');
@@ -92,12 +93,12 @@ test('mobile navigation closes the menu and focuses the atlas heading from a sel
   await page.getByRole('button',{name:'Browse guide'}).focus();
   await page.keyboard.press('Enter');
   await expect(menu).toBeVisible();
-  await menu.getByRole('link',{name:'Map atlas',exact:true}).focus();
+  await menu.getByRole('link',{name:'Locations & maps',exact:true}).focus();
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/#atlas$/);
+  await expect(page).toHaveURL(/#field-guide\?kind=location$/);
   await expect(menu).toBeHidden();
-  await expect(page.locator('#atlas-heading')).toBeFocused();
-  await expect(page.locator('#atlas-heading')).toBeInViewport();
+  await expect(page.locator('#directory-title')).toBeFocused();
+  await expect(page.locator('#directory-title')).toBeInViewport();
 });
 
 test('skip to content still focuses the atlas after searching without a hashchange', async ({page}) => {

@@ -28,7 +28,7 @@ const VIEWS = [
   { hash: '#sources', id: 'sources' },
 ];
 
-const TOP_VIEWS = VIEWS.filter(view => view.id !== 'sources');
+const TOP_VIEWS = VIEWS.filter(view => !['sources','atlas'].includes(view.id));
 
 // Every view id must be one of the view wrappers, and exactly one is displayed.
 async function expectSingleView(page, id) {
