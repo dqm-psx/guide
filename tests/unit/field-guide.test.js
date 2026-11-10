@@ -7,6 +7,7 @@ const path = require('node:path');
 require('../../data/world-guide');
 require('../../data/skill-descriptions');
 require('../../data/item-reference');
+require('../../data/item-art');
 
 const raw = fs.readFileSync(path.join(__dirname, '../../data/field-guide.js'), 'utf8');
 const guide = JSON.parse(raw.slice('globalThis.FIELD_GUIDE = '.length, raw.lastIndexOf(';')));
@@ -24,6 +25,15 @@ test('field reference preserves native item identities and skips magic-key and r
     assert.ok(entry.source_ids.length, entry.id);
     for (const id of entry.related || []) assert.ok(articles.has(id), entry.id + ' links to ' + id);
   }
+});
+
+test('the Silver Harp illustration is distinct from the coin used for gold and the Tiny Medal', () => {
+  const harp = entries.get('item-33');
+  const medal = entries.get('item-44');
+  assert.match(DQMItemArt.imageFor(harp), /^data:image\/png;base64,/);
+  assert.notEqual(DQMItemArt.imageFor(harp), DQMItemArt.imageFor(medal));
+  assert.equal(DQMItemArt.creditFor(harp), 'AI-generated illustration for the guide.');
+  assert.equal(DQMItemArt.creditFor(medal), 'PS1 field pickup sprite.');
 });
 
 test('campaign travel tools keep their alternate menu descriptions and exact shop prices', () => {
