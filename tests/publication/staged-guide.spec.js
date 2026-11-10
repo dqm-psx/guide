@@ -81,7 +81,7 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   await expect(page.locator('.nav a[href="#field-guide"]')).toHaveAttribute('aria-current', 'page');
   await waitForOfflineCache(page);
 
-  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[rel="stylesheet"], link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"], .brand img[src], .hero-map img[src]'))
+  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[rel="stylesheet"], link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"], .brand img[src], #guide-home img[src]'))
     .map(element => element.src || element.href));
   expect(assets.length).toBeGreaterThan(10);
   for (const asset of assets) {
@@ -235,7 +235,11 @@ test('real entry URLs expose crawlable references and open the matching interact
   await page.goto(url+entry);
   await expect(page.locator('#article-title')).toHaveText('Bang');
   await expect(page).toHaveURL(url+entry);
-  await expect(page.locator('#entry-permalink')).toHaveAttribute('href',url+entry);
+  await page.evaluate(() => Object.defineProperty(navigator,'clipboard',{configurable:true,
+    value:{writeText:async text=>{ window.copiedEntry = text; }}}));
+  await page.getByRole('button',{name:'Copy entry link'}).click();
+  await expect(page.locator('#entry-copy-status')).toHaveText('Entry link copied.');
+  expect(await page.evaluate(()=>window.copiedEntry)).toBe(url+entry);
   await page.locator('.nav a[href="#species-index"]').click();
   await expect(page.locator('#species-rows a').first()).toBeVisible();
   await page.goBack();
@@ -248,6 +252,44 @@ test('real entry URLs expose crawlable references and open the matching interact
   await expect(page).toHaveURL(url+'monsters/11/');
   await expect(page.locator('#monster-heading')).toBeVisible();
   await expect(page.locator('#monster-heading')).toHaveText(name(11));
+});
+
+test('entry sharing selects the canonical URL when clipboard access is denied',async ({page})=>{
+  await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{value:{
+    writeText:async ()=>{ throw new DOMException('Denied','NotAllowedError'); }
+  }}));
+  await page.goto(url+'index.html#field-guide?kind=boss&entry=boss-golem');
+  const input=page.getByRole('textbox',{name:'Entry link to copy'});
+  await page.getByRole('button',{name:'Copy entry link'}).click();
+  await expect(input).toHaveValue(url+'articles/boss-golem/');
+  await expect(input).toBeFocused();
+  expect(await input.evaluate(el=>el.value.slice(el.selectionStart,el.selectionEnd))).toBe(url+'articles/boss-golem/');
+  await page.locator('.nav a[href="#species-index"]').click();
+  await expect(page.locator('#entry-share')).toBeHidden();
+  await page.goBack();
+  await expect(page.getByRole('button',{name:'Copy entry link'})).toBeVisible();
+  await expect(input).toBeHidden();
+});
+
+test('published quests and characters can be followed with JavaScript disabled',async ({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const reader=await context.newPage();
+    await reader.goto(url+'entries/');
+    await reader.getByRole('link',{name:'Show monsters to the queen',exact:true}).click();
+    const requests=reader.getByRole('heading',{name:'Monsters in request order'}).locator('..');
+    await expect(requests.locator('ol li a')).toHaveCount(16);
+    await reader.getByRole('link',{name:'Queen of GreatTree',exact:true}).click();
+    const dialogue=reader.locator('.character-dialogue');
+    await expect(dialogue).toContainText('A Winged Slime!');
+    await expect(reader.getByRole('link',{name:'Show monsters to the queen',exact:true})).toHaveCount(1);
+    await reader.goto(url+'articles/quest-sky-shield-and-flight/');
+    const route=reader.locator('.entry-content > ol');
+    await expect(route).toContainText('Prince Kameha’s friend');
+    await expect(route).not.toContainText('bookcase');
+    await reader.getByRole('link',{name:'Find the egg from the message in a bottle'}).click();
+    await expect(reader.locator('.entry-content > ol')).toContainText('bookcase');
+  } finally {await context.close();}
 });
 
 test('a direct entry respects saved spoilers and keeps its static reference when a tool fails', async({page})=>{
@@ -263,4 +305,22 @@ test('a direct entry respects saved spoilers and keeps its static reference when
   await page.goto(url+'monsters/11/');
   await expect(page.getByRole('heading',{level:1,name:name(11),exact:true})).toBeVisible();
   await expect(page.getByRole('link',{name:'Open in the player guide'})).toBeVisible();
+});
+
+test('canonical walkthrough pages keep stage bookmarks with or without JavaScript',async({browser,page})=>{
+  const path='walkthroughs/cobi-tara/#story-sky-treasures';
+  const staticContext=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const reader=await staticContext.newPage();
+    await reader.goto(url+path);
+    await expect(reader.getByRole('heading',{level:1})).toHaveText('Cobi & Tara walkthrough');
+    await expect(reader.locator('#story-sky-treasures')).toBeInViewport();
+    await expect(reader.locator('main')).toContainText('two right-hand tiles once each');
+    await reader.getByRole('navigation',{name:'Jump to a stage'}).getByRole('link',{name:'Water World'}).click();
+    await expect(reader.locator('#story-pirate-mermaids')).toBeInViewport();
+  } finally { await staticContext.close(); }
+  await page.goto(url+path);
+  await expect(page.locator('#article-title')).toHaveText('Cobi & Tara walkthrough');
+  await expect(page.locator('#story-sky-treasures')).toBeInViewport();
+  await expect(page.locator('#story-between-worlds')).toBeAttached();
 });

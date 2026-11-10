@@ -7,27 +7,27 @@
   "patched_bin_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
   "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
   "comparison_sha256": "d9666b598773aec100e0c7fb9d42a61f941d252b5e38b3122cf165328a4d2788",
-  "world_entries_sha256": "c65c5464cefa6142ae966c3fe466e630ddc3ba984a6b1f6c4dd53c02059d7f44",
-  "native_index_sha256": "f29ece54f8e5bf0b526b2a8849b68ce0ee32a9bdad99ff0c756cfa3eab1f2455",
+  "world_entries_sha256": "adfbea61394ac2509fd61ffaabcd3170d09a7fc2a2708f365435596f59df793e",
+  "native_index_sha256": "59ebd14bffbe2578143d1e62368bdac786a807130c2435d729ea30a132a6b91a",
   "verified": {
-    "articles": 161,
+    "articles": 171,
     "articles_by_kind": {
       "boss": 29,
       "location": 28,
       "npc": 43,
-      "quest": 38,
+      "quest": 48,
       "story": 23
     },
-    "cited_records": 1262,
+    "cited_records": 1295,
     "source_categories": {
-      "script_slots": 1227,
+      "script_slots": 1256,
       "system_slots": 28,
       "service_descriptor_slots": 1,
-      "menu_pointer_offsets": 6
+      "menu_pointer_offsets": 10
     },
     "native_slots": {
-      "dialogue": 1291,
-      "key_descriptions": 6,
+      "dialogue": 1320,
+      "key_descriptions": 10,
       "service": 1,
       "system": 28
     },
@@ -35,7 +35,11 @@
     "abbreviated_system_names": 23,
     "progression_spans": {
       "arena_rounds": 1,
+      "farm_egg": 1,
       "fixed_world_keys": 9,
+      "greatlog_shrine_queue": 1,
+      "queen_final_reward": 2,
+      "sky_key_audience": 1,
       "spirit_rewards": 18
     }
   },
@@ -56,5 +60,5 @@
       ]
     }
   ],
-  "scope": "All cited records for the campaign, quest, NPC, boss and location articles were resolved in the v1.0.73 Current disc. Text verification compares visible wording and substitutions across all native slots. Native guards cover the two spirit rewards, fixed story keys and the arena round selector. The articles summarize script clues; this proof does not simulate every event path, validate boss stats, or verify map and sprite art."
+  "scope": "All cited records for the campaign, quest, NPC, boss and location articles were resolved in the v1.0.73 Current disc. Text verification compares visible wording and substitutions across all native slots. Native guards cover the two spirit rewards, fixed story keys, the Sky Key audience, the farm egg window, the arena round selector, the queen’s final item award and the GreatLog shrine queue. The articles summarize script clues; this proof does not simulate every event path, validate boss stats, or verify map and sprite art."
 }

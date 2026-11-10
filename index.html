@@ -61,43 +61,44 @@
     <button id="app-storage-error-fresh" type="button" hidden>Start fresh (replaces saved data)</button>
   </div>
 </div>
-<div class="nav"><nav class="wrap" aria-label="Views">
-  <div class="nav-group">
-    <button type="button" class="nav-trigger" id="adventure-nav-trigger" aria-label="Adventure guide" aria-controls="adventure-nav-links" aria-expanded="false"><span class="nav-wide">Adventure</span><span class="nav-short">Guide</span></button>
-    <div class="nav-links" id="adventure-nav-links" hidden>
-      <a href="#field-guide">Field guide</a>
-      <a href="#field-guide?kind=story">Walkthroughs</a>
-      <a href="#field-guide?kind=quest">Quests</a>
-      <a href="#field-guide?kind=boss">Bosses</a>
-      <a href="#atlas">Map atlas</a>
-      <a href="#field-guide?kind=location">Locations</a>
-      <a href="#atlas?tab=encounters">Wild encounters</a>
-    </div>
+<div class="guide-frame">
+<aside class="nav guide-navigation">
+  <div class="browse-bar">
+    <button id="browse-toggle" type="button" aria-controls="guide-contents" aria-expanded="false">Browse guide</button>
+    <button id="search-shortcut" type="button">Search<span class="sr-only"> the guide</span></button>
   </div>
-  <div class="nav-group">
-    <button type="button" class="nav-trigger" id="reference-nav-trigger" aria-controls="reference-nav-links" aria-expanded="false">Reference</button>
-    <div class="nav-links" id="reference-nav-links" hidden>
+  <nav id="guide-contents" aria-label="Guide contents">
+    <div class="contents-start"><a href="#field-guide">Guide home</a><a id="planner-nav-link" href="#team-planner">My game</a></div>
+    <div class="contents-group"><h2>Breeding tools</h2>
+      <a href="#pair-finder">Breeding lookup</a>
+      <a href="#breeding-tree">Breeding tree</a>
+      <a href="#breeding-table">Breeding table</a>
+    </div>
+    <div class="contents-group"><h2>Reference</h2>
+      <a href="#species-index">Monster library</a>
       <a href="#field-guide?kind=npc">Characters</a>
       <a href="#field-guide?kind=item">Items</a>
       <a href="#field-guide?kind=tool">Tools</a>
       <a href="#field-guide?kind=skill">Skills</a>
       <a href="#field-guide?kind=mechanic">Mechanics</a>
     </div>
-  </div>
-  <div class="nav-group">
-    <button type="button" class="nav-trigger" id="breeding-nav-trigger" aria-controls="breeding-nav-links" aria-expanded="false">Breeding</button>
-    <div class="nav-links" id="breeding-nav-links" hidden>
-      <a href="#pair-finder">Breeding lookup</a>
-      <a href="#breeding-tree">Breeding tree</a>
-      <a href="#breeding-table">Breeding table</a>
+    <div class="contents-group"><h2>Places</h2>
+      <a href="#field-guide?kind=location&amp;game=dqm1">Terry’s gates</a>
+      <a href="#field-guide?kind=location&amp;game=dqm2">Cobi &amp; Tara’s worlds</a>
+      <a href="#atlas">Map atlas</a>
+      <a href="#atlas?tab=encounters">Wild encounters</a>
     </div>
-  </div>
-  <a href="#species-index" aria-label="Monster library"><span class="nav-wide">Monster library</span><span class="nav-short">Monsters</span></a>
-  <a id="planner-nav-link" href="#team-planner">My game</a>
-</nav></div>
+    <div class="contents-group"><h2>Walkthroughs</h2>
+      <a href="#field-guide?game=dqm1&amp;kind=story">Terry</a>
+      <a href="#field-guide?game=dqm2&amp;kind=story">Cobi &amp; Tara</a>
+      <a href="#field-guide?kind=quest">Quests</a>
+      <a href="#field-guide?kind=boss">Bosses</a>
+    </div>
+  </nav>
+</aside>
 <main class="wrap">
 <noscript><div class="noscript">This offline reference needs JavaScript for its lookup tools. Enable JavaScript to use the guide.</div></noscript>
-<section id="field-guide" class="view field-view" data-view="field-guide" aria-label="Field guide">
+<section id="field-guide" class="view field-view" data-view="field-guide" aria-label="Guide home">
   <div class="guide-toolbar">
     <form id="guide-filters" class="guide-filters" role="search">
       <label class="guide-query">Search the guide<input id="guide-search" type="search" placeholder="Quest, item, character, monster…" autocomplete="off" maxlength="120"></label>
@@ -109,16 +110,45 @@
   <div id="guide-browser">
     <div id="guide-home">
       <div class="home-columns guide-overview">
-        <div class="campaigns">
-          <h2 id="field-heading" tabindex="-1">Walkthroughs</h2>
-          <a class="campaign terry" href="#field-guide?game=dqm1&amp;kind=story"><span class="campaign-art"><img src="media/terry.webp" width="40" height="64" alt=""></span><span><strong><span data-character="terry">Terry</span></strong><span>DQM1 · <span data-place="map-6-0">GreatTree</span></span></span></a>
-          <a class="campaign siblings" href="#field-guide?game=dqm2&amp;kind=story"><span class="campaign-art"><img src="media/cobi.webp" width="34" height="54" alt=""><img src="media/tara.webp" width="34" height="54" alt=""></span><span><strong><span data-character="cobi">Cobi</span> &amp; <span data-character="tara">Tara</span></strong><span>DQM2 · <span data-place="map-12-0">GreatLog</span></span></span></a>
-        </div>
+        <section class="breeding-tools" aria-labelledby="field-heading">
+          <h2 id="field-heading" tabindex="-1">Breeding tools</h2>
+          <div class="breeding-shortcuts">
+            <a href="#pair-finder">
+              <span class="breeding-tool-art"><img src="media/watabou.webp" width="35" height="41" alt=""><img src="media/warubou.webp" width="45" height="41" alt=""></span>
+              Find a pairing
+            </a>
+            <a href="#offspring-finder">
+              <span class="breeding-tool-art"><img src="media/wonder-egg.webp" width="52" height="54" alt=""></span>
+              Find parents
+            </a>
+            <a href="#breeding-tree">
+              <span class="breeding-tool-art"><img src="media/treeface.webp" width="58" height="58" alt=""></span>
+              Plan a breeding tree
+            </a>
+            <a href="#breeding-table">
+              <span class="breeding-tool-art"><img src="media/slime.webp" width="25" height="21" alt=""><img src="media/grizzly.webp" width="57" height="36" alt=""></span>
+              Compare parent pairs
+            </a>
+            <a class="home-import" href="#team-planner?import=save">
+              <span class="breeding-tool-art"><img src="media/adventure-log.webp" width="48" height="48" alt=""></span>
+              <span>Import a memory card<small>See what your monsters can breed</small></span>
+            </a>
+          </div>
+        </section>
         <a class="hero-map" href="#atlas?map=map-6-0"><img src="media/greattree.webp" width="640" height="360" alt=""><span><span><span data-place="map-6-0">GreatTree</span> map</span></span></a>
       </div>
       <div class="home-columns">
-        <div class="home-topics"><h3>Reference</h3><div id="topic-links" class="topic-links"></div></div>
-        <div class="home-topics"><h3>Breeding &amp; planning</h3><a class="home-import" href="#team-planner?import=save"><strong>Import a memory card</strong><span>See what your monsters can breed →</span></a><div class="topic-links"><a href="#pair-finder">Find a pairing</a><a href="#offspring-finder">Find parents</a><a href="#breeding-tree">Breeding tree</a><a href="#breeding-table">Breeding table</a><a href="#team-planner">My game</a></div></div>
+        <div class="home-topics"><h2>Player questions</h2><div class="topic-links question-links">
+          <a href="#field-guide?entry=field-wandering-masters">How do I find a foreign master?</a>
+          <a href="#field-guide?entry=field-restored-content">What changed in Terry’s PS1 adventure?</a>
+          <a href="#field-guide?entry=field-movement-settings">Why does my walking speed change?</a>
+          <a href="#field-guide?entry=field-retail-bugs">Which bugs were in the Japanese release?</a>
+        </div></div>
+        <div class="campaigns">
+          <h2>Walkthroughs</h2>
+          <a class="campaign terry" href="#field-guide?game=dqm1&amp;kind=story"><span class="campaign-art"><img src="media/terry.webp" width="40" height="64" alt=""></span><span><strong><span data-character="terry">Terry</span></strong><span>DQM1 · <span data-place="map-6-0">GreatTree</span></span></span></a>
+          <a class="campaign siblings" href="#field-guide?game=dqm2&amp;kind=story"><span class="campaign-art"><img src="media/cobi.webp" width="34" height="54" alt=""><img src="media/tara.webp" width="34" height="54" alt=""></span><span><strong><span data-character="cobi">Cobi</span> &amp; <span data-character="tara">Tara</span></strong><span>DQM2 · <span data-place="map-12-0">GreatLog</span></span></span></a>
+        </div>
       </div>
     </div>
     <div id="guide-directory" hidden></div>
@@ -368,10 +398,19 @@
   </div>
 </section>
 
-</main><footer><nav class="wrap footer-links" aria-label="Resources"><a href="#sources">Sources &amp; coverage</a><a href="https://dqm-psx.github.io/">English patch</a><a href="https://dqm-psx.github.io/translations/">Translations</a><a href="https://github.com/dqm-psx/guide">GitHub</a></nav></footer>
+</main>
+</div><footer>
+  <div class="wrap entry-share" id="entry-share" hidden>
+    <button type="button" id="entry-permalink">Copy entry link</button>
+    <span id="entry-copy-status" role="status"></span>
+    <input id="entry-copy-url" aria-label="Entry link to copy" type="text" readonly hidden>
+  </div>
+  <nav class="wrap footer-links" aria-label="Resources"><a href="#sources">Sources &amp; coverage</a><a href="https://dqm-psx.github.io/">English patch</a><a href="https://dqm-psx.github.io/translations/">Translations</a><a href="https://github.com/dqm-psx/guide">GitHub</a></nav>
+</footer>
 <script type="application/json" id="guide-assets">
 {"shared":["data/sprite-sheets.js","js/sprites.js"],
-"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/npc-sprites.js","data/skill-descriptions.js","js/current-names.js","js/player-guide.js","js/player-atlas.js"],
+"dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
+"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/npc-sprites.js","data/skill-descriptions.js","js/current-names.js","js/walkthrough.js","js/locations.js","js/player-guide.js","js/player-atlas.js"],
 "tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/reference.js","js/planner-core.js","js/recipe-planner.js","js/app-state.js","js/save-import.js","js/planner-ui.js"],
 "tree":["js/breeding-tree.js"],"matrix":["js/matrix-tools.js"],
 "profile":["data/monster-reference.js","js/monster-reference.js"]}

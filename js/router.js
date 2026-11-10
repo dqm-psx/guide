@@ -37,64 +37,34 @@
   const known = new Set(views.map(view => view.id));
   const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
   const skipLink = document.querySelector("a.skip");
-  const groups = Array.from(document.querySelectorAll(".nav-group"));
-  let openGroup = null;
-  let pinned = false;
-
-  function closeMenu() {
-    if (!openGroup) return;
-    openGroup.querySelector(".nav-trigger").setAttribute("aria-expanded", "false");
-    openGroup.querySelector(".nav-links").hidden = true;
-    openGroup = null;
-    pinned = false;
+  const browse = P("browse-toggle");
+  const contents = P("guide-contents");
+  const compact = matchMedia("(max-width: 1023px)");
+  const frame = contents.closest(".guide-frame");
+  function useDisclosure() { return compact.matches || document.querySelector("main").classList.contains("wide-view"); }
+  function setMenu(open) {
+    const collapsible = useDisclosure();
+    frame.classList.toggle("compact-contents", collapsible);
+    browse.setAttribute("aria-expanded", String(open));
+    contents.hidden = collapsible && !open;
   }
-  function openMenu(group) {
-    if (group === openGroup) return;
-    closeMenu();
-    group.querySelector(".nav-trigger").setAttribute("aria-expanded", "true");
-    group.querySelector(".nav-links").hidden = false;
-    openGroup = group;
-  }
-  for (const group of groups) {
-    const trigger = group.querySelector(".nav-trigger");
-    const menu = group.querySelector(".nav-links");
-    trigger.addEventListener("click", () => {
-      if (group === openGroup && pinned) {
-        closeMenu();
-      } else {
-        openMenu(group);
-        pinned = true;
-      }
-    });
-    group.addEventListener("pointerenter", event => {
-      if (event.pointerType === "mouse") openMenu(group);
-    });
-    group.addEventListener("pointerleave", () => {
-      if (group === openGroup && !pinned && !menu.contains(document.activeElement)) closeMenu();
-    });
-    group.addEventListener("focusout", event => {
-      if (group === openGroup && !group.contains(event.relatedTarget)) closeMenu();
-    });
-    group.addEventListener("keydown", event => {
-      const key = event.key;
-      if (key !== "ArrowDown" && key !== "ArrowUp") return;
-      event.preventDefault();
-      openMenu(group);
-      const links = Array.from(menu.querySelectorAll("a"));
-      const index = links.indexOf(document.activeElement);
-      const step = key === "ArrowDown" ? 1 : -1;
-      links[index < 0 ? (step > 0 ? 0 : links.length - 1) : (index + step + links.length) % links.length].focus();
-    });
-  }
-  document.addEventListener("pointerdown", event => {
-    if (openGroup && !openGroup.contains(event.target)) closeMenu();
-  });
+  function closeMenu() { setMenu(false); }
+  browse.addEventListener("click", () => setMenu(contents.hidden));
   document.addEventListener("keydown", event => {
-    if (event.key !== "Escape" || !openGroup) return;
-    if (openGroup.contains(document.activeElement)) openGroup.querySelector(".nav-trigger").focus();
-    closeMenu();
+    if (event.key === "Escape" && useDisclosure() && !contents.hidden) {
+      closeMenu();
+      browse.focus();
+    }
   });
-
+  document.addEventListener("pointerdown", event => {
+    if (!contents.hidden && useDisclosure() && !event.target.closest(".guide-navigation")) closeMenu();
+  });
+  document.querySelector(".guide-navigation").addEventListener("focusout", event => {
+    if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) closeMenu();
+  });
+  compact.addEventListener("change", closeMenu);
+  closeMenu();
+  P("search-shortcut").addEventListener("click", () => go("field-guide", {focusId:"guide-search"}));
   let activeView = null;
   let pendingFocusId = null;
   let navigation = 0;
@@ -116,7 +86,7 @@
     return (known.has(id) ? id : aliases[id]) || DEFAULT_VIEW;
   }
   function headingFor(viewId) {
-    if (viewId === "field-guide") return P("article-title") || P("directory-title") || P("field-heading");
+    if (viewId === "field-guide") return [P("article-title"), P("directory-title"), P("field-heading")].find(el => el && !el.closest("[hidden]"));
     const view = views.find(entry => entry.id === viewId);
     return view ? P(view.heading) : null;
   }
@@ -131,8 +101,12 @@
     const params = new URLSearchParams(parse(currentHash()).params);
     let section = "#" + ({monster: "species-index", "offspring-finder": "pair-finder"}[viewId] || viewId);
     if (viewId === "field-guide") {
-      const kind = window.DQMField?.kindForEntry(params.get("entry")) || params.get("kind");
-      if (kind && navLinks.some(link => link.hash === "#field-guide?kind=" + kind)) section = "#field-guide?kind=" + kind;
+      const row = window.DQMField?.entryForNav(params.get("entry"));
+      const kind = row?.kind || params.get("kind");
+      const game = row?.game || params.get("game");
+      if (kind === "story") section = "#field-guide?game=" + (game || "dqm1") + "&kind=story";
+      else if (kind === "location" && (game === "dqm1" || game === "dqm2")) section = "#field-guide?kind=location&game=" + game;
+      else if (kind && navLinks.some(link => link.hash === "#field-guide?kind=" + kind)) section = "#field-guide?kind=" + kind;
     }
     if (viewId === "atlas" && params.get("tab") === "encounters") section = "#atlas?tab=encounters";
     for (const link of navLinks) {
@@ -140,9 +114,6 @@
       if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
       link.classList.toggle("nav-link-active", active);
-    }
-    for (const group of groups) {
-      group.querySelector(".nav-trigger").classList.toggle("nav-link-active", group.querySelector('[aria-current="page"]') !== null);
     }
   }
   // The nav label is the view's title, so one edit renames both.
@@ -209,8 +180,8 @@
     const settings = options || {};
     const view = P(viewId);
     if (!view) return;
-    closeMenu();
     reveal(viewId);
+    closeMenu();
     if (window.DQMApp && typeof window.DQMApp.viewShown === "function") window.DQMApp.viewShown(viewId);
     if (viewId === "species-index") {
       const q = new URLSearchParams(parse(currentHash()).params).get("q");
@@ -236,9 +207,11 @@
     }
     activeView = viewId;
     window.dispatchEvent(new Event('guide-view-rendered'));
-    if (settings.scroll === false) return;
+    const stageId = viewId === 'field-guide' && new URLSearchParams(parse(currentHash()).params).get('entry');
+    const stage = stageId && P(stageId)?.closest('.walk-stage') ? P(stageId) : null;
+    if (settings.scroll === false && !stage) return;
     const heading = headingFor(viewId);
-    const requested = settings.focusId ? P(settings.focusId) : null;
+    const requested = settings.focusId ? P(settings.focusId) : stage;
     const focusTarget = focusable(requested || heading);
     const scrollTarget = requested || fragmentIn(view) || heading || view;
     if (scrollTarget) scrollTarget.scrollIntoView({ block: "start", behavior: "instant" });

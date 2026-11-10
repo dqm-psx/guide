@@ -9,7 +9,7 @@
     for (const [id, patch] of Object.entries(update.entries)) {
       const row = rows.get(id);
       if (!row) throw new Error('Missing guide name target ' + id);
-      for (const key of ['title','summary','region','key','places','details']) {
+      for (const key of ['title','summary','region','key','places','details','sections']) {
         if (patch[key] !== undefined) row[key] = patch[key];
       }
       if (patch.aliases) row.aliases = [...new Set([...(row.aliases || []), ...patch.aliases])];
@@ -59,6 +59,15 @@
     }
   }
   // Both the interactive guide and its standalone HTML use these same rows.
+  function articleSections(row, escape, prose, level, campaign) {
+    const heading = 'h' + level;
+    const sections = row.sections || [];
+    const ordered = campaign ? sections.filter(s => s.game === campaign).concat(sections.filter(s => s.game !== campaign)) : sections;
+    return ordered.map(section => '<section class="route-section article-topic"><'+heading+'>'+
+      escape(section.title)+'</'+heading+'><p>'+prose(section.intro)+'</p><dl>'+
+      section.rows.map(([label,text]) => '<dt>'+escape(label)+'</dt><dd>'+prose(text)+'</dd>').join('')+
+      '</dl></section>').join('');
+  }
   function nicknameMarkup(row, escape, articleLink) {
     if (row.nickname_rows) {
       const kinds = {starter:'Starter', boss:'Boss', gift:'Gift'};
@@ -73,6 +82,7 @@
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = {apply};
   else {
+    root.DQMArticleSections = articleSections;
     root.DQMNicknameMarkup = nicknameMarkup;
     apply(root.GUIDE_REFERENCE, root.FIELD_GUIDE, root.WORLD_GUIDE, root.PLAYER_ATLAS);
   }

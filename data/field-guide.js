@@ -2913,25 +2913,309 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-96",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Miracle Mark",
       "category": "Consumable",
       "summary": "Changes one monster's sex.",
       "details": [
-        "GreatLog residents distinguish this rare item, used on a monster, from the egg appraiser’s blessing before hatching.",
-        "Single use."
+        "Terry can earn one from the Queen of GreatTree. Complete her requests in order and bring Divine Dragon for the last one. Leave one slot free in your bag to collect the mark.",
+        "Use it on a hatched monster. The mark is consumed.",
+        "A GreatLog resident describes Miracle Mark. How Cobi or Tara can obtain one is unconfirmed."
       ],
       "spoiler": "none",
       "source_ids": [
         "e0c07",
         "m_exe_08bf48",
         "s00419800_1bf0",
-        "s003f6800_0473"
+        "s003f6800_0473",
+        "s0adf7000_b999"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
-        "MirclMark"
+        "MirclMark",
+        "Miracle Sign"
+      ],
+      "related": [
+        "quest-the-queen-s-monster-collection-requests",
+        "npc-queen-of-greattree"
+      ],
+      "species_ids": [
+        55
       ]
+    },
+    {
+      "id": "field-wandering-masters",
+      "game": "both",
+      "title": "Foreign masters and their monsters",
+      "summary": "After winning Class F, Terry can find visiting masters on the next floor of a gate. Cobi and Tara meet them outdoors in random Magic Key worlds. The two adventures use different rules to choose who appears.",
+      "details": [],
+      "source_ids": [
+        "s0ac3d800_1a19",
+        "s0adf7000_5062",
+        "PSX wandering-master selectors 800442C4 / 8004125C",
+        "PSX v1.0.66 arena recruitment mode 2",
+        "s00419800_2704",
+        "s0adf7000_548d",
+        "s0adf7000_553d",
+        "s000e9000_0aa4",
+        "s000e9000_0cbb",
+        "PSX retail and v1.0.73 party-strength classifier 80044434–80044640",
+        "m_exe_08ed2c",
+        "s00419800_25c4",
+        "PSX retail and v1.0.73 master selection 80050440, floor statistics 8003F298–8003F360, ordinary destinations 8003EB8C",
+        "US/EU DWM1 rooms 0B:46DA–470D and master roll 16:6266–6289",
+        "US DWM2 Cobi and Tara visitor priority 12:764C–765D, Bard 12:77AC–781D, Merchant 12:7934–797B"
+      ],
+      "related": [
+        "field-recruitment",
+        "item-28",
+        "field-arena-items"
+      ],
+      "species_ids": [20],
+      "aliases": [
+        "foreign masters",
+        "wandering masters",
+        "visiting masters",
+        "other masters",
+        "rival master",
+        "steal a monster",
+        "Can I recruit a foreign master’s monster?",
+        "bard",
+        "wizard",
+        "butcher",
+        "foreign master spawn requirements",
+        "Game Boy foreign masters"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none",
+      "sections": [
+        {
+          "title": "Terry’s gates on PlayStation",
+          "game": "dqm1",
+          "intro": "Use the floor you are leaving to choose a master. Descend to an ordinary floor to meet them. A boss or special floor takes the destination instead. When several conditions apply, the first match below wins.",
+          "rows": [
+            [
+              "Priest",
+              "Collect every loose item on the floor. With zero items left, the Priest takes priority even on a two-room floor. Win for a full party recovery."
+            ],
+            [
+              "Bard",
+              "Reveal both rooms of a two-room floor and leave at least one item on the ground. You may pick up the others. Win to raise each active monster’s lowest stat by 20."
+            ],
+            [
+              "Wizard",
+              "Reveal every reachable room and leave at least one item behind. On a two-room floor the Bard takes priority. Win to travel up to 10 floors deeper. From the last floor before the boss, he takes you to the exit."
+            ],
+            [
+              "Merchant (Butcher)",
+              "Leave part of the map unexplored and walk at least 200 steps on that floor without picking up an item. Win to receive meat."
+            ],
+            [
+              "Warrior",
+              "If the other conditions miss, a warrior can appear by chance and reward a win with an item."
+            ]
+          ]
+        },
+        {
+          "title": "Cobi and Tara’s Magic Key worlds on PlayStation",
+          "game": "dqm2",
+          "intro": "Carry at least 1,000 G into a random key world. Walk outdoors, enter a building or dungeon, then come back outside and look for the master. The game checks at least 100 counted field steps when choosing a master. The exact walking distance needed to place one on the map is unconfirmed.",
+          "rows": [
+            [
+              "Priest",
+              "Keep a monster at half HP or below, or bring a poisoned monster. This check comes first. Win for a full party recovery."
+            ],
+            [
+              "Bard",
+              "Keep the party healthy and bring a monster whose total EXP ends in three identical digits, such as 000, 444 or 999. Win for the same +20 lowest-stat reward as Terry."
+            ],
+            [
+              "Merchant",
+              "Carry 10 items or fewer, with no meat in the bag. The Priest and Bard take priority. Win to receive meat."
+            ],
+            [
+              "Warrior",
+              "When no other master qualifies, a warrior can appear by chance."
+            ]
+          ]
+        },
+        {
+          "title": "Terry on Game Boy",
+          "game": "dqm1",
+          "intro": "These comparisons are for Terry’s original Dragon Warrior Monsters. The English PlayStation patch v1.0.73 uses the Japanese PlayStation master selection rules.",
+          "rows": [
+            [
+              "Wizard",
+              "On Game Boy, reveal all 16 rooms on a 16-screen floor to qualify. The Wizard can advance you up to 20 floors. On PlayStation, smaller fully revealed floors work too, and the warp spans up to 10 floors."
+            ],
+            [
+              "Bard",
+              "On Game Boy, revealing both screens of a two-screen floor sets the Bard condition. On PlayStation the item count at descent also matters. Leave something on the ground."
+            ],
+            [
+              "Chance to appear",
+              "The Game Boy game makes a separate 50% roll for a qualifying Priest, Wizard, Bard or Merchant. The PlayStation selector picks the first matching role directly for an eligible ordinary floor."
+            ],
+            [
+              "Enemy team",
+              "On Game Boy, the sum of your active monsters’ levels sets Terry’s opponent pool. On PlayStation, their six stats set the pool. A newly bred party can meet stronger opponents at the same levels."
+            ]
+          ]
+        },
+        {
+          "title": "Cobi and Tara on Game Boy Color",
+          "game": "dqm2",
+          "intro": "In both original cartridges, hunt outdoors in a random key world and carry at least 1,000 G when looking for the Bard.",
+          "rows": [
+            [
+              "Bard or meat merchant?",
+              "Bring a monster whose total EXP ends in three identical digits. If the meat merchant also qualifies, he takes priority over the Bard. Carry a piece of meat to rule him out. On PlayStation, the Bard takes priority."
+            ],
+            [
+              "Repeat Bard visits",
+              "On Game Boy Color, a monster capped at 9,999,999 EXP keeps the Bard condition ready. On PlayStation, EXP stops at the monster’s level cap. Check its final three digits before bringing it along."
+            ],
+            [
+              "Traveling Wizard",
+              "The Wizard can offer to sell a map for 200 G. There is no visiting Wizard in the siblings’ PlayStation key worlds. The Wizard who skips floors belongs to Terry’s gates."
+            ]
+          ]
+        },
+        {
+          "title": "Recruiting and finding a particular monster",
+          "intro": "Talk to the master to battle. Feed meat during the fight and defeat the monster you want last. It can still refuse to join. Ranked arena opponents cannot be recruited.",
+          "rows": [
+            [
+              "Find a species",
+              "Check the monster library before hunting a species. Choose Terry, Cobi or Tara on its profile and look for “Wandering master’s team” under Recorded encounters. For example, Metal Slime can appear at ranks 5 and 9 for Terry, or rank 6 for either sibling."
+            ],
+            [
+              "Calculate your rank",
+              "Your active party sets the opponent rank. Average each stat across your party, rounding down separately. Add the averages for maximum HP, maximum MP, Attack and Defense, then add half the combined Agility and Intelligence averages, rounded down. Every 100 points gives one rank, up to rank 19. A party averaging 100 in every stat scores 500 and faces rank 5."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "field-movement-settings",
+      "game": "both",
+      "title": "Walking speed, running and encounters",
+      "summary": "Terry walks faster on ordinary gate floors than Cobi or Tara do on the Desert, Water, Ice and Sky overworlds. Walk around GreatLog and the siblings use the same faster pace as Terry’s gate floors.",
+      "details": [
+        "The Japanese PS1 game sets walking pace by map. A normal step takes four movement updates on Terry’s ordinary gate floors and eight on those four overworlds. The same timing difference applies to diagonal steps.",
+        "In English patch v1.0.73, Tactics → Movement changes the speed for each adventure. Walk defaults to 1× the map’s usual pace. Hold R1 for 2×, or choose Toggle to switch speeds with each press. Walk and R1 can each be set to 1×, 2× or 4×.",
+        "Choose Time for roughly the same number of encounters per minute as you speed up. Choose Distance to keep the usual rate per step. You’ll cover ground faster between fights with Time.",
+        "Use Up and Down to choose a setting and Left and Right to change it. Circle or Triangle applies it. Save your adventure to keep the settings. When you reload, you start at walking speed.",
+        "Cobi and Tara also gain Triangle actions from Warubou as the story advances. Those actions let them cross water, break rocks and fly across gaps."
+      ],
+      "source_ids": [
+        "Japanese PS1 map movement selector 0x8005EA1C and step tables 0x800BC118–0x800BC14E · v55 walking-speed investigation",
+        "v1.0.73 release README · Movement Settings",
+        "s004d6000_065a"
+      ],
+      "related": [
+        "field-triangle"
+      ],
+      "aliases": [
+        "run",
+        "walk speed",
+        "R1 toggle",
+        "dash",
+        "encounter rate",
+        "movement differences",
+        "why does Cobi walk slowly",
+        "Terry gate speed",
+        "diagonal walking"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none"
+    },
+    {
+      "id": "field-restored-content",
+      "game": "dqm1",
+      "title": "What changed from Game Boy to PlayStation in Terry’s adventure?",
+      "summary": "The Game Boy game let Terry sit with his party at the Arena and visit special dungeon floors. The Japanese PlayStation release kept assets for those features. The English patch restores them.",
+      "details": [
+        "To hear your monsters talk, bring one to three living, visible party members to the Arena dining room. Sit on the east stool at the right-hand table. Press Up, Left or Down to select a monster, then Talk. Cancel or Right stands up.",
+        "In Travelers’ Gates you can find treasure rooms with Mimics, the Lost Forest, the traveling colosseum, mazes and sliding floors. Their behavior and appearance rates were reconstructed for the patch. Game Boy floor odds can give the wrong expectation here.",
+        "In the traveling colosseum, three wins unlock an optional second set of fights for the displayed prize. Decline to finish, then leave by the north door. If your bag was full when you won, make space and return to that door."
+      ],
+      "source_ids": [
+        "v1.0.73 release README · Restored Content in Terry’s Adventure",
+        "v1.0.70 traveling colosseum exit"
+      ],
+      "related": [
+        "field-packing",
+        "field-movement-settings"
+      ],
+      "aliases": [
+        "version differences",
+        "Game Boy Color",
+        "GBC vs PS1",
+        "special dungeon floors",
+        "Mimic room",
+        "Lost Forest",
+        "monster table conversations",
+        "traveling colosseum",
+        "restored content"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none"
+    },
+    {
+      "id": "field-retail-bugs",
+      "game": "both",
+      "title": "Which bugs came from the Japanese PlayStation game?",
+      "summary": "The patch release notes identify a Truth Gate progression bug in the original game and several faults in how it loaded and freed graphics.",
+      "details": [
+        "In Terry’s Truth Gate, losing to Dungeon Shrimp (Digster) could leave the boss unable to challenge you again. That also blocked credit for the gate toward recruiting Watabou. The English v1.0.34 release includes the repair. Return to the boss room on the updated game and answer the questions again to retry.",
+        "The original game could leave scene and NPC graphics in memory after they were no longer needed. v1.0.73 fixes these leaks and a separate walking-sprite loading bug.",
+        "For a stuck event on an older English build, patch a clean Japanese disc image, boot the updated game and load your in-game memory-card save. An emulator save state can resume the old game code."
+      ],
+      "source_ids": [
+        "v1.0.73 release README · v34, v73 and Install"
+      ],
+      "related": [
+        "field-restored-content"
+      ],
+      "aliases": [
+        "original Japanese bugs",
+        "retail PSX bugs",
+        "Digster",
+        "Truth Gate",
+        "update existing save",
+        "save state"
+      ],
+      "kind": "mechanic",
+      "spoiler": "story"
+    },
+    {
+      "id": "field-colosseum-prizes",
+      "game": "both",
+      "title": "How do two players wager monsters?",
+      "summary": "In the title-screen Colosseum, choose Local Rules and enable prizes. Monster transfer is available from English patch v1.0.73.",
+      "details": [
+        "Each player offers an awake farm monster outside their saved adventure party. Make space on the receiving farm before starting.",
+        "The winner keeps their own offer and receives the opponent’s monster. A draw leaves both farms as they were.",
+        "The transfer writes both Adventure Logs. Wait until both saves finish. If a card write fails, choose Retry before resetting or turning off the game."
+      ],
+      "source_ids": [
+        "v1.0.73 release README · Colosseum Battles"
+      ],
+      "related": [
+        "field-farm"
+      ],
+      "aliases": [
+        "wagers",
+        "bet monsters",
+        "two player",
+        "multiplayer",
+        "local rules",
+        "prize transfer"
+      ],
+      "kind": "mechanic",
+      "spoiler": "none"
     },
     {
       "id": "field-recruitment",
@@ -2940,14 +3224,15 @@ globalThis.FIELD_GUIDE = {
       "title": "Recruit a wild monster",
       "summary": "Feed the monster you want and arrange for it to be the last enemy you defeat.",
       "details": [
-        "The field lesson ranks more expensive meat as more effective and suggests feeding a second or third piece. Defeating the target last does not guarantee it will join.",
+        "Meat stacks within a battle. On v1.0.66, a second Sirloin raised the tested recruitment chance for a previously collected Metal Slime from about 8% to 24%. A previously collected Slime was already at about 70% with one. These figures apply once the target is eligible and assume no Starry Orb.",
         "In a DQM2 world reached by a generated magic key, defeat its resident boss before trying to recruit the local monsters."
       ],
       "spoiler": "none",
       "source_ids": [
         "s0adf7000_5062",
         "s0039f000_4a3f",
-        "s08a74000_0377"
+        "s08a74000_0377",
+        "PSX v1.0.66 Sirloin and recruitment decision · 80128154 / 80121320"
       ],
       "related": [
         "item-25",
@@ -3020,19 +3305,28 @@ globalThis.FIELD_GUIDE = {
       "title": "Prepare a pair for breeding",
       "summary": "Bring a male and a female, each at level 10 or higher, to the Starry Shrine.",
       "details": [
+        "In GreatLog, win the Kids’ Class for permission to use the shrine. Finish Water World and return when the line has cleared.",
         "Breeding leaves an egg. Both parents leave, so keep another monster ready to travel with you.",
-        "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents."
+        "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents.",
+        "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. In the title-screen Breeding room, the same pair from two different Adventure Logs produces Killing Machine 2 at lower + values."
       ],
+      "aliases": ["Roboster2 recipe", "Killing Machine 2 breeding", "Game Boy breeding differences"],
+      "species_ids": [252, 253],
       "spoiler": "none",
       "source_ids": [
         "v0a08bc_01e3",
         "v0a08bc_0605",
         "s0ab53000_1027",
         "s003f6800_0c8c",
-        "s0ab53000_0e61"
+        "s0ab53000_0e61",
+        "PSX shrine rule 8004AB80 and two-save override 8004B05C",
+        "s003f6800_1bac",
+        "s003f6800_1c4c",
+        "m_exe_090738"
       ],
       "related": [
-        "field-eggs"
+        "field-eggs",
+        "npc-monster-professor"
       ]
     },
     {

@@ -28,6 +28,10 @@ the guide. It does not execute any code from the translation repository.
 
 The same public snapshot supplies item and skill names and aliases, map titles,
 character names, and reviewed place and character references in walkthroughs.
+Character dialogue uses the speaker and scene assignments in
+`scripts/character-dialogue-bindings.json`. The sync resolves those IDs against
+the current English export and rebuilds `data/character-dialogue.js`.
+New scenes or changes to who speaks a line need a review of the assignment.
 The handbook binds these names to native system slots and translation records.
 The publisher checks the source identity and expected context before applying
 each binding. Authored articles, image assets and release-specific verification

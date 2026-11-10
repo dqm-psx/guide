@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+require('../../data/world-guide');
 
 const raw = fs.readFileSync(path.join(__dirname, '../../data/field-guide.js'), 'utf8');
 const guide = JSON.parse(raw.slice('globalThis.FIELD_GUIDE = '.length, raw.lastIndexOf(';')));
@@ -16,9 +17,10 @@ test('field reference preserves native item identities and skips magic-key and r
     .map(entry => Number(entry.id.replace('item-', '')));
   assert.deepEqual(actual, expected);
   assert.equal(entries.size, guide.entries.length);
+  const articles = new Set([...entries.keys(), ...WORLD_GUIDE.entries.map(row => row.id)]);
   for (const entry of entries.values()) {
     assert.ok(entry.source_ids.length, entry.id);
-    for (const id of entry.related || []) assert.ok(entries.has(id), entry.id + ' links to ' + id);
+    for (const id of entry.related || []) assert.ok(articles.has(id), entry.id + ' links to ' + id);
   }
 });
 

@@ -255,6 +255,7 @@ async function main(argv) {
     };
     for (const [file, name, value] of [
       ['handbook-reference','GUIDE_REFERENCE',{species, guide_names:names, metadata:reference.metadata}],
+      ['character-dialogue','CHARACTER_DIALOGUE',require('./build-character-dialogue').buildCharacterDialogue(comparison,manifest.translation_revision)],
       ['home-names','GUIDE_HOME',shell]
     ]) {
       outputs.set(path.join(ROOT,'data',file+'.js'), 'globalThis.' + name + ' = ' +

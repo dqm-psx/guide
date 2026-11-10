@@ -37,6 +37,9 @@
       if (!groups.has(key)) groups.set(key, { ...entry, levels: [] });
       const group = groups.get(key);
       group.levels = [...new Set([...group.levels, ...(entry.levels || [])])].sort((a, b) => a - b);
+      if (entry.strength_ranks) {
+        group.strength_ranks = [...new Set([...(group.strength_ranks || []), ...entry.strength_ranks])].sort((a,b) => a-b);
+      }
     }
     return [...groups.values()];
   }
@@ -169,9 +172,12 @@
 
   function locationsMarkup(species) {
     const locations = groupedLocations(species.locations, campaign);
-    return locations.length ? '<div class="table-scroll"><table class="monster-locations"><caption class="sr-only">Recorded encounters for ' + safe(CAMPAIGNS[campaign]) + '</caption><thead><tr><th scope="col">Encounter</th><th scope="col">Floors</th><th scope="col">Level</th></tr></thead><tbody>' + locations.map(entry => {
-      const location = entry.kind === 'other' && entry.source?.native_selection ? 'Wandering master’s team' : entry.name;
-      return '<tr><th scope="row">' + safe(location) + '</th><td>' + safe(entry.floors || '—') + '</td><td>' + safe(entry.levels.join(', ') || '—') + '</td></tr>';
+    return locations.length ? '<div class="table-scroll"><table class="monster-locations"><caption class="sr-only">Recorded encounters for ' + safe(CAMPAIGNS[campaign]) + '</caption><thead><tr><th scope="col">Encounter</th><th scope="col">Floors or rank</th><th scope="col">Level</th></tr></thead><tbody>' + locations.map(entry => {
+      const master = entry.kind === 'other' && entry.source?.native_selection;
+      const location = master ? '<a href="#field-guide?entry=field-wandering-masters">Wandering master’s team</a>' : safe(entry.name);
+      const ranks = entry.strength_ranks || [];
+      const condition = master && ranks.length ? 'Rank' + (ranks.length > 1 ? 's ' : ' ') + ranks.join(', ') : entry.floors;
+      return '<tr><th scope="row">' + location + '</th><td>' + safe(condition || '—') + '</td><td>' + safe(entry.levels.join(', ') || '—') + '</td></tr>';
     }).join('') + '</tbody></table></div>' : '<p class="monster-empty">No encounters recorded for ' + safe(CAMPAIGNS[campaign]) + '.</p>';
   }
 
