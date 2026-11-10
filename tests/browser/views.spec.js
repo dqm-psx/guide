@@ -43,7 +43,7 @@ async function expectSingleView(page, id) {
 test.describe('served', () => {
   const url = () => serverUrl;
 
-  test('every view id mounts a wrapper and only the Field guide starts visible', async ({ page }) => {
+  test('every view id mounts a wrapper and only Guide home starts visible', async ({ page }) => {
     await page.goto(url());
     for (const view of VIEWS) {
       await expect(page.locator('#' + view.id)).toHaveCount(1);
@@ -82,7 +82,7 @@ test.describe('served', () => {
   test('each primary view link opens, titles and distinctly marks its destination', async ({ page }) => {
     await page.goto(url());
     const expected = {
-      '#field-guide': 'Field guide',
+      '#field-guide': 'Guide home',
       '#atlas': 'Map atlas',
       '#pair-finder': 'Breeding lookup',
       '#breeding-tree': 'Breeding tree',
@@ -224,7 +224,7 @@ test.describe('served', () => {
 
   test('a direct hash, a reload, and Back/Forward each show the intended view', async ({ page }) => {
     const titles = {
-      'field-guide': 'Field guide',
+      'field-guide': 'Guide home',
       'species-index': 'Monster library',
     };
     // Every step lands on the same view, marked the same way, under the same
@@ -274,7 +274,7 @@ test.describe('served', () => {
     }
   });
 
-  test('an unknown hash falls back to the Field guide and marks its link', async ({ page }) => {
+  test('an unknown hash falls back to Guide home and marks its link', async ({ page }) => {
     await page.goto(url());
     await page.goto(url() + '#not-a-view');
     await expectSingleView(page, 'field-guide');

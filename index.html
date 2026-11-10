@@ -68,18 +68,11 @@
     <button id="search-shortcut" type="button">Search<span class="sr-only"> the guide</span></button>
   </div>
   <nav id="guide-contents" aria-label="Guide contents">
-    <div class="contents-start"><a href="#field-guide">Field guide</a><a id="planner-nav-link" href="#team-planner">My game</a></div>
-    <div class="contents-group"><h2>Walkthroughs</h2>
-      <a href="#field-guide?game=dqm1&amp;kind=story">Terry</a>
-      <a href="#field-guide?game=dqm2&amp;kind=story">Cobi &amp; Tara</a>
-      <a href="#field-guide?kind=quest">Quests</a>
-      <a href="#field-guide?kind=boss">Bosses</a>
-    </div>
-    <div class="contents-group"><h2>Places</h2>
-      <a href="#field-guide?kind=location&amp;game=dqm1">Terry’s gates</a>
-      <a href="#field-guide?kind=location&amp;game=dqm2">Cobi &amp; Tara’s worlds</a>
-      <a href="#atlas">Map atlas</a>
-      <a href="#atlas?tab=encounters">Wild encounters</a>
+    <div class="contents-start"><a href="#field-guide">Guide home</a><a id="planner-nav-link" href="#team-planner">My game</a></div>
+    <div class="contents-group"><h2>Breeding &amp; planning</h2>
+      <a href="#pair-finder">Breeding lookup</a>
+      <a href="#breeding-tree">Breeding tree</a>
+      <a href="#breeding-table">Breeding table</a>
     </div>
     <div class="contents-group"><h2>Reference</h2>
       <a href="#species-index">Monster library</a>
@@ -89,16 +82,23 @@
       <a href="#field-guide?kind=skill">Skills</a>
       <a href="#field-guide?kind=mechanic">Mechanics</a>
     </div>
-    <div class="contents-group"><h2>Breeding &amp; planning</h2>
-      <a href="#pair-finder">Breeding lookup</a>
-      <a href="#breeding-tree">Breeding tree</a>
-      <a href="#breeding-table">Breeding table</a>
+    <div class="contents-group"><h2>Places</h2>
+      <a href="#field-guide?kind=location&amp;game=dqm1">Terry’s gates</a>
+      <a href="#field-guide?kind=location&amp;game=dqm2">Cobi &amp; Tara’s worlds</a>
+      <a href="#atlas">Map atlas</a>
+      <a href="#atlas?tab=encounters">Wild encounters</a>
+    </div>
+    <div class="contents-group"><h2>Walkthroughs</h2>
+      <a href="#field-guide?game=dqm1&amp;kind=story">Terry</a>
+      <a href="#field-guide?game=dqm2&amp;kind=story">Cobi &amp; Tara</a>
+      <a href="#field-guide?kind=quest">Quests</a>
+      <a href="#field-guide?kind=boss">Bosses</a>
     </div>
   </nav>
 </aside>
 <main class="wrap">
 <noscript><div class="noscript">This offline reference needs JavaScript for its lookup tools. Enable JavaScript to use the guide.</div></noscript>
-<section id="field-guide" class="view field-view" data-view="field-guide" aria-label="Field guide">
+<section id="field-guide" class="view field-view" data-view="field-guide" aria-label="Guide home">
   <div class="guide-toolbar">
     <form id="guide-filters" class="guide-filters" role="search">
       <label class="guide-query">Search the guide<input id="guide-search" type="search" placeholder="Quest, item, character, monster…" autocomplete="off" maxlength="120"></label>

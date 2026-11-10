@@ -264,7 +264,7 @@
       places:id => entryLink(id,'Locations and encounters')
     });
     const back = p.has('q') ? linked(p,{entry:''}) : '#field-guide';
-    article.innerHTML = '<a class="guide-back" href="'+back+'">'+(p.has('q') ? 'Back to results' : 'Field guide')+'</a>'+
+    article.innerHTML = '<a class="guide-back" href="'+back+'">'+(p.has('q') ? 'Back to results' : 'Guide home')+'</a>'+
       '<h2 id="article-title" tabindex="-1">'+safe(heading)+'</h2>'+walk;
     for (const button of article.querySelectorAll('[data-reveal-stage]')) button.onclick = () => {
       const id = button.dataset.revealStage;
@@ -282,7 +282,7 @@
       return row.title;
     }
     const backKind = p.get('kind') || (!p.has('q') && row?.kind) || '';
-    const backLabel = p.has('q') ? 'Search results' : categories[backKind] || 'Field guide';
+    const backLabel = p.has('q') ? 'Search results' : categories[backKind] || 'Guide home';
     const back = '<a class="guide-back" href="' + linked(p, {entry:'',kind:backKind}) + '">← ' + safe(backLabel) + '</a>';
     if (!row) {
       article.innerHTML = back + '<h2 tabindex="-1" id="article-title">Entry unavailable</h2><p>This link does not identify an entry in this edition.</p>';
@@ -417,7 +417,7 @@
       }
       sections.push('<section><h3>'+safe(games[game])+'</h3>'+groups.join('')+'</section>');
     }
-    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Field guide</a>' +
+    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>' +
       '<h2 id="directory-title" tabindex="-1">Quests</h2></div></div><div class="quest-directory">' +
       (sections.join('') || '<p>No matching quests</p>') + '</div>';
     return 'Quests';
@@ -435,7 +435,7 @@
         (guarded(row) ? '' : artwork(row,true))+safe(safeTitle(row))+'</a></li>');
       return '<section><h3>'+safe(region)+'</h3><ul>'+items.join('')+'</ul></section>';
     });
-    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Field guide</a>'+
+    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
       '<h2 id="directory-title" tabindex="-1">Characters</h2></div></div><div class="character-directory">'+sections.join('')+'</div>';
     return 'Characters';
   }
@@ -452,7 +452,7 @@
         }
       });
       const title=game==='dqm1' ? games.dqm1+'’s gates' : game==='dqm2' ? games.dqm2+'’s worlds' : 'Gates and worlds';
-      el('guide-directory').innerHTML='<div class="directory-head"><div><a href="#field-guide">Field guide</a>'+
+      el('guide-directory').innerHTML='<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
         '<h2 id="directory-title" tabindex="-1">'+safe(title)+'</h2></div></div><div class="place-directory">'+(places || '<p>No matching locations</p>')+'</div>';
       return title;
     }
@@ -488,7 +488,7 @@
       return '<a class="guide-row" href="' + href + '">' + thumb + '<span>' + (context ? '<small>' + safe(context) + '</small>' : '') +
         '<strong>' + safe(safeTitle(r)) + '</strong>' + (!hidden && summary ? '<span'+(match ? ' class="guide-search-excerpt"' : '')+'>' + safe(summary) + '</span>' : '') + '</span></a>';
     }).join('');
-    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Field guide</a><h2 id="directory-title" tabindex="-1">' + safe(heading) +
+    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a><h2 id="directory-title" tabindex="-1">' + safe(heading) +
       '</h2></div></div>' +
       '<p class="guide-count" role="status">' + (matches.length ? matches.length + (matches.length === 1 ? ' entry' : ' entries') : 'No matching entries') + (pages > 1 ? ' · Page ' + page + ' of ' + pages : '') +
       '</p><div class="directory-grid">' + (body || (q && (kind || game)
@@ -524,7 +524,7 @@
     el('guide-directory').hidden=!browsing;
     if (browsing) return directory(p);
     el('guide-directory').replaceChildren();
-    return 'Field guide';
+    return 'Guide home';
   }
   function filter(push) {
     const p = new URLSearchParams();

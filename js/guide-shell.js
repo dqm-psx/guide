@@ -16,7 +16,7 @@
     el('guide-home').hidden = false;
     el('guide-directory').hidden = true;
     el('guide-article').hidden = true;
-    return 'Field guide';
+    return 'Guide home';
   }
   // Keep keyboard focus and any further typing while the first query loads.
   let action = 0;
