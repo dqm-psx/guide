@@ -125,6 +125,7 @@ function addEntryPages(assets) {
     const item = db.DQMItemReference.items[row.id];
     const image = item ? db.DQMItemArt.imageFor(row) : row.image || npcart;
     const art = /^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(image || '') ? '<img class="entry-icon" src="'+image+'" alt="">' : '';
+    const identity = item ? db.DQMItemIndex.profileHeading(row,{escape,art,level:1}) : art;
     const stock=(row.prices || []).map(p=>p.locations.map(location=>db.DQMItemIndex.shopLink(location,itemOptions)).join(', ')+
       escape(' · '+p.buy+' G (Gold Pass '+p.gold_pass+' G)'));
     const quests = row.kind === 'npc' ? [...articles.values()].filter(quest=>quest.kind==='quest' &&
@@ -147,7 +148,7 @@ function addEntryPages(assets) {
       escape(adventures[row.game])+' walkthrough</strong> · '+questChapters.map(stage=>articleLink(stage.id)).join(' · ')+'</nav>' : '';
     const itemFacts = item ? db.DQMItemIndex.itemFacts(row,itemOptions) : '';
     const artCredit = item ? '<p class="item-art-credit">Artwork · '+escape(db.DQMItemArt.creditFor(row))+'</p>' : '';
-    add('articles',row.id,row.title,row.summary,fullWalk+art+itemFacts+db.DQMArticleSections(row,escape,escape,2)+nicknameNote+stepsMarkup+walkChapters+requests+
+    add('articles',row.id,row.title,row.summary,fullWalk+identity+itemFacts+db.DQMArticleSections(row,escape,escape,2)+nicknameNote+stepsMarkup+walkChapters+requests+
       list('Arena classes',(row.arena_classes || []).map(articleLink))+dialogue+
       list('Walkthrough',steps)+list('Wild encounters',[...new Set(encounterList(routeData.encounters))])+
       list('Encounter base stats',battleList(routeData.fights))+list('In this guide',guideLinks)+list('Shops',stock)+list('Maps',places)+list('Monsters',(row.species_ids || []).map(id=>bySpecies.get(id)).filter(Boolean).map(monsterLink))+
@@ -220,7 +221,7 @@ function addEntryPages(assets) {
     const profile=p.kind==='skills' || p.kind==='monsters';
     const monster=p.kind==='monsters' ? bySpecies.get(p.id) : null;
     const item = p.kind === 'articles' && db.DQMItemReference.items[p.id];
-    let introduction='<h1>'+escape(p.title)+'</h1>'+(item ? '' : paragraph(p.description));
+    let introduction=item ? '' : '<h1>'+escape(p.title)+'</h1>'+paragraph(p.description);
     if (monster) {
       const identity=[db.DATA.species[monster.index]?.family_display,monster.short_name!==monster.display_name && monster.short_name,monster.japanese].filter(Boolean);
       introduction='<div class="entry-identity">'+portrait(monster.index)+'<div><h1>'+escape(p.title)+'</h1>'+paragraph(identity.join(' · '))+'</div></div>'+

@@ -28,8 +28,12 @@ test('item abbreviations lead to PSX shop prices and a shareable result', async 
   await page.getByLabel('Search the guide').fill('MedHerb');
   await page.locator('.guide-row').filter({hasText:'Medicinal Herb'}).click();
   await expect(page.locator('#article-title')).toHaveText('Medicinal Herb');
-  await expect(page.locator('.item-names')).toContainText('やくそう');
-  await expect(page.locator('.item-names')).toContainText('MediHerb');
+  const heading=page.locator('.item-profile-heading');
+  await expect(heading.getByRole('heading',{name:'Medicinal Herb',exact:true})).toBeVisible();
+  await expect(heading.locator('[lang="ja"]')).toHaveText('やくそう');
+  await expect(heading.locator('.monster-alias')).toHaveText(['MedHerb','Herb','MediHerb']);
+  await expect(heading.getByText('Herb',{exact:true})).toHaveAttribute('title','Game Boy-style patch');
+  await expect(heading.locator('img')).toBeVisible();
   await expect(page.getByRole('table',{name:'Recorded shop prices'})).toContainText('GreatTree / Bazaar');
   await expect(page.getByRole('table',{name:'Recorded shop prices'})).toContainText('9 G');
   await page.reload();

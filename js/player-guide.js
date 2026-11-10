@@ -299,6 +299,7 @@
       return 'Entry unavailable';
     }
     const title = safeTitle(row);
+    let heading = '<h2 id="article-title" tabindex="-1">' + safe(title) + '</h2>';
     let body = '';
     if (guarded(row)) {
       body = '<p>This entry includes ' + (row.spoiler === 'ending' ? 'ending' : 'story') + ' spoilers.</p><button class="guide-action" type="button" id="guide-reveal">Reveal this entry</button>';
@@ -326,8 +327,9 @@
       const item = DQMItemReference.items[row.id];
       const details=DQMItemIndex.extraDetails(row).filter(line=>!(prices && /shops sell it for [\d,]+ G/i.test(line)) && !(routeData?.gate && /^Encounter: /u.test(line)));
       const stepsTag = row.kind === 'quest' ? 'ol' : 'ul';
-      body = artwork(row, false) +
-        (item ? DQMItemIndex.itemFacts(row,itemOptions) : '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>') +
+      const art = artwork(row, false);
+      if (item) heading = DQMItemIndex.profileHeading(row,{escape:safe, art, level:2});
+      body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>') +
         DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
@@ -339,7 +341,7 @@
           '<li><a href="#monster?id='+id+'">'+safe(GUIDE_REFERENCE.species[id].display_name)+'</a></li>').join('') + '</ol></section>' : '') +
         routeMarkup(row,routeData,p) +
         (row.kind === 'npc' ? DQMCharacterDialogue.markup(row,safe,questLinks,!reveal) : '') +
-        (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + otherNames(row) +
+        (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + (item ? '' : otherNames(row)) +
         (item ? '<p class="hint item-art-credit">Artwork · '+safe(DQMItemArt.creditFor(row))+'</p>' : '')+
         (otherPlaces.length ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
         (mapLinks.length ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
@@ -350,7 +352,7 @@
     const context = [games[row.game] && !['both','system'].includes(row.game) ? games[row.game] : '',
       row.kind === 'story' && !guarded(row) ? 'Chapter ' + row.order : ''].filter(Boolean).join(' · ');
     article.innerHTML = '<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>' +
-      '<h2 id="article-title" tabindex="-1">' + safe(title) + '</h2>' + body;
+      heading + body;
     el('guide-reveal')?.addEventListener('click', () => { individuallyRevealed.add(row.id); renderArticle(row,p); el('article-title').focus(); });
     return title;
   }
