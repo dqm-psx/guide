@@ -11,6 +11,23 @@ vm.runInContext(fs.readFileSync(path.join(root,'js/place-context.js'),'utf8'),co
 const create = context.DQMPlaceContext.create;
 const ids = rows => Array.from(rows,row=>row.id);
 
+test('location characters use destination maps and explicit unlock links, not the shared portal room',()=>{
+  const entries=[{id:'gate',kind:'location',game:'dqm1',related:['unlock']},
+    {id:'unlock',kind:'quest',related:['professor']},
+    {id:'princess',kind:'npc',title:'Princess',map_ids:['final-event']},
+    {id:'professor',kind:'npc',title:'Professor',map_ids:['town']},
+    {id:'attendant',kind:'npc',title:'Attendant',map_ids:['chamber']},
+    {id:'namesake',kind:'npc',title:'Princess',places:['Final area']}];
+  const maps=[{id:'final',placeId:'final'},{id:'final-event',placeId:'final'},
+    {id:'chamber',placeId:'chamber'},{id:'town',placeId:'town'}];
+  const places=create({entries,maps,generation:{entries:{gate:{finalMaps:['final']}}},
+    entrances:{entries:{gate:[{map:'chamber',x:.5,y:.5}]}}});
+  assert.deepEqual(ids(places.charactersForLocation('gate').here),['princess']);
+  assert.deepEqual(ids(places.charactersForLocation('gate').related),['professor']);
+  assert.deepEqual(ids(places.locationsForCharacter('princess')),['gate']);
+  assert.deepEqual(ids(places.locationsForCharacter('attendant')),[]);
+});
+
 test('shared gate rooms retain exact entrance floors without claiming one gate owns the chamber', () => {
   const entries=[{id:'location-a',kind:'location'},{id:'location-b',kind:'location'}];
   const maps=[{id:'b1',placeId:'b1',image:'first.webp'},

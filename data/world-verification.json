@@ -7,31 +7,31 @@
   "patched_bin_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
   "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
   "comparison_sha256": "d9666b598773aec100e0c7fb9d42a61f941d252b5e38b3122cf165328a4d2788",
-  "world_entries_sha256": "adfbea61394ac2509fd61ffaabcd3170d09a7fc2a2708f365435596f59df793e",
-  "native_index_sha256": "59ebd14bffbe2578143d1e62368bdac786a807130c2435d729ea30a132a6b91a",
+  "world_entries_sha256": "e2ae66a8b11a0b6815df6551244b954e52191d469e6b813a2892bd2c4b015ca2",
+  "native_index_sha256": "655b5c384f1e8a1a7acdfc7e41429fee42f74965cc3c9bcd6abc19efbaf43c71",
   "verified": {
-    "articles": 171,
+    "articles": 188,
     "articles_by_kind": {
-      "boss": 29,
+      "boss": 45,
       "location": 28,
-      "npc": 43,
+      "npc": 44,
       "quest": 48,
       "story": 23
     },
-    "cited_records": 1295,
+    "cited_records": 1490,
     "source_categories": {
-      "script_slots": 1256,
+      "script_slots": 1451,
       "system_slots": 28,
       "service_descriptor_slots": 1,
       "menu_pointer_offsets": 10
     },
     "native_slots": {
-      "dialogue": 1320,
+      "dialogue": 1520,
       "key_descriptions": 10,
       "service": 1,
       "system": 28
     },
-    "dialogue_resources": 76,
+    "dialogue_resources": 81,
     "abbreviated_system_names": 23,
     "progression_spans": {
       "arena_rounds": 1,

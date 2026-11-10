@@ -88,6 +88,19 @@ function addEntryPages(assets) {
     return '<section data-place-context><h2>'+escape(title)+'</h2><ul>'+rows.map(row=>
       '<li'+storyContext(row)+'>'+articleLink(row.id)+'</li>').join('')+'</ul></section>';
   }
+  function locationCharacters(row) {
+    if (row.kind!=='location') return '';
+    const generation=db.GATE_GENERATION.entries[row.id];
+    const bosses=new Set([db.FIELD_ROUTES.routes[row.id]?.boss,generation?.boss?.entry,...(generation?.bosses || []).map(record=>record.entry)]);
+    return Object.entries(placeContext.charactersForLocation(row.id)).map(([key,characters])=>[key,characters.filter(character=>!bosses.has(character.id))]).map(([key,characters])=>characters.length ?
+      '<section class="entry-location-characters" data-place-context><h2>'+(key==='here'?'Characters here':'Related characters')+'</h2><ul>'+
+      characters.map(character=>{
+        const sprite=db.NPC_SPRITES[character.id];
+        const image=sprite?.image ? '<img class="entry-character-sprite" alt="" src="'+escape(sprite.image)+'">' :
+          sprite?.species!=null ? portrait(sprite.species) : '';
+        return '<li'+storyContext(character)+'><a href="'+escape(articlePath(character))+'">'+image+'<span>'+escape(character.title)+'</span></a></li>';
+      }).join('')+'</ul></section>' : '').join('');
+  }
   function markedMap(map,entrances=[],label=false) {
     const pins=entrances.map((entrance,i)=>{
       const position='left:'+entrance.x*100+'%;top:'+entrance.y*100+'%';
@@ -142,8 +155,11 @@ function addEntryPages(assets) {
     if (boss || monster) entries.push(['Gate boss','<a class="entry-boss-link" href="'+escape(boss?articlePath(boss):'monsters/'+monster.index+'/')+'">'+
       (monster ? portrait(monster.index) : '')+'<span>'+escape(boss?.title || monster.display_name)+'</span></a>']);
     else if (generation?.bosses?.length) {
-      const links=generation.bosses.map(({species})=>bySpecies.get(species)).filter(Boolean).map(monster=>
-        '<a class="entry-boss-link" href="monsters/'+monster.index+'/">'+portrait(monster.index)+'<span>'+escape(monster.display_name)+'</span></a>');
+      const links=generation.bosses.map(record=>{
+        const monster=bySpecies.get(record.species), encounter=articles.get(record.entry);
+        return '<a class="entry-boss-link" href="'+escape(encounter?articlePath(encounter):'monsters/'+monster.index+'/')+'">'+
+          portrait(monster.index)+'<span>'+escape(encounter?.title || monster.display_name)+'</span></a>';
+      });
       entries.push([generation.bossLabel,'<div class="entry-boss-list">'+links.join('')+'</div>'+paragraph(generation.bossNote)]);
     }
     return entries.length ? '<dl class="entry-gate-facts">'+entries.map(([label,value])=>'<div><dt>'+escape(label)+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>' : '';
@@ -198,6 +214,8 @@ function addEntryPages(assets) {
   for (const row of articles.values()) {
     const routeData = db.FIELD_ROUTES?.routes?.[row.id] || {};
     const gate=row.kind==='location' && row.game==='dqm1';
+    const contacts=new Set(Object.values(placeContext.charactersForLocation(row.id)).flat().map(character=>character.id));
+    const characterLocations=row.kind==='npc' ? placeContext.locationsForCharacter(row.id) : [];
     const npcart=db.NPC_SPRITES[row.id]?.image;
     const item = db.DQMItemReference.items[row.id];
     const image = item ? db.DQMItemArt.imageFor(row) : row.image || npcart;
@@ -208,13 +226,13 @@ function addEntryPages(assets) {
     const quests = row.kind === 'npc' ? [...articles.values()].filter(quest=>quest.kind==='quest' &&
       (quest.related?.includes(row.id) || row.related?.includes(quest.id))) : [];
     const questChapters=db.DQMWalkthrough.chaptersForQuest(row,articles);
-    const related=(row.related || []).filter(id=>!quests.some(quest=>quest.id===id) && !questChapters.some(stage=>stage.id===id) && !(gate && id===routeData.boss))
+    const related=(row.related || []).filter(id=>id!==routeData.gate && !characterLocations.some(location=>location.id===id) && !contacts.has(id) && !quests.some(quest=>quest.id===id) && !questChapters.some(stage=>stage.id===id) && !(gate && id===routeData.boss))
       .map(articleLink).filter(Boolean);
     const places=[...new Set([...(row.map_ids || []),...(routeData.maps || [])].map(id=>maps.get(id)).filter(Boolean).map(mapLink))];
     const steps=(routeData.stages || []).map(stage=>[stage.arena,...stage.gates].map(articleLink).filter(Boolean).join(' → '));
     const guideLinks=[routeData.gate,...(gate?[]:[routeData.boss,routeData.arena]),...(routeData.supplies || [])].filter(Boolean).map(articleLink)
       .concat((routeData.skills || []).map(id=>names[id]).filter(Boolean).map(skillLink));
-    const details=db.DQMItemIndex.extraDetails(row).filter(line=>!stock.length || !/shops sell it for/i.test(line));
+    const details=db.DQMItemIndex.extraDetails(row).filter(line=>(!stock.length || !/shops sell it for/i.test(line)) && !(routeData.gate && /^Encounter: /u.test(line)));
     const nicknameNote=db.DQMNicknameMarkup(row,escape,articleLink);
     const stepsMarkup = row.kind==='quest' && details.length ? '<ol>'+details.map(step=>'<li>'+escape(step)+'</li>').join('')+'</ol>' : details.map(paragraph).join('');
     const requests = row.requested_species?.length ? '<section><h2>Monsters in request order</h2><ol>'+
@@ -227,11 +245,12 @@ function addEntryPages(assets) {
     const artCredit = item ? '<p class="item-art-credit">Artwork · '+escape(db.DQMItemArt.creditFor(row))+'</p>' : '';
     const gateLinks=[...new Set([...guideLinks,...related])];
     const gateSummary=gate ? '<div class="entry-gate-summary"><div class="entry-gate-overview"><h1>'+escape(row.title)+'</h1>'+
-      paragraph(db.DQMLocations.leadFor(row))+gateFacts(row,routeData)+
+      paragraph(db.DQMLocations.leadFor(row))+gateFacts(row,routeData)+locationCharacters(row)+
       (gateLinks.length ? '<nav class="entry-gate-links" aria-label="Related guide entries">'+gateLinks.join('')+'</nav>' : '')+
       '</div>'+gateEncounterTable(routeData.encounters)+'</div>' : '';
     const mapsAndFloors=gate ? '<div class="entry-gate-content">'+locationMaps(row)+db.DQMGateGeneration.render(row.id,{escape,headingLevel:2})+'</div>' : locationMaps(row);
     add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+db.DQMArticleSections(row,escape,escape,2)+nicknameNote+stepsMarkup+walkChapters+requests+mapsAndFloors+
+      (gate?'':locationCharacters(row))+contextLinks('Locations',characterLocations)+
       list('Arena classes',(row.arena_classes || []).map(articleLink))+dialogue+
       list('Walkthrough',steps)+(gate?'':list('Wild encounters',[...new Set(encounterList(routeData.encounters))]).replace('<section>','<section id="location-encounters">'))+
       list('Encounter base stats',battleList(routeData.fights))+(gate?'':list('In this guide',guideLinks))+list('Shops',stock)+(row.kind==='location' ? '' : list('Maps',places))+list('Monsters',(row.species_ids || []).map(id=>bySpecies.get(id)).filter(Boolean).map(monsterLink))+

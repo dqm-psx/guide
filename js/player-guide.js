@@ -235,6 +235,19 @@
     return notes.length ? '<dl class="skill-facts'+(row.kind==='location' && row.game==='dqm1'?' gate-facts':'')+'">'+
       notes.map(([title,value])=>'<div><dt>'+safe(title)+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>' : '';
   }
+  function locationCharacters(row,p) {
+    if (row.kind!=='location') return '';
+    const groups=placeContext.charactersForLocation(row.id);
+    const generation=globalThis.GATE_GENERATION?.entries[row.id];
+    const bosses=new Set([FIELD_ROUTES.routes[row.id]?.boss,generation?.boss?.entry,...(generation?.bosses || []).map(record=>record.entry)]);
+    return Object.entries(groups).map(([key,members])=>{
+      const characters=members.filter(character=>!guarded(character) && !bosses.has(character.id));
+      if (!characters.length) return '';
+      return '<section class="location-characters"><h3>'+(key==='here'?'Characters here':'Related characters')+'</h3><ul>'+
+        characters.map(character=>'<li><a href="'+linked(p,{entry:character.id,kind:'npc'})+'">'+
+          artwork(character,true)+'<span>'+safe(character.title)+'</span></a></li>').join('')+'</ul></section>';
+    }).join('');
+  }
   function routeMarkup(row, data, p) {
     if (!data) return '';
     const article = id => {
@@ -368,6 +381,9 @@
       const questLinks = characterQuests.map(quest =>
         '<a href="' + linked(p,{kind:'quest',entry:quest.id}) + '">' + safe(safeTitle(quest)) + '</a>');
       const related = (row.related || []).filter(id=>!direct.has(id)).map(id => byId.get(id)).filter(Boolean);
+      const contactIds=row.kind==='location' ? new Set(Object.values(placeContext.charactersForLocation(row.id)).flat().map(character=>character.id)) : new Set();
+      const characterLocations=row.kind==='npc' ? placeContext.locationsForCharacter(row.id).filter(location=>!guarded(location)) : [];
+      const relatedWithoutContacts=related.filter(r=>!contactIds.has(r.id) && !characterLocations.some(location=>location.id===r.id));
       const profileLinks = (row.species_ids || []).map(id => GUIDE_REFERENCE.species[id]).filter(Boolean);
       const mapLinks = row.kind==='location' ? placeContext.mapsForLocation(row.id) :
         window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(routeData?.maps || [])]);
@@ -383,18 +399,19 @@
       const art = artwork(row, false);
       const lead = DQMLocations.leadFor(row);
       if (item) heading = DQMItemIndex.profileHeading(row,{escape:safe, art, level:2});
-      const relatedMarkup = (profileLinks.length || related.length ? '<div class="article-related"><h3>Related entries</h3>' +
-        related.map(r => '<a href="' + linked(p, {entry:r.id}) + '">' + safe(safeTitle(r)) + '</a>').join('') +
+      const relatedMarkup = (profileLinks.length || relatedWithoutContacts.length ? '<div class="article-related"><h3>Related entries</h3>' +
+        relatedWithoutContacts.map(r => '<a href="' + linked(p, {entry:r.id}) + '">' + safe(safeTitle(r)) + '</a>').join('') +
         profileLinks.map(m => '<a href="#monster?id=' + m.index + '">' + safe(m.display_name) + '</a>').join('') + '</div>' : '');
       if (gate) heading = '<div class="gate-summary"><header class="gate-overview">'+heading+
         (lead ? '<p class="article-lead">'+linkedProse(lead,row,routeData,p)+'</p>' : '')+
-        routeFacts(row,routeData,p)+relatedMarkup+'</header>'+routeMarkup(row,routeData,p)+'</div>';
+        routeFacts(row,routeData,p)+locationCharacters(row,p)+relatedMarkup+'</header>'+routeMarkup(row,routeData,p)+'</div>';
       body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + (!gate && lead ? '<p class="article-lead">' + linkedProse(lead,row,routeData,p) + '</p>' : '')) +
         (gate ? '<div class="gate-content">' : '')+
         (row.kind==='location' && mapLinks.length ? '<section class="location-maps" aria-label="Maps">'+(gate?'':'<h3 id="location-maps-heading">Maps</h3>')+
           '<div id="location-map-browser"></div></section>' : '')+
         (gate ? globalThis.DQMGateGeneration?.render(row.id,{escape:safe}) || '' : '')+
         (gate ? '</div>' : '')+
+        (!gate ? locationCharacters(row,p) : '')+
         DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
@@ -405,10 +422,12 @@
         (row.requested_species ? '<section class="route-section"><h3>Monsters in request order</h3><ol class="quest-species">' + row.requested_species.map(id =>
           '<li><a href="#monster?id='+id+'">'+safe(GUIDE_REFERENCE.species[id].display_name)+'</a></li>').join('') + '</ol></section>' : '') +
         (gate ? '' : routeMarkup(row,routeData,p)) +
-        (row.kind === 'npc' ? DQMCharacterDialogue.markup(row,safe,questLinks,!reveal) : '') +
+        (characterLocations.length ? '<nav class="character-locations" aria-label="Locations"><h3>Locations</h3>'+characterLocations.map(location=>
+          '<a href="'+linked(p,{kind:'location',entry:location.id,game:location.game})+'">'+safe(location.title)+'</a>').join(' · ')+'</nav>' : '')+
+        (['npc','boss'].includes(row.kind) ? DQMCharacterDialogue.markup(row,safe,questLinks,!reveal) : '') +
         (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + (item ? '' : otherNames(row)) +
         (item ? '<p class="hint item-art-credit">Artwork · '+safe(DQMItemArt.creditFor(row))+'</p>' : '')+
-        (otherPlaces.length && row.kind!=='location' ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
+        (otherPlaces.length && row.kind!=='location' && !routeData?.gate ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
         (mapLinks.length && row.kind!=='location' ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
         (gate ? '' : relatedMarkup);
     }
@@ -726,5 +745,6 @@
     if (!el('field-guide').hidden) document.title = show() + ' · DQM1&2 PSX Player Guide';
     if (!el('atlas').hidden) window.DQMAtlas?.show();
   }
-  window.DQMField = {show, guarded, campaigns, setSpoilers, walkthroughPath, entryForNav: id => byId.get(id)};
+  window.DQMField = {show, guarded, campaigns, setSpoilers, walkthroughPath, entryForNav: id => byId.get(id),
+    characterLink:row => '<a href="#field-guide?kind=npc&amp;entry='+safe(row.id)+'">'+artwork(row,true)+'<span>'+safe(row.title)+'</span></a>'};
 })();

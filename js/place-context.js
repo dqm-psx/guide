@@ -98,7 +98,26 @@
         characters:rows.filter(row=>row.kind==='npc')
       };
     }
+    function charactersForLocation(id) {
+      const location=byEntry.get(id);
+      if (location?.kind!=='location') return {here:[],related:[]};
+      // A gate's shared entrance room is not its destination. Use its final
+      // area(s), then explicitly linked unlock quests for characters elsewhere.
+      const places=location.game==='dqm1' ? canonicalMaps(mapIdsFor(location)) : locationMaps.get(id) || [];
+      const here=new Map(places.flatMap(map=>values(byPlace.get(map.id)))
+        .filter(row=>row.kind==='npc').map(row=>[row.id,row]));
+      const quests=[...byEntry.values()].filter(row=>row.kind==='quest' &&
+        (location.related?.includes(row.id) || row.related?.includes(id)));
+      const related=[...byEntry.values()].filter(row=>row.kind==='npc' && !here.has(row.id) &&
+        (location.related?.includes(row.id) || row.related?.includes(id) ||
+          quests.some(quest=>quest.related?.includes(row.id) || row.related?.includes(quest.id))));
+      const byName=(a,b)=>a.title.localeCompare(b.title);
+      return {here:[...here.values()].sort(byName),related:related.sort(byName)};
+    }
     return {
+      charactersForLocation,
+      locationsForCharacter:id => [...byEntry.values()].filter(row=>row.kind==='location' &&
+        Object.values(charactersForLocation(row.id)).some(group=>group.some(character=>character.id===id))),
       mapsForLocation:id => [...(locationMaps.get(id) || [])],
       defaultMapForLocation:id => {
         const entrance=gateEntrances.get(id)?.[0];

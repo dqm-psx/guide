@@ -62,6 +62,16 @@
     FIELD_ROUTES.routes[id]={encounters:{terry:contexts}};
   }
 
+  // Boss articles use stable gate/species identities. This also preserves the
+  // separate choices and return visits in gates with more than one boss.
+  for (const boss of WORLD_GUIDE.entries.filter(row=>row.kind==='boss' && row.gate_id)) {
+    FIELD_ROUTES.routes[boss.id]={gate:boss.gate_id,maps:boss.map_ids || []};
+    const generation=globalThis.GATE_GENERATION?.entries[boss.gate_id];
+    for (const record of generation?.bosses || (generation?.boss ? [generation.boss] : [])) {
+      if (boss.species_ids.includes(record.species)) record.entry=boss.id;
+    }
+  }
+
   function render(game,{byId,routes,escape,entryLink,mapLink,hidden,adventures}) {
     const compact = items => '<ul class="place-links">'+items.map(item=>'<li>'+item+'</li>').join('')+'</ul>';
     const heading = label => game ? '<h3>'+label+'</h3>' : '<h4>'+label+'</h4>';

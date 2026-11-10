@@ -36,7 +36,8 @@ Current, Game Boy, Delocalized and Vibecoded names. The ten gates whose articles
 are built from encounter records also retain original and edition encounter
 names as aliases. Standalone pages are rebuilt from the same translated rows.
 Character dialogue uses the speaker and scene assignments in
-`scripts/character-dialogue-bindings.json`. The sync resolves those IDs against
+`scripts/character-dialogue-bindings.json`, `scripts/boss-dialogue-dqm1.json`,
+and `scripts/boss-dialogue-dqm2.json`. The sync resolves those IDs against
 the current English export and rebuilds `data/character-dialogue.js`.
 New scenes or changes to who speaks a line need a review of the assignment.
 The handbook binds these names to native system slots and translation records.

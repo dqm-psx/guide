@@ -3,6 +3,38 @@ let url;
 test.beforeAll(async () => { url = await (await import('../helpers/modes')).startGuideServer(); });
 test.afterAll(async () => { await (await import('../helpers/modes')).stopGuideServer(); });
 
+test('gate characters link their sprite to dialogue and back to the location',async ({page})=>{
+  await page.goto(url+'#field-guide?entry=location-townsperson-s-gate');
+  const princess=page.locator('.location-characters a[href*="entry=npc-laura"]');
+  await expect(princess).toHaveText('Laura');
+  await expect(princess.locator('img')).toBeVisible();
+  await expect(page.locator('#location-map-browser a[href*="entry=npc-laura"]')).toHaveCount(0);
+  await princess.click();
+  await expect(page.locator('#article-title')).toHaveText('Laura');
+  await expect(page.locator('.character-dialogue .spoken-lines')).toContainText('Laura');
+  await page.locator('.character-locations a[href*="entry=location-townsperson-s-gate"]').click();
+  await page.locator('.gate-boss-link[href*="entry=boss-dragon"]').click();
+  await expect(page.locator('.character-dialogue')).toContainText('Grrrrooo');
+  await expect(page.locator('.character-dialogue .spoken-lines li').first()).toBeVisible();
+  await page.goto(url+'#atlas?map=map-72-0');
+  await expect(page.locator('#atlas-detail .location-characters a[href*="entry=npc-laura"] img')).toBeVisible();
+});
+
+test('world characters and new boss dialogue respect spoiler settings and fit phones',async ({page})=>{
+  await page.setViewportSize({width:375,height:839});
+  await page.goto(url+'#field-guide?entry=location-water-world');
+  await expect(page.locator('.location-characters a[href*="entry=npc-queen-of-the-mermaids"]')).toBeVisible();
+  await page.goto(url+'#field-guide?entry=boss-hargon');
+  await expect(page.locator('.character-dialogue')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  await page.evaluate(()=>localStorage.setItem('dqm-guide-story-spoilers','hide'));
+  await page.reload();
+  await expect(page.locator('#guide-reveal')).toBeVisible();
+  await expect(page.locator('.character-dialogue')).toHaveCount(0);
+  await page.goto(url+'#atlas?map=map-72-0');
+  await expect(page.locator('#atlas-detail a[href*="entry=npc-laura"]')).toHaveCount(0);
+});
+
 test('gate overview brings encounters above maps and returns to the filtered directory',async ({page})=>{
   await page.setViewportSize({width:1512,height:900});
   await page.goto(url+'#field-guide?kind=location&game=dqm1&entry=location-townsperson-s-gate');

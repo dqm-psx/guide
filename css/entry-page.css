@@ -122,6 +122,11 @@ a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:p
   .entry-profile a{text-decoration-color:#9acbad}
 }
 .character-dialogue{margin:1rem 0}
+.entry-location-characters{margin:1rem 0}
+.entry-location-characters h2{font:650 .875rem/1.4 system-ui;margin:0 0 .4rem}
+.entry-location-characters ul{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;list-style:none;padding:0;margin:0;columns:auto}
+.entry-location-characters a{display:inline-flex;align-items:center;gap:.5rem;font-weight:650}
+.entry-character-sprite,.entry-location-characters .entry-portrait{width:3rem;height:3rem;object-fit:contain;flex:none}
 .character-dialogue summary{cursor:pointer;padding:.35rem 0;font-weight:650}
 .character-dialogue details{margin-inline-start:1rem}
 .character-dialogue h4{margin:.6rem 0 .3rem}

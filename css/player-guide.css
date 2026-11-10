@@ -168,6 +168,15 @@
 .gate-summary .article-related{margin-top:12px;font-size:13px}
 .gate-summary .article-related h3{font-size:13px;margin:0 0 4px;color:var(--muted)}
 .gate-summary .article-lead{font-size:14px;line-height:1.5;margin:8px 0}
+.location-characters{margin:16px 0}
+.location-characters h3,.gate-summary .location-characters h3{font:650 13px/1.4 system-ui;color:var(--muted);margin:0 0 6px}
+.location-characters ul{display:flex;flex-wrap:wrap;gap:8px 22px;list-style:none;padding:0;margin:0}
+.location-characters li{min-width:0;max-width:100%}
+.location-characters a{display:inline-flex;align-items:center;gap:9px;font-weight:650;text-decoration:none;min-height:48px}
+.location-characters a:hover span{text-decoration:underline}
+.location-characters .npc-art{float:none;flex:none;margin:0;padding:0;width:48px;height:48px;border-radius:0;background:none}
+.character-locations{margin:16px 0}
+.character-locations h3{margin:0 0 6px}
 .gate-summary .route-roster th:first-child{width:7rem}
 .gate-content>*{min-width:0}
 @media(min-width:1500px){.gate-content{display:grid;grid-template-columns:minmax(660px,1.4fr) minmax(340px,1fr);align-items:start;gap:28px}.gate-content>.location-maps,.gate-content>.gate-generation{margin:0}}

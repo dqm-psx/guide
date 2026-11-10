@@ -15,6 +15,23 @@ test.afterAll(async () => {
   await new Promise(resolve=>server.close(resolve));
 });
 
+test('published gate characters and boss conversations work without JavaScript',async ({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const page=await context.newPage();
+    await page.goto(url+'articles/location-townsperson-s-gate/');
+    const princess=page.locator('.entry-location-characters a[href="articles/npc-laura/"]');
+    await expect(princess).toHaveText(shipped.entry('npc-laura').title);
+    await expect(princess.locator('img')).toBeVisible();
+    await princess.click();
+    await page.locator('.character-dialogue > summary').click();
+    await expect(page.locator('.spoken-lines')).toContainText(shipped.dialogue['npc-laura'][0].passages[0]);
+    await page.goto(url+'articles/boss-dragon/');
+    await page.locator('.character-dialogue > summary').click();
+    await expect(page.locator('.spoken-lines').first()).toContainText(shipped.dialogue['boss-dragon'][0].passages[0]);
+  } finally {await context.close();}
+});
+
 test('published location and map pages connect their maps and guide context without JavaScript',async ({browser})=>{
   const context=await browser.newContext({javaScriptEnabled:false});
   try {
@@ -173,8 +190,8 @@ test('published gate boss choices and return visits stay distinct from a single 
   try {
     const page=await context.newPage();
     for (const [gate,label,ids,note] of [
-      ['medal','Boss choices',[9,149,122],'Choose one of three encounters.'],
-      ['destruction','Boss sequence',[293,294],'Defeat the first boss, then return to fight the second.']
+      ['medal','Boss choices',['boss-king-slime','boss-lips','boss-matango'],'Choose one of three encounters.'],
+      ['destruction','Boss sequence',['boss-hargon','boss-shido'],'Defeat the first boss, then return to fight the second.']
     ]) {
       await page.goto(url+'articles/location-'+gate+'-gate/');
       const facts=page.locator('.entry-gate-facts');
@@ -183,11 +200,12 @@ test('published gate boss choices and return visits stay distinct from a single 
       const bosses=facts.locator('.entry-boss-list .entry-boss-link');
       await expect(bosses).toHaveCount(ids.length);
       for (const [index,id] of ids.entries()) {
-        await expect(bosses.nth(index)).toHaveAttribute('href','monsters/'+id+'/');
+        await expect(bosses.nth(index)).toHaveAttribute('href','articles/'+id+'/');
         await expect(bosses.nth(index).locator('.entry-portrait')).toHaveCount(1);
         const name=await bosses.nth(index).textContent();
         await bosses.nth(index).click();
-        await expect(page.locator('.entry-identity h1')).toHaveText(name);
+        await expect(page.locator('.entry-content h1')).toHaveText(name);
+        await expect(page.locator('.character-dialogue')).toBeVisible();
         await page.goBack();
       }
     }

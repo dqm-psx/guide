@@ -5,11 +5,11 @@ const assert = require('node:assert/strict');
 require('../../data/world-guide');
 require('../../data/character-dialogue');
 require('../../js/character-dialogue');
-const bindings = require('../../scripts/character-dialogue-bindings.json');
-const characters = WORLD_GUIDE.entries.filter(row => row.kind === 'npc');
+const {bindings} = require('../../scripts/build-character-dialogue');
+const characters = WORLD_GUIDE.entries.filter(row => ['npc','boss'].includes(row.kind));
 const text = id => CHARACTER_DIALOGUE.entries[id].flatMap(scene => scene.passages).join('\n');
 
-test('each character has a distinct transcript with reviewed source rows', () => {
+test('each character and boss has a distinct transcript with reviewed source rows', () => {
   const ids = characters.map(row => row.id).sort();
   assert.deepEqual(Object.keys(CHARACTER_DIALOGUE.entries).sort(), ids);
   assert.deepEqual(Object.keys(bindings.speakers).sort(), ids);
@@ -29,6 +29,17 @@ test('each character has a distinct transcript with reviewed source rows', () =>
   assert.match(text('npc-mud-hand-s-room-rock-paper-scissors-opponent'), /Go see my brother!/);
   const falseKing = CHARACTER_DIALOGUE.entries['npc-king-of-northden'].find(s => s.place.includes('impostor'));
   assert.ok(falseKing.passages.some(line => line.includes('impersonate the king')));
+});
+
+test('boss dialogue keeps other speakers and narration out of the encounter transcript', () => {
+  assert.match(text('boss-dragon'), /Grrr/);
+  assert.doesNotMatch(text('boss-dragon'), /My name is Laura|tries to lift|Watabou:/);
+  assert.match(text('npc-laura'), /Laura/);
+  assert.doesNotMatch(text('npc-laura'), /tries to lift|tried to lift/);
+  assert.match(text('boss-yuna-puppet'), /WILL YOU FIGHT ME/);
+  assert.doesNotMatch(text('boss-yuna-puppet'), /I finally remember/);
+  assert.doesNotMatch(text('boss-spring-attacker'), /Cast the Spirit Mark/);
+  assert.doesNotMatch(text('boss-northden-impostor'), /Splendid! Splendid! You saved me/);
 });
 
 test('the character view keeps short conversations behind a disclosure when hiding spoilers', () => {

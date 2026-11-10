@@ -244,7 +244,7 @@
       '<button type="button" id="'+prefix+'-zoom" data-map-control="zoom" aria-pressed="false">Zoom in</button></div></div>'+
       '<div class="map-scroll" tabindex="0" aria-label="Scrollable field map"><div class="map-image"><img src="maps/'+safe(imageFile)+'" alt="Static field layout of '+safe(row.title)+'"><div class="map-pins">'+pins+'</div><div class="map-gate-pins">'+portalPins+'</div></div></div>'+
       '<div class="map-notes">'+portalLegend+(doors ? '<h4>Connected maps</h4><ol class="map-doors">'+doors+'</ol>' : '')+
-      (npcs.length ? '<p><strong>Characters</strong> · '+npcs.map(n=>'<a href="#field-guide?entry='+safe(n.id)+'">'+safe(n.title)+'</a>').join(' · ')+'</p>' : '')+
+      (!options.inline && npcs.length ? '<section class="location-characters"><h4>Characters here</h4><ul>'+npcs.map(n=>'<li>'+window.DQMField.characterLink(n)+'</li>').join('')+'</ul></section>' : '')+
       (options.inline ? '' : contextMarkup(row))+'</div>';
     const control=name=>detail.querySelector('[data-map-control="'+name+'"]');
     control('layout')?.addEventListener('change',e=>{

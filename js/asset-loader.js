@@ -23,7 +23,7 @@
     const home = view === 'field-guide' && !['entry','game','q','kind'].some(key => route.get(key));
     if (home) return null;
     const group = view === 'field-guide' || view === 'atlas' ? [...groups.field] : [...groups.tools];
-    if (view === 'field-guide' && route.get('entry')?.startsWith('npc-')) group.push(...groups.dialogue);
+    if (view === 'field-guide' && /^(npc|boss)-/.test(route.get('entry') || '')) group.push(...groups.dialogue);
     if (view === 'monster' || view === 'sources') group.unshift(groups.profile[0]);
     if (view === 'monster') group.push(groups.profile[1]);
     if (view === 'breeding-tree' || view === 'team-planner') group.push(...groups.tree);

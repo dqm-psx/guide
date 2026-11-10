@@ -300,9 +300,9 @@ test('a mobile map deep link focuses the requested final-area panel', async ({pa
 
 test('gate boss alternatives and consecutive encounters keep their order and fit on mobile', async ({page}) => {
   await page.setViewportSize({width:375,height:812});
-  for (const [gate,label,species,note] of [
-    ['medal','Boss choices',[9,149,122],'Choose one of three encounters.'],
-    ['destruction','Boss sequence',[293,294],/Defeat.*return.*second/i]
+  for (const [gate,label,species,entries,note] of [
+    ['medal','Boss choices',[9,149,122],['boss-king-slime','boss-lips','boss-matango'],'Choose one of three encounters.'],
+    ['destruction','Boss sequence',[293,294],['boss-hargon','boss-shido'],/Defeat.*return.*second/i]
   ]) {
     await page.goto(url+'#field-guide?entry=location-'+gate+'-gate');
     const facts=page.locator('.gate-facts');
@@ -311,13 +311,13 @@ test('gate boss alternatives and consecutive encounters keep their order and fit
     const links=facts.locator('.gate-boss-list .gate-boss-link');
     await expect(links).toHaveCount(species.length);
     for (const [index,id] of species.entries()) {
-      await expect(links.nth(index)).toHaveAttribute('href','#monster?id='+id);
+      await expect(links.nth(index)).toHaveAttribute('href',new RegExp('entry='+entries[index]));
       await expect(links.nth(index).locator('[data-monster-index="'+id+'"]').first()).toBeVisible();
     }
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
     await links.last().click();
-    await expect(page.locator('#monster')).toBeVisible();
-    await expect(page).toHaveURL(new RegExp('#monster\\?id='+species.at(-1)+'$'));
+    await expect(page.locator('.character-dialogue')).toBeVisible();
+    await expect(page).toHaveURL(new RegExp('entry='+entries.at(-1)+'$'));
   }
 });
 

@@ -2,7 +2,7 @@
 
 ## Gameplay sources
 
-The v1.0.73 walkthrough audit resolved all 1,295 cited records for the 171
+The v1.0.73 walkthrough audit resolved all 1,490 cited records for the 188
 campaign, quest, boss, character and location articles. It also checked the
 native conditions behind the fixed story keys, spirit rewards and arena rounds.
 The v1.0.73 disc uses **Hale** in nine cited lines. The current published text
