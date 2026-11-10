@@ -1462,7 +1462,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Reusable item",
       "summary": "Deals damage with a vacuum wave.",
       "details": [
-        "The GreatTree bazaar compares its effect to Infernos. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Infernos.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 1,500 G (1,350 G with a Gold Pass). GreatTree / Bazaar.",
         "Cobi / Tara shops sell it for 1,500 G (1,350 G with a Gold Pass). GreatLog / Main Street."
@@ -1507,7 +1507,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Reusable item",
       "summary": "Deals damage with a lightning bolt.",
       "details": [
-        "The GreatTree bazaar compares its effect to Bolt. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Bolt.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 3,000 G (2,700 G with a Gold Pass). GreatTree / Bazaar.",
         "Cobi / Tara shops sell it for 3,000 G (2,700 G with a Gold Pass). GreatLog / Main Street."
@@ -1552,7 +1552,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Reusable item",
       "summary": "Deals damage with a blizzard.",
       "details": [
-        "The GreatTree bazaar compares its effect to Freezing Blizzard. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Freezing Blizzard.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 4,000 G (3,600 G with a Gold Pass). GreatTree / Bazaar."
       ],
@@ -1587,7 +1587,7 @@ globalThis.FIELD_GUIDE = {
       "category": "Reusable item",
       "summary": "Deals damage with flames.",
       "details": [
-        "The GreatTree bazaar compares its effect to Scorch. The staff can break after repeated use.",
+        "The GreatTree bazaar compares its effect to Scorch.",
         "Can be reused until it breaks.",
         "Terry shops sell it for 5,000 G (4,500 G with a Gold Pass). GreatTree / Bazaar."
       ],
@@ -2114,7 +2114,8 @@ globalThis.FIELD_GUIDE = {
       "category": "Key item",
       "summary": "Summons a shell to cross the sea.",
       "details": [
-        "The king rewards you after the trouble at Mirage Lake. Return to Warubou with the bell, then press Triangle beside water to cross it."
+        "The king rewards you after the trouble at Mirage Lake. Return to Warubou with the bell, then press Triangle beside water to cross it.",
+        "Warubou later returns the three treasures. Bring them to Darck’s Manor for the trade."
       ],
       "spoiler": "story",
       "source_ids": [
@@ -2135,7 +2136,8 @@ globalThis.FIELD_GUIDE = {
       "category": "Key item",
       "summary": "A mirror that destroys what it reflects.",
       "details": [
-        "Recover it from Volcanic Island Cave and show it to Warubou. Face a breakable rock and press Triangle to clear it."
+        "Recover it from Volcanic Island Cave and show it to Warubou. Face a breakable rock and press Triangle to clear it.",
+        "Warubou later returns the three treasures. Bring them to Darck’s Manor for the trade."
       ],
       "spoiler": "story",
       "source_ids": [
@@ -2159,7 +2161,8 @@ globalThis.FIELD_GUIDE = {
       "category": "Key item",
       "summary": "Summons a cloud to fly through the sky.",
       "details": [
-        "Return to the spirit after restoring peace. Take the shield to Warubou, then press Triangle at a gap where you can fly across."
+        "Return to the spirit after restoring peace. Take the shield to Warubou, then press Triangle at a gap where you can fly across.",
+        "Warubou later returns the three treasures. Bring them to Darck’s Manor for the trade."
       ],
       "spoiler": "story",
       "source_ids": [

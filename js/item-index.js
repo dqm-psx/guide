@@ -4,7 +4,7 @@
   const {alphabetical, enableRows} = DQMSortableIndex;
   const columns = [
     ['name','Item name'], ['description','In-game description'], ['effect','Effect'],
-    ['buy','Buy price'], ['sell','Sell price'], ['source','Where to get it']
+    ['type','Type'], ['uses','Uses'], ['buy','Buy price'], ['sell','Sell price'], ['source','Where to get it']
   ];
   const shopMaps = new Map();
   // The standalone HTML already contains its source links.
@@ -81,14 +81,16 @@
     const price = prices(row,game);
     const sources = reference.sources.filter(source => inGame(source,game));
     return '<dl class="item-facts"><dt>In-game description</dt><dd>'+descriptions(row,game,options)+'</dd>'+
-      '<dt>Effect</dt><dd>'+escape(reference.effect)+'</dd><dt>Sell price</dt><dd>'+(price.sell?.text || 'Cannot sell')+
+      '<dt>Effect</dt><dd>'+escape(reference.effect)+'</dd><dt>Type</dt><dd>'+escape(reference.type)+'</dd>'+
+      '<dt>Uses</dt><dd>'+escape(reference.uses.text)+'</dd><dt>Sell price</dt><dd>'+(price.sell?.text || 'Cannot sell')+
       (price.sell && reference.sell.capital !== reference.sell.field ? ' ('+sellNote(game || row.game)+')' : '')+'</dd></dl>'+
       (sources.length ? '<section class="item-sources"><h3>Where to get it</h3>'+sourceMarkup(sources,options)+'</section>' : '');
   }
   function render(rows, options) {
     const {title, game, escape, entryLink, hidden} = options;
     const headers = columns.map(([key,label]) => '<th scope="col" data-sort="'+key+'"'+
-      (key === 'name' ? ' aria-sort="ascending"' : '')+(key === 'buy' || key === 'sell' ? ' data-numeric' : '')+'>'+label+'</th>');
+      (key === 'name' ? ' aria-sort="ascending"' : '')+(['uses','buy','sell'].includes(key) ? ' data-numeric' : '')+
+      (key === 'uses' ? ' title="Breakable items sort by average uses before they break."' : '')+'>'+label+'</th>');
     const sorted = [...rows].sort((a,b) => alphabetical.compare(options.titleFor(a),options.titleFor(b)) || alphabetical.compare(a.id,b.id));
     const body = sorted.map(row => {
       const guarded = hidden(row);
@@ -99,16 +101,19 @@
       const heading = '<tr data-entry="'+escape(row.id)+'"><th scope="row">'+entryLink(row.id,identity)+'</th>';
       if (guarded) return heading+'<td data-missing>—</td>'.repeat(columns.length-1)+'</tr>';
       const reference = DQMItemReference.items[row.id];
+      const usesOrder = reference.uses.sort == null ? 'data-missing' : 'data-sort-value="'+escape(reference.uses.sort)+'"';
       const price = prices(row,game);
-      const money = (value,empty) => value ? '<td class="price" data-sort-value="'+value.min+'">'+value.text+'</td>' :
-        '<td data-missing>'+empty+'</td>';
+      // A narrow column may wrap a range, but the G stays with its amount.
+      const money = (value,empty) => value ? '<td class="price" data-sort-value="'+value.min+'">'+
+        value.text.split('–').map(amount=>'<span>'+amount+'</span>').join('–<wbr>')+'</td>' : '<td data-missing>'+empty+'</td>';
       const sources = sourceList(row,game);
       return heading+'<td>'+descriptions(row,game,options)+'</td><td>'+escape(reference.effect)+'</td>'+
+        '<td>'+escape(reference.type)+'</td><td '+usesOrder+'>'+escape(reference.uses.text)+'</td>'+
         money(price.buy,'No confirmed shop')+money(price.sell,'Cannot sell')+
         '<td '+(sources.length ? 'data-sort-value="'+escape(sources.map(source=>source.text).join(' '))+'"' : 'data-missing')+'>'+
         sourcePreview(row,sources,options)+'</td></tr>';
     });
-    return '<div class="reference-table-panel"><p class="table-scroll-hint">Scroll sideways to see all columns.</p>'+
+    return '<div class="reference-table-panel item-table-panel"><p class="table-scroll-hint">Scroll sideways to see all columns.</p>'+
       '<div class="reference-table-scroll" tabindex="0" role="region" aria-label="Scrollable item list">'+
       '<table class="reference-table item-index" aria-label="'+escape(title)+'"><thead><tr>'+headers.join('')+'</tr></thead><tbody>'+
       body.join('')+'</tbody></table></div>'+
@@ -120,10 +125,18 @@
     return 'GreatTree Bazaar and GreatLog Main Street pay the lower sell price. Terry’s gate shops and other Cobi &amp; Tara towns pay the higher price';
   }
   function searchTerms(row, game, games) {
-    return [row.title,...(row.aliases || []),row.category,DQMItemReference.items[row.id].effect,
+    const reference = DQMItemReference.items[row.id];
+    return [row.title,...(row.aliases || []),row.category,reference.type,reference.uses.text,reference.effect,
       ...menuText(row,game,games).map(([,text])=>text),...sourceList(row,game).map(source=>source.text)];
   }
-  globalThis.DQMItemIndex = {render, itemFacts, shopLink, searchTerms, enableSorting:enableRows};
+  function extraDetails(row) {
+    const reference = DQMItemReference.items[row.id];
+    if (!reference) return row.details || [];
+    const covered = new Set(['Single use.','Can be reused until it breaks.','Unlimited uses.',
+      reference.effect,...reference.sources.map(source=>source.text)]);
+    return (row.details || []).filter(text=>!covered.has(text));
+  }
+  globalThis.DQMItemIndex = {render, itemFacts, shopLink, searchTerms, extraDetails, enableSorting:enableRows};
   const published = globalThis.document?.querySelector('#items .item-index');
   if (published) enableRows(published);
 })();

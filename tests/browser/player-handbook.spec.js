@@ -81,14 +81,40 @@ test('Items sorts real prices numerically, keeps missing values last and links t
   const index=page.getByRole('table',{name:'Items',exact:true});
   const rows=index.locator('tbody tr');
   await expect(rows).toHaveCount(91);
-  await expect(index.getByRole('button')).toHaveCount(6);
+  const labels = await index.getByRole('button').evaluateAll(buttons=>buttons.map(button=>button.firstChild.textContent.trim()));
+  expect(labels).toEqual(['Item name','In-game description','Effect','Type','Uses','Buy price','Sell price','Where to get it']);
   const herb=rows.filter({has:page.getByRole('rowheader',{name:'Medicinal Herb',exact:true})});
   await expect(herb).toContainText('One ally: 30-40 HP restored.');
   await expect(herb.getByRole('cell',{name:'7–8 G',exact:true})).toHaveCount(1);
   const images=rows.locator('th img');
   await expect(images).toHaveCount(91);
   expect(await images.evaluateAll(nodes=>Promise.all(nodes.map(async n=>{await n.decode();return n.naturalWidth>0 && Boolean(n.title);})).then(v=>v.every(Boolean)))).toBe(true);
-  for(const [col,num] of [['Buy price',3],['Sell price',4]]){
+  const column = label=>index.getByRole('columnheader',{name:label,exact:true}).evaluate(node=>node.cellIndex);
+  const typeColumn = await column('Type');
+  const collator = new Intl.Collator('en',{sensitivity:'base',numeric:true});
+  for (const dir of [1,-1]) {
+    await index.getByRole('button',{name:'Type',exact:true}).click();
+    const types = await rows.evaluateAll((list,i)=>list.map(row=>row.cells[i].textContent),typeColumn);
+    expect(types).toEqual([...types].sort((left,right)=>dir*collator.compare(left,right)));
+  }
+  await expect(herb.getByRole('cell',{name:'Healing',exact:true})).toHaveCount(1);
+  const usesColumn = await column('Uses');
+  const useCell = name => index.getByRole('rowheader',{name,exact:true}).evaluate((th,i)=>th.parentElement.cells[i].textContent,usesColumn);
+  expect(await useCell('Sea Bell')).toBe('1 hand-in');
+  expect(await useCell('Stamina Belt')).toBe('While equipped');
+  expect(await useCell('Friendship Staff')).toContain('61%');
+  expect(await useCell('Divine Staff')).toContain('11%');
+  for (const direction of ['ascending','descending']) {
+    await index.getByRole('button',{name:'Uses',exact:true}).click();
+    await expect(index.getByRole('columnheader',{name:'Uses'})).toHaveAttribute('aria-sort',direction);
+    const names = await rows.getByRole('rowheader').allTextContents();
+    const ranks = ['Medicinal Herb','Friendship Staff','Thunder Staff','Divine Staff','Transform Staff'].map(name=>names.indexOf(name));
+    expect(ranks.every(rank=>rank>=0)).toBe(true);
+    expect(names.indexOf('Stamina Belt')).toBeGreaterThan(Math.max(...ranks));
+    expect(ranks).toEqual([...ranks].sort((a,b)=>direction==='ascending' ? a-b : b-a));
+  }
+  for(const col of ['Buy price','Sell price']){
+    const num=await column(col);
     const button=index.getByRole('button',{name:col,exact:true});
     for(const dir of [1,-1]){
       await button.click();

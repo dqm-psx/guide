@@ -136,8 +136,7 @@ function addEntryPages(assets) {
     const steps=(routeData.stages || []).map(stage=>[stage.arena,...stage.gates].map(articleLink).filter(Boolean).join(' → '));
     const guideLinks=[routeData.gate,routeData.boss,routeData.arena,...(routeData.supplies || [])].filter(Boolean).map(articleLink)
       .concat((routeData.skills || []).map(id=>names[id]).filter(Boolean).map(skillLink));
-    const described = item ? new Set([item.effect,...item.sources.map(source=>source.text)]) : new Set();
-    const details=(row.details || []).filter(line=>!described.has(line) && (!stock.length || !/shops sell it for/i.test(line)));
+    const details=db.DQMItemIndex.extraDetails(row).filter(line=>!stock.length || !/shops sell it for/i.test(line));
     const nicknameNote=db.DQMNicknameMarkup(row,escape,articleLink);
     const stepsMarkup = row.kind==='quest' && details.length ? '<ol>'+details.map(step=>'<li>'+escape(step)+'</li>').join('')+'</ol>' : details.map(paragraph).join('');
     const requests = row.requested_species?.length ? '<section><h2>Monsters in request order</h2><ol>'+

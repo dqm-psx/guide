@@ -89,6 +89,33 @@ def verify_shops(row, item_id, base, stocks, discount):
                 f"Purchase price differs for {row['id']}")
 
 
+# Group items by the job players look them up for. The Zenithian treasures
+# are story items even though their names sound like equipment.
+ITEM_TYPES = {
+    "Healing": (1, 2, 3, 4, 5, 11, 12),
+    "Status cure": range(6, 11),
+    "Stat booster": range(13, 19),
+    "Personality book": range(19, 25),
+    "Meat": range(25, 30),
+    "Recruitment": (30,),
+    "Field tool": (31, 32, 33, 40, 41, 42, 43, 46, 47),
+    "Battle staff": range(34, 40),
+    "Collectible": (44,),
+    "Shop pass": (45,),
+    "Quest item": range(48, 60),
+    "Miscellaneous": (60, 61),
+    "Accessory": range(64, 93),
+    "Breeding": (96,),
+}
+
+
+def item_type(item_id):
+    for label, ids in ITEM_TYPES.items():
+        if item_id in ids:
+            return label
+    raise ValueError(f"Missing item type for {item_id}")
+
+
 def guide_effect(n, lo, hi):
     if n in (1, 2, 4):
         stat = "MP" if n == 4 else "HP"
@@ -209,6 +236,61 @@ def queen_rewards(disc, queen, system):
     return result
 
 
+def battle_break_table(disc):
+    overlay = disc.resource(5502)
+    base = 0x80114CB8
+    # The item preparation routine copies this table, sets a break flag for
+    # nonzero thresholds >= the battle roll, then the item script removes the
+    # selected bag slot. No charge counter lives alongside the item ID.
+    for data, origin, start, end, signature in [
+        (overlay, base, 0x8014BFA0, 0x8014C050, "49c46e727a2f11fdecd75fae02d9fe35ea46df971378d3e3bfc0aec3ddd2a55b"),
+        (overlay, base, 0x8014C0E4, 0x8014C158, "778581ef92aa822847433148acf626e5ec31cef194c745a3593a8da32872150d"),
+        (overlay, base, 0x80126ED4, 0x80126F40, "ff9d343fbd025ce54636f64fea72b99500eb62c5fe4ba30fe72a44ce6b55a4e1"),
+        (disc.resource(5498), 0, 0xE41, 0xE66, "274cd4607844a6653f2f83ded4fb465deb514faf688aa659e2d3f6a2819d074c"),
+        (disc.exe, EXE_BASE, 0x80015640, 0x8001575C, "8f62c0f0446e2efb2da8dd353e4eb68c60d7996cdd242e235880b60a9f0f975a"),
+    ]:
+        require(world.digest(data[start - origin:end - origin]) == signature,
+                "Item consumption logic changed at " + hex(start))
+    offset = 0x80115900 - base
+    return overlay[offset:offset + 97]
+
+
+def item_uses(n, attributes, threshold):
+    consumption = attributes & 0x70
+    kind = (attributes >> 12) & 3
+    if kind == 2:
+        # Clear the bag slot when equipped; the monster now holds the accessory.
+        return {"text": "While equipped", "sort": None}
+    if kind == 1:
+        # Warubou unlocks traversal before 54–56 enter the bag. Darck takes
+        # one of each (resource 112); the Demon Lord takes 57–59 (resource 111).
+        if 54 <= n <= 59:
+            require(consumption == 0, f"Treasure use changed for {n}")
+            return {"text": "1 hand-in", "sort": 1}
+        story = {
+            44: "Traded for prizes", 45: "While carried", 50: "Reusable until returned",
+            60: "Unconfirmed", 61: "Unconfirmed",
+        }
+        if n in story:
+            require(consumption == 0, f"Key item use changed for {n}")
+            return {"text": story[n], "sort": None}
+    if consumption == 0:
+        # The tail and harp keep their bag slot. Transform Staff also stays in
+        # the bag, and its native field callback only accepts the Sky World.
+        require(n in (31, 33, 53) and threshold == 0, f"Unexpected reusable item {n}")
+        return {"text": "Unlimited", "sort": 9007199254740991}
+    if consumption == 0x70:
+        # Four key items are removed only after the correct field quest action.
+        require(threshold == (0 if kind == 1 else 100), f"Unexpected one-use item {n}")
+        return {"text": "1 quest use" if kind == 1 else "1 use", "sort": 1}
+    require(attributes & 0xC000 == 0x8000 and 0 < threshold < 100, f"Unexpected battle item {n}")
+    # ((rand(0,511) & 496) << 3 | (rand(0,255) & 254) >> 1) // 41 gives
+    # rolls 0..99. Both endpoints count. This rounds the per-use probability
+    # to whole percent; the two LCG samples introduce a tiny distribution bias.
+    chance = min((threshold + 1) * 41, 4096) / 4096
+    return {"text": f"1+ (~{chance:.0%} break chance)", "sort": round(1 / chance, 2)}
+
+
 def build(image, comparison):
     proof = world.read_json(ROOT / "data/world-verification.json")
     require(world.digest(image) == proof["patched_bin_sha256"] == world.V73_HASH, "Unexpected Current disc")
@@ -223,6 +305,7 @@ def build(image, comparison):
     articles = {r["id"]: r for r in [*entries, *world.handbook()[1]]}
     disc = world.Disc(image)
     runtime = disc.resident_memory()
+    break_thresholds = battle_break_table(disc)
     inventory = shops(disc)
     def key_theme(slot):
         record = themes[slot]
@@ -264,6 +347,7 @@ def build(image, comparison):
             sources.append({"game": "dqm1", "text": "Pick it up on the ordinary floors of Travelers’ Gates."})
         require(all(s["entry"] in articles for s in sources if "entry" in s), f"Broken source link for {n}")
         item = {"description": description, "effect": guide_effect(n, lo, hi),
+                "type": item_type(n), "uses": item_uses(n, attributes, break_thresholds[n]),
                 "sell": None if attributes & 0x0200 else {"capital": base * 75 // 100, "field": base * 80 // 100},
                 "sources": sources}
         if n in ALTERNATE_MENU:

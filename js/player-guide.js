@@ -324,8 +324,7 @@
         .map(price=>'<tr><th scope="row">'+safe(games[price.game])+'</th><td>'+price.locations.map(location=>DQMItemIndex.shopLink(location,itemOptions)).join(' · ')+
         '</td><td>'+safe(price.buy)+' G</td><td>'+safe(price.gold_pass)+' G</td></tr>').join('');
       const item = DQMItemReference.items[row.id];
-      const described = item ? new Set([item.effect,...item.sources.map(source=>source.text)]) : new Set();
-      const details=(row.details || []).filter(line=>!described.has(line) && !(prices && /shops sell it for [\d,]+ G/i.test(line)) && !(routeData?.gate && /^Encounter: /u.test(line)));
+      const details=DQMItemIndex.extraDetails(row).filter(line=>!(prices && /shops sell it for [\d,]+ G/i.test(line)) && !(routeData?.gate && /^Encounter: /u.test(line)));
       const stepsTag = row.kind === 'quest' ? 'ol' : 'ul';
       body = artwork(row, false) +
         (item ? DQMItemIndex.itemFacts(row,itemOptions) : '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>') +

@@ -101,11 +101,20 @@
   .reference-table { min-width: 0; font-size: 8pt; }
   .reference-table-panel .reference-table :is(thead th, tbody th) { position: static; }
 }
-.item-index thead [data-sort="name"] { width:18%; }
-.item-index thead [data-sort="description"] { width:20%; }
-.item-index thead [data-sort="effect"] { width:21%; }
-.item-index thead :is([data-sort="buy"], [data-sort="sell"]) { width:9%; }
-.item-index thead [data-sort="source"] { width:23%; }
+@media screen {
+  .item-index { min-width:70rem; }
+}
+@container (max-width: 70rem) {
+  .item-table-panel .table-scroll-hint { display:block; margin:0 0 .4rem; }
+}
+.item-index thead [data-sort="name"] { width:15%; }
+.item-index thead [data-sort="description"] { width:16%; }
+.item-index thead [data-sort="effect"] { width:19%; }
+.item-index thead [data-sort="type"] { width:9%; }
+.item-index thead [data-sort="uses"] { width:9%; }
+.item-index thead :is([data-sort="buy"], [data-sort="sell"]) { width:7.5%; }
+.item-index thead [data-sort="source"] { width:17%; }
+.item-index .price span { white-space:nowrap; }
 .item-index .item-name { display:flex; align-items:center; gap:.45rem; min-height:2.5rem; }
 .item-name img { flex:none; object-fit:contain; width:2.5rem; height:2.5rem; image-rendering:pixelated; }
 .item-index .item-source + .item-source { margin-top:.3rem; }
