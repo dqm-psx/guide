@@ -159,7 +159,7 @@
   {"id": 158, "source_id": "e0fe5", "spelling": "Imitate", "affected_entries": ["quest-arena-dqm2-a"], "description_source_id": "m_exe_08d138", "type": "Utility", "effect": "Readies the user to copy an enemy’s action."},
   {"id": 159, "source_id": "e0fea", "spelling": "Meditate", "description_source_id": "m_exe_08d150", "type": "Healing", "effect": "Recovers up to {roll} of the user’s missing HP."},
   {"id": 160, "source_id": "e0fef", "spelling": "Spirit Song", "description_source_id": "m_exe_08d16c", "type": "Healing", "effect": "After preparing, the user revives the first fallen ally at full HP. Each remaining fallen ally has a 50% chance to revive at half HP."},
-  {"id": 161, "source_id": "e0ff7", "spelling": "Amor Rain", "description_source_id": "m_exe_08d188", "type": "Healing", "effect": "After preparing, the user heals each living ally for 20%, 40%, or 100% of its maximum HP. Each ally has a 50% chance of a full heal."},
+  {"id": 161, "source_id": "e0ff7", "spelling": "Amor Rain", "description_source_id": "m_exe_08d188", "type": "Healing", "effect": "After preparing, the user heals each living ally for one-fifth (20% chance), two-fifths (30%), or all (50%) of its maximum HP."},
   {"id": 162, "source_id": "e0fff", "spelling": "Whistle", "description_source_id": "m_exe_08d1a4", "type": "Utility", "effect": "Calls wild monsters to the party while exploring."},
   {"id": 163, "source_id": "e1004", "spelling": "Pheromones", "description_source_id": "m_exe_08d1c0", "type": "Utility", "effect": "Attracts wild encounters by scent while exploring."},
   {"id": 164, "source_id": "e100a", "spelling": "StepGuard", "description_source_id": "m_exe_08d1d8", "type": "Utility", "effect": "Lets the party walk across harmful terrain without losing HP."},
@@ -167,5 +167,5 @@
   {"id": 166, "source_id": "e1014", "spelling": "Whisper", "description_source_id": "m_exe_08d210", "type": "Utility", "effect": "Identifies monsters that can appear in the current area."},
   {"id": 167, "source_id": "e1019", "spelling": "Errand", "description_source_id": "m_exe_08d228", "type": "Utility", "effect": "Spends 100 gold to have a monster fetch an item."},
   {"id": 168, "source_id": "e101e", "spelling": "Hawk Eye", "description_source_id": "m_exe_08d244", "type": "Utility", "effect": "Finds nearby settlements while the party is exploring."},
-  {"id": 169, "source_id": "e1023", "spelling": "Seek", "description_source_id": "m_exe_08d264", "type": "Utility", "effect": "Scouts the surroundings outside battle."}
+  {"id": 169, "source_id": "e1023", "spelling": "Seek", "description_source_id": "m_exe_08d264", "type": "Utility", "effect": "Shows the terrain around the party on the map."}
 ]
