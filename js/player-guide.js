@@ -49,6 +49,7 @@
   const searchIndex = new Map(rows.map(row => [row.id, normalized([row.title, row.region, row.summary, row.category,row.effect?.target,
     ...(row.requested_species || []).map(id => GUIDE_REFERENCE.species[id].display_name),
     ...(row.nickname_rows || []).flatMap(name => name.aliases), ...(row.default_nicknames || []).flatMap(name => name.aliases),
+    ...(row.sections || []).flatMap(section=>[section.title,section.intro,...(section.rows || []).flat()]),
     ...(row.details || []), ...(row.aliases || []), ...(row.places || []), ...(row.prices || []).flatMap(price=>price.locations)].join(' '))]));
   const monsters = GUIDE_REFERENCE.species.filter(row => row.current_name && (row.system_entry_id || row.playable)).map(row => ({
     id: 'monster-' + row.index, index: row.index, kind: 'monster', game: 'both', title: row.display_name,
@@ -311,6 +312,7 @@
       const stepsTag = row.kind === 'quest' ? 'ol' : 'ul';
       body = artwork(row, false) +
         '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>' +
+        DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
         (row.arena_classes ? '<section class="route-section"><h3>Arena classes</h3><ul class="quest-ranks">' + row.arena_classes.map(id =>
@@ -341,14 +343,15 @@
     {id:'action-tree',kind:'tool',game:'both',title:'Breeding tree',href:'#breeding-tree',
       summary:'Plan the parents and grandparents of a target monster.', aliases:['breeding plan','breeding tree','plan a team']},
   ];
-  const searchNames = new Map([...rows,...monsters,...actions].map(row => [row.id,
-    Array.from(new Set([row.title,...(row.aliases || [])].filter(Boolean).map(normalized)))]));
+  const searchNames = new Map([...rows,...monsters,...actions].map(row => {
+    const labels=(row.sections || []).flatMap(section=>(section.rows || []).map(([label])=>label));
+    return [row.id,Array.from(new Set([row.title,...(row.aliases || []),...labels].filter(Boolean).map(normalized)))];
+  }));
 
-  // Accept a single missing, extra, substituted or transposed letter in a name.
-  // Short prefixes and snippets of body text require exact characters.
+  // A one-letter difference in a short name can change the subject (bard/bird).
   function closeWord(a,b) {
     if (a===b) return true;
-    if (a.length<4 || Math.abs(a.length-b.length)>1) return false;
+    if (a.length<5 || Math.abs(a.length-b.length)>1) return false;
     let i=0;
     while (i<a.length && a[i]===b[i]) i++;
     if (a.length<b.length) return a.slice(i)===b.slice(i+1);
@@ -358,9 +361,9 @@
   }
   function searchMatches(pool, query, buying) {
     const words=query.split(/\s+/).filter(Boolean);
+    const candidates=buying ? pool.filter(r=>r.prices?.length) : pool;
     const scored=[];
-    for (const r of pool) {
-      if (buying && !r.prices?.length) continue;
+    for (const r of candidates) {
       const forms=searchNames.get(r.id) || [];
       const text=r.text || searchIndex.get(r.id) || normalized([r.title,r.summary,...forms].join(' '));
       let score;
@@ -368,14 +371,34 @@
       else if (forms.some(name=>name.startsWith(query))) score=1;
       else if (forms.some(name=>name.includes(query))) score=2;
       else if (words.every(w=>text.includes(w))) score=4;
-      else if (forms.some(name=>{
-        const tokens=name.split(/[^\p{L}\p{N}]+/u);
-        return words.every(w=>tokens.some(t=>t.startsWith(w) || closeWord(w,t)));
-      })) score=6;
       else continue;
       scored.push({r,score});
     }
-    return scored.sort((a,b)=>a.score-b.score).map(item=>item.r);
+    if (scored.length) return scored.sort((a,b)=>a.score-b.score).map(item=>item.r);
+    if (!words.some(word=>word.length>=5)) return [];
+    const corrections=[], related=[];
+    for (const row of candidates) {
+      const forms=searchNames.get(row.id);
+      if (forms.some(name=>closeWord(query,name))) corrections.push(row);
+      else if (forms.some(name=>{
+        const tokens=name.split(/[^\p{L}\p{N}]+/u);
+        return words.every(w=>tokens.some(t=>t.startsWith(w) || closeWord(w,t)));
+      })) related.push(row);
+    }
+    return corrections.concat(related);
+  }
+  function matchingSectionRow(row,query,game) {
+    if (!query || !row.sections) return;
+    const sections=row.sections.filter(section=>!game || !section.game || section.game===game);
+    const entries=sections.flatMap(section=>(section.rows || []).map(([label,detail])=>({section:section.title,label,detail})));
+    const byLabel=entries.find(entry=>normalized(entry.label)===query);
+    if (byLabel) return byLabel;
+    if (normalized([row.title,row.summary].join(' ')).includes(query)) return;
+    const words=query.split(/\s+/);
+    return entries.find(({section,label,detail})=>{
+      const text=normalized([section,label,detail].join(' '));
+      return words.every(word=>text.includes(word));
+    });
   }
   function questDirectory(p, quests) {
     const sections = [];
@@ -420,6 +443,19 @@
     const kind = p.get('kind'), game = p.get('game'), q = normalized(p.get('q')).trim();
     const pool = q && !kind ? rows.concat(monsters,actions) : rows;
     const filtered = pool.filter(r => (!kind || kind === r.kind) && (!game || r.game === 'both' || r.game === game));
+    if (kind === 'location' && !q) {
+      const places = DQMLocations.render(game,{byId,routes:FIELD_ROUTES.routes,escape:safe,hidden:guarded,adventures:games,
+        entryLink:(id,label)=>'<a href="'+linked(p,{entry:id,page:''})+'">'+safe(label || safeTitle(byId.get(id)))+'</a>',
+        mapLink:id=>{
+          const [map]=window.DQMAtlas.placesForMaps([id]);
+          return '<a href="#atlas?map='+safe(id)+'">'+safe(map.title)+'</a>';
+        }
+      });
+      const title=game==='dqm1' ? games.dqm1+'’s gates' : game==='dqm2' ? games.dqm2+'’s worlds' : 'Gates and worlds';
+      el('guide-directory').innerHTML='<div class="directory-head"><div><a href="#field-guide">Field guide</a>'+
+        '<h2 id="directory-title" tabindex="-1">'+safe(title)+'</h2></div></div><div class="place-directory">'+(places || '<p>No matching locations</p>')+'</div>';
+      return title;
+    }
     if (kind === 'quest' && !q) return questDirectory(p,filtered);
     if (kind === 'npc' && !q) return characterDirectory(p,filtered);
     const buying = /^(?:(?:where|how) (?:can i |to )?)?(buy|purchase|shop for)\b\s*/u;
@@ -434,9 +470,11 @@
       const hidden = guarded(r);
       let href = r.href || (r.kind === 'monster' ? '#monster?id=' + r.index : linked(p, {entry:r.id}));
       const thumb = hidden ? '' : artwork(r, true);
+      const match = hidden ? null : matchingSectionRow(r,q,game);
       const context = [!game && ['dqm1','dqm2'].includes(r.game) ? games[r.game] : '',
-        !kind ? categories[r.kind] : '', r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
+        !kind ? categories[r.kind] : '', match?.section, r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
       let summary=shopQuery && r.prices?.length ? r.prices[0].locations[0]+' · '+r.prices[0].buy+' G' : r.summary;
+      if (match) summary=match.label+' · '+match.detail;
       if (speciesMatches.length) {
         const locations = GUIDE_REFERENCE.species[r.index].locations.filter(loc=>loc.kind==='wild' &&
           (!hunt[2] || loc.game===hunt[2]) && (!game || (loc.game==='terry' ? 'dqm1' : 'dqm2')===game));
@@ -448,12 +486,14 @@
         } else summary = 'No wild location recorded for this search. See breeding and other encounters.';
       }
       return '<a class="guide-row" href="' + href + '">' + thumb + '<span>' + (context ? '<small>' + safe(context) + '</small>' : '') +
-        '<strong>' + safe(safeTitle(r)) + '</strong>' + (!hidden && summary ? '<span>' + safe(summary) + '</span>' : '') + '</span></a>';
+        '<strong>' + safe(safeTitle(r)) + '</strong>' + (!hidden && summary ? '<span'+(match ? ' class="guide-search-excerpt"' : '')+'>' + safe(summary) + '</span>' : '') + '</span></a>';
     }).join('');
     el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Field guide</a><h2 id="directory-title" tabindex="-1">' + safe(heading) +
       '</h2></div></div>' +
       '<p class="guide-count" role="status">' + (matches.length ? matches.length + (matches.length === 1 ? ' entry' : ' entries') : 'No matching entries') + (pages > 1 ? ' · Page ' + page + ' of ' + pages : '') +
-      '</p><div class="directory-grid">' + (body || '<a href="#field-guide">Reset filters</a>') + '</div>' +
+      '</p><div class="directory-grid">' + (body || (q && (kind || game)
+        ? '<a href="'+linked(p,{kind:'',game:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>'
+        : '<a href="#field-guide">Reset filters</a>')) + '</div>' +
       (pages > 1 ? '<nav class="guide-pager" aria-label="Result pages">' +
         (page>1 ? '<a href="' + linked(p,{page:String(page-1)}) + '">Previous</a>' : '') +
         (page<pages ? '<a href="' + linked(p,{page:String(page+1)}) + '">Next</a>' : '') + '</nav>' : '');
@@ -508,5 +548,5 @@
     if (!el('field-guide').hidden) document.title = show() + ' · DQM1&2 PSX Player Guide';
     if (!el('atlas').hidden) window.DQMAtlas?.show();
   }
-  window.DQMField = {show, filter, guarded, campaigns, setSpoilers, walkthroughPath, kindForEntry: id => byId.get(id)?.kind};
+  window.DQMField = {show, filter, guarded, campaigns, setSpoilers, walkthroughPath, entryForNav: id => byId.get(id)};
 })();

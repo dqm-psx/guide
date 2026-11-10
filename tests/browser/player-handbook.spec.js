@@ -47,6 +47,28 @@ test('item abbreviations lead to PSX shop prices and a shareable result', async 
   await expect(page.locator('.guide-row').first()).toHaveAttribute('href','#pair-finder');
 });
 
+test('short searches keep their spelling and scoped searches can reach other topics', async ({page}) => {
+  await page.setViewportSize({width:375,height:780});
+  await page.goto(url+'#field-guide?kind=npc&q=bard');
+  await expect(page.locator('.guide-count')).toHaveText('No matching entries');
+  await page.getByRole('link',{name:'Search all topics for “bard”'}).click();
+  const results=page.locator('.guide-row');
+  await expect(results.first()).toHaveAttribute('href',/entry=field-wandering-masters/);
+  await expect(results.first()).toContainText(/Terry.*Bard.*two-room floor.*20/);
+  expect(await results.first().locator('.guide-search-excerpt').evaluate(el=>el.scrollHeight<=el.clientHeight)).toBe(true);
+  await expect(results.filter({has:page.locator('strong',{hasText:/bird/i})})).toHaveCount(0);
+  await page.locator('#guide-game').selectOption('dqm2');
+  await expect(results.first()).toContainText(/Cobi and Tara.*Bard.*total EXP/);
+  await results.first().click();
+  await expect(page.locator('#guide-article .article-topic h3').first()).toContainText('Cobi and Tara');
+  await page.locator('.guide-back').click();
+  await page.locator('#guide-game').selectOption('');
+  await page.getByLabel('Search the guide').fill('bird');
+  await expect(results.filter({has:page.getByText('Bird Slash',{exact:true})})).toHaveCount(1);
+  await page.getByLabel('Search the guide').fill('slmie');
+  await expect(results.first().locator('strong')).toHaveText('Slime');
+});
+
 test('a species hunting question opens the correct campaign and encounter pool', async ({page}) => {
   await page.goto(url);
   await page.getByLabel('Search the guide').fill('Where can I catch Almiraj as Tara?');
@@ -219,7 +241,18 @@ test('regional filters distinguish encounter pools and keep their rosters sharea
   await expect(pool).toHaveValue(chosen);
 });
 test('Healie speaks on his own page and links to his rescue quest', async ({page}) => {
-  await page.goto(url+'#field-guide?entry=npc-healie');
+  await page.setViewportSize({width:375,height:780});
+  await page.goto(url+'#field-guide?kind=npc');
+  const characters=page.locator('.character-directory');
+  for (const role of ['Pulio','Healie / Hale']) {
+    const image=characters.getByRole('link',{name:role,exact:true}).locator('.npc-art');
+    const drawingHeight=await image.evaluate(el=>{
+      const style=getComputedStyle(el);
+      return el.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom);
+    });
+    expect(drawingHeight).toBeGreaterThanOrEqual(64);
+  }
+  await characters.getByRole('link',{name:'Healie / Hale',exact:true}).click();
   const article = page.locator('#guide-article');
   await expect(article.locator('.spoken-lines')).toContainText("Hello! I'm Healie!");
   const quest = article.locator('.character-quests a[href*="quest-rescue-healie"]');

@@ -261,6 +261,12 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
       const updated=row[key].map(update);
       if (updated.some((value,i)=>value!==row[key][i])) patch[key]=updated;
     }
+    if (row.sections) {
+      const sections = row.sections.map(section => ({
+        ...section, title:revise(section.title), intro:revise(section.intro), rows:section.rows.map(pair=>pair.map(revise))
+      }));
+      if (JSON.stringify(sections) !== JSON.stringify(row.sections)) patch.sections = sections;
+    }
     if (row.prices) {
       const locations=row.prices.map(price=>price.locations.map(place));
       if (locations.some((places,i)=>places.some((s,j)=>s!==row.prices[i].locations[j]))) {

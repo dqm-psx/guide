@@ -46,33 +46,24 @@ test.describe('sticky chrome and feature surfaces', () => {
     expect(new Set(offsets).size).toBe(1);
   });
 
-  test('hover opens one navigation menu at a time and exposes every destination', async ({ page }) => {
+  test('desktop guide contents link directly to both adventures and stay in place when navigating', async ({ page }) => {
     await page.goto(FILE_URL);
-    const destinations = {
-      adventure: ['#field-guide','#field-guide?kind=story','#field-guide?kind=quest','#field-guide?kind=boss','#atlas','#field-guide?kind=location','#atlas?tab=encounters'],
-      reference: ['#field-guide?kind=npc','#field-guide?kind=item','#field-guide?kind=tool','#field-guide?kind=skill','#field-guide?kind=mechanic'],
-      breeding: ['#pair-finder','#breeding-tree','#breeding-table'],
-    };
-    await expect(page.locator('.nav-links:visible')).toHaveCount(0);
-    for (const [name,hrefs] of Object.entries(destinations)) {
-      const trigger = page.locator('#' + name + '-nav-trigger');
-      const menu = page.locator('#' + name + '-nav-links');
-      await trigger.hover();
-      // Pin Adventure before moving to Reference to check that the new menu
-      // dismisses even a menu that would otherwise remain open on pointerleave.
-      if (name === 'adventure') await trigger.click();
-      await expect(trigger).toHaveAttribute('aria-expanded','true');
-      await expect(menu).toBeVisible();
-      await expect(page.locator('.nav-links:visible')).toHaveCount(1);
-      await expect(page.locator('.nav-trigger[aria-expanded="true"]')).toHaveCount(1);
-      expect(await menu.locator('a').evaluateAll(links => links.map(a => a.getAttribute('href')))).toEqual(hrefs);
-      await menu.locator('a').last().hover();
-      await expect(menu).toBeVisible();
+    const nav = page.getByRole('navigation', {name:'Guide contents'});
+    await expect(page.getByRole('button',{name:'Browse guide'})).toBeHidden();
+    await expect(nav.getByRole('heading')).toHaveText(['Walkthroughs','Places','Reference','Breeding & planning']);
+    for (const name of ['Terry','Cobi & Tara','Terry’s gates','Cobi & Tara’s worlds','Characters','Monster library','My game']) {
+      await expect(nav.getByRole('link',{name,exact:true})).toBeVisible();
     }
-    await expect(page.locator('#breeding-nav-links a')).toHaveText(['Breeding lookup','Breeding tree','Breeding table']);
-    await page.locator('.masthead').hover();
-    await expect(page.locator('.nav-links:visible')).toHaveCount(0);
-    await expect(page.locator('.nav-trigger[aria-expanded="true"]')).toHaveCount(0);
-    await expect(page.locator('footer a[href="https://dqm-psx.github.io/translations/"]')).toBeVisible();
+    const terry = nav.getByRole('link',{name:'Terry',exact:true});
+    await terry.click();
+    await expect(terry).toHaveAttribute('aria-current','page');
+    await expect(page.locator('#article-title')).toBeFocused();
+    const siblings = nav.getByRole('link',{name:'Cobi & Tara’s worlds',exact:true});
+    await siblings.click();
+    await expect(siblings).toHaveAttribute('aria-current','page');
+    await expect(page.locator('#directory-title')).toBeFocused();
+    await page.goBack();
+    await expect(terry).toHaveAttribute('aria-current','page');
+    await expect(nav).toBeVisible();
   });
 });

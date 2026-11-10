@@ -302,7 +302,6 @@ test.describe('served', () => {
     await page.check('#planner-sex-female');
     await addMonster(page, 89, 'farm');
 
-    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#pair-finder"]');
     await page.locator('#pair-finder [data-parent-mode]').click();
     await page.selectOption('#target', '2');

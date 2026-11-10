@@ -114,9 +114,9 @@ when a stable patch release is published or edited. The guide needs no
 private-repository access or additional repository secret.
 
 NPC names, named locations and reviewed mentions in walkthrough prose follow
-the same snapshot through stable translation record IDs. Four breeding tools
-share the **Breeding** navigation menu. Hover, tap, or focus the button and
-press an arrow key to choose a tool.
+the same snapshot through stable translation record IDs. The guide contents
+link to both campaign walkthroughs, gates and worlds, reference pages, and breeding
+tools. On smaller screens, **Browse guide** opens the same contents; Escape closes it.
 
 **Translation wording, latest patch release, gameplay verification, and site
 deployment are separate versions.** A newer release label or translation snapshot
@@ -216,6 +216,52 @@ metadata selects the complete suite. The exact guide commit and public source
 revision are pinned throughout validation, and the tested artifact is deployed.
 Scripts, test output, local inputs, Git history, and the native extraction
 baseline are excluded from the hosted files.
+
+### Foreign masters
+
+The original Japanese executable and the v1.0.73 Current executable have
+identical bytes at `0x80050440..0x800509D0` (end exclusive, SHA-256
+`d87b94702cdefd6968068906be08c5bb059cf12298c0d29b11f364f400008fd1`).
+This is the master selector and its party tests. The prior-floor statistics
+at `0x8003F298..0x8003F364` and the destination selector at
+`0x8003EB8C..0x8003ED48` also match. Extract the executable as in
+`scripts/verify-patch-gameplay.py` and subtract `0x8000F800` from a virtual
+address for its file offset.
+
+- Terry’s story bit 2 is “Cleared Class F” in the game’s event list
+  (`m_exe_08ed2c`). Compare remaining pickups, total rooms and revealed rooms
+  in that order. The two-room branch does not compare how many items were
+  taken. Merchant eligibility compares the starting and remaining pickup
+  counts and tests 200 steps. The Wizard warp is at `0x800F14C8` in Terry’s
+  ordinary-gate overlay. A recorded PS1 run also describes using the map
+  reveal and choosing the floor before descending. [Marty’s PS1 route](https://note.com/marty_pad/n/ne34a569b4825)
+- For either sibling the selector reads held gold, active party records and
+  bag slots. Test status bits 0/1 or current HP at most half maximum, then
+  `(total_exp % 1000) % 111 == 0`, then at most ten items without item IDs
+  25–28. Each role requires a counter of at least 100. Field movement
+  increments it on encounter-enabled steps. PS1 players describe returning
+  from a building to the surface of a random key world and give different
+  distances. The public guide gives the selector threshold and leaves the
+  outer placement distance open. [Firsthand PS1 key-world notes](https://tekeremu.zatunen.com/DragonQuestM1-2/dqm_t-m_1.htm)
+- The US/Europe Game Boy **Dragon Warrior Monsters** ROM (SHA-256
+  `137a9bd2b0ab83f0547f12560b1bc5392e5412514645d18ac7d79c607902cc01`)
+  tests all visited rooms and branches specifically on 16 or 2 at
+  `0B:46DA–470D`. Check the pickup and movement writes at `01:5A29–5A65`
+  and the additional RNG bit test for roles 4–7 at `16:6266–6289`.
+  For the original Wizard’s twenty-floor reward and the level-sum opponent
+  table, see the Game Boy player guides. [KurasuSoratobu’s walkthrough, A7](https://gamefaqs.gamespot.com/gbc/197155-dragon-warrior-monsters/faqs/43331) · [Foreign tamer level bands](https://gamefaqs.gamespot.com/gbc/197155-dragon-warrior-monsters/faqs/80057/foreign-tamers)
+- Both US **Dragon Warrior Monsters 2** cartridges use the same visitor
+  dispatch at `12:764C–765D`. Inspect the Bard (`12:77AC–781D`), Wizard
+  (`12:789E–7933`) and meat merchant (`12:7934–797B`). The merchant is
+  checked before the Wizard and Bard. His meat IDs are 0x19–1C, his bag
+  limit is ten items, and both his and the Bard’s tests require 1,000 G.
+  The Wizard’s `73:45D0` handler offers a map for 200 G. Compare SHA-256s
+  `8e38a7420ef5239c7196aa4fd4b1499e65db2823e875bbf8241bb2199e766d4e`
+  (Cobi) and `fc6809c31ff69c889dee80c5f39f4d8069042a2b4d933edd83d1627c32e013cc` (Tara).
+- The independent Game Boy Color **Tara’s Adventure** field notes describe
+  repeat Bard encounters in random key worlds using 9,999,999 EXP. The PS1
+  player’s farming example sets the EXP digits before reaching the monster’s
+  level cap. These are play reports for each version. [Tara’s GBC field triggers and farming notes](https://gamefaqs.gamespot.com/gbc/562719-dragon-warrior-monsters-2-taras-adventure/faqs/78549) · [PS1 EXP setup](https://tekeremu.zatunen.com/DragonQuestM1-2/dqm_t-m_1.htm)
 
 ### Verify the map atlas
 

@@ -2937,13 +2937,8 @@ globalThis.FIELD_GUIDE = {
       "id": "field-wandering-masters",
       "game": "both",
       "title": "Foreign masters and their monsters",
-      "summary": "Talk to a visiting master in the field to challenge their team. To recruit one of their monsters, feed meat during the fight and defeat that monster last. It can still refuse to join.",
-      "details": [
-        "Check the monster library before hunting a species. Choose Terry, Cobi or Tara on its profile and look for “Wandering master’s team” under Recorded encounters. For example, Metal Slime can appear at ranks 5 and 9 for Terry, or rank 6 for either sibling.",
-        "Your active party sets the opponent rank. Average each stat across your party, rounding down separately. Add the averages for maximum HP, maximum MP, Attack and Defense, then add half the combined Agility and Intelligence averages, rounded down. Every 100 points gives one rank, up to rank 19. A party averaging 100 in every stat scores 500 and faces rank 5.",
-        "In Terry’s adventure, the Master School describes several possible rewards for winning. One master heals your monsters, another gives meat, another sends you elsewhere, and another can raise a stat. Listen to the master before accepting the match.",
-        "A resident on GreatLog Main Street confirms that Cobi and Tara can recruit a visiting master’s monster in another world. Tournament fights in both arenas block recruitment."
-      ],
+      "summary": "After winning Class F, Terry can find visiting masters on the next floor of a gate. Cobi and Tara meet them outdoors in random Magic Key worlds. The two adventures use different rules to choose who appears.",
+      "details": [],
       "source_ids": [
         "s0ac3d800_1a19",
         "s0adf7000_5062",
@@ -2954,13 +2949,19 @@ globalThis.FIELD_GUIDE = {
         "s0adf7000_553d",
         "s000e9000_0aa4",
         "s000e9000_0cbb",
-        "PSX retail and v1.0.73 party-strength classifier 80044434–80044640"
+        "PSX retail and v1.0.73 party-strength classifier 80044434–80044640",
+        "m_exe_08ed2c",
+        "s00419800_25c4",
+        "PSX retail and v1.0.73 master selection 80050440, floor statistics 8003F298–8003F360, ordinary destinations 8003EB8C",
+        "US/EU DWM1 rooms 0B:46DA–470D and master roll 16:6266–6289",
+        "US DWM2 Cobi and Tara visitor priority 12:764C–765D, Bard 12:77AC–781D, Merchant 12:7934–797B"
       ],
       "related": [
         "field-recruitment",
         "item-28",
         "field-arena-items"
       ],
+      "species_ids": [20],
       "aliases": [
         "foreign masters",
         "wandering masters",
@@ -2968,10 +2969,123 @@ globalThis.FIELD_GUIDE = {
         "other masters",
         "rival master",
         "steal a monster",
-        "Can I recruit a foreign master’s monster?"
+        "Can I recruit a foreign master’s monster?",
+        "bard",
+        "wizard",
+        "butcher",
+        "foreign master spawn requirements",
+        "Game Boy foreign masters"
       ],
       "kind": "mechanic",
-      "spoiler": "none"
+      "spoiler": "none",
+      "sections": [
+        {
+          "title": "Terry’s gates on PlayStation",
+          "game": "dqm1",
+          "intro": "Use the floor you are leaving to choose a master. Descend to an ordinary floor to meet them. A boss or special floor takes the destination instead. When several conditions apply, the first match below wins.",
+          "rows": [
+            [
+              "Priest",
+              "Collect every loose item on the floor. With zero items left, the Priest takes priority even on a two-room floor. Win for a full party recovery."
+            ],
+            [
+              "Bard",
+              "Reveal both rooms of a two-room floor and leave at least one item on the ground. You may pick up the others. Win to raise each active monster’s lowest stat by 20."
+            ],
+            [
+              "Wizard",
+              "Reveal every reachable room and leave at least one item behind. On a two-room floor the Bard takes priority. Win to travel up to 10 floors deeper. From the last floor before the boss, he takes you to the exit."
+            ],
+            [
+              "Merchant (Butcher)",
+              "Leave part of the map unexplored and walk at least 200 steps on that floor without picking up an item. Win to receive meat."
+            ],
+            [
+              "Warrior",
+              "If the other conditions miss, a warrior can appear by chance and reward a win with an item."
+            ]
+          ]
+        },
+        {
+          "title": "Cobi and Tara’s Magic Key worlds on PlayStation",
+          "game": "dqm2",
+          "intro": "Carry at least 1,000 G into a random key world. Walk outdoors, enter a building or dungeon, then come back outside and look for the master. The game checks at least 100 counted field steps when choosing a master. The exact walking distance needed to place one on the map is unconfirmed.",
+          "rows": [
+            [
+              "Priest",
+              "Keep a monster at half HP or below, or bring a poisoned monster. This check comes first. Win for a full party recovery."
+            ],
+            [
+              "Bard",
+              "Keep the party healthy and bring a monster whose total EXP ends in three identical digits, such as 000, 444 or 999. Win for the same +20 lowest-stat reward as Terry."
+            ],
+            [
+              "Merchant",
+              "Carry 10 items or fewer, with no meat in the bag. The Priest and Bard take priority. Win to receive meat."
+            ],
+            [
+              "Warrior",
+              "When no other master qualifies, a warrior can appear by chance."
+            ]
+          ]
+        },
+        {
+          "title": "Terry on Game Boy",
+          "game": "dqm1",
+          "intro": "These comparisons are for Terry’s original Dragon Warrior Monsters. The English PlayStation patch v1.0.73 uses the Japanese PlayStation master selection rules.",
+          "rows": [
+            [
+              "Wizard",
+              "On Game Boy, reveal all 16 rooms on a 16-screen floor to qualify. The Wizard can advance you up to 20 floors. On PlayStation, smaller fully revealed floors work too, and the warp spans up to 10 floors."
+            ],
+            [
+              "Bard",
+              "On Game Boy, revealing both screens of a two-screen floor sets the Bard condition. On PlayStation the item count at descent also matters. Leave something on the ground."
+            ],
+            [
+              "Chance to appear",
+              "The Game Boy game makes a separate 50% roll for a qualifying Priest, Wizard, Bard or Merchant. The PlayStation selector picks the first matching role directly for an eligible ordinary floor."
+            ],
+            [
+              "Enemy team",
+              "On Game Boy, the sum of your active monsters’ levels sets Terry’s opponent pool. On PlayStation, their six stats set the pool. A newly bred party can meet stronger opponents at the same levels."
+            ]
+          ]
+        },
+        {
+          "title": "Cobi and Tara on Game Boy Color",
+          "game": "dqm2",
+          "intro": "In both original cartridges, hunt outdoors in a random key world and carry at least 1,000 G when looking for the Bard.",
+          "rows": [
+            [
+              "Bard or meat merchant?",
+              "Bring a monster whose total EXP ends in three identical digits. If the meat merchant also qualifies, he takes priority over the Bard. Carry a piece of meat to rule him out. On PlayStation, the Bard takes priority."
+            ],
+            [
+              "Repeat Bard visits",
+              "On Game Boy Color, a monster capped at 9,999,999 EXP keeps the Bard condition ready. On PlayStation, EXP stops at the monster’s level cap. Check its final three digits before bringing it along."
+            ],
+            [
+              "Traveling Wizard",
+              "The Wizard can offer to sell a map for 200 G. There is no visiting Wizard in the siblings’ PlayStation key worlds. The Wizard who skips floors belongs to Terry’s gates."
+            ]
+          ]
+        },
+        {
+          "title": "Recruiting and finding a particular monster",
+          "intro": "Talk to the master to battle. Feed meat during the fight and defeat the monster you want last. It can still refuse to join. Ranked arena opponents cannot be recruited.",
+          "rows": [
+            [
+              "Find a species",
+              "Check the monster library before hunting a species. Choose Terry, Cobi or Tara on its profile and look for “Wandering master’s team” under Recorded encounters. For example, Metal Slime can appear at ranks 5 and 9 for Terry, or rank 6 for either sibling."
+            ],
+            [
+              "Calculate your rank",
+              "Your active party sets the opponent rank. Average each stat across your party, rounding down separately. Add the averages for maximum HP, maximum MP, Attack and Defense, then add half the combined Agility and Intelligence averages, rounded down. Every 100 points gives one rank, up to rank 19. A party averaging 100 in every stat scores 500 and faces rank 5."
+            ]
+          ]
+        }
+      ]
     },
     {
       "id": "field-movement-settings",

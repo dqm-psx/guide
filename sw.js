@@ -45,6 +45,7 @@ const PRECACHE = [
   "./data/skill-descriptions.js",
   "./js/current-names.js",
   "./js/walkthrough.js",
+  "./js/locations.js",
   "./js/save-import.js",
   "./js/player-guide.js",
   "./js/player-atlas.js",

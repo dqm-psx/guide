@@ -58,7 +58,6 @@ test.describe('served', () => {
     await expect(page.locator('#pair-finder .lookup-modes')).toBeVisible();
     await expect(page.locator('#rules-guide, #plus-rules, #flag-rules')).toHaveCount(0);
 
-    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#pair-finder"]');
     await page.click('#pair-finder [data-parent-mode]');
     await expect(page.locator('#offspring-finder #breeding-conditions')).toBeVisible();
@@ -94,14 +93,13 @@ test.describe('served', () => {
     for (const view of TOP_VIEWS) {
       await test.step(view.id, async () => {
         const link = page.locator('.nav a[href="' + view.hash + '"]');
-        const menuId = await link.evaluate(a => a.closest('.nav-links')?.id);
-        const menuButton = menuId && page.locator('.nav-trigger[aria-controls="' + menuId + '"]');
-        if (menuButton) await menuButton.click();
+        if (await page.locator('#browse-toggle').isVisible()) await page.locator('#browse-toggle').click();
         await expect(link).toBeVisible();
         await link.click();
         await expectSingleView(page, view.id);
         await expect(page).toHaveURL(new RegExp(view.hash + '$'));
         await expect(page).toHaveTitle(new RegExp('^' + expected[view.hash] + ' · '));
+        await page.mouse.move(0,0);
         const marks = await page.evaluate(() =>
           [...document.querySelectorAll('.nav a')].map(a => {
             const style = getComputedStyle(a);
@@ -114,10 +112,8 @@ test.describe('served', () => {
             };
           })
         );
-        expect(marks.filter(mark => /^#[\w-]+$/.test(mark.href)).map(mark => mark.href))
-          .toEqual(TOP_VIEWS.map(entry => entry.hash));
-        await expect(page.locator('.nav-trigger.nav-link-active')).toHaveCount(menuButton ? 1 : 0);
-        if (menuButton) await expect(menuButton).toHaveClass(/\bnav-link-active\b/);
+        expect(marks.filter(mark => /^#[\w-]+$/.test(mark.href)).map(mark => mark.href).sort())
+          .toEqual(TOP_VIEWS.map(entry => entry.hash).sort());
         // The clicked link alone owns both the semantic and visual marks.
         expect(marks.filter(mark => mark.current === 'page').map(mark => mark.href)).toEqual([view.hash]);
         const marked = marks.filter(mark => mark.active);
@@ -152,7 +148,6 @@ test.describe('served', () => {
 
   test('DQMViews.go routes to a view, a handoff target, and an already open view', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
-    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#pair-finder"]');
     await page.selectOption('#pedigree', '11');
     await page.click('.nav a[href="#species-index"]');
@@ -215,9 +210,9 @@ test.describe('served', () => {
     await page.goto(url());
     await page.keyboard.press('Tab');
     await expect(page.locator('a.skip')).toBeFocused();
-    // Closed dropdowns should leave the library reachable through the main tab order.
+    // The contents links follow their visual reading order.
     let reached = false;
-    for (let i = 0; i < 12 && !reached; i++) {
+    for (let i = 0; i < 25 && !reached; i++) {
       await page.keyboard.press('Tab');
       reached = await page.evaluate(() => document.activeElement && document.activeElement.matches('.nav a[href="#species-index"]'));
     }
@@ -332,7 +327,6 @@ test.describe('served', () => {
     });
     await page.goto(url() + '#pair-finder');
     await expect(page.locator('#pair-finder .lookup-modes')).toBeVisible();
-    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#pair-finder"]');
     await page.click('#pair-finder [data-parent-mode]');
     await expectSingleView(page, 'offspring-finder');
@@ -349,7 +343,6 @@ test.describe('served', () => {
     await page.goto(url());
     await page.goto(url() + '#species-index');
     await page.fill('#species-search', 'Slime');
-    await page.locator('#breeding-nav-trigger').click();
     await page.click('.nav a[href="#pair-finder"]');
     await expectSingleView(page, 'pair-finder');
     await page.click('.nav a[href="#species-index"]');
@@ -360,53 +353,32 @@ test.describe('served', () => {
 // Layout and media queries. These rules are the same whether the page was
 // opened from disk or served, so they run once, against the shipped file.
 test.describe('narrow screens and print', () => {
-  test('all five primary controls and their open menus fit at 320px and work by keyboard', async ({ page }) => {
+  test('Browse guide and Search work at 320px with a keyboard', async ({ page }) => {
     await page.setViewportSize({width:320, height:640});
-    await page.goto(FILE_URL);
-    const primary = page.locator('.nav nav > a, .nav .nav-trigger');
-    const names = ['Adventure guide', 'Reference', 'Breeding', 'Monster library', 'My game'];
-    await expect(primary).toHaveCount(names.length);
-    for (const [index,name] of names.entries()) await expect(primary.nth(index)).toHaveAccessibleName(name);
-    const bounds = await primary.evaluateAll(items => items.map(a => {
-      const r = a.getBoundingClientRect();
-      return [r.left, r.right, r.top];
-    }));
-    expect(new Set(bounds.map(r=>Math.round(r[2]))).size).toBe(1);
-    expect(bounds.every(([l,r])=>l>=0 && r<=320)).toBe(true);
-    for (const name of ['adventure','reference','breeding']) {
-      const button = page.locator('#' + name + '-nav-trigger');
-      const menu = page.locator('#' + name + '-nav-links');
-      await button.focus();
-      await page.keyboard.press('ArrowDown');
-      await expect(menu.locator('a').first()).toBeFocused();
-      await expect(button).toHaveAttribute('aria-expanded','true');
-      const box = await menu.boundingBox();
-      expect(box.x).toBeGreaterThanOrEqual(-1);
-      expect(box.x + box.width).toBeLessThanOrEqual(321);
-      await page.keyboard.press('ArrowUp');
-      await expect(menu.locator('a').last()).toBeFocused();
-      await page.keyboard.press('Escape');
-      await expect(button).toBeFocused();
-      await expect(menu).toBeHidden();
-    }
-    const reference = page.locator('#reference-nav-trigger');
-    await reference.click();
-    const skills = page.locator('#reference-nav-links a[href="#field-guide?kind=skill"]');
-    await skills.click();
-    await expect(page).toHaveURL(/#field-guide\?kind=skill$/);
-    await expect(page.locator('#directory-title')).toHaveText('Skills');
-    await expect(page).toHaveTitle(/^Skills · /);
-    await expect(page.locator('.nav a[aria-current="page"]')).toHaveAttribute('href','#field-guide?kind=skill');
-    await expect(reference).toHaveClass(/\bnav-link-active\b/);
-    await expect(reference).toHaveAttribute('aria-expanded','false');
-    const trigger = page.locator('#breeding-nav-trigger');
-    await trigger.click();
-    await page.locator('#breeding-nav-links a[href="#breeding-tree"]').click();
-    await expectSingleView(page,'breeding-tree');
-    await expect(trigger).toHaveClass(/nav-link-active/);
-    await expect(trigger).toHaveAttribute('aria-expanded','false');
-    await page.getByRole('navigation',{name:'Views',exact:true}).getByRole('link',{name:'Monster library',exact:true}).click();
-    await expectSingleView(page,'species-index');
+    await page.goto(FILE_URL + '#team-planner');
+    const button = page.getByRole('button',{name:'Browse guide'});
+    const menu = page.locator('#guide-contents');
+    await expect(menu).toBeHidden();
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(button).toHaveAttribute('aria-expanded','true');
+    const bounds = await menu.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x+bounds.width).toBeLessThanOrEqual(320);
+    const campaign = menu.locator('a[href="#field-guide?game=dqm2&kind=story"]');
+    await campaign.focus();
+    await page.keyboard.press('Escape');
+    await expect(button).toBeFocused();
+    await expect(menu).toBeHidden();
+    await button.click();
+    await campaign.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#article-title')).toContainText('Cobi');
+    await expect(campaign).toHaveAttribute('aria-current','page');
+    await expect(menu).toBeHidden();
+    await page.getByRole('button',{name:'Search the guide'}).click();
+    await expect(page.locator('#guide-search')).toBeFocused();
+    await expect(menu).toBeHidden();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
   });
 

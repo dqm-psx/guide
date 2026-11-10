@@ -15,6 +15,7 @@ function addEntryPages(assets) {
   }
   vm.runInContext(assets.get('js/current-names.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/walkthrough.js').toString(),db,{timeout:5000});
+  vm.runInContext(assets.get('js/locations.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/character-dialogue.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/monster-reference.js').toString(),db,{timeout:5000});
   const profiles = db.DQMMonsterCore.create(db.DATA,db.MONSTER_REFERENCE);
@@ -65,12 +66,13 @@ function addEntryPages(assets) {
   function facts(entries) {
     return '<dl class="entry-facts">'+entries.map(([label,markup])=>'<div><dt>'+escape(label)+'</dt><dd>'+markup+'</dd></div>').join('')+'</dl>';
   }
-  const articleLink = id => {
+  function linkArticle(id,label) {
     const article = articles.get(id);
     if (!article) return '';
     const path = article.kind === 'story' ? db.DQMWalkthrough.paths[article.game]+'#'+id : 'articles/'+id+'/';
-    return link(path,article.title);
-  };
+    return link(path,label || article.title);
+  }
+  const articleLink = id => linkArticle(id);
   const adventures = {dqm1:readable.terry, dqm2:readable.cobi+' & '+readable.tara};
   for (const [game,label] of Object.entries(adventures)) {
     const path = db.DQMWalkthrough.paths[game];
@@ -128,7 +130,7 @@ function addEntryPages(assets) {
       row.requested_species.map(id=>'<li>'+monsterLink(bySpecies.get(id))+'</li>').join('')+'</ol></section>' : '';
     const dialogue = db.DQMCharacterDialogue.markup(row,escape,quests.map(quest=>articleLink(quest.id)),true);
     const fullWalk = row.kind==='story' ? '<p>'+link(db.DQMWalkthrough.paths[row.game]+'#'+row.id,adventures[row.game]+' walkthrough')+'</p>' : '';
-    add('articles',row.id,row.title,row.summary,fullWalk+art+nicknameNote+stepsMarkup+requests+
+    add('articles',row.id,row.title,row.summary,fullWalk+art+db.DQMArticleSections(row,escape,escape,2)+nicknameNote+stepsMarkup+requests+
       list('Arena classes',(row.arena_classes || []).map(articleLink))+dialogue+
       list('Walkthrough',steps)+list('Wild encounters',[...new Set(encounterList(routeData.encounters))])+
       list('Encounter base stats',battleList(routeData.fights))+list('In this guide',guideLinks)+list('Shops',stock)+list('Maps',places)+list('Monsters',(row.species_ids || []).map(id=>bySpecies.get(id)).filter(Boolean).map(monsterLink))+
@@ -221,11 +223,13 @@ function addEntryPages(assets) {
       if (ordered.length) directoryQuests.push(list(adventure+' · '+group,ordered.map(row=>articleLink(row.id))));
     }
   }
-  const topics = {npc:'Characters', boss:'Bosses', location:'Gates and worlds', mechanic:'Mechanics', item:'Items', tool:'Tools'};
+  const locations=db.DQMLocations.render('',{byId:articles,routes:db.FIELD_ROUTES.routes,escape,entryLink:linkArticle,
+    mapLink:id=>mapLink(maps.get(id)),hidden:()=>false,adventures});
+  const topics = {npc:'Characters', boss:'Bosses', mechanic:'Mechanics', item:'Items', tool:'Tools'};
   const topicLists = Object.entries(topics).map(([kind,title])=>list(title,[...articles.values()]
     .filter(row=>row.kind===kind).sort(alpha).map(row=>articleLink(row.id))));
   const directory={title:'Guide index',path:'entries/',description:'Browse every guide entry by topic.',
-    body:[entriesByKind('walkthroughs','Walkthroughs'),...directoryQuests,...topicLists,entriesByKind('monsters','Monster library'),
+    body:[entriesByKind('walkthroughs','Walkthroughs'),'<section class="place-directory"><h2>Gates and worlds</h2>'+locations+'</section>',...directoryQuests,...topicLists,entriesByKind('monsters','Monster library'),
       entriesByKind('skills','Skills'),entriesByKind('places','Map atlas')].join('')};
   assets.set('entries/index.html',Buffer.from(documentFor(directory)));
   assets.set('sitemap.xml',Buffer.from('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+['','entries/',...pages.map(p=>p.path)].map(path=>'<url><loc>'+base+path+'</loc></url>').join('')+'</urlset>'));

@@ -3,10 +3,17 @@
 main{max-width:60rem;margin:auto;padding:20px}h1,h2{line-height:1.15;font-family:Georgia,serif}h1{font-size:clamp(2rem,5vw,3.5rem)}a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:pixelated}.entry-map{width:min(100%,40rem)}.entry-icon{width:64px;float:right}section ul{columns:2;column-width:15rem}
 @media(prefers-color-scheme:dark){:root{background:#18231f;color:#ebf3ea}a{color:#a7dfbf}}
 .entry-shield,.hide-story .entry-content{display:none}.hide-story .entry-shield{display:block}
+.article-topic dl{display:grid;grid-template-columns:minmax(7rem,auto) 1fr;align-items:baseline;gap:.65rem 1rem;margin:1rem 0}
+.article-topic dt{font-weight:650}.article-topic dd{margin:0}
+@media(max-width:600px){.article-topic dl{display:block}.article-topic dt{margin-top:.85rem}}
 .walk-campaigns,.walk-contents{display:flex;flex-wrap:wrap;gap:.4rem 1rem}.walk-campaigns a{padding:.35rem .1rem}
 .walk-campaigns [aria-current]{font-weight:700;color:inherit;text-decoration:none;border-bottom:3px solid currentColor}
 .walk-contents{margin:1rem 0;padding:.6rem 0;border-block:1px solid #889a93}.walk-stage h4{margin:.75rem 0 .25rem}
 .walk-stage ol{margin-top:0;padding-inline-start:1.5rem}.walk-gates{border-collapse:collapse;text-align:left}
+.place-directory .gate-ranks>div{display:flex;align-items:baseline;gap:1rem;margin:.35rem 0}.gate-ranks dt{min-width:8rem;font-weight:600}.gate-ranks dd{margin:0}
+.place-directory .place-links,.place-directory .family-gates{display:flex;flex-wrap:wrap;gap:.2rem 1rem;list-style:none;padding:0;margin:0;columns:auto}.family-gates small{display:block}
+.place-directory h4{margin:1rem 0 .2rem}.world-stop p{margin:0}
+.town-gates small{display:block}.town-gates li{break-inside:avoid}
 .walk-gates caption{text-align:left;font-weight:700}.walk-gates th,.walk-gates td{vertical-align:top;padding:.25rem .75rem .25rem 0}
 .guide-stock table{width:100%;border-collapse:collapse}
 .guide-stock th,.guide-stock td{text-align:start;padding:.4rem;border-bottom:1px solid currentColor;vertical-align:top;overflow-wrap:anywhere}

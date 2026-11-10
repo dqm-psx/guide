@@ -194,5 +194,13 @@ test('Metal Slime shows each campaign’s foreign-master ranks and links to thei
   await page.locator('#monster-campaign').selectOption('tara');
   await expect(masters).toContainText('Rank 6');
   await masters.getByRole('link').click();
-  await expect(page.locator('#guide-article')).toContainText('Every 100 points gives one rank');
+  const article = page.locator('#guide-article');
+  await expect(article).toContainText('Every 100 points gives one rank');
+  const terry = article.locator('section').filter({has:page.getByRole('heading',{name:'Terry’s gates on PlayStation'})});
+  await expect(terry.locator('dt').filter({hasText:/^Bard$/})).toBeVisible();
+  await expect(terry).toContainText('both rooms of a two-room floor');
+  const siblings = article.locator('section').filter({has:page.getByRole('heading',{name:/Cobi and Tara.*on PlayStation/})});
+  await expect(siblings).toContainText('1,000 G');
+  await expect(siblings).toContainText('total EXP ends in three identical digits');
+  await expect(article.getByRole('heading',{name:'Terry on Game Boy'})).toBeVisible();
 });
