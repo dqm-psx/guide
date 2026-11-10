@@ -111,6 +111,7 @@
     if (prior?.group===group && poolMatches(prior,q)) return prior;
     return group.pools.find(p=>poolMatches(p.area,q))?.area || group.pools[0].area;
   }
+  let directoryKey;
   function directory() {
     const q=searchText(el('atlas-search').value);
     const state=params(), inputGame=state.get('game') || '', inputRegion=state.get('region') || '';
@@ -141,11 +142,26 @@
       return link;
     });
     const count=rows.length ? rows.length+(rows.length===1?' location':' locations') : 'No matching locations';
-    el('atlas-index').innerHTML = '<p class="guide-count" role="status">'+count+(max>1 ? ' · Page '+page+' of '+max : '')+'</p>'+
+    const markup = '<p class="guide-count" role="status">'+count+(max>1 ? ' · Page '+page+' of '+max : '')+'</p>'+
       (links.length ? '<div class="atlas-scroll">'+Array.from(groupsOnPage,([id,items])=>'<h4>'+safe(regions[id])+'</h4>'+items.join('')).join('')+'</div>' : '')+
       (max>1 ? '<nav class="guide-pager" aria-label="Location pages">'+
         (page>1 ? '<a href="'+safe(href({page:String(page-1),[key]:'',variant:''}))+'">Previous</a>' : '')+
         (page<max ? '<a href="'+safe(href({page:String(page+1),[key]:'',variant:''}))+'">Next</a>' : '')+'</nav>' : '');
+    const nextKey=JSON.stringify([tab(),inputGame,inputRegion,q,page]);
+    const index=el('atlas-index');
+    if (directoryKey===nextKey) {
+      // A selection changes link destinations and the current marker, not the
+      // list itself. Keep its DOM so scrolling and keyboard focus survive.
+      const next=document.createElement('template');
+      next.innerHTML=markup;
+      const current=index.querySelectorAll('a');
+      next.content.querySelectorAll('a').forEach((link,i)=>{
+        current[i].setAttribute('href',link.getAttribute('href'));
+        if (link.hasAttribute('aria-current')) current[i].setAttribute('aria-current','true');
+        else current[i].removeAttribute('aria-current');
+      });
+    } else index.innerHTML=markup;
+    directoryKey=nextKey;
     if (!selected) return null;
     if (requested && !previous && !q && !inputGame && !inputRegion) return null;
     return isMap ? (previous===selected ? requestedMap : maps.get(selected.id)) : choice(selected,q);
@@ -242,5 +258,5 @@
     return Object.entries(contexts || {}).map(([campaign,ids])=>({campaign,
       areas:ids.map(id=>areas.get(campaign+'-'+id)).filter(Boolean)}));
   }
-  window.DQMAtlas = {show, placesForMaps, routeAreas};
+  window.DQMAtlas = {show, placesForMaps, routeAreas, get directoryKey() { return directoryKey; }};
 })();
