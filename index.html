@@ -66,7 +66,16 @@
 <aside class="nav guide-navigation">
   <div class="browse-bar">
     <button id="browse-toggle" type="button" aria-controls="guide-contents" aria-expanded="false">Browse guide</button>
-    <button id="search-shortcut" type="button">Search<span class="sr-only"> the guide</span></button>
+    <form id="guide-filters" role="search" aria-label="Guide">
+      <label class="guide-query"><span class="sr-only">Search the guide</span><input id="guide-search" type="search" placeholder="Search the guide" autocomplete="off" maxlength="120" enterkeyhint="search"></label>
+      <button id="search-filter-toggle" type="button" aria-label="Search filters" title="Search filters" aria-controls="guide-filter-options" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 7h10m4 0h4M3 17h3m4 0h11"/><circle cx="15" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+      </button>
+      <div id="guide-filter-options" hidden>
+        <label>Adventure<select id="guide-game"><option value="">All</option><option value="dqm1">Terry · DQM1</option><option value="dqm2">Cobi &amp; Tara · DQM2</option></select></label>
+        <label>Topic<select id="guide-kind"><option value="">All</option></select></label>
+      </div>
+    </form>
   </div>
   <nav id="guide-contents" aria-label="Guide contents">
     <div class="contents-start"><a href="#field-guide">Guide home</a><a id="planner-nav-link" href="#team-planner">My game</a></div>
@@ -100,14 +109,6 @@
 <main class="wrap">
 <noscript><div class="noscript">This offline reference needs JavaScript for its lookup tools. Enable JavaScript to use the guide.</div></noscript>
 <section id="field-guide" class="view field-view" data-view="field-guide" aria-label="Guide home">
-  <div class="guide-toolbar">
-    <form id="guide-filters" class="guide-filters" role="search">
-      <label class="guide-query">Search the guide<input id="guide-search" type="search" placeholder="Quest, item, character, monster…" autocomplete="off" maxlength="120"></label>
-      <label>Adventure<select id="guide-game"><option value="">All</option><option value="dqm1">Terry · DQM1</option><option value="dqm2">Cobi &amp; Tara · DQM2</option></select></label>
-      <label>Topic<select id="guide-kind"><option value="">All</option></select></label>
-    </form>
-
-  </div>
   <div id="guide-browser">
     <div id="guide-home">
       <div class="home-columns guide-overview">

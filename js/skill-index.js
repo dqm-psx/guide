@@ -19,11 +19,11 @@
       });
       return '<tr data-entry="'+escape(skill.id)+'">'+cells.join('')+'</tr>';
     });
-    return '<div class="skill-index-panel"><p class="skill-index-note">Base damage ranges are for your monsters, before resistance and other modifiers.'+
-      '<span class="skill-scroll-hint"> Scroll sideways to see all columns.</span></p>'+
+    return '<div class="skill-index-panel"><p class="skill-scroll-hint">Scroll sideways to see all columns.</p>'+
       '<div class="skill-index-scroll" tabindex="0" role="region" aria-label="Scrollable skill list">'+
-      '<table class="skill-index" aria-label="Skills"><thead><tr>'+headers.join('')+'</tr></thead><tbody>'+
-      body.join('')+'</tbody></table></div></div>';
+      '<table class="skill-index" aria-label="Skills" aria-describedby="skill-range-note"><thead><tr>'+headers.join('')+'</tr></thead><tbody>'+
+      body.join('')+'</tbody></table></div>'+
+      '<p id="skill-range-note" class="skill-index-note">Base damage ranges are for your monsters, before resistance and other modifiers.</p></div>';
   }
 
   function compare(a, b, key, descending) {

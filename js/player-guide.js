@@ -268,8 +268,8 @@
       entryLink, prose:(line,row,data,used) => linkedProse(line,row,data,p,used),
       places:id => entryLink(id,'Locations and encounters')
     });
-    const back = p.has('q') ? linked(p,{entry:''}) : '#field-guide';
-    article.innerHTML = '<a class="guide-back" href="'+back+'">'+(p.has('q') ? 'Back to results' : 'Guide home')+'</a>'+
+    const back = p.has('q') ? '<a class="guide-back" href="'+linked(p,{entry:''})+'">← Back to results</a>' : '';
+    article.innerHTML = back+
       '<h2 id="article-title" tabindex="-1">'+safe(heading)+'</h2>'+walk;
     for (const button of article.querySelectorAll('[data-reveal-stage]')) button.onclick = () => {
       const id = button.dataset.revealStage;
@@ -344,7 +344,7 @@
     }
     const context = [games[row.game] && !['both','system'].includes(row.game) ? games[row.game] : '',
       row.kind === 'story' && !guarded(row) ? 'Chapter ' + row.order : ''].filter(Boolean).join(' · ');
-    article.innerHTML = back + (context ? '<div class="guide-context">' + safe(context) + '</div>' : '') +
+    article.innerHTML = '<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>' +
       '<h2 id="article-title" tabindex="-1">' + safe(title) + '</h2>' + body;
     el('guide-reveal')?.addEventListener('click', () => { individuallyRevealed.add(row.id); renderArticle(row,p); el('article-title').focus(); });
     return title;
@@ -418,6 +418,10 @@
       return words.every(word=>text.includes(word));
     });
   }
+  function directoryHeading(title, count = '', link = '') {
+    return '<header class="directory-head"><h2 id="directory-title" tabindex="-1">'+safe(title)+'</h2>'+
+      (count ? '<p class="guide-count" role="status">'+safe(count)+'</p>' : '')+link+'</header>';
+  }
   function questPurposeNav(p, active) {
     const filters = [{key:'',label:'All quests'},...DQMWalkthrough.questPurposes].map(({key,label})=>
       '<a href="'+linked(p,{purpose:key,page:''})+'"'+(key===(active?.key || '') ? ' aria-current="page"' : '')+'>'+safe(label)+'</a>');
@@ -442,8 +446,7 @@
         '<a href="'+linked(new URLSearchParams({kind:'story',game}),{})+'" aria-label="'+safe(games[game])+' walkthrough">Walkthrough</a></div>'+
         groups.join('')+'</section>');
     }
-    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>' +
-      '<h2 id="directory-title" tabindex="-1">Quests</h2></div></div>'+
+    el('guide-directory').innerHTML = directoryHeading('Quests')+
       questPurposeNav(p,active)+'<div class="quest-directory">' +
       (sections.join('') || '<p>No matching quests</p>') + '</div>';
     return 'Quests';
@@ -461,8 +464,7 @@
         (guarded(row) ? '' : artwork(row,true))+safe(safeTitle(row))+'</a></li>');
       return '<section><h3>'+safe(region)+'</h3><ul>'+items.join('')+'</ul></section>';
     });
-    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
-      '<h2 id="directory-title" tabindex="-1">Characters</h2></div></div><div class="character-directory">'+sections.join('')+'</div>';
+    el('guide-directory').innerHTML = directoryHeading('Characters')+'<div class="character-directory">'+sections.join('')+'</div>';
     return 'Characters';
   }
   function rememberTableOrder(p, table, order, defaultOrder) {
@@ -477,11 +479,9 @@
   }
   function skillsDirectory(p, matches) {
     const root = el('guide-directory');
-    const heading = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
-      '<h2 id="directory-title" tabindex="-1">Skills</h2></div></div>';
     if (!matches.length) {
       const retry = p.get('q') ? '<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>' : '';
-      root.innerHTML = heading+'<p class="guide-count" role="status">No matching skills</p>'+retry;
+      root.innerHTML = directoryHeading('Skills','No matching skills')+retry;
       return 'Skills';
     }
     const items = matches.map(({id,title,summary,effect:skill}) => ({
@@ -489,7 +489,7 @@
     }));
     const linkTo = (id,name) => '<a href="'+linked(p,{entry:id,page:''})+'">'+safe(name)+'</a>';
     const count = matches.length === 1 ? '1 skill' : matches.length+' skills';
-    root.innerHTML = heading+'<p class="guide-count" role="status">'+count+'</p>'+DQMSkillIndex.render(items,{escape:safe,linkTo});
+    root.innerHTML = directoryHeading('Skills',count)+DQMSkillIndex.render(items,{escape:safe,linkTo});
     const table = root.querySelector('.skill-index');
     DQMSkillIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
     return 'Skills';
@@ -507,9 +507,7 @@
       }
     });
     const retry = '<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>';
-    root.innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
-      '<h2 id="directory-title" tabindex="-1">'+safe(title)+'</h2></div></div>'+
-      (matches.length ? table : '<p role="status">No matching mechanics articles</p>'+retry);
+    root.innerHTML = directoryHeading(title,matches.length ? '' : 'No matching mechanics articles')+(matches.length ? table : retry);
     if (matches.length) {
       const index = root.querySelector('.mechanics-index');
       DQMMechanicsIndex.enableSorting(index,p.get('sort'),order => rememberTableOrder(p,index,order,'section'));
@@ -530,8 +528,7 @@
         }
       });
       const title=game==='dqm1' ? games.dqm1+'’s gates' : game==='dqm2' ? games.dqm2+'’s worlds' : 'Gates and worlds';
-      el('guide-directory').innerHTML='<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
-        '<h2 id="directory-title" tabindex="-1">'+safe(title)+'</h2></div></div><div class="place-directory">'+(places || '<p>No matching locations</p>')+'</div>';
+      el('guide-directory').innerHTML=directoryHeading(title)+'<div class="place-directory">'+(places || '<p>No matching locations</p>')+'</div>';
       return title;
     }
     const questPurpose = kind === 'quest' && DQMWalkthrough.questPurposes.find(purpose => purpose.key===p.get('purpose'));
@@ -578,11 +575,11 @@
       const label = target === 'item' ? 'All items' : categories.tool;
       inventoryLink = '<a href="'+linked(p,{kind:target,page:''})+'">'+safe(label)+'</a>';
     }
-    el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a><h2 id="directory-title" tabindex="-1">' + safe(heading) +
-      '</h2></div>' + inventoryLink + '</div>' +
+    const count = matches.length ? matches.length + (matches.length === 1 ? ' entry' : ' entries') : 'No matching entries';
+    const pageCount = pages > 1 ? ' · Page ' + page + ' of ' + pages : '';
+    el('guide-directory').innerHTML = directoryHeading(heading,count+pageCount,inventoryLink) +
       (kind==='quest' ? questPurposeNav(p,questPurpose) : '') +
-      '<p class="guide-count" role="status">' + (matches.length ? matches.length + (matches.length === 1 ? ' entry' : ' entries') : 'No matching entries') + (pages > 1 ? ' · Page ' + page + ' of ' + pages : '') +
-      '</p><div class="directory-grid">' + (body || (q && (kind || game)
+      '<div class="directory-grid">' + (body || (q && (kind || game)
         ? '<a href="'+linked(p,{kind:'',game:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>'
         : '<a href="#field-guide">Reset filters</a>')) + '</div>' +
       (pages > 1 ? '<nav class="guide-pager" aria-label="Result pages">' +
@@ -598,49 +595,25 @@
     }
     const walkGame = DQMWalkthrough.gameFor(p,byId);
     if (walkGame) {
-      el('guide-filters').hidden=true;
       el('guide-browser').hidden=true;
       el('guide-article').hidden=false;
       return renderWalkthrough(walkGame,p);
     }
-    el('guide-filters').hidden=Boolean(entry);
     el('guide-browser').hidden=Boolean(entry);
     el('guide-article').hidden=!entry;
     if (entry) return renderArticle(byId.get(entry),p);
     el('guide-article').replaceChildren();
-    el('guide-search').value=p.get('q') || '';
-    el('guide-kind').value=p.get('kind') || '';
-    el('guide-game').value=p.get('game') || '';
     el('guide-home').hidden=browsing;
     el('guide-directory').hidden=!browsing;
     if (browsing) return directory(p);
     el('guide-directory').replaceChildren();
     return 'Guide home';
   }
-  function filter(push) {
-    const p = new URLSearchParams();
-    change(p,'q',el('guide-search').value.trim()); change(p,'game',el('guide-game').value); change(p,'kind',el('guide-kind').value);
-    if (p.get('kind')==='quest') change(p,'purpose',params().get('purpose'));
-    const current = params();
-    if (p.get('kind') === current.get('kind') && ['mechanic','skill'].includes(p.get('kind'))) change(p,'sort',current.get('sort'));
-    if (push && location.hash !== route(p)) { location.hash = route(p); return; }
-    if (p.size && (location.hash === '#field-guide' || !location.hash)) history.pushState(null,'',route(p));
-    else history.replaceState(null,'',route(p));
-    const value = el('guide-search').value; // Preserve spaces, caret and live typing.
-    const pos = el('guide-search').selectionStart;
-    document.title = show() + ' · DQM1&2 PSX Player Guide';
-    el('guide-search').value = value;
-    if (document.activeElement === el('guide-search')) el('guide-search').setSelectionRange(pos,pos);
-  }
-  el('guide-filters').onsubmit = e => { e.preventDefault(); filter(true); el('directory-title')?.focus(); };
-  el('guide-search').oninput = () => filter(false);
-  el('guide-kind').onchange = () => filter(true);
-  el('guide-game').onchange = () => filter(true);
   function setSpoilers(checked) {
     reveal = checked;
     individuallyRevealed.clear();
     if (!el('field-guide').hidden) document.title = show() + ' · DQM1&2 PSX Player Guide';
     if (!el('atlas').hidden) window.DQMAtlas?.show();
   }
-  window.DQMField = {show, filter, guarded, campaigns, setSpoilers, walkthroughPath, entryForNav: id => byId.get(id)};
+  window.DQMField = {show, guarded, campaigns, setSpoilers, walkthroughPath, entryForNav: id => byId.get(id)};
 })();

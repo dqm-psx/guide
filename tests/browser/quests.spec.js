@@ -14,6 +14,7 @@ test('quests group objectives by campaign and keep individual arena class links'
   await page.getByRole('link', {name:'GreatTree Class F',exact:true}).click();
   await expect(page.locator('#article-title')).toHaveText('GreatTree Class F');
   await page.locator('.guide-back').click();
+  await page.getByRole('button',{name:'Search filters'}).click();
   await page.locator('#guide-game').selectOption('dqm2');
   await expect(directory.getByRole('heading', {level:3})).toHaveCount(1);
   await expect(directory.getByRole('link', {name:/Sailor Ring/})).toBeVisible();
@@ -37,6 +38,7 @@ test('optional quests keep their campaign filter and link back to their walkthro
   await page.goto(guide+'#field-guide?kind=quest');
   const types = page.getByRole('navigation',{name:'Quest type'});
   await types.getByRole('link',{name:'Optional quests'}).click();
+  await page.getByRole('button',{name:'Search filters'}).click();
   await page.locator('#guide-game').selectOption('dqm2');
   await expect(types.getByRole('link',{name:'Optional quests'})).toHaveAttribute('aria-current','page');
   const directory = page.locator('.quest-directory');
