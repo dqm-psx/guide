@@ -32,3 +32,28 @@ test('queen’s requests link to all sixteen monsters and respect the story spoi
   await page.locator('.guide-back').click();
   await expect(page.locator('.quest-directory')).toBeVisible();
 });
+
+test('Terry’s item search connects Miracle Sign to the queen and her final request', async ({page}) => {
+  await page.goto(guide+'#field-guide?kind=item&game=dqm1&q=Miracle+Sign');
+  const results = page.locator('.guide-row');
+  await expect(results).toHaveCount(1);
+  await results.first().click();
+  const article = page.locator('#guide-article');
+  await expect(article.getByRole('heading', {name:'Miracle Mark'})).toBeVisible();
+  await expect(article).toContainText('How Cobi or Tara can obtain one is unconfirmed');
+  await article.getByRole('link', {name:'Show monsters to the queen'}).click();
+  await expect(article.locator('.quest-species a').last()).toHaveText('Divine Dragon');
+  await article.locator('.article-steps').getByRole('link', {name:'Miracle Mark'}).click();
+  await expect(article.getByRole('heading', {name:'Miracle Mark'})).toBeVisible();
+});
+
+test('the Pirate Key quest and shrine explain when Cobi and Tara can breed', async ({ page }) => {
+  await page.goto(guide+'#field-guide?entry=quest-win-the-pirate-key');
+  const article = page.locator('#guide-article');
+  await expect(article).toContainText('Winning Kids’ Class gives you permission');
+  await article.getByRole('link', {name:'Monster Professor', exact:true}).click();
+  await expect(article).toContainText('finish Water World with the Pirate Key and return to GreatLog');
+  await article.getByRole('link', {name:'Water World', exact:true}).first().click();
+  await expect(article.locator('#article-title')).toHaveText('Water World');
+  await expect(article).toContainText('Clear Water World and return to GreatLog to breed');
+});

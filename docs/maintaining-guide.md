@@ -2,7 +2,7 @@
 
 ## Gameplay sources
 
-The v1.0.73 walkthrough audit resolved all 1,293 cited records for the 171
+The v1.0.73 walkthrough audit resolved all 1,295 cited records for the 171
 campaign, quest, boss, character and location articles. It also checked the
 native conditions behind the fixed story keys, spirit rewards and arena rounds.
 The v1.0.73 disc uses **Hale** in nine cited lines. The current published text
@@ -19,6 +19,18 @@ The castle guard’s bytecode also matches on both discs. The king awards the Sk
 stand use separate event flags for the optional monster egg. A [PSX player
 described where they got stuck](https://www.woodus.com/forums/topic/21933-dragon-quest-monsters-12-psx-help/). The [PS1 route](https://renge-record-book.com/%E3%80%90ps%E3%80%91%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1%E3%83%BB2-%E6%94%BB%E7%95%A5%E3%83%81%E3%83%A3-2/)
 also places the talking pot’s key award after the ending.
+
+The Queen of GreatTree’s final request checks Divine Dragon (species 55),
+selects Miracle Mark (item 96) and checks for room before awarding it. On both
+the retail Japanese and v1.0.73 discs, see archive 5661 at `0x2AD7` for the
+request and `0x2FB8` and `0x2FED` for the inventory calls.
+
+GreatLog’s Kids’ Class victory grants the Pirate Key and permission to use the
+Starry Shrine (`s0039f000_25b7`). The resident describes the line at the shrine
+and egg appraiser in slot 925. His branch for Water World completion (flag
+`0x11`, archive 133 at `0x5EC`) selects slot 926, which says the shrine can
+finally be used without lining up. Those branches match on the retail and
+v1.0.73 discs.
 
 All 43 character pages show PSX artwork. The portraits include 38 field actors,
 the three playable heroes, and species sprites for Healie and Terry’s starter, Slib.

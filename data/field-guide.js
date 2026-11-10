@@ -2913,24 +2913,34 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-96",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Miracle Mark",
       "category": "Consumable",
       "summary": "Changes one monster's sex.",
       "details": [
-        "GreatLog residents distinguish this rare item, used on a monster, from the egg appraiser’s blessing before hatching.",
-        "Single use."
+        "Terry can earn one from the Queen of GreatTree. Complete her requests in order and bring Divine Dragon for the last one. Leave one slot free in your bag to collect the mark.",
+        "Use it on a hatched monster. The mark is consumed.",
+        "A GreatLog resident describes Miracle Mark. How Cobi or Tara can obtain one is unconfirmed."
       ],
       "spoiler": "none",
       "source_ids": [
         "e0c07",
         "m_exe_08bf48",
         "s00419800_1bf0",
-        "s003f6800_0473"
+        "s003f6800_0473",
+        "s0adf7000_b999"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
-        "MirclMark"
+        "MirclMark",
+        "Miracle Sign"
+      ],
+      "related": [
+        "quest-the-queen-s-monster-collection-requests",
+        "npc-queen-of-greattree"
+      ],
+      "species_ids": [
+        55
       ]
     },
     {
@@ -3295,6 +3305,7 @@ globalThis.FIELD_GUIDE = {
       "title": "Prepare a pair for breeding",
       "summary": "Bring a male and a female, each at level 10 or higher, to the Starry Shrine.",
       "details": [
+        "In GreatLog, win the Kids’ Class for permission to use the shrine. Finish Water World and return when the line has cleared.",
         "Breeding leaves an egg. Both parents leave, so keep another monster ready to travel with you.",
         "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents.",
         "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. In the title-screen Breeding room, the same pair from two different Adventure Logs produces Killing Machine 2 at lower + values."
@@ -3308,10 +3319,14 @@ globalThis.FIELD_GUIDE = {
         "s0ab53000_1027",
         "s003f6800_0c8c",
         "s0ab53000_0e61",
-        "PSX shrine rule 8004AB80 and two-save override 8004B05C"
+        "PSX shrine rule 8004AB80 and two-save override 8004B05C",
+        "s003f6800_1bac",
+        "s003f6800_1c4c",
+        "m_exe_090738"
       ],
       "related": [
-        "field-eggs"
+        "field-eggs",
+        "npc-monster-professor"
       ]
     },
     {

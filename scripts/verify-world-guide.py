@@ -237,7 +237,7 @@ def verify(image, release, comparison_bytes, public_manifest):
                     "native_slots":dict(sorted(slot_counts.items())), "dialogue_resources":len(index["script_descriptors"]),
                     "abbreviated_system_names":short_names, "progression_spans":dict(sorted(guards.items()))},
         "wording_differences":[{"release_spelling":"Hale","public_spelling":"Healie","source_ids":sorted(variants)}],
-        "scope":"All cited records for the campaign, quest, NPC, boss and location articles were resolved in the v1.0.73 Current disc. Text verification compares visible wording and substitutions across all native slots. Native guards cover the two spirit rewards, fixed story keys, the Sky Key audience, the farm egg window and the arena round selector. The articles summarize script clues; this proof does not simulate every event path, validate boss stats, or verify map and sprite art."
+        "scope":"All cited records for the campaign, quest, NPC, boss and location articles were resolved in the v1.0.73 Current disc. Text verification compares visible wording and substitutions across all native slots. Native guards cover the two spirit rewards, fixed story keys, the Sky Key audience, the farm egg window, the arena round selector, the queen’s final item award and the GreatLog shrine queue. The articles summarize script clues; this proof does not simulate every event path, validate boss stats, or verify map and sprite art."
     }
 
 
