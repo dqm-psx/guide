@@ -796,7 +796,8 @@
       "extract": "full",
       "affected_entries": [
         "boss-golem",
-        "location-guardian-gate"
+        "location-guardian-gate",
+        "story-terry-early-arena"
       ]
     },
     {
@@ -873,7 +874,8 @@
         "story-terry-postgame",
         "story-greatlog-postgame",
         "quest-open-the-queens-stairs",
-        "quest-sky-shield-and-flight"
+        "quest-sky-shield-and-flight",
+        "quest-greatlog-buried-egg"
       ]
     },
     {
@@ -1119,7 +1121,8 @@
       "affected_entries": [
         "story-greatlog-spirit-rewards",
         "quest-talking-pot-key",
-        "quest-sky-shield-and-flight"
+        "quest-sky-shield-and-flight",
+        "quest-greatlog-buried-egg"
       ]
     },
     {
@@ -1242,7 +1245,9 @@
         "npc-king-of-greattree",
         "location-anger-gate",
         "quest-arena-dqm1-d",
-        "quest-climb-greattree-arena-classes"
+        "quest-climb-greattree-arena-classes",
+        "story-terry-early-arena",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -1253,7 +1258,10 @@
       "affected_entries": [
         "story-terry-anger",
         "quest-anger-gate-outbreak",
-        "boss-battle-rex"
+        "boss-battle-rex",
+        "story-terry-early-arena",
+        "story-terry-collection",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -1343,7 +1351,8 @@
       "affected_entries": [
         "story-terry-collection",
         "boss-sky-dragon",
-        "quest-sky-dragon-egg"
+        "quest-sky-dragon-egg",
+        "story-terry-early-arena"
       ]
     },
     {
@@ -1547,7 +1556,8 @@
         "quest-open-the-queens-stairs",
         "quest-machiko-living-statue",
         "quest-sky-dragon-egg",
-        "quest-medal-gate"
+        "quest-medal-gate",
+        "quest-greatlog-buried-egg"
       ]
     },
     {
@@ -1764,7 +1774,8 @@
         "quest-mirage-lake-and-the-sea-bell",
         "quest-eastoria-s-lost-voices",
         "quest-greatlog-spirit-recruits",
-        "quest-talking-pot-key"
+        "quest-talking-pot-key",
+        "quest-greatlog-buried-egg"
       ]
     },
     {
@@ -2022,7 +2033,8 @@
         "quest-rescue-healie",
         "npc-pulio",
         "location-departure-gate",
-        "npc-healie"
+        "npc-healie",
+        "quest-sky-dragon-egg"
       ]
     },
     {
@@ -2052,7 +2064,8 @@
         "npc-kameha",
         "quest-save-greatlog-the-first-keys",
         "story-ice-shield",
-        "quest-sky-shield-and-flight"
+        "quest-sky-shield-and-flight",
+        "quest-greatlog-buried-egg"
       ]
     },
     {
@@ -2149,7 +2162,9 @@
         "location-departure-gate",
         "npc-healie",
         "npc-surabou",
-        "quest-sky-dragon-egg"
+        "quest-sky-dragon-egg",
+        "story-terry-early-arena",
+        "story-terry-collection"
       ]
     },
     {

@@ -7,27 +7,27 @@
   "patched_bin_sha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
   "public_revision": "e5097e6e9403abda92130144b44488c84bfcb0e3",
   "comparison_sha256": "d9666b598773aec100e0c7fb9d42a61f941d252b5e38b3122cf165328a4d2788",
-  "world_entries_sha256": "49320c98b60067780adc8626dec6a60007769b17021508436ca762b2c2571128",
-  "native_index_sha256": "73c5797466a29b580bfbef253070ba7a83ea4a17d83b6fa179abf90d77d6770d",
+  "world_entries_sha256": "0a3f94f7afcb2cf13dd9c8e70b554cb58ba895321275c5b368ffcbd2a49a980e",
+  "native_index_sha256": "194684daceca62b6afd4555c39343b69a223713905a5dec671161cb174f1d7b2",
   "verified": {
-    "articles": 170,
+    "articles": 171,
     "articles_by_kind": {
       "boss": 29,
       "location": 28,
       "npc": 43,
-      "quest": 47,
+      "quest": 48,
       "story": 23
     },
-    "cited_records": 1290,
+    "cited_records": 1293,
     "source_categories": {
       "script_slots": 1254,
       "system_slots": 28,
       "service_descriptor_slots": 1,
-      "menu_pointer_offsets": 7
+      "menu_pointer_offsets": 10
     },
     "native_slots": {
       "dialogue": 1318,
-      "key_descriptions": 7,
+      "key_descriptions": 10,
       "service": 1,
       "system": 28
     },
@@ -35,7 +35,9 @@
     "abbreviated_system_names": 23,
     "progression_spans": {
       "arena_rounds": 1,
+      "farm_egg": 1,
       "fixed_world_keys": 9,
+      "sky_key_audience": 1,
       "spirit_rewards": 18
     }
   },
@@ -56,5 +58,5 @@
       ]
     }
   ],
-  "scope": "All cited records for the campaign, quest, NPC, boss and location articles were resolved in the v1.0.73 Current disc. Text verification compares visible wording and substitutions across all native slots. Native guards cover the two spirit rewards, fixed story keys and the arena round selector. The articles summarize script clues; this proof does not simulate every event path, validate boss stats, or verify map and sprite art."
+  "scope": "All cited records for the campaign, quest, NPC, boss and location articles were resolved in the v1.0.73 Current disc. Text verification compares visible wording and substitutions across all native slots. Native guards cover the two spirit rewards, fixed story keys, the Sky Key audience, the farm egg window and the arena round selector. The articles summarize script clues; this proof does not simulate every event path, validate boss stats, or verify map and sprite art."
 }

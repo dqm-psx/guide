@@ -283,6 +283,12 @@ test('published quests and characters can be followed with JavaScript disabled',
     const dialogue=reader.locator('.character-dialogue');
     await expect(dialogue).toContainText('A Winged Slime!');
     await expect(reader.getByRole('link',{name:'Show monsters to the queen',exact:true})).toHaveCount(1);
+    await reader.goto(url+'articles/quest-sky-shield-and-flight/');
+    const route=reader.locator('.entry-content > ol');
+    await expect(route).toContainText('Prince Kameha’s friend');
+    await expect(route).not.toContainText('bookcase');
+    await reader.getByRole('link',{name:'Find the egg from the message in a bottle'}).click();
+    await expect(reader.locator('.entry-content > ol')).toContainText('bookcase');
   } finally {await context.close();}
 });
 

@@ -2,20 +2,22 @@
 
 ## Gameplay sources
 
-The v1.0.73 walkthrough audit resolved all 1,290 cited records for the 170
+The v1.0.73 walkthrough audit resolved all 1,293 cited records for the 171
 campaign, quest, boss, character and location articles. It also checked the
 native conditions behind the fixed story keys, spirit rewards and arena rounds.
 The v1.0.73 disc uses **Hale** in nine cited lines. The current published text
 uses **Healie** in dialogue and **Hale** as the default recruit nickname. Both names find the character.
 
-For Terry’s Sky Dragon egg, the PSX farm sign reads “Watch overhead!”
-The breeding prerequisite and the need to examine the sign are documented in
-the [maintainer’s reply to a PSX playtester](https://www.reddit.com/r/DragonQuestMonsters/comments/1weqzrc/comment/p9kzxn2/).
+For Terry’s Sky Dragon egg, the farm sign event checks Class F (0x02),
+Pulio’s hint (0x79), whether the egg is already claimed (0xF6), and whether
+Battle Rex was defeated (0x05). Its bytecode matches on the retail Japanese
+and v1.0.73 Current discs. See the [maintainer’s reply to a PSX playtester](https://www.reddit.com/r/DragonQuestMonsters/comments/1weqzrc/comment/p9kzxn2/).
 
-For the Ice-to-Sky transition, the bottle, bookcase, arena pillar, slide and
-monster egg each have a separate PSX message. The guard’s reply confirms
-the answer that takes the siblings to the king. A [player’s account](https://www.woodus.com/forums/topic/21933-dragon-quest-monsters-12-psx-help/)
-identifies the point where players can get stuck. The [PS1 route](https://renge-record-book.com/%E3%80%90ps%E3%80%91%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1%E3%83%BB2-%E6%94%BB%E7%95%A5%E3%83%81%E3%83%A3-2/)
+After Ice World, the GreatLog guard checks story flag 0x12 and asks if the
+player is Kameha’s friend. Answering yes sets 0xE9 and starts the audience.
+The castle guard’s bytecode also matches on both discs. The king awards the Sky Key. The bottle, bookcase, pillar, slide and straw
+stand use separate event flags for the optional monster egg. A [PSX player
+described where they got stuck](https://www.woodus.com/forums/topic/21933-dragon-quest-monsters-12-psx-help/). The [PS1 route](https://renge-record-book.com/%E3%80%90ps%E3%80%91%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1%E3%83%BB2-%E6%94%BB%E7%95%A5%E3%83%81%E3%83%A3-2/)
 also places the talking pot’s key award after the ending.
 
 All 43 character pages show PSX artwork. The portraits include 38 field actors,
