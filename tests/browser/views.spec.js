@@ -147,6 +147,23 @@ test.describe('served', () => {
     expect(await active(page)).toBe('planner-heading');
   });
 
+  test('the navigation search can start from a map and Back returns to that map', async ({ page }) => {
+    const mapUrl = url() + '#atlas?map=map-12-9&page=3';
+    await page.goto(mapUrl);
+    await expect(page.locator('#atlas-location')).toHaveText('GreatLog Storage');
+
+    const search = page.locator('.nav').getByRole('searchbox', {name:'Search the guide'});
+    await search.pressSequentially('MedHerb');
+    await expect(search).toBeFocused();
+    await expect(page.locator('.guide-row').first()).toContainText('Medicinal Herb');
+    await expect(page.getByRole('searchbox', {name:'Search the guide'})).toHaveCount(1);
+
+    await page.goBack();
+    await expect(page).toHaveURL(mapUrl);
+    await expect(page.locator('#atlas-location')).toHaveText('GreatLog Storage');
+    await expect(search).toHaveValue('');
+  });
+
   test('DQMViews.go routes to a view, a handoff target, and an already open view', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await page.click('.nav a[href="#pair-finder"]');
@@ -377,9 +394,27 @@ test.describe('narrow screens and print', () => {
     await expect(page.locator('#article-title')).toContainText('Cobi');
     await expect(campaign).toHaveAttribute('aria-current','page');
     await expect(menu).toBeHidden();
-    await page.getByRole('button',{name:'Search the guide'}).click();
-    await expect(page.locator('#guide-search')).toBeFocused();
+    const search = page.getByRole('searchbox',{name:'Search the guide'});
+    const filters = page.getByRole('button',{name:'Search filters'});
+    await search.focus();
+    await page.keyboard.press('Tab');
+    await expect(filters).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(filters).toHaveAttribute('aria-expanded','true');
+    const topic = page.getByRole('combobox',{name:'Topic',exact:true});
+    await expect(topic).toBeVisible();
+    await topic.focus();
+    await topic.selectOption('skill');
+    const skills = page.getByRole('table',{name:'Skills',exact:true});
+    await expect(skills).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(topic).toBeHidden();
+    await expect(filters).toBeFocused();
     await expect(menu).toBeHidden();
+    await search.fill('Blaze');
+    await search.press('Enter');
+    await expect(page.locator('#directory-title')).toBeFocused();
+    await expect(skills.getByRole('link',{name:'Blaze',exact:true})).toBeVisible();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
   });
 

@@ -222,7 +222,7 @@ test('downloading the guide keeps its tools, atlas and profiles usable offline',
 });
 
 test('real entry URLs expose crawlable references and open the matching interactive tool',async ({browser,page})=>{
-  const skill=shipped.reference.guide_names.skills[7];
+  const skill=shipped.reference.guide_names.skills[1];
   const entry='skills/'+skill.id+'/';
   const staticContext = await browser.newContext({javaScriptEnabled:false});
   try {
@@ -264,6 +264,23 @@ test('real entry URLs expose crawlable references and open the matching interact
   await page.getByRole('button',{name:'Copy entry link'}).click();
   await expect(page.locator('#entry-copy-status')).toHaveText('Entry link copied.');
   expect(await page.evaluate(()=>window.copiedEntry)).toBe(url+entry);
+  const search=page.getByRole('searchbox',{name:'Search the guide'});
+  await search.fill('bard');
+  await search.press('Enter');
+  const directory=page.locator('#guide-directory');
+  await expect(directory).toBeVisible();
+  await expect(directory).toContainText(/bard/i);
+  const resultsUrl=page.url();
+  await page.goBack();
+  await expect(page).toHaveURL(url+entry);
+  await expect(page.locator('#article-title')).toBeVisible();
+  await expect(page.locator('#article-title')).toHaveText(skill.title);
+  await page.goForward();
+  await expect(page).toHaveURL(resultsUrl);
+  await expect(search).toHaveValue('bard');
+  await expect(directory).toBeVisible();
+  await expect(directory).toContainText(/bard/i);
+  await page.goBack();
   await page.locator('.nav a[href="#species-index"]').click();
   await expect(page.locator('#species-rows a').first()).toBeVisible();
   await page.goBack();

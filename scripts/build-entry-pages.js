@@ -221,7 +221,9 @@ function addEntryPages(assets) {
       '<meta name="description" content="'+description+'"><link rel="canonical" href="'+url+'"><meta property="og:url" content="'+url+'"><meta property="og:type" content="article"><meta property="og:title" content="'+title+'"><meta property="og:description" content="'+description+'"><meta property="og:image" content="'+base+'icons/guide-card.png"><meta name="twitter:card" content="summary_large_image">'+
       spoilerPreference+'<link rel="stylesheet" href="'+versioned('css/entry-page.css')+'">'+
       (p.path==='entries/' ? '<link rel="stylesheet" href="'+versioned('css/skill-index.css')+'">' : '')+
-      '</head><body><header>'+link('./','DQM1&2 PSX Player Guide')+'</header><main><nav>'+link('entries/','Guide index')+'</nav>'+shield+'<div class="entry-content'+(profile ? ' entry-profile' : '')+'">'+introduction+p.body+
+      '</head><body><header>'+link('./','DQM1&2 PSX Player Guide')+
+      (p.path==='entries/' ? '' : '<nav aria-label="Guide navigation">'+link('entries/','Guide index')+'</nav>')+
+      '</header><main>'+shield+'<div class="entry-content'+(profile ? ' entry-profile' : '')+'">'+introduction+p.body+
       (p.route ? '<p>'+link('index.html'+p.route,'Open in the player guide')+'</p>' : '')+'</div></main>'+
       (p.path==='entries/' ? ['js/sortable-index.js','js/mechanics-index.js','js/skill-index.js'].map(file=>
         '<script defer src="'+versioned(file)+'"></script>').join('') : '')+

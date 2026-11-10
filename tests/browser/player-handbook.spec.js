@@ -56,6 +56,7 @@ test('Items includes travel supplies and preserves filters when narrowing the li
   await expect(count).toHaveText('8 entries');
   await expect(directory.getByText('Chimera Wing',{exact:true})).toBeVisible();
   await expect(directory.getByText('Travel Bookmark',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Search filters'}).click();
   await page.locator('#guide-game').selectOption('dqm1');
   await expect(count).toHaveText('6 entries');
   await page.getByLabel('Search the guide').fill('ChimWing');
@@ -116,12 +117,17 @@ test('short searches keep their spelling and scoped searches can reach other top
   await expect(results.first()).toContainText(/Terry.*Bard.*two-room floor.*20/);
   expect(await results.first().locator('.guide-search-excerpt').evaluate(el=>el.scrollHeight<=el.clientHeight)).toBe(true);
   await expect(results.filter({has:page.locator('strong',{hasText:/bird/i})})).toHaveCount(0);
+  const filters=page.getByRole('button',{name:'Search filters'});
+  await filters.click();
   await page.locator('#guide-game').selectOption('dqm2');
+  await filters.click();
   await expect(results.first()).toContainText(/Cobi and Tara.*Bard.*total EXP/);
   await results.first().click();
   await expect(page.locator('#guide-article .article-topic h3').first()).toContainText('Cobi and Tara');
   await page.locator('.guide-back').click();
+  await filters.click();
   await page.locator('#guide-game').selectOption('');
+  await filters.click();
   await page.getByLabel('Search the guide').fill('bird');
   await expect(results.filter({has:page.getByText('Bird Slash',{exact:true})})).toHaveCount(1);
   await page.getByLabel('Search the guide').fill('slmie');
@@ -201,6 +207,7 @@ test('the Skills directory sorts the whole list and keeps the chosen order throu
   await expect(table.getByRole('columnheader',{name:'MP cost'})).toHaveAttribute('aria-sort','ascending');
   await expect(page.getByLabel('Search the guide')).toHaveValue('Blaze');
   await page.getByLabel('Search the guide').fill('');
+  await page.getByRole('button',{name:'Search filters'}).click();
   await page.locator('#guide-game').selectOption('dqm1');
   await expect(rows).toHaveCount(124);
   await page.reload();

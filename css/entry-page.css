@@ -1,6 +1,12 @@
 :root{color-scheme:light dark;font:16px/1.55 system-ui,sans-serif;background:#f6f7f3;color:#182f28}
-*{box-sizing:border-box}body{margin:0}header{padding:14px max(18px,calc((100vw - 58rem)/2));background:#163b33}header a{color:white;font-weight:700;text-decoration:none}
-main{max-width:60rem;margin:auto;padding:20px}h1,h2{line-height:1.15;font-family:Georgia,serif}h1{font-size:clamp(2rem,5vw,3.5rem)}a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:pixelated}.entry-map{width:min(100%,40rem)}.entry-icon{width:64px;float:right}section ul{columns:2;column-width:15rem}
+*{box-sizing:border-box}body{margin:0}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.25rem 1rem;padding:.65rem max(18px,calc((100vw - 58rem)/2));background:#163b33}
+header a{color:white;font-weight:700;text-decoration:none}
+header nav a{font-size:.875rem;font-weight:500;text-decoration:underline}
+main{max-width:60rem;margin:auto;padding:1rem 20px}h1,h2{line-height:1.15;font-family:Georgia,serif}
+h1{margin:0;font-size:clamp(1.5rem,3vw,1.875rem)}
+.entry-content>h1+p{margin:.4rem 0 .85rem}
+a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:pixelated}.entry-map{width:min(100%,40rem)}.entry-icon{width:64px;float:right}section ul{columns:2;column-width:15rem}
 @media(prefers-color-scheme:dark){:root{background:#18231f;color:#ebf3ea}a{color:#a7dfbf}}
 .entry-shield,.hide-story .entry-content{display:none}.hide-story .entry-shield{display:block}
 .article-topic dl{display:grid;grid-template-columns:minmax(7rem,auto) 1fr;align-items:baseline;gap:.65rem 1rem;margin:1rem 0}
@@ -24,9 +30,8 @@ main{max-width:60rem;margin:auto;padding:20px}h1,h2{line-height:1.15;font-family
   --soft:#edf3ed;
   --muted:#4f655b;
   max-width:49rem;
-  margin:1.25rem auto 0;
+  margin:0 auto;
 }
-.entry-profile h1{font-size:clamp(2rem,4vw,3rem);margin:0}
 .entry-profile h2{font-size:1.4rem;margin:0 0 .65rem}
 .entry-profile h3{font:600 .875rem/1.4 system-ui,sans-serif;margin:1rem 0 .4rem;color:var(--muted)}
 .entry-profile section,.entry-profile>.entry-facts,.entry-library{

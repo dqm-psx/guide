@@ -64,10 +64,11 @@
   });
   compact.addEventListener("change", closeMenu);
   closeMenu();
-  P("search-shortcut").addEventListener("click", () => go("field-guide", {focusId:"guide-search"}));
+  P("guide-filters").addEventListener("click", closeMenu);
   let activeView = null;
   let pendingFocusId = null;
   let navigation = 0;
+  let renderedPath;
   const currentHash = () => window.DQMEntryHash?.() || location.hash;
 
   // Only the leading view id is parsed. Whatever follows the first separator
@@ -149,6 +150,11 @@
         viewId = "species-index";
         history.replaceState(null, "", "#species-index" + (search ? "?q="+encodeURIComponent(search) : ""));
       }
+    }
+    renderedPath = location.pathname;
+    if (!options?.fromSearch) {
+      const query = viewId === "field-guide" ? parse(currentHash()).params : "";
+      window.DQMGuideShell.syncSearch(new URLSearchParams(query));
     }
     const ticket = ++navigation;
     const status = P("view-load-status");
@@ -237,10 +243,43 @@
     location.hash = hash;
   }
 
-  window.addEventListener("hashchange", () => {
+  // Keep the source page in Back history. Later keystrokes edit the same
+  // results URL, even while the reference data is still loading.
+  function search({push = false, submit = false} = {}) {
+    const previous = parse(currentHash());
+    const fromGuide = previous.id === DEFAULT_VIEW;
+    const prior = new URLSearchParams(fromGuide ? previous.params : "");
+    const next = new URLSearchParams();
+    for (const [key,id] of [["q","guide-search"],["game","guide-game"],["kind","guide-kind"]]) {
+      const value = P(id).value.trim();
+      if (value) next.set(key,value);
+    }
+    const kind = next.get("kind");
+    if (kind === "quest" && prior.has("purpose")) next.set("purpose",prior.get("purpose"));
+    if (kind === prior.get("kind") && ["skill","mechanic"].includes(kind) && prior.has("sort")) {
+      next.set("sort",prior.get("sort"));
+    }
+    const hash = "#field-guide" + (next.size ? "?" + next : "");
+    const startSearch = !fromGuide || prior.has("entry") || (!prior.has("q") && next.has("q"));
+    if (currentHash() !== hash) {
+      if (push || startSearch) history.pushState(null,"",hash);
+      else history.replaceState(null,"",hash);
+    }
+    render(DEFAULT_VIEW,{fromSearch:true,focus:submit,scroll:submit || startSearch});
+  }
+
+  function followLocation() {
     const focusId = pendingFocusId;
     pendingFocusId = null;
     render(viewFor(currentHash()), { focus: true, focusId });
+  }
+  // Back to a published entry can change the path as well as the hash.
+  // Browsers only guarantee hashchange for a change within the same path.
+  window.addEventListener("popstate", () => {
+    if (location.pathname !== renderedPath) followLocation();
+  });
+  window.addEventListener("hashchange", event => {
+    if (new URL(event.oldURL).pathname === new URL(event.newURL).pathname) followLocation();
   });
 
   for (const link of navLinks) {
@@ -265,7 +304,7 @@
     });
   }
 
-  window.DQMViews = Object.freeze({ go, current: () => activeView, viewFor, parse });
+  window.DQMViews = Object.freeze({ go, search, current: () => activeView, viewFor, parse });
 
   // Normal loads leave position and focus to the browser. Old guide fragments
   // no longer name DOM elements, so scroll their replacement help into view

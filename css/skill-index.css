@@ -12,11 +12,13 @@
     --skill-line: #40574c;
   }
 }
-.skill-index-panel .skill-index-note { margin:.3rem 0 .6rem; font-size:.85rem; color:var(--muted,inherit); }
+.skill-index-panel :is(.skill-index-note, .skill-scroll-hint) { font-size:.85rem; color:var(--muted,inherit); }
+.skill-index-panel .skill-index-note { margin:.4rem 0 0; }
 .skill-scroll-hint { display: none; }
 @container (max-width: 54rem) {
   .skill-index-panel .skill-scroll-hint {
-    display: inline;
+    display: block;
+    margin:0 0 .4rem;
   }
 }
 .skill-index-scroll {
