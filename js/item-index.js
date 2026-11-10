@@ -3,9 +3,18 @@
   'use strict';
   const {alphabetical, enableRows} = DQMSortableIndex;
   const columns = [
-    ['name','Item name'], ['description','In-game description'], ['effect','Effect'],
-    ['type','Type'], ['uses','Uses'], ['buy','Buy price'], ['sell','Sell price'], ['source','Where to get it']
+    ['name','Item name',15], ['description','In-game description',16], ['effect','Effect',19],
+    ['type','Type',9], ['uses','Uses',9], ['buy','Buy price',7.5], ['sell','Sell price',7.5], ['source','Where to get it',17]
   ];
+  const optionalColumns = columns.slice(1);
+  const storageKey = 'dqm-guide-item-hidden-columns';
+  const hiddenColumns = new Set();
+  try {
+    const saved = JSON.parse(globalThis.localStorage?.getItem(storageKey) || '[]');
+    if (Array.isArray(saved)) {
+      for (const [key] of optionalColumns) if (saved.includes(key)) hiddenColumns.add(key);
+    }
+  } catch {}
   const shopMaps = new Map();
   // The standalone HTML already contains its source links.
   for (const place of globalThis.PLAYER_ATLAS?.maps || []) {
@@ -113,7 +122,7 @@
   }
   function render(rows, options) {
     const {title, game, escape, entryLink, hidden} = options;
-    const headers = columns.map(([key,label]) => '<th scope="col" data-sort="'+key+'"'+
+    const headers = columns.map(([key,label,width]) => '<th scope="col" data-sort="'+key+'" style="width:'+width+'%"'+
       (key === 'name' ? ' aria-sort="ascending"' : '')+(['uses','buy','sell'].includes(key) ? ' data-numeric' : '')+
       (key === 'uses' ? ' title="Breakable items sort by average uses before they break."' : '')+'>'+label+'</th>');
     const sorted = [...rows].sort((a,b) => alphabetical.compare(options.titleFor(a),options.titleFor(b)) || alphabetical.compare(a.id,b.id));
@@ -161,7 +170,68 @@
       reference.effect,...reference.sources.map(source=>source.text)]);
     return (row.details || []).filter(text=>!covered.has(text));
   }
-  globalThis.DQMItemIndex = {render, profileHeading, itemFacts, shopLink, searchTerms, extraDetails, enableSorting:enableRows};
+  function enableTable(table, heading, initialOrder, onSort) {
+    enableRows(table, initialOrder, onSort);
+    const panel = table.closest('.item-table-panel');
+    const scroll = table.parentElement;
+    const hint = panel.querySelector('.table-scroll-hint');
+    const priceNote = panel.querySelector('.reference-table-note');
+    const menu = document.createElement('details');
+    menu.className = 'item-columns';
+    menu.innerHTML = '<summary>Columns</summary><fieldset class="item-column-options"><legend>Visible columns</legend>'+
+      optionalColumns.map(([key,label]) => '<label><input type="checkbox" value="'+key+'"'+
+        (hiddenColumns.has(key) ? '' : ' checked')+'> '+label+'</label>').join('')+'</fieldset>';
+    if (!heading) {
+      heading = document.createElement('div');
+      heading.className = 'item-table-toolbar';
+      panel.prepend(heading);
+    }
+    heading.append(menu);
+
+    function updateHint() {
+      hint.hidden = scroll.scrollWidth <= scroll.clientWidth;
+    }
+    function applyColumns() {
+      const visibleWidth = columns.reduce((sum,[key,,width]) => sum + (hiddenColumns.has(key) ? 0 : width), 0);
+      table.style.setProperty('--item-table-min-width', (70 * visibleWidth / 100)+'rem');
+      columns.forEach(([key,,width], index) => {
+        const hidden = hiddenColumns.has(key);
+        table.tHead.rows[0].cells[index].style.width = (100 * width / visibleWidth)+'%';
+        for (const row of table.rows) row.cells[index].hidden = hidden;
+      });
+      priceNote.hidden = hiddenColumns.has('sell');
+      updateHint();
+    }
+    applyColumns();
+    menu.addEventListener('change', event => {
+      const input = event.target;
+      if (input.checked) hiddenColumns.delete(input.value);
+      else hiddenColumns.add(input.value);
+      try { localStorage.setItem(storageKey, JSON.stringify([...hiddenColumns])); } catch {}
+      applyColumns();
+    });
+    menu.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || !menu.open) return;
+      event.preventDefault();
+      menu.open = false;
+      menu.querySelector('summary').focus();
+    });
+    menu.addEventListener('focusout', event => {
+      if (event.relatedTarget && !menu.contains(event.relatedTarget)) menu.open = false;
+    });
+    if (globalThis.ResizeObserver) {
+      const observer = new ResizeObserver(() => {
+        if (scroll.isConnected) updateHint();
+        else observer.disconnect();
+      });
+      observer.observe(scroll);
+    }
+  }
+  globalThis.document?.addEventListener('pointerdown', event => {
+    const menu = document.querySelector('.item-columns[open]');
+    if (menu && !menu.contains(event.target)) menu.open = false;
+  });
+  globalThis.DQMItemIndex = {render, profileHeading, itemFacts, shopLink, searchTerms, extraDetails, enableTable};
   const published = globalThis.document?.querySelector('#items .item-index');
-  if (published) enableRows(published);
+  if (published) enableTable(published);
 })();
