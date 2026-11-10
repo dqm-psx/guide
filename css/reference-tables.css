@@ -1,0 +1,122 @@
+.reference-table-panel {
+  --table-surface: var(--guide-panel, #f6f7f3);
+  --table-heading: var(--guide-soft, #e7eee5);
+  --table-line: var(--guide-rule, #cbd4ca);
+  container-type: inline-size;
+  min-width: 0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .reference-table-panel {
+    --table-surface: #18231f;
+    --table-heading: #26382f;
+    --table-line: #40574c;
+  }
+}
+.reference-table-panel :is(.reference-table-note, .table-scroll-hint) { font-size:.85rem; color:var(--muted,inherit); }
+.reference-table-panel .reference-table-note { margin:.4rem 0 0; }
+.table-scroll-hint { display: none; }
+@container (max-width: 54rem) {
+  .reference-table-panel .table-scroll-hint {
+    display: block;
+    margin:0 0 .4rem;
+  }
+}
+.reference-table-scroll {
+  max-height: 72vh;
+  overflow: auto;
+  scroll-padding-block-start: 3rem;
+}
+.reference-table-scroll:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.reference-table {
+  width: 100%;
+  min-width: 54rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: .925rem;
+  line-height: 1.45;
+  text-align: left;
+}
+.reference-table :is(th, td) {
+  padding: .6rem .65rem;
+  border: 0;
+  border-bottom: 1px solid var(--table-line);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.reference-table-panel .reference-table th {
+  color: inherit;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: inherit;
+}
+.reference-table-panel .reference-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--table-heading);
+  padding-block: .15rem;
+}
+.skill-index thead [data-sort="name"] { width: 16%; }
+.skill-index thead [data-sort="description"] { width: 24%; }
+.skill-index thead [data-sort="effect"] { width: 27%; }
+.skill-index thead [data-sort="mpCost"] { width: 9%; }
+.skill-index thead [data-sort="type"], .skill-index thead [data-sort="target"] { width: 12%; }
+.reference-table-panel .reference-table tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--table-surface);
+  box-shadow: inset -1px 0 var(--table-line);
+  font-weight: 650;
+}
+.reference-table-panel .reference-table thead th:first-child {
+  left: 0;
+  z-index: 3;
+  box-shadow: inset -1px 0 var(--table-line);
+}
+.item-index .price, .skill-index td:nth-child(5) { font-variant-numeric: tabular-nums; }
+.reference-table th button {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: .3rem 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: 650;
+  text-align: inherit;
+  cursor: pointer;
+}
+.reference-table th button:is(:hover, :focus-visible) { text-decoration: underline; }
+@media print {
+  .reference-table-panel { container-type: normal; }
+  .reference-table-panel .table-scroll-hint { display: none; }
+  .reference-table-scroll { overflow: visible; max-height: none; }
+  .reference-table { min-width: 0; font-size: 8pt; }
+  .reference-table-panel .reference-table :is(thead th, tbody th) { position: static; }
+}
+.item-index thead [data-sort="name"] { width:18%; }
+.item-index thead [data-sort="description"] { width:20%; }
+.item-index thead [data-sort="effect"] { width:21%; }
+.item-index thead :is([data-sort="buy"], [data-sort="sell"]) { width:9%; }
+.item-index thead [data-sort="source"] { width:23%; }
+.item-index .item-name { display:flex; align-items:center; gap:.45rem; min-height:2.5rem; }
+.item-name img { flex:none; object-fit:contain; width:2.5rem; height:2.5rem; image-rendering:pixelated; }
+.item-index .item-source + .item-source { margin-top:.3rem; }
+.item-all-sources { margin-top:.3rem; font-size:.82rem; }
+@container (max-width: 54rem) {
+  .item-index .item-source + .item-source:has(+ .item-all-sources) { display:none; }
+}
+.item-source small, .item-description small { color:var(--muted,inherit); font-size:.78rem; font-weight:600; }
+.item-description + .item-description { margin-top:.35rem; }
+.item-facts { margin:.65rem 0 .85rem; display:grid; grid-template-columns:fit-content(10rem) minmax(0,1fr); align-items:baseline; gap:.4rem 1rem; }
+.item-facts dt { font-size:.85rem; font-weight:650; }
+.item-facts dd { margin:0; }
+.item-sources .item-source + .item-source { margin-top:.25rem; }
+.item-art-credit { font-size:.8rem; color:var(--muted,inherit); }

@@ -70,15 +70,15 @@ function systemRecord(index, sourceId, slot, spelling, requiredLabel) {
     ...Object.values(editions).flatMap(edition => [edition.full, edition.short])])};
 }
 
-function skillDescription(index, sourceId) {
-  check(typeof sourceId === 'string' && /^m_exe_[0-9a-f]{6}$/u.test(sourceId), 'invalid native skill tooltip identity');
+function menuDescription(index, sourceId) {
+  check(typeof sourceId === 'string' && /^m_exe_[0-9a-f]{6}$/u.test(sourceId), 'invalid native tooltip identity');
   const row = index.get('menus/general.json', sourceId);
   const lines = row.raw.translations.current.english_lines;
   check(row.table === 'menu_text.json' && row.labels?.includes('Menus') &&
     Array.isArray(lines) && lines.length > 0 && lines.length <= 32 && lines.every(line =>
-      typeof line === 'string' && !/[<>{}\x00-\x1f\x7f]/u.test(line)), 'invalid skill tooltip at ' + sourceId);
+      typeof line === 'string' && !/[<>{}\x00-\x1f\x7f]/u.test(line)), 'invalid menu tooltip at ' + sourceId);
   const description = lines.join(' ').replace(/\s+/gu,' ').trim();
-  check(description.length && description.length <= 1024, 'empty or oversized skill tooltip at ' + sourceId);
+  check(description.length && description.length <= 1024, 'empty or oversized tooltip at ' + sourceId);
   return description;
 }
 
@@ -188,6 +188,12 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
   for (const item of field.entries.filter(row=>row.kind === 'item' || row.kind === 'tool')) {
     const nativeId = Number(item.id.replace(/^item-/, ''));
     const name = systemRecord(index,item.source_ids[0],361+nativeId,item.title,'Items');
+    name.description = menuDescription(index,item.source_ids[1]);
+    const alternate = {31:'m_exe_08bf94',40:'m_exe_08bf78',41:'m_exe_08bf60'}[nativeId];
+    if (alternate) {
+      check(item.source_ids.includes(alternate), 'missing alternate item tooltip at ' + item.id);
+      name.descriptions = {dqm1:name.description,dqm2:menuDescription(index,alternate)};
+    }
     items[item.id]=name;
     add(item.title, name.title);
   }
@@ -197,7 +203,7 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
     check(Number.isInteger(level) && level >= 1 && level <= 99, 'invalid learning level for skill ' + bind.id);
     name.minimum_level = level;
     name.description_source_id = bind.description_source_id;
-    name.description = skillDescription(index,bind.description_source_id);
+    name.description = menuDescription(index,bind.description_source_id);
     skills[bind.id]=name;
     add(bind.spelling,name.title,bind.affected_entries || []);
   }

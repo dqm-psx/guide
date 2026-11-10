@@ -51,26 +51,66 @@ test('Items includes travel supplies and preserves filters when narrowing the li
   await page.goto(url+'#field-guide?kind=item&page=2');
   const directory = page.locator('#guide-directory');
   const count = directory.getByRole('status');
-  await expect(count).toContainText('91 entries · Page 2');
+  await expect(count).toHaveText('91 items');
+  await expect(directory.getByRole('table',{name:'Items',exact:true}).locator('tbody tr')).toHaveCount(91);
   await directory.getByRole('link',{name:'Travel & exploration items'}).click();
-  await expect(count).toHaveText('8 entries');
+  await expect(count).toHaveText('8 items');
   await expect(directory.getByText('Chimera Wing',{exact:true})).toBeVisible();
   await expect(directory.getByText('Travel Bookmark',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Search filters'}).click();
   await page.locator('#guide-game').selectOption('dqm1');
-  await expect(count).toHaveText('6 entries');
+  await expect(directory.getByRole('table').locator('tbody tr')).not.toHaveCount(8);
+  await expect(directory.getByRole('rowheader',{name:'Chimera Wing'})).toBeVisible();
   await page.getByLabel('Search the guide').fill('ChimWing');
   await directory.getByRole('link',{name:'All items'}).click();
   await expect(page.locator('#guide-kind')).toHaveValue('item');
   await expect(page.locator('#guide-game')).toHaveValue('dqm1');
   await expect(page.locator('#guide-search')).toHaveValue('ChimWing');
-  await expect(count).toHaveText('1 entry');
+  await expect(count).toHaveText('1 item');
   await directory.getByRole('link',{name:/Chimera Wing/}).click();
   await expect(page.locator('#article-title')).toHaveText('Chimera Wing');
   await page.getByRole('link',{name:'← Search results'}).click();
   await expect(page.locator('#guide-kind')).toHaveValue('item');
   await page.getByLabel('Search the guide').fill('Travel Bookmark');
   await expect(directory.getByText('Travel Bookmark',{exact:true})).toBeVisible();
+});
+
+test('Items sorts real prices numerically, keeps missing values last and links to sourced profiles', async ({page}) => {
+  await page.setViewportSize({width:375,height:800});
+  await page.goto(url+'#field-guide?kind=item');
+  const index=page.getByRole('table',{name:'Items',exact:true});
+  const rows=index.locator('tbody tr');
+  await expect(rows).toHaveCount(91);
+  await expect(index.getByRole('button')).toHaveCount(6);
+  const herb=rows.filter({has:page.getByRole('rowheader',{name:'Medicinal Herb',exact:true})});
+  await expect(herb).toContainText('One ally: 30-40 HP restored.');
+  await expect(herb.getByRole('cell',{name:'7–8 G',exact:true})).toHaveCount(1);
+  const images=rows.locator('th img');
+  await expect(images).toHaveCount(91);
+  expect(await images.evaluateAll(nodes=>Promise.all(nodes.map(async n=>{await n.decode();return n.naturalWidth>0 && Boolean(n.title);})).then(v=>v.every(Boolean)))).toBe(true);
+  for(const [col,num] of [['Buy price',3],['Sell price',4]]){
+    const button=index.getByRole('button',{name:col,exact:true});
+    for(const dir of [1,-1]){
+      await button.click();
+      const prices=await rows.evaluateAll((list,i)=>list.map(row=>{
+        const match=row.cells[i].textContent.match(/[0-9][0-9,]*/);
+        return match ? Number(match[0].replaceAll(',','')) : null;
+      }),num);
+      const known=prices.filter(p=>p!==null);
+      expect(known.length).toBeGreaterThan(10);
+      expect(known.length).toBeLessThan(prices.length);
+      expect(prices).toEqual([...known.sort((a,b)=>dir*(a-b)),...Array(prices.length-known.length).fill(null)]);
+    }
+  }
+  await index.getByRole('rowheader',{name:'Miracle Mark'}).getByRole('link').click();
+  const article=page.locator('#guide-article');
+  await expect(article).toContainText('Silver');
+  await expect(article).toContainText('Material');
+  await page.goBack();
+  await expect(index.getByRole('columnheader',{name:'Sell price'})).toHaveAttribute('aria-sort','descending');
+  await page.reload();
+  await expect(index.getByRole('columnheader',{name:'Sell price'})).toHaveAttribute('aria-sort','descending');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(375);
 });
 
 test('Mechanics sorts by adventure or article and preserves the reader’s place', async ({page}) => {

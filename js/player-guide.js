@@ -48,6 +48,7 @@
   function normalized(value) { return String(value ?? '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’']/g, ''); }
   const searchIndex = new Map(rows.map(row => [row.id, normalized([row.title, row.region, row.summary, row.category,row.effect?.target,
     row.effect?.type, row.effect?.effect,
+    ...(DQMItemReference.items[row.id] ? DQMItemIndex.searchTerms(row,null,games) : []),
     ...(row.requested_species || []).map(id => GUIDE_REFERENCE.species[id].display_name),
     ...(row.nickname_rows || []).flatMap(name => name.aliases), ...(row.default_nicknames || []).flatMap(name => name.aliases),
     ...(row.sections || []).flatMap(section=>[section.title,section.intro,...(section.rows || []).flat()]),
@@ -148,7 +149,7 @@
     }
     const npc = NPC_SPRITES[row.id];
     if (npc?.species != null) return spriteGraphic(npc.species,'overworld','npc-art');
-    const image = npc?.image || row.image;
+    const image = npc?.image || (DQMItemReference.items[row.id] ? DQMItemArt.imageFor(row) : row.image);
     if (!image || !/^data:image\/png;base64,/.test(image)) return '';
     const role = npc?.role === 'hero' ? 'Playable hero sprite' : npc?.species != null ? 'Monster species sprite' : 'Character sprite';
     return '<img class="' + (npc ? 'npc-art' : 'item-art') + '" alt="' +
@@ -318,12 +319,16 @@
       const mapLinks = window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(routeData?.maps || [])]);
       const linkedNames = new Set(mapLinks.map(m => normalized(m.title)));
       const otherPlaces = (row.places || []).filter(name => !linkedNames.has(normalized(name)));
-      const prices = (row.prices || []).map(price=>'<tr><th scope="row">'+safe(games[price.game])+'</th><td>'+safe(price.locations.join(' · '))+
+      const itemOptions = itemLinks(p);
+      const prices = (row.prices || []).filter(price=>!itemOptions.game || price.game===itemOptions.game)
+        .map(price=>'<tr><th scope="row">'+safe(games[price.game])+'</th><td>'+price.locations.map(location=>DQMItemIndex.shopLink(location,itemOptions)).join(' · ')+
         '</td><td>'+safe(price.buy)+' G</td><td>'+safe(price.gold_pass)+' G</td></tr>').join('');
-      const details=(row.details || []).filter(line=>!(prices && /shops sell it for \d+ G/i.test(line)) && !(routeData?.gate && /^Encounter: /u.test(line)));
+      const item = DQMItemReference.items[row.id];
+      const described = item ? new Set([item.effect,...item.sources.map(source=>source.text)]) : new Set();
+      const details=(row.details || []).filter(line=>!described.has(line) && !(prices && /shops sell it for [\d,]+ G/i.test(line)) && !(routeData?.gate && /^Encounter: /u.test(line)));
       const stepsTag = row.kind === 'quest' ? 'ol' : 'ul';
       body = artwork(row, false) +
-        '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>' +
+        (item ? DQMItemIndex.itemFacts(row,itemOptions) : '<p class="article-lead">' + linkedProse(row.summary,row,routeData,p) + '</p>') +
         DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
@@ -336,6 +341,7 @@
         routeMarkup(row,routeData,p) +
         (row.kind === 'npc' ? DQMCharacterDialogue.markup(row,safe,questLinks,!reveal) : '') +
         (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + otherNames(row) +
+        (item ? '<p class="hint item-art-credit">Artwork · '+safe(DQMItemArt.creditFor(row))+'</p>' : '')+
         (otherPlaces.length ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
         (mapLinks.length ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +
         (profileLinks.length || related.length ? '<div class="article-related"><h3>Related entries</h3>' +
@@ -377,13 +383,14 @@
     return a.slice(i+1)===b.slice(i+1) ||
       (a[i]===b[i+1] && a[i+1]===b[i] && a.slice(i+2)===b.slice(i+2));
   }
-  function searchMatches(pool, query, buying) {
+  function searchMatches(pool, query, buying, game) {
     const words=query.split(/\s+/).filter(Boolean);
-    const candidates=buying ? pool.filter(r=>r.prices?.length) : pool;
+    const candidates=buying ? pool.filter(r=>r.prices?.some(price=>!game || price.game===game)) : pool;
     const scored=[];
     for (const r of candidates) {
       const forms=searchNames.get(r.id) || [];
-      const text=r.text || searchIndex.get(r.id) || normalized([r.title,r.summary,...forms].join(' '));
+      const text=game && DQMItemReference.items[r.id] ? normalized(DQMItemIndex.searchTerms(r,game,games).join(' ')) :
+        r.text || searchIndex.get(r.id) || normalized([r.title,r.summary,...forms].join(' '));
       let score;
       if (!words.length || forms.includes(query)) score=0;
       else if (forms.some(name=>name.startsWith(query))) score=1;
@@ -471,10 +478,11 @@
     change(p,'sort',order === defaultOrder ? '' : order);
     p.delete('page');
     history.replaceState(history.state,'',route(p));
-    const destination = new URLSearchParams(p);
-    for (const row of table.tBodies[0].rows) {
-      destination.set('entry',row.dataset.entry);
-      row.querySelector('a').setAttribute('href',route(destination));
+    for (const link of table.tBodies[0].querySelectorAll('a[href^="#field-guide?"]')) {
+      const destination = new URLSearchParams(link.hash.split('?')[1]);
+      change(destination,'sort',p.get('sort'));
+      destination.delete('page');
+      link.setAttribute('href',route(destination));
     }
   }
   function skillsDirectory(p, matches) {
@@ -493,6 +501,30 @@
     const table = root.querySelector('.skill-index');
     DQMSkillIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
     return 'Skills';
+  }
+  function itemLinks(p) {
+    return {
+      games, game:p.get('game'), escape:safe, titleFor:safeTitle, hidden:guarded,
+      entryLink:(id,html) => '<a href="'+linked(p,{entry:id,page:''})+'">'+html+'</a>',
+      mapLink:(id,html) => '<a href="#atlas?map='+safe(id)+'">'+html+'</a>'
+    };
+  }
+  function itemsDirectory(p, matches) {
+    const kind = p.get('kind');
+    const title = categories[kind];
+    const target = kind === 'item' ? 'tool' : 'item';
+    const switchList = '<a href="'+linked(p,{kind:target,page:''})+'">'+safe(target === 'item' ? 'All items' : categories.tool)+'</a>';
+    const count = matches.length ? matches.length+(matches.length === 1 ? ' item' : ' items') : 'No matching items';
+    const root = el('guide-directory');
+    root.innerHTML = directoryHeading(title,count,switchList);
+    if (matches.length) {
+      root.insertAdjacentHTML('beforeend',DQMItemIndex.render(matches,{...itemLinks(p),title}));
+      const table = root.querySelector('.item-index');
+      DQMItemIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
+    } else if (p.get('q')) {
+      root.insertAdjacentHTML('beforeend','<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>');
+    }
+    return title;
   }
   function mechanicsDirectory(p, matches, query, game) {
     const root = el('guide-directory');
@@ -541,9 +573,10 @@
     // Individual arena ranks share their parent objective's quest type.
     const searchPool = questPurpose ? filtered.filter(row => questPurpose.groups.includes(row.quest_group ||
       row.related?.map(id=>byId.get(id)?.quest_group).find(Boolean))) : filtered;
-    const matches = speciesMatches.length ? speciesMatches : q ? searchMatches(searchPool,q.replace(buying,'').replace(/^(an?|the)\s+/u,''),shopQuery) : filtered;
+    const matches = speciesMatches.length ? speciesMatches : q ? searchMatches(searchPool,q.replace(buying,'').replace(/^(an?|the)\s+/u,''),shopQuery,game) : filtered;
     if (kind === 'mechanic') return mechanicsDirectory(p,matches,q,game);
     if (kind === 'skill') return skillsDirectory(p,matches);
+    if (kind === 'item' || kind === 'tool') return itemsDirectory(p,matches);
     const pages = Math.max(1, Math.ceil(matches.length / pageSize));
     const page = Math.min(pages, Math.max(1, parseInt(p.get('page'),10) || 1));
     const heading = [game && games[game], categories[kind] || (q ? 'Search results' : 'Reference')].filter(Boolean).join(' · ');
@@ -554,7 +587,8 @@
       const match = hidden ? null : matchingSectionRow(r,q,game);
       const context = [!game && ['dqm1','dqm2'].includes(r.game) ? games[r.game] : '',
         !kind ? (r.href ? 'Breeding tools' : categories[r.kind]) : '', match?.section, r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
-      let summary=shopQuery && r.prices?.length ? r.prices[0].locations[0]+' · '+r.prices[0].buy+' G' : r.summary;
+      const shop=shopQuery && r.prices?.find(price=>!game || price.game===game);
+      let summary=shop ? shop.locations[0]+' · '+shop.buy+' G' : r.summary;
       if (match) summary=match.label+' · '+match.detail;
       if (speciesMatches.length) {
         const locations = GUIDE_REFERENCE.species[r.index].locations.filter(loc=>loc.kind==='wild' &&
@@ -569,15 +603,9 @@
       return '<a class="guide-row" href="' + href + '">' + thumb + '<span>' + (context ? '<small>' + safe(context) + '</small>' : '') +
         '<strong>' + safe(safeTitle(r)) + '</strong>' + (!hidden && summary ? '<span'+(match ? ' class="guide-search-excerpt"' : '')+'>' + safe(summary) + '</span>' : '') + '</span></a>';
     }).join('');
-    let inventoryLink = '';
-    if (kind === 'item' || kind === 'tool') {
-      const target = kind === 'item' ? 'tool' : 'item';
-      const label = target === 'item' ? 'All items' : categories.tool;
-      inventoryLink = '<a href="'+linked(p,{kind:target,page:''})+'">'+safe(label)+'</a>';
-    }
     const count = matches.length ? matches.length + (matches.length === 1 ? ' entry' : ' entries') : 'No matching entries';
     const pageCount = pages > 1 ? ' · Page ' + page + ' of ' + pages : '';
-    el('guide-directory').innerHTML = directoryHeading(heading,count+pageCount,inventoryLink) +
+    el('guide-directory').innerHTML = directoryHeading(heading,count+pageCount) +
       (kind==='quest' ? questPurposeNav(p,questPurpose) : '') +
       '<div class="directory-grid">' + (body || (q && (kind || game)
         ? '<a href="'+linked(p,{kind:'',game:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>'

@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 require('../../data/world-guide');
 require('../../data/skill-descriptions');
+require('../../data/item-reference');
 
 const raw = fs.readFileSync(path.join(__dirname, '../../data/field-guide.js'), 'utf8');
 const guide = JSON.parse(raw.slice('globalThis.FIELD_GUIDE = '.length, raw.lastIndexOf(';')));
@@ -42,9 +43,10 @@ test('campaign travel tools keep their alternate menu descriptions and exact sho
 test('a shared accessory effect is distinct from a verified purchase location', () => {
   const belt = entries.get('item-65');
   assert.equal(belt.game, 'dqm2');
-  assert.equal(belt.availability, 'class-documented');
+  assert.equal(belt.availability, 'event');
   assert.equal(belt.prices, undefined);
   assert.match(belt.summary, /80/);
+  assert.ok(DQMItemReference.items[belt.id].sources.some(source => source.game === 'dqm2' && /Lake Tower/.test(source.text)));
   const scale = entries.get('item-83');
   assert.equal(scale.availability, 'shop');
   assert.deepEqual(scale.prices.map(price => price.game), ['dqm2']);

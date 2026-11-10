@@ -33,5 +33,42 @@
     }
     update();
   }
-  globalThis.DQMSortableIndex = {enable};
+  const alphabetical = new Intl.Collator('en', {sensitivity:'base', numeric:true});
+  function compare(a, b, numeric, descending) {
+    // Unrecorded values and variable costs follow fixed values in either direction.
+    if (a == null || b == null) return Number(a == null) - Number(b == null);
+    const direction = descending ? -1 : 1;
+    if (numeric) {
+      const left = Number(a), right = Number(b);
+      if (Number.isFinite(left) && Number.isFinite(right)) return direction * (left - right);
+      if (Number.isFinite(left)) return -1;
+      if (Number.isFinite(right)) return 1;
+    }
+    return direction * alphabetical.compare(a,b);
+  }
+  function enableRows(table, initialOrder, onChange) {
+    const body = table.tBodies[0];
+    const headers = Array.from(table.tHead.rows[0].cells);
+    const columns = new Map(headers.map(head => [head.dataset.sort, head]));
+    const rows = Array.from(body.rows, row => {
+      const values = {};
+      for (const head of headers) {
+        const cell = row.cells[head.cellIndex];
+        values[head.dataset.sort] = cell.hasAttribute('data-missing') ? null :
+          cell.dataset.sortValue ?? cell.textContent.trim();
+      }
+      return {row, values};
+    });
+    enable(table, initialOrder, (key, descending) => {
+      const numeric = columns.get(key).hasAttribute('data-numeric');
+      rows.sort((a,b) => compare(a.values[key],b.values[key],numeric,descending) ||
+        alphabetical.compare(a.values.name,b.values.name) ||
+        alphabetical.compare(a.row.dataset.entry,b.row.dataset.entry));
+      body.append(...rows.map(entry => entry.row));
+    }, order => {
+      table.parentElement.scrollTop = 0;
+      onChange?.(order);
+    });
+  }
+  globalThis.DQMSortableIndex = {enable, enableRows, alphabetical};
 })();
