@@ -16,10 +16,10 @@ test.beforeAll(async () => {
   // Expectations come from this exact artifact, not checked-in wording or a
   // hardcoded release version. Read the classic data scripts without a DOM.
   const context = vm.createContext({});
-  for (const file of ['data/breeding-data.js', 'data/monster-reference.js']) {
+  for (const file of ['data/breeding-data.js', 'data/monster-reference.js', 'data/skill-descriptions.js']) {
     vm.runInContext(fs.readFileSync(path.join(STAGED_ROOT, file), 'utf8'), context, { timeout: 3000 });
   }
-  shipped = JSON.parse(JSON.stringify({ data: context.DATA, reference: context.MONSTER_REFERENCE }));
+  shipped = JSON.parse(JSON.stringify({ data: context.DATA, reference: context.MONSTER_REFERENCE, skills: context.SKILL_DESCRIPTIONS }));
   const worker = fs.readFileSync(path.join(STAGED_ROOT, 'sw.js'), 'utf8');
   const declaration = worker.match(/const PRECACHE = (\[[\s\S]*?\]);/);
   if (!declaration) throw new Error('Staged worker has no precache declaration.');
@@ -206,14 +206,24 @@ test('downloading the guide keeps its tools, atlas and profiles usable offline',
     await expect(page.locator('#tree-target')).toHaveValue('11');
     await page.goto(url+'entries/');
     await expect(page.getByRole('heading',{name:'Guide index',exact:true})).toBeVisible();
-    await page.getByRole('link',{name:'Bang',exact:true}).first().click();
-    await expect(page.locator('#article-title')).toHaveText('Bang');
+    const skills=page.getByRole('table',{name:'Skills',exact:true});
+    const cost=skills.getByRole('columnheader',{name:'MP cost'});
+    await cost.getByRole('button').click();
+    await expect(cost).toHaveAttribute('aria-sort','ascending');
+    const sortedCosts=await skills.locator('tbody tr').evaluateAll(rows=>rows.map(row=>row.cells[4].textContent));
+    const numericCosts=sortedCosts.filter(value=>/^\d+$/.test(value)).map(Number);
+    expect(numericCosts[0]).toBe(0);
+    expect(numericCosts).toEqual([...numericCosts].sort((a,b)=>a-b));
+    const skill=shipped.reference.guide_names.skills[7];
+    await skills.locator('a[href="skills/'+skill.id+'/"]').click();
+    await expect(page.locator('#article-title')).toHaveText(skill.title);
     check.assertClean();
   } finally { await context.setOffline(false); }
 });
 
 test('real entry URLs expose crawlable references and open the matching interactive tool',async ({browser,page})=>{
-  const entry = 'skills/e0c2b/';
+  const skill=shipped.reference.guide_names.skills[7];
+  const entry='skills/'+skill.id+'/';
   const staticContext = await browser.newContext({javaScriptEnabled:false});
   try {
     const reader = await staticContext.newPage();
@@ -221,8 +231,22 @@ test('real entry URLs expose crawlable references and open the matching interact
     await expect(reader.getByRole('heading',{level:1})).toHaveText('Golem');
     await expect(reader.locator('main')).toContainText('HP 100');
     await expect(reader.getByRole('link',{name:'Guardian Gate'}).first()).toBeVisible();
+    await reader.goto(url+'entries/#skills');
+    const skills=reader.getByRole('table',{name:'Skills',exact:true});
+    const names=Object.values(shipped.reference.guide_names.skills);
+    await expect(skills.getByRole('columnheader')).toHaveText(['Skill name','In-game description','Effect','Type','MP cost','Target']);
+    await expect(skills.getByRole('button')).toHaveCount(0);
+    const skillPaths=await skills.getByRole('link').evaluateAll(links=>links.map(a=>a.getAttribute('href')));
+    expect(skillPaths.sort()).toEqual(names.map(n=>'skills/'+n.id+'/').sort());
+    const firstSkill=shipped.reference.guide_names.skills[1];
+    const facts=shipped.skills[1];
+    const staticRow=skills.getByRole('row').filter({has:reader.locator('a[href="skills/'+firstSkill.id+'/"]')});
+    await expect(staticRow.getByRole('cell')).toHaveText([firstSkill.description,facts.effect,facts.type,String(facts.mpCost),facts.target]);
+    await staticRow.getByRole('link').click();
+    await expect(reader.getByRole('heading',{level:1})).toHaveText(firstSkill.title);
+    await expect(reader.locator('.entry-facts dd').filter({hasText:facts.effect})).toHaveText(facts.effect);
     await reader.goto(url+entry);
-    await expect(reader.getByRole('heading',{level:1})).toHaveText('Bang');
+    await expect(reader.getByRole('heading',{level:1})).toHaveText(skill.title);
     await expect(reader.locator('main')).toContainText('MP cost');
     await expect(reader.locator('meta[property="og:image"]')).toHaveAttribute('content',/guide-card\.png$/);
     await expect(reader.locator('link[rel="canonical"]')).toHaveAttribute('href','https://dqm-psx.github.io/guide/'+entry);
@@ -233,7 +257,7 @@ test('real entry URLs expose crawlable references and open the matching interact
     expect(paths.filter(p=>!fs.existsSync(path.join(STAGED_ROOT,p,'index.html')))).toEqual([]);
   } finally {await staticContext.close();}
   await page.goto(url+entry);
-  await expect(page.locator('#article-title')).toHaveText('Bang');
+  await expect(page.locator('#article-title')).toHaveText(skill.title);
   await expect(page).toHaveURL(url+entry);
   await page.evaluate(() => Object.defineProperty(navigator,'clipboard',{configurable:true,
     value:{writeText:async text=>{ window.copiedEntry = text; }}}));
@@ -243,7 +267,7 @@ test('real entry URLs expose crawlable references and open the matching interact
   await page.locator('.nav a[href="#species-index"]').click();
   await expect(page.locator('#species-rows a').first()).toBeVisible();
   await page.goBack();
-  await expect(page.locator('#article-title')).toHaveText('Bang');
+  await expect(page.locator('#article-title')).toHaveText(skill.title);
   await page.goto(url+'monsters/11/');
   await expect(page.locator('#monster-heading')).toHaveText(name(11));
   await page.getByRole('button',{name:'Use as pedigree'}).click();

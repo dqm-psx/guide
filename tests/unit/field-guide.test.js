@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 require('../../data/world-guide');
+require('../../data/skill-descriptions');
 
 const raw = fs.readFileSync(path.join(__dirname, '../../data/field-guide.js'), 'utf8');
 const guide = JSON.parse(raw.slice('globalThis.FIELD_GUIDE = '.length, raw.lastIndexOf(';')));
@@ -61,4 +62,19 @@ test('every natural skill in the three campaigns has numeric learning thresholds
     }
   }
   assert.deepEqual(guide.skill_requirements[1], { level: 1, mp: 7, intelligence: 20 });
+});
+
+test('all native skills have a guide type and a resolved effect alongside their in-game text', () => {
+  const types = new Set(['Damage', 'Healing', 'Status', 'Support', 'Utility']);
+  assert.deepEqual(Object.keys(SKILL_DESCRIPTIONS), Object.keys(guide.skill_requirements));
+  for (const [id, skill] of Object.entries(SKILL_DESCRIPTIONS)) {
+    assert.ok(types.has(skill.type), id);
+    assert.ok(skill.effect.trim() && skill.effect !== skill.description, id);
+    assert.doesNotMatch(skill.effect, /[{}]/, id);
+  }
+  assert.match(SKILL_DESCRIPTIONS[1].effect, /12–15/);
+  assert.match(SKILL_DESCRIPTIONS[22].effect, /30–40 HP/);
+  assert.equal(SKILL_DESCRIPTIONS[61].mpCost, 'All remaining MP');
+  assert.match(SKILL_DESCRIPTIONS[133].effect, /level 30 ally with 200 HP/);
+  assert.match(SKILL_DESCRIPTIONS[159].effect, /500/);
 });

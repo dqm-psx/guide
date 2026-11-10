@@ -17,6 +17,7 @@ function addEntryPages(assets) {
   vm.runInContext(assets.get('js/walkthrough.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/locations.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/mechanics-index.js').toString(),db,{timeout:5000});
+  vm.runInContext(assets.get('js/skill-index.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/character-dialogue.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/monster-reference.js').toString(),db,{timeout:5000});
   const profiles = db.DQMMonsterCore.create(db.DATA,db.MONSTER_REFERENCE);
@@ -142,21 +143,25 @@ function addEntryPages(assets) {
       list('Encounter base stats',battleList(routeData.fights))+list('In this guide',guideLinks)+list('Shops',stock)+list('Maps',places)+list('Monsters',(row.species_ids || []).map(id=>bySpecies.get(id)).filter(Boolean).map(monsterLink))+
       list('Related entries',related),'#field-guide?entry='+row.id,['story','ending'].includes(row.spoiler));
   }
+  const skillRows = [];
   for (const [id,name] of Object.entries(names)) {
-    const effect=db.SKILL_DESCRIPTIONS[id];
-    const skillFacts = [];
-    if (effect.mpCost != null) skillFacts.push(['MP cost',escape(effect.mpCost)]);
-    if (effect.target) skillFacts.push(['Target',escape(effect.target)]);
-    if (names[effect.upgradesFrom]) skillFacts.push(['Upgrades from',skillLink(names[effect.upgradesFrom])]);
-    const prereqs=(effect.combination || []).map(k=>names[k]).filter(Boolean);
+    const skill=db.SKILL_DESCRIPTIONS[id];
+    const description=name.description || skill.description;
+    skillRows.push({id:name.id, name:name.title, description, type:skill.type, effect:skill.effect,
+      mpCost:skill.mpCost, target:skill.target});
+    const skillFacts = [['Effect',escape(skill.effect)],['Type',escape(skill.type)]];
+    if (skill.mpCost != null) skillFacts.push(['MP cost',escape(skill.mpCost)]);
+    if (skill.target) skillFacts.push(['Target',escape(skill.target)]);
+    if (names[skill.upgradesFrom]) skillFacts.push(['Upgrades from',skillLink(names[skill.upgradesFrom])]);
+    const prereqs=(skill.combination || []).map(k=>names[k]).filter(Boolean);
     if (prereqs.length) skillFacts.push(['Requires skills',prereqs.map(skillLink).join(' + ')]);
     const stats=db.FIELD_GUIDE.skill_requirements[id] || {};
     const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const minimums=Object.entries(stats).filter(([,value])=>value>0).map(([key,value])=>[labels[key] || key,escape(value)]);
     const learners=campaignLists('Natural learners',campaign=>species.filter(m=>m.skills[campaign]?.some(s=>s.id===Number(id))).map(m=>m.index),
       illustratedMonster,'No natural learners recorded.');
-    add('skills',name.id,name.title,name.description || effect.description,
-      (skillFacts.length ? facts(skillFacts) : '')+
+    add('skills',name.id,name.title,description,
+      facts(skillFacts)+
       (minimums.length ? '<section><h2>Minimum learning stats</h2>'+facts(minimums)+'</section>' : '')+
       learners,'#field-guide?kind=skill&entry=skill-'+name.id);
   }
@@ -214,9 +219,12 @@ function addEntryPages(assets) {
     const shield = p.guarded ? '<section class="entry-shield"><h1>Story entry</h1><button type="button" onclick="document.documentElement.classList.remove(\'hide-story\')">Reveal this entry</button></section>' : '';
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><base href="'+depth+'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title>'+
       '<meta name="description" content="'+description+'"><link rel="canonical" href="'+url+'"><meta property="og:url" content="'+url+'"><meta property="og:type" content="article"><meta property="og:title" content="'+title+'"><meta property="og:description" content="'+description+'"><meta property="og:image" content="'+base+'icons/guide-card.png"><meta name="twitter:card" content="summary_large_image">'+
-      spoilerPreference+'<link rel="stylesheet" href="'+versioned('css/entry-page.css')+'"></head><body><header>'+link('./','DQM1&2 PSX Player Guide')+'</header><main><nav>'+link('entries/','Guide index')+'</nav>'+shield+'<div class="entry-content'+(profile ? ' entry-profile' : '')+'">'+introduction+p.body+
+      spoilerPreference+'<link rel="stylesheet" href="'+versioned('css/entry-page.css')+'">'+
+      (p.path==='entries/' ? '<link rel="stylesheet" href="'+versioned('css/skill-index.css')+'">' : '')+
+      '</head><body><header>'+link('./','DQM1&2 PSX Player Guide')+'</header><main><nav>'+link('entries/','Guide index')+'</nav>'+shield+'<div class="entry-content'+(profile ? ' entry-profile' : '')+'">'+introduction+p.body+
       (p.route ? '<p>'+link('index.html'+p.route,'Open in the player guide')+'</p>' : '')+'</div></main>'+
-      (p.path==='entries/' ? '<script defer src="'+versioned('js/mechanics-index.js')+'"></script>' : '')+
+      (p.path==='entries/' ? ['js/sortable-index.js','js/mechanics-index.js','js/skill-index.js'].map(file=>
+        '<script defer src="'+versioned(file)+'"></script>').join('') : '')+
       (p.route ? '<script defer src="'+versioned(script)+'" data-route="'+escape(p.route)+'"></script>' : '')+'</body></html>';
   }
   for (const p of pages) assets.set(p.path+'index.html',Buffer.from(documentFor(p)));
@@ -244,9 +252,10 @@ function addEntryPages(assets) {
     }
     return list(title,members.sort(alpha).map(row=>articleLink(row.id)));
   });
+  const skillTable=db.DQMSkillIndex.render(skillRows,{escape,linkTo:(id,title)=>skillLink({id,title})});
   const directory={title:'Guide index',path:'entries/',description:'Browse every guide entry by topic.',
     body:[entriesByKind('walkthroughs','Walkthroughs'),'<section class="place-directory"><h2>Gates and worlds</h2>'+locations+'</section>',...directoryQuests,...topicLists,entriesByKind('monsters','Monster library'),
-      entriesByKind('skills','Skills'),entriesByKind('places','Map atlas')].join('')};
+      '<section id="skills"><h2>Skills</h2>'+skillTable+'</section>',entriesByKind('places','Map atlas')].join('')};
   assets.set('entries/index.html',Buffer.from(documentFor(directory)));
   assets.set('sitemap.xml',Buffer.from('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+['','entries/',...pages.map(p=>p.path)].map(path=>'<url><loc>'+base+path+'</loc></url>').join('')+'</urlset>'));
 
