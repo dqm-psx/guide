@@ -55,10 +55,12 @@ checked against v1.0.73. Item pages list Japanese names, menu abbreviations and
 the English names used in each published patch edition. Any of these names can
 be used in the field-guide search.
 
-All 169 learnable skills include PSX tooltip text, MP cost and target. The
-directory links skill upgrades and combinations to their component skills.
-Each monster profile links its natural skills to those entries. The
-source-disc check can be repeated with `scripts/build-skill-descriptions.py`.
+The Skills table covers all 169 learnable skills. The in-game description
+follows the current English patch. Effect describes the PSX behavior, and
+Type groups skills by their primary use. MP cost and targeting come from the
+game tables. Three skills spend all remaining MP.
+Run `scripts/build-skill-descriptions.py --check` with the verified disc and
+comparison data to check the generated skill records.
 
 Monster links open profiles containing the current and alternate names,
 Japanese name, sprite, library text, stats and growth, natural skills,

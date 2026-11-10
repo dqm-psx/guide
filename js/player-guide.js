@@ -47,6 +47,7 @@
   }
   function normalized(value) { return String(value ?? '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’']/g, ''); }
   const searchIndex = new Map(rows.map(row => [row.id, normalized([row.title, row.region, row.summary, row.category,row.effect?.target,
+    row.effect?.type, row.effect?.effect,
     ...(row.requested_species || []).map(id => GUIDE_REFERENCE.species[id].display_name),
     ...(row.nickname_rows || []).flatMap(name => name.aliases), ...(row.default_nicknames || []).flatMap(name => name.aliases),
     ...(row.sections || []).flatMap(section=>[section.title,section.intro,...(section.rows || []).flat()]),
@@ -104,6 +105,7 @@
     }).join('');
   }
   function skillProfile(row,p) {
+    const skill = row.effect;
     const skillLink = nativeId => {
       const skill=FIELD_GUIDE.skill_names[nativeId];
       return '<a href="'+linked(p,{entry:'skill-'+skill.id})+'">'+safe(skill.title)+'</a>';
@@ -115,21 +117,22 @@
     const back=p.has('q') ? 'Search results' : categories[kind] || 'Skills';
     const trail='<div class="monster-breadcrumb"><a href="'+linked(p,{entry:'',kind})+'">← '+safe(back)+'</a><nav aria-label="Adjacent skills">'+
       adjacent(sortedSkills[ordinal-1],'Previous')+adjacent(sortedSkills[ordinal+1],'Next')+'</nav></div>';
-    const facts=[['MP cost',row.effect.mpCost],['Target',row.effect.target]].filter(([,v])=>v!=null);
+    const facts=[['Type',skill.type],['MP cost',skill.mpCost],['Target',skill.target]].filter(([,v])=>v!=null);
     const header='<header class="monster-profile-header skill-profile-header"><div class="monster-profile-identity">'+
       '<h2 id="article-title" tabindex="-1">'+safe(row.title)+'</h2>'+
       (row.names?.japanese ? '<p class="monster-japanese" lang="ja">'+safe(row.names.japanese)+'</p>' : '')+otherNames(row)+'</div>'+
       '<dl class="skill-facts skill-combat-facts">'+facts.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+safe(value)+'</dd></div>').join('')+'</dl></header>'+
-      '<div class="monster-library-quote"><p class="article-lead">'+safe(row.summary)+'</p></div>';
+      '<div class="monster-library-quote"><p class="article-lead">'+safe(row.summary)+'</p></div>'+
+      '<p><strong>Effect</strong> · '+safe(skill.effect)+'</p>';
     const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const stats=Object.entries(FIELD_GUIDE.skill_requirements?.[row.nativeId] || {}).filter(([,value])=>value>0);
     const requirements=stats.length ? '<section class="monster-card learning skill-thresholds"><div class="monster-card-heading"><h3>Minimum learning stats</h3></div><dl>'+
       stats.map(([key,n])=>'<div><dt>'+safe(labels[key] || key)+'</dt><dd>'+safe(n)+'</dd></div>').join('')+'</dl></section>' : '';
     const progression=[];
-    if (row.effect.upgradesFrom) progression.push(['Upgrades from',skillLink(row.effect.upgradesFrom)]);
+    if (skill.upgradesFrom) progression.push(['Upgrades from',skillLink(skill.upgradesFrom)]);
     const next=sortedSkills.filter(skill=>skill.effect.upgradesFrom===row.nativeId);
     if (next.length) progression.push(['Upgrades to',next.map(skill=>skillLink(skill.nativeId)).join(' · ')]);
-    if (row.effect.combination?.length) progression.push(['Requires skills',row.effect.combination.map(skillLink).join(' + ')]);
+    if (skill.combination?.length) progression.push(['Requires skills',skill.combination.map(skillLink).join(' + ')]);
     const combinations=sortedSkills.filter(skill=>skill.effect.combination?.includes(row.nativeId));
     if (combinations.length) progression.push(['Used in combinations',combinations.map(skill=>skillLink(skill.nativeId)).join(' · ')]);
     const related=progression.length ? '<section class="monster-card skill-progression"><div class="monster-card-heading"><h3>Related skills</h3></div><dl class="skill-facts">'+
@@ -462,6 +465,35 @@
       '<h2 id="directory-title" tabindex="-1">Characters</h2></div></div><div class="character-directory">'+sections.join('')+'</div>';
     return 'Characters';
   }
+  function rememberTableOrder(p, table, order, defaultOrder) {
+    change(p,'sort',order === defaultOrder ? '' : order);
+    p.delete('page');
+    history.replaceState(history.state,'',route(p));
+    const destination = new URLSearchParams(p);
+    for (const row of table.tBodies[0].rows) {
+      destination.set('entry',row.dataset.entry);
+      row.querySelector('a').setAttribute('href',route(destination));
+    }
+  }
+  function skillsDirectory(p, matches) {
+    const root = el('guide-directory');
+    const heading = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
+      '<h2 id="directory-title" tabindex="-1">Skills</h2></div></div>';
+    if (!matches.length) {
+      const retry = p.get('q') ? '<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>' : '';
+      root.innerHTML = heading+'<p class="guide-count" role="status">No matching skills</p>'+retry;
+      return 'Skills';
+    }
+    const items = matches.map(({id,title,summary,effect:skill}) => ({
+      id, name:title, description:summary, effect:skill.effect, type:skill.type, mpCost:skill.mpCost, target:skill.target
+    }));
+    const linkTo = (id,name) => '<a href="'+linked(p,{entry:id,page:''})+'">'+safe(name)+'</a>';
+    const count = matches.length === 1 ? '1 skill' : matches.length+' skills';
+    root.innerHTML = heading+'<p class="guide-count" role="status">'+count+'</p>'+DQMSkillIndex.render(items,{escape:safe,linkTo});
+    const table = root.querySelector('.skill-index');
+    DQMSkillIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
+    return 'Skills';
+  }
   function mechanicsDirectory(p, matches, query, game) {
     const root = el('guide-directory');
     const title = categories.mechanic;
@@ -480,15 +512,7 @@
       (matches.length ? table : '<p role="status">No matching mechanics articles</p>'+retry);
     if (matches.length) {
       const index = root.querySelector('.mechanics-index');
-      DQMMechanicsIndex.enableSorting(index, p.get('sort'), order => {
-        change(p,'sort',order === 'section' ? '' : order);
-        history.replaceState(history.state,'',route(p));
-        for (const row of index.tBodies[0].rows) {
-          const destination = new URLSearchParams(p);
-          destination.set('entry',row.dataset.entry);
-          row.querySelector('a').setAttribute('href',route(destination));
-        }
-      });
+      DQMMechanicsIndex.enableSorting(index,p.get('sort'),order => rememberTableOrder(p,index,order,'section'));
     }
     return title;
   }
@@ -522,6 +546,7 @@
       row.related?.map(id=>byId.get(id)?.quest_group).find(Boolean))) : filtered;
     const matches = speciesMatches.length ? speciesMatches : q ? searchMatches(searchPool,q.replace(buying,'').replace(/^(an?|the)\s+/u,''),shopQuery) : filtered;
     if (kind === 'mechanic') return mechanicsDirectory(p,matches,q,game);
+    if (kind === 'skill') return skillsDirectory(p,matches);
     const pages = Math.max(1, Math.ceil(matches.length / pageSize));
     const page = Math.min(pages, Math.max(1, parseInt(p.get('page'),10) || 1));
     const heading = [game && games[game], categories[kind] || (q ? 'Search results' : 'Reference')].filter(Boolean).join(' · ');
@@ -596,7 +621,8 @@
     const p = new URLSearchParams();
     change(p,'q',el('guide-search').value.trim()); change(p,'game',el('guide-game').value); change(p,'kind',el('guide-kind').value);
     if (p.get('kind')==='quest') change(p,'purpose',params().get('purpose'));
-    if (p.get('kind') === 'mechanic') change(p,'sort',params().get('sort'));
+    const current = params();
+    if (p.get('kind') === current.get('kind') && ['mechanic','skill'].includes(p.get('kind'))) change(p,'sort',current.get('sort'));
     if (push && location.hash !== route(p)) { location.hash = route(p); return; }
     if (p.size && (location.hash === '#field-guide' || !location.hash)) history.pushState(null,'',route(p));
     else history.replaceState(null,'',route(p));

@@ -160,6 +160,54 @@ test('event copies share an atlas entry while distinct places and dungeon layout
   await expect(page.locator('.map-image img')).not.toHaveAttribute('src', alternate);
 });
 
+test('the Skills directory sorts the whole list and keeps the chosen order through search and back', async ({page}) => {
+  await page.goto(url+'#field-guide?kind=skill');
+  const table=page.getByRole('table',{name:'Skills',exact:true});
+  const rows=table.locator('tbody tr');
+  await expect(rows).toHaveCount(169);
+  const blaze=table.getByRole('row').filter({has:page.getByRole('link',{name:'Blaze',exact:true})});
+  const cells=blaze.getByRole('cell');
+  await expect(cells.nth(0)).toHaveText('Attacks with a small fireball.');
+  await expect(cells.nth(1)).toContainText(/damage/i);
+  await expect(cells.nth(2)).toHaveText('Damage');
+  await expect(cells.nth(3)).toHaveText('2');
+  await expect(cells.nth(4)).toHaveText('One enemy');
+  const headers=table.getByRole('columnheader');
+  const labels=['Skill name','In-game description','Effect','Type','MP cost','Target'];
+  const collator=new Intl.Collator('en',{sensitivity:'base',numeric:true});
+  for (const [index,label] of labels.entries()) {
+    const header=headers.nth(index);
+    const button=header.getByRole('button',{name:label,exact:true});
+    const orders=label==='Skill name' ? ['descending','ascending'] : ['ascending','descending'];
+    for (const direction of orders) {
+      await button.click();
+      await expect(header).toHaveAttribute('aria-sort',direction);
+      const values=await rows.evaluateAll((list,i)=>list.map(row=>row.cells[i].textContent.trim()),index);
+      if (label==='MP cost') {
+        const numeric=values.filter(v=>/^\d+$/.test(v)).map(Number);
+        expect(numeric).toContain(0);
+        expect(numeric).toEqual([...numeric].sort((a,b)=>direction==='ascending' ? a-b : b-a));
+        expect(values.slice(numeric.length)).toEqual(Array(3).fill('All remaining MP'));
+      } else {
+        expect(values).toEqual([...values].sort((a,b)=>direction==='ascending' ? collator.compare(a,b) : collator.compare(b,a)));
+      }
+    }
+  }
+  await table.getByRole('button',{name:'MP cost'}).click();
+  await page.getByLabel('Search the guide').fill('Blaze');
+  await table.getByRole('link',{name:'Blaze',exact:true}).click();
+  await expect(page.locator('#article-title')).toHaveText('Blaze');
+  await page.locator('.monster-breadcrumb > a').click();
+  await expect(table.getByRole('columnheader',{name:'MP cost'})).toHaveAttribute('aria-sort','ascending');
+  await expect(page.getByLabel('Search the guide')).toHaveValue('Blaze');
+  await page.getByLabel('Search the guide').fill('');
+  await page.locator('#guide-game').selectOption('dqm1');
+  await expect(rows).toHaveCount(124);
+  await page.reload();
+  await expect(rows).toHaveCount(124);
+  await expect(table.getByRole('columnheader',{name:'MP cost'})).toHaveAttribute('aria-sort','ascending');
+});
+
 test('skill profiles explain the effect and link upgrades and learner profiles', async ({page}) => {
   await page.goto(url+'#field-guide?kind=skill&entry=skill-e0c2b');
   await expect(page.locator('#article-title')).toHaveText('Bang');
@@ -167,7 +215,7 @@ test('skill profiles explain the effect and link upgrades and learner profiles',
   await expect(page.locator('.skill-combat-facts')).toContainText('MP cost');
   await expect(page.locator('.skill-combat-facts')).toContainText('All enemies');
   await page.goto(url+'#field-guide?kind=skill&q=Blazemore');
-  await page.locator('.guide-row').first().click();
+  await page.getByRole('table',{name:'Skills',exact:true}).getByRole('link',{name:'Blazemore',exact:true}).click();
   await expect(page.locator('.skill-learners')).toContainText('No monster lists this as a natural skill');
   await expect(page.locator('.skill-progression').getByRole('link',{name:'Blazemost',exact:true})).toBeVisible();
   await page.locator('.skill-progression').getByRole('link',{name:'Blaze',exact:true}).click();
@@ -225,7 +273,7 @@ test('story visibility persists and skill and encounter species lead to live pro
   await page.getByRole('button',{name:'Reveal this entry'}).click();
   await expect(page.locator('#article-title')).toHaveText('Dragon');
   await page.goto(url+'#field-guide?kind=skill&q=Blaze');
-  await page.locator('.guide-row').filter({has:page.getByText('Blaze',{exact:true})}).click();
+  await page.getByRole('table',{name:'Skills',exact:true}).getByRole('link',{name:'Blaze',exact:true}).click();
   await expect(page.locator('.learning')).toContainText('Minimum learning stats');
   await page.locator('.skill-campaign[open] a').first().click();
   await expect(page.locator('#monster-heading')).toBeVisible();
