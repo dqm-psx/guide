@@ -50,7 +50,7 @@ test.describe('sticky chrome and feature surfaces', () => {
     await page.goto(FILE_URL);
     const nav = page.getByRole('navigation', {name:'Guide contents'});
     await expect(page.getByRole('button',{name:'Browse guide'})).toBeHidden();
-    await expect(nav.getByRole('heading')).toHaveText(['Breeding & planning','Reference','Places','Walkthroughs']);
+    await expect(nav.getByRole('heading')).toHaveText(['Breeding tools','Reference','Places','Walkthroughs']);
     for (const name of ['Guide home','Terry','Cobi & Tara','Terry’s gates','Cobi & Tara’s worlds','Characters','Monster library','My game']) {
       await expect(nav.getByRole('link',{name,exact:true})).toBeVisible();
     }
@@ -65,5 +65,35 @@ test.describe('sticky chrome and feature surfaces', () => {
     await page.goBack();
     await expect(terry).toHaveAttribute('aria-current','page');
     await expect(nav).toBeVisible();
+  });
+
+  test('Guide home leads with the five breeding shortcuts', async ({ page }) => {
+    await page.goto(FILE_URL);
+    const home = page.locator('#guide-home');
+    await expect(home.getByRole('heading').first()).toHaveText('Breeding tools');
+    await expect(home.getByRole('heading', {name:'Walkthroughs'})).toBeVisible();
+
+    const tools = home.getByRole('region', {name:'Breeding tools'});
+    const destinations = [
+      ['Find a pairing', '#pair-finder'],
+      ['Find parents', '#offspring-finder'],
+      ['Plan a breeding tree', '#breeding-tree'],
+      ['Compare parent pairs', '#breeding-table'],
+      ['Import a memory card', '#team-planner?import=save'],
+    ];
+    for (const [label, href] of destinations) {
+      const shortcut = tools.getByRole('link', {name:label});
+      await expect(shortcut).toBeVisible();
+      await expect(shortcut).toHaveAttribute('href', href);
+      const sprites = shortcut.locator('img');
+      await expect(sprites.first()).toBeVisible();
+      for (const sprite of await sprites.all()) {
+        await expect(sprite).toHaveAttribute('alt', '');
+        await sprite.evaluate(image => image.decode());
+      }
+    }
+    await page.locator('a.skip').focus();
+    await page.keyboard.press('Enter');
+    await expect(home.getByRole('heading', {name:'Breeding tools'})).toBeFocused();
   });
 });

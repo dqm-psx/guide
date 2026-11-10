@@ -81,7 +81,7 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   await expect(page.locator('.nav a[href="#field-guide"]')).toHaveAttribute('aria-current', 'page');
   await waitForOfflineCache(page);
 
-  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[rel="stylesheet"], link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"], .brand img[src], .hero-map img[src]'))
+  const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[rel="stylesheet"], link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"], .brand img[src], #guide-home img[src]'))
     .map(element => element.src || element.href));
   expect(assets.length).toBeGreaterThan(10);
   for (const asset of assets) {
