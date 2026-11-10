@@ -20,10 +20,10 @@
   }
   function ready(view, hash) {
     const route = new URLSearchParams(String(hash || '').split('?')[1] || '');
-    const home = view === 'guide' && !['entry','game','q','kind'].some(key => route.get(key));
+    const home = view === 'field-guide' && !['entry','game','q','kind'].some(key => route.get(key));
     if (home) return null;
-    const group = view === 'guide' || view === 'atlas' ? [...groups.field] : [...groups.tools];
-    if (view === 'guide' && route.get('entry')?.startsWith('npc-')) group.push(...groups.dialogue);
+    const group = view === 'field-guide' || view === 'atlas' ? [...groups.field] : [...groups.tools];
+    if (view === 'field-guide' && route.get('entry')?.startsWith('npc-')) group.push(...groups.dialogue);
     if (view === 'monster' || view === 'sources') group.unshift(groups.profile[0]);
     if (view === 'monster') group.push(groups.profile[1]);
     if (view === 'breeding-tree' || view === 'team-planner') group.push(...groups.tree);

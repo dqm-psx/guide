@@ -77,8 +77,8 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   const check = audit(page, context);
   const response = await page.goto(url);
   expect(response.ok()).toBe(true);
-  await expect(page.locator('#guide')).toBeVisible();
-  await expect(page.locator('.nav a[href="#guide"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('#field-guide')).toBeVisible();
+  await expect(page.locator('.nav a[href="#field-guide"]')).toHaveAttribute('aria-current', 'page');
   await waitForOfflineCache(page);
 
   const assets = await page.evaluate(() => Array.from(document.querySelectorAll('script[src], link[rel="stylesheet"], link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"], .brand img[src], .hero-map img[src]'))
@@ -217,10 +217,6 @@ test('real entry URLs expose crawlable references and open the matching interact
   const staticContext = await browser.newContext({javaScriptEnabled:false});
   try {
     const reader = await staticContext.newPage();
-    await reader.goto(url+'entries/');
-    const articles = reader.getByRole('table',{name:'Gameplay articles'});
-    await expect(articles.getByRole('link',{name:'Foreign masters and their monsters'})).toHaveAttribute('href','articles/field-wandering-masters/');
-    await expect(articles.getByRole('row',{name:/Equip and recover accessories/})).toContainText('Cobi & Tara');
     await reader.goto(url+'articles/boss-golem/');
     await expect(reader.getByRole('heading',{level:1})).toHaveText('Golem');
     await expect(reader.locator('main')).toContainText('HP 100');
@@ -263,7 +259,6 @@ test('entry sharing selects the canonical URL when clipboard access is denied',a
     writeText:async ()=>{ throw new DOMException('Denied','NotAllowedError'); }
   }}));
   await page.goto(url+'index.html#field-guide?kind=boss&entry=boss-golem');
-  await expect(page).toHaveURL(url+'index.html#guide?kind=boss&entry=boss-golem');
   const input=page.getByRole('textbox',{name:'Entry link to copy'});
   await page.getByRole('button',{name:'Copy entry link'}).click();
   await expect(input).toHaveValue(url+'articles/boss-golem/');

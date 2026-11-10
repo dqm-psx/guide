@@ -1,11 +1,11 @@
 /* Published entries already contain their text and links. Enhance them with
    the interactive guide when its shell is available at the same origin. */
 (() => {
-  const route = document.currentScript.dataset.route?.replace(/^#field-guide(?=\?|$)/, '#guide');
+  const route = document.currentScript.dataset.route;
   const originalPath = location.pathname;
   if (!route || !/^https?:$/.test(location.protocol)) return;
   window.DQMEntryHash = () => {
-    if (location.pathname === originalPath && route.startsWith('#guide?kind=story&game=') &&
+    if (location.pathname === originalPath && route.startsWith('#field-guide?kind=story&game=') &&
         /^#story-[\w-]+$/.test(location.hash)) {
       return route+'&entry='+location.hash.slice(1);
     }

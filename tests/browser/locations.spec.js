@@ -4,7 +4,7 @@ test.beforeAll(async () => { url = await (await import('../helpers/modes')).star
 test.afterAll(async () => { await (await import('../helpers/modes')).stopGuideServer(); });
 
 test('Terry’s directory covers every gate and links its unlock and encounter floors',async ({page})=>{
-  await page.goto(url+'#guide?kind=location&game=dqm1');
+  await page.goto(url+'#field-guide?kind=location&game=dqm1');
   const directory=page.locator('#guide-directory');
   await expect(directory.getByRole('heading',{name:'Terry’s gates'})).toBeVisible();
   await expect(directory.locator('a[href*="entry=location-"]')).toHaveCount(32);
@@ -22,7 +22,7 @@ test('Terry’s directory covers every gate and links its unlock and encounter f
 });
 
 test('Cobi and Tara’s directory follows the keys and links places to the atlas',async ({page})=>{
-  await page.goto(url+'#guide?kind=location&game=dqm2');
+  await page.goto(url+'#field-guide?kind=location&game=dqm2');
   const worlds=page.locator('.world-stop');
   await expect(worlds.getByRole('heading')).toHaveText(['GreatLog','Desert World','Water World','Ice World','Sky World','World Between Worlds']);
   await expect(worlds.nth(2).getByRole('link',{name:'Pirate Key'})).toHaveAttribute('href',/entry=quest-win-the-pirate-key/);
@@ -32,7 +32,7 @@ test('Cobi and Tara’s directory follows the keys and links places to the atlas
   await worlds.nth(2).getByRole('link',{name:'Ghost Ship'}).click();
   await expect(page.locator('#atlas-location')).toHaveText('Ghost Ship');
   await page.evaluate(()=>localStorage.setItem('dqm-guide-story-spoilers','hide'));
-  await page.goto(url+'#guide?kind=location&game=dqm2');
+  await page.goto(url+'#field-guide?kind=location&game=dqm2');
   await page.reload();
   await expect(worlds.first()).toContainText('GreatLog');
   await expect(worlds.nth(2)).toContainText('spoiler hidden');

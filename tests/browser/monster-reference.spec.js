@@ -18,7 +18,7 @@ test('a linked monster opens its native library, stats and campaign reference', 
   await expect(page.locator('#monster-growth-level')).toHaveValue('40');
   await expect(page.locator('.monster-library-quote + .monster-natural-skills h3')).toHaveText('Natural skills');
   await expect(page.locator('#monster-skills .skill-minimum')).toHaveText(['Min. level 3', 'Min. level 38', 'Min. level 12']);
-  await expect(page.locator('#monster-skills li a').first()).toHaveAttribute('href', '#guide?kind=skill&entry=skill-e0c1d');
+  await expect(page.locator('#monster-skills li a').first()).toHaveAttribute('href', '#field-guide?kind=skill&entry=skill-e0c1d');
   await page.locator('#monster-campaign').selectOption('cobi');
   await expect(page.locator('#monster-skills li a')).toHaveText(await page.evaluate(() => MONSTER_REFERENCE.species[11].skills.cobi.map(skill => skill.name)));
   await expect(page.locator('#monster-locations')).toContainText(await page.evaluate(() => MONSTER_REFERENCE.species.find(s => s.index === 11).locations.find(place => place.game === 'cobi').name));

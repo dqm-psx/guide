@@ -46,7 +46,6 @@ const PRECACHE = [
   "./js/current-names.js",
   "./js/walkthrough.js",
   "./js/locations.js",
-  "./js/article-index.js",
   "./js/save-import.js",
   "./js/player-guide.js",
   "./js/player-atlas.js",
@@ -193,7 +192,7 @@ self.addEventListener('fetch',event=>{
           const entry = url.pathname.slice(scope.pathname.length).match(/^(monsters|skills|places|articles)\/([\w-]+)\/(?:index\.html)?$/);
           if (entry) {
             const [kind,id]=entry.slice(1);
-            const routes={monsters:'monster?id=',skills:'guide?kind=skill&entry=skill-',places:'atlas?map=',articles:'guide?entry='};
+            const routes={monsters:'monster?id=',skills:'field-guide?kind=skill&entry=skill-',places:'atlas?map=',articles:'field-guide?entry='};
             return Response.redirect(scope.href+'#'+routes[kind]+id);
           }
         }
