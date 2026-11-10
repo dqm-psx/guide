@@ -69,6 +69,7 @@
   let pendingFocusId = null;
   let navigation = 0;
   let renderedPath;
+  let renderedHash;
   const currentHash = () => window.DQMEntryHash?.() || location.hash;
 
   // Only the leading view id is parsed. Whatever follows the first separator
@@ -187,6 +188,9 @@
     const settings = options || {};
     const view = P(viewId);
     if (!view) return;
+    const previouslyFocused = document.activeElement;
+    const atlasDirectory = viewId === 'atlas' && activeView === viewId ? window.DQMAtlas.directoryKey : null;
+    const changedRoute = currentHash() !== renderedHash;
     reveal(viewId);
     closeMenu();
     if (window.DQMApp && typeof window.DQMApp.viewShown === "function") window.DQMApp.viewShown(viewId);
@@ -212,11 +216,20 @@
     if (viewId === "team-planner" && new URLSearchParams(parse(location.hash).params).get("manage") === "teams") {
       settings.focusId = "manage-teams";
     }
+    // Browsing another location in the same list should not jump the page to
+    // its heading. Filters, pages, view changes and explicit focus still do.
+    const keepAtlasPosition = changedRoute && settings.scroll !== true && atlasDirectory != null &&
+      atlasDirectory === window.DQMAtlas.directoryKey && !settings.focusId;
     activeView = viewId;
+    renderedHash = currentHash();
     window.dispatchEvent(new Event('guide-view-rendered'));
     const stageId = viewId === 'field-guide' && new URLSearchParams(parse(currentHash()).params).get('entry');
     const stage = stageId && P(stageId)?.closest('.walk-stage') ? P(stageId) : null;
-    if (settings.scroll === false && !stage) return;
+    if (keepAtlasPosition && settings.focus && !previouslyFocused.isConnected) {
+      const replacement = previouslyFocused.id && P(previouslyFocused.id);
+      focusable(replacement || P('atlas-location'))?.focus({ preventScroll: true });
+    }
+    if ((settings.scroll === false || keepAtlasPosition) && !stage) return;
     const heading = headingFor(viewId);
     const requested = settings.focusId ? P(settings.focusId) : stage;
     const focusTarget = focusable(requested || heading);
@@ -291,6 +304,10 @@
         render(viewFor(link.hash), { focus: true });
         return;
       }
+      if (viewFor(link.hash) === 'atlas' && event.button === 0 &&
+          !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+        pendingFocusId = 'atlas-heading';
+      }
       // The hashchange reveals and focuses the tool after its controls are ready.
     });
   }
@@ -300,7 +317,7 @@
       // The skip link is an in-page jump, not a navigation: it must reach the
       // view that is currently visible without writing to the URL.
       event.preventDefault();
-      render(activeView || DEFAULT_VIEW, { focus: true });
+      render(activeView || DEFAULT_VIEW, { focus: true, scroll: true });
     });
   }
 
