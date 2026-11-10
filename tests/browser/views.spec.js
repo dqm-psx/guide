@@ -28,7 +28,7 @@ const VIEWS = [
   { hash: '#sources', id: 'sources' },
 ];
 
-const TOP_VIEWS = VIEWS.filter(view => !['offspring-finder', 'sources'].includes(view.id));
+const TOP_VIEWS = VIEWS.filter(view => view.id !== 'sources');
 
 // Every view id must be one of the view wrappers, and exactly one is displayed.
 async function expectSingleView(page, id) {
@@ -84,7 +84,8 @@ test.describe('served', () => {
     const expected = {
       '#field-guide': 'Guide home',
       '#atlas': 'Map atlas',
-      '#pair-finder': 'Breeding lookup',
+      '#pair-finder': 'Find offspring',
+      '#offspring-finder': 'Find parents',
       '#breeding-tree': 'Breeding tree',
       '#breeding-table': 'Breeding table',
       '#species-index': 'Monster library',
@@ -258,7 +259,7 @@ test.describe('served', () => {
       await expectSingleView(page, alias.view);
       const active = page.locator('.nav a[aria-current="page"]');
       if (alias.view === 'sources') await expect(active).toHaveCount(0);
-      else await expect(active).toHaveAttribute('href', '#pair-finder');
+      else await expect(active).toHaveAttribute('href', '#offspring-finder');
       await expect(page).toHaveTitle(new RegExp('^' + alias.title + ' · '));
       await expect(page.locator('#' + alias.target)).toBeVisible();
       await expect(page.locator('#' + alias.heading)).toBeFocused();

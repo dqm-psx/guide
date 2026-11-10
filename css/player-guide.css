@@ -126,6 +126,15 @@
 .topic-links,.directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
 .topic-links a,.ranch-links a,.article-related a{display:flex;justify-content:space-between;align-items:center;min-height:37px;gap:8px;border-bottom:1px solid var(--guide-rule);color:var(--guide-green);text-decoration:none;font-weight:650}
 .topic-links.question-links{grid-template-columns:1fr}
+.browse-mechanics { display:inline-block; margin-top:.5rem; padding:.25rem 0; font-weight:600; }
+.mechanics-index { width:100%; max-width:56rem; margin:1rem 0; border-collapse:collapse; table-layout:fixed; text-align:left; }
+.mechanics-index :is(th,td) { padding:.6rem .5rem; border-bottom:1px solid var(--guide-rule); vertical-align:top; white-space:normal; overflow-wrap:anywhere; }
+.mechanics-index thead th { padding-block:0; text-transform:none; letter-spacing:normal; font-size:.9rem; }
+.mechanics-index thead th:last-child { width:28%; }
+.field-view .mechanics-index tbody th { background:transparent; text-transform:none; letter-spacing:normal; font-size:1rem; font-weight:600; }
+.mechanics-index button { padding:.55rem .1rem; border:0; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+.mechanics-index button:is(:hover,:focus-visible) { text-decoration:underline; }
+.mechanics-index small { display:block; margin-top:.25rem; color:var(--muted); font-weight:400; }
 .topic-links a span,.ranch-links a span{color:var(--muted)}
 .topic-links a:hover,.ranch-links a:hover,.article-related a:hover,.map-doors a:hover{text-decoration:underline}
 .campaign:hover,.guide-row:hover,.atlas-scroll a:hover{background:var(--guide-soft)}
@@ -150,6 +159,13 @@
 .quest-directory { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:1rem 2.5rem; margin:1.25rem 0; }
 .quest-directory h3 { margin:0; color:var(--guide-green); font:700 1.5rem/1.2 Georgia,serif; }
 .quest-directory h4 { margin:1.3rem 0 .3rem; }
+.quest-purposes,.quest-campaign { display:flex; flex-wrap:wrap; align-items:baseline; gap:.25rem 1rem; }
+.quest-purposes { margin:.75rem 0; border-bottom:1px solid var(--guide-rule); }
+.quest-purposes a { padding:.35rem 0; }
+.quest-purposes [aria-current] { color:var(--ink); font-weight:700; text-decoration:none; border-bottom:3px solid var(--guide-accent); }
+.quest-campaign { justify-content:space-between; margin-bottom:.5rem; }
+.quest-campaign a,.quest-chapters { font-size:.92rem; }
+.quest-chapters { margin:1rem 0; }
 .quest-directory ul,.quest-ranks { padding:0; margin:0; list-style:none; }
 .quest-directory li { border-top:1px solid var(--guide-rule); }
 .quest-directory li a { display:flex; justify-content:space-between; align-items:baseline; gap:1rem; padding:.5rem 0; }

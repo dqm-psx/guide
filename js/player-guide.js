@@ -224,7 +224,8 @@
     for (const id of destinations) {
       const dest=byId.get(id);
       if (!dest || guarded(dest)) continue;
-      for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id}),dest.id);
+      const chapter = row.kind === 'story' && dest.kind === 'quest' ? row.id : '';
+      for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id,chapter}),dest.id);
     }
     for (const map of window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(data?.maps || [])])) {
       add(map.title,'#atlas?map='+safe(map.id));
@@ -251,14 +252,15 @@
     article.classList.remove('skill-profile');
     const heading = games[game]+' walkthrough';
     const sectionParams = new URLSearchParams({kind:'story',game});
-    const entryLink = (id,label) => {
+    const entryLink = (id,label,stage) => {
       const dest = byId.get(id);
-      return dest ? '<a href="'+linked(p,{entry:id})+'">'+safe(label || safeTitle(dest))+'</a>' : '';
+      return dest ? '<a href="'+linked(p,{entry:id,chapter:dest.kind==='quest' ? stage?.id : ''})+'">'+safe(label || safeTitle(dest))+'</a>' : '';
     };
     const walk = DQMWalkthrough.render(game,{
       byId, routes:FIELD_ROUTES.routes, escape:safe, title:safeTitle, hidden:guarded,
       campaignLink:(key,current) => '<a href="'+linked(sectionParams,{game:key})+'"'+
         (current ? ' aria-current="page"' : '')+'>'+safe(games[key])+'</a>',
+      questIndexLink:'<a href="'+linked(sectionParams,{kind:'quest'})+'">'+safe(games[game])+' quests</a>',
       sectionLink:(row,label) => '<a href="'+linked(sectionParams,{entry:row.id})+'">'+safe(label)+'</a>',
       entryLink, prose:(line,row,data,used) => linkedProse(line,row,data,p,used),
       places:id => entryLink(id,'Locations and encounters')
@@ -282,8 +284,12 @@
       return row.title;
     }
     const backKind = p.get('kind') || (!p.has('q') && row?.kind) || '';
-    const backLabel = p.has('q') ? 'Search results' : categories[backKind] || 'Guide home';
-    const back = '<a class="guide-back" href="' + linked(p, {entry:'',kind:backKind}) + '">← ' + safe(backLabel) + '</a>';
+    const questChapters = DQMWalkthrough.chaptersForQuest(row,byId);
+    const origin = questChapters.find(stage=>stage.id===p.get('chapter'));
+    const backLabel = origin ? safeTitle(origin) : p.has('q') ? 'Search results' : categories[backKind] || 'Guide home';
+    const backUrl = origin ? linked(new URLSearchParams({kind:'story',game:origin.game}),{entry:origin.id}) :
+      linked(p, {entry:'',kind:backKind,chapter:''});
+    const back = '<a class="guide-back" href="' + backUrl + '">← ' + safe(backLabel) + '</a>';
     if (!row) {
       article.innerHTML = back + '<h2 tabindex="-1" id="article-title">Entry unavailable</h2><p>This link does not identify an entry in this edition.</p>';
       return 'Entry unavailable';
@@ -296,6 +302,9 @@
       const routeData=FIELD_ROUTES.routes[row.id];
       const direct=new Set([routeData?.boss,routeData?.arena,routeData?.gate,...(routeData?.gates || []),...(routeData?.chapters || []),
         ...(routeData?.stages || []).flatMap(stage=>[stage.arena,...stage.gates,...stage.gates.map(id=>FIELD_ROUTES.routes[id].boss)])]);
+      for (const stage of questChapters) direct.add(stage.id);
+      const stageLinks = questChapters.filter(stage=>stage!==origin).map(stage=>
+        '<a href="'+linked(new URLSearchParams({kind:'story',game:stage.game}),{entry:stage.id})+'">'+safe(safeTitle(stage))+'</a>');
       const characterQuests = row.kind === 'npc' ? world.filter(quest => quest.kind === 'quest' &&
         (quest.related?.includes(row.id) || row.related?.includes(quest.id))) : [];
       for (const quest of characterQuests) direct.add(quest.id);
@@ -315,6 +324,8 @@
         DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
+        (stageLinks.length ? '<nav class="quest-chapters" aria-label="Walkthrough chapters"><strong>'+safe(games[row.game])+' walkthrough</strong> · '+
+          stageLinks.join(' · ')+'</nav>' : '') +
         (row.arena_classes ? '<section class="route-section"><h3>Arena classes</h3><ul class="quest-ranks">' + row.arena_classes.map(id =>
           '<li><a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a></li>').join('') + '</ul></section>' : '') +
         (row.requested_species ? '<section class="route-section"><h3>Monsters in request order</h3><ol class="quest-species">' + row.requested_species.map(id =>
@@ -336,12 +347,16 @@
     return title;
   }
   const actions = [
-    {id:'action-pair',kind:'tool',game:'both',title:'Find a pairing',href:'#pair-finder',
-      summary:'Choose two parents to see their offspring.', aliases:['how to breed','breed monsters','pair monsters','breeding calculator']},
+    {id:'action-pair',kind:'tool',game:'both',title:'Find offspring',href:'#pair-finder',
+      summary:'Choose two parents to see their offspring.', aliases:['find a pairing','breeding lookup','how to breed','breed monsters','pair monsters','breeding calculator']},
     {id:'action-parents',kind:'tool',game:'both',title:'Find parents',href:'#offspring-finder',
       summary:'Choose an offspring to find its parent combinations.', aliases:['how to make a monster','parents for','offspring']},
     {id:'action-tree',kind:'tool',game:'both',title:'Breeding tree',href:'#breeding-tree',
-      summary:'Plan the parents and grandparents of a target monster.', aliases:['breeding plan','breeding tree','plan a team']},
+      summary:'Plan the parents and grandparents of a target monster.', aliases:['breeding plan','plan a breeding tree','plan a team']},
+    {id:'action-table',kind:'tool',game:'both',title:'Breeding table',href:'#breeding-table',
+      summary:'Compare offspring across several pedigrees and mates.', aliases:['compare parent pairs','breeding matrix']},
+    {id:'action-import',kind:'tool',game:'both',title:'Import a memory card',href:'#team-planner?import=save',
+      summary:'Choose an Adventure Log to see what your monsters can breed.', aliases:['import a save','save file','memory card import']},
   ];
   const searchNames = new Map([...rows,...monsters,...actions].map(row => {
     const labels=(row.sections || []).flatMap(section=>(section.rows || []).map(([label])=>label));
@@ -400,25 +415,33 @@
       return words.every(word=>text.includes(word));
     });
   }
-  function questDirectory(p, quests) {
+  function questPurposeNav(p, active) {
+    const filters = [{key:'',label:'All quests'},...DQMWalkthrough.questPurposes].map(({key,label})=>
+      '<a href="'+linked(p,{purpose:key,page:''})+'"'+(key===(active?.key || '') ? ' aria-current="page"' : '')+'>'+safe(label)+'</a>');
+    return '<nav class="quest-purposes" aria-label="Quest type">'+filters.join('')+'</nav>';
+  }
+  function questDirectory(p, quests, active) {
     const sections = [];
     for (const game of ['dqm1','dqm2']) {
       const campaign = quests.filter(row => row.game === game && row.quest_group);
       if (!campaign.length) continue;
       const groups = [];
-      for (const group of ['Story quests','Hidden gates and favors','Optional quests','Postgame']) {
-        const members = campaign.filter(row => row.quest_group === group).sort((a,b) => a.quest_order-b.quest_order);
+      for (const purpose of active ? [active] : DQMWalkthrough.questPurposes) {
+        const members = campaign.filter(row => purpose.groups.includes(row.quest_group)).sort((a,b) => a.quest_order-b.quest_order);
         if (!members.length) continue;
         const items = members.map(row => {
           const place = game === 'dqm2' && !guarded(row) ? '<small>'+safe(row.region)+'</small>' : '';
           return '<li><a href="'+linked(p,{entry:row.id,page:''})+'">'+safe(safeTitle(row))+place+'</a></li>';
         });
-        groups.push('<h4>'+safe(group)+'</h4><ul>'+items.join('')+'</ul>');
+        groups.push((active ? '' : '<h4>'+safe(purpose.label)+'</h4>')+'<ul>'+items.join('')+'</ul>');
       }
-      sections.push('<section><h3>'+safe(games[game])+'</h3>'+groups.join('')+'</section>');
+      if (groups.length) sections.push('<section><div class="quest-campaign"><h3>'+safe(games[game])+'</h3>'+
+        '<a href="'+linked(new URLSearchParams({kind:'story',game}),{})+'" aria-label="'+safe(games[game])+' walkthrough">Walkthrough</a></div>'+
+        groups.join('')+'</section>');
     }
     el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>' +
-      '<h2 id="directory-title" tabindex="-1">Quests</h2></div></div><div class="quest-directory">' +
+      '<h2 id="directory-title" tabindex="-1">Quests</h2></div></div>'+
+      questPurposeNav(p,active)+'<div class="quest-directory">' +
       (sections.join('') || '<p>No matching quests</p>') + '</div>';
     return 'Quests';
   }
@@ -439,10 +462,41 @@
       '<h2 id="directory-title" tabindex="-1">Characters</h2></div></div><div class="character-directory">'+sections.join('')+'</div>';
     return 'Characters';
   }
+  function mechanicsDirectory(p, matches, query, game) {
+    const root = el('guide-directory');
+    const title = categories.mechanic;
+    const table = DQMMechanicsIndex.render(matches, {
+      games, escape:safe, titleFor:safeTitle,
+      linkTo:(id,label) => '<a href="'+linked(p,{entry:id,page:''})+'">'+safe(label)+'</a>',
+      excerptFor:row => {
+        if (!query || guarded(row)) return '';
+        const match = matchingSectionRow(row,query,game);
+        return match ? [match.section,match.label,match.detail].join(' · ') : row.summary;
+      }
+    });
+    const retry = '<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>';
+    root.innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a>'+
+      '<h2 id="directory-title" tabindex="-1">'+safe(title)+'</h2></div></div>'+
+      (matches.length ? table : '<p role="status">No matching mechanics articles</p>'+retry);
+    if (matches.length) {
+      const index = root.querySelector('.mechanics-index');
+      DQMMechanicsIndex.enableSorting(index, p.get('sort'), order => {
+        change(p,'sort',order === 'section' ? '' : order);
+        history.replaceState(history.state,'',route(p));
+        for (const row of index.tBodies[0].rows) {
+          const destination = new URLSearchParams(p);
+          destination.set('entry',row.dataset.entry);
+          row.querySelector('a').setAttribute('href',route(destination));
+        }
+      });
+    }
+    return title;
+  }
   function directory(p) {
     const kind = p.get('kind'), game = p.get('game'), q = normalized(p.get('q')).trim();
     const pool = q && !kind ? rows.concat(monsters,actions) : rows;
-    const filtered = pool.filter(r => (!kind || kind === r.kind) && (!game || r.game === 'both' || r.game === game));
+    const filtered = pool.filter(r => (!kind || kind === r.kind || (kind === 'item' && r.kind === 'tool')) &&
+      (!game || r.game === 'both' || r.game === game));
     if (kind === 'location' && !q) {
       const places = DQMLocations.render(game,{byId,routes:FIELD_ROUTES.routes,escape:safe,hidden:guarded,adventures:games,
         entryLink:(id,label)=>'<a href="'+linked(p,{entry:id,page:''})+'">'+safe(label || safeTitle(byId.get(id)))+'</a>',
@@ -456,13 +510,18 @@
         '<h2 id="directory-title" tabindex="-1">'+safe(title)+'</h2></div></div><div class="place-directory">'+(places || '<p>No matching locations</p>')+'</div>';
       return title;
     }
-    if (kind === 'quest' && !q) return questDirectory(p,filtered);
+    const questPurpose = kind === 'quest' && DQMWalkthrough.questPurposes.find(purpose => purpose.key===p.get('purpose'));
+    if (kind === 'quest' && !q) return questDirectory(p,filtered,questPurpose);
     if (kind === 'npc' && !q) return characterDirectory(p,filtered);
     const buying = /^(?:(?:where|how) (?:can i |to )?)?(buy|purchase|shop for)\b\s*/u;
     const shopQuery = buying.test(q);
     const hunt = !kind && q.match(/^(?:where (?:can i |do i |to ))?(?:catch|recruit|find) (?:an? |the )?(.+?)(?: (?:as|for|in) (terry|cobi|tara)(?:s adventure)?)?\??$/u);
     const speciesMatches = hunt ? searchMatches(monsters,hunt[1],false) : [];
-    const matches = speciesMatches.length ? speciesMatches : q ? searchMatches(filtered,q.replace(buying,'').replace(/^(an?|the)\s+/u,''),shopQuery) : filtered;
+    // Individual arena ranks share their parent objective's quest type.
+    const searchPool = questPurpose ? filtered.filter(row => questPurpose.groups.includes(row.quest_group ||
+      row.related?.map(id=>byId.get(id)?.quest_group).find(Boolean))) : filtered;
+    const matches = speciesMatches.length ? speciesMatches : q ? searchMatches(searchPool,q.replace(buying,'').replace(/^(an?|the)\s+/u,''),shopQuery) : filtered;
+    if (kind === 'mechanic') return mechanicsDirectory(p,matches,q,game);
     const pages = Math.max(1, Math.ceil(matches.length / pageSize));
     const page = Math.min(pages, Math.max(1, parseInt(p.get('page'),10) || 1));
     const heading = [game && games[game], categories[kind] || (q ? 'Search results' : 'Reference')].filter(Boolean).join(' · ');
@@ -472,7 +531,7 @@
       const thumb = hidden ? '' : artwork(r, true);
       const match = hidden ? null : matchingSectionRow(r,q,game);
       const context = [!game && ['dqm1','dqm2'].includes(r.game) ? games[r.game] : '',
-        !kind ? categories[r.kind] : '', match?.section, r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
+        !kind ? (r.href ? 'Breeding tools' : categories[r.kind]) : '', match?.section, r.kind === 'story' && !hidden ? 'Chapter ' + r.order : ''].filter(Boolean).join(' · ');
       let summary=shopQuery && r.prices?.length ? r.prices[0].locations[0]+' · '+r.prices[0].buy+' G' : r.summary;
       if (match) summary=match.label+' · '+match.detail;
       if (speciesMatches.length) {
@@ -488,8 +547,15 @@
       return '<a class="guide-row" href="' + href + '">' + thumb + '<span>' + (context ? '<small>' + safe(context) + '</small>' : '') +
         '<strong>' + safe(safeTitle(r)) + '</strong>' + (!hidden && summary ? '<span'+(match ? ' class="guide-search-excerpt"' : '')+'>' + safe(summary) + '</span>' : '') + '</span></a>';
     }).join('');
+    let inventoryLink = '';
+    if (kind === 'item' || kind === 'tool') {
+      const target = kind === 'item' ? 'tool' : 'item';
+      const label = target === 'item' ? 'All items' : categories.tool;
+      inventoryLink = '<a href="'+linked(p,{kind:target,page:''})+'">'+safe(label)+'</a>';
+    }
     el('guide-directory').innerHTML = '<div class="directory-head"><div><a href="#field-guide">Guide home</a><h2 id="directory-title" tabindex="-1">' + safe(heading) +
-      '</h2></div></div>' +
+      '</h2></div>' + inventoryLink + '</div>' +
+      (kind==='quest' ? questPurposeNav(p,questPurpose) : '') +
       '<p class="guide-count" role="status">' + (matches.length ? matches.length + (matches.length === 1 ? ' entry' : ' entries') : 'No matching entries') + (pages > 1 ? ' · Page ' + page + ' of ' + pages : '') +
       '</p><div class="directory-grid">' + (body || (q && (kind || game)
         ? '<a href="'+linked(p,{kind:'',game:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>'
@@ -529,6 +595,8 @@
   function filter(push) {
     const p = new URLSearchParams();
     change(p,'q',el('guide-search').value.trim()); change(p,'game',el('guide-game').value); change(p,'kind',el('guide-kind').value);
+    if (p.get('kind')==='quest') change(p,'purpose',params().get('purpose'));
+    if (p.get('kind') === 'mechanic') change(p,'sort',params().get('sort'));
     if (push && location.hash !== route(p)) { location.hash = route(p); return; }
     if (p.size && (location.hash === '#field-guide' || !location.hash)) history.pushState(null,'',route(p));
     else history.replaceState(null,'',route(p));

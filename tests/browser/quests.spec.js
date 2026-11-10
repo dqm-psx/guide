@@ -33,6 +33,46 @@ test('queen’s requests link to all sixteen monsters and respect the story spoi
   await expect(page.locator('.quest-directory')).toBeVisible();
 });
 
+test('optional quests keep their campaign filter and link back to their walkthrough stage', async ({page}) => {
+  await page.goto(guide+'#field-guide?kind=quest');
+  const types = page.getByRole('navigation',{name:'Quest type'});
+  await types.getByRole('link',{name:'Optional quests'}).click();
+  await page.locator('#guide-game').selectOption('dqm2');
+  await expect(types.getByRole('link',{name:'Optional quests'})).toHaveAttribute('aria-current','page');
+  const directory = page.locator('.quest-directory');
+  await expect(directory.getByRole('link',{name:'Win the Pirate Key'})).toHaveCount(0);
+  const search = page.locator('#guide-search');
+  await search.fill('GreatLog Kids');
+  await expect(types.getByRole('link',{name:'Optional quests'})).toHaveAttribute('aria-current','page');
+  await expect(page.locator('.guide-count')).toHaveText('No matching entries');
+  await types.getByRole('link',{name:'Main story'}).click();
+  await expect(page.locator('.guide-row').filter({hasText:"GreatLog Kids' Class"})).toBeVisible();
+  await types.getByRole('link',{name:'Optional quests'}).click();
+  await search.fill('Sailor Ring');
+  await expect(page.locator('.guide-row').filter({hasText:'Collect the Sailor Ring'})).toBeVisible();
+  await search.fill('');
+  await expect(types.getByRole('link',{name:'Optional quests'})).toHaveAttribute('aria-current','page');
+  await directory.getByRole('link',{name:/Find the egg from the message in a bottle/}).click();
+  await page.locator('.guide-back').click();
+  await expect(types.getByRole('link',{name:'Optional quests'})).toHaveAttribute('aria-current','page');
+  await directory.getByRole('link',{name:/Find the egg from the message in a bottle/}).click();
+  await page.getByRole('navigation',{name:'Walkthrough chapters'}).getByRole('link',{name:'The Sky Shield and flight'}).click();
+  await expect(page.locator('#story-ice-shield')).toBeFocused();
+  await page.getByRole('link',{name:'Cobi & Tara quests',exact:true}).click();
+  await expect(page.locator('#guide-game')).toHaveValue('dqm2');
+  await expect(types.getByRole('link',{name:'All quests'})).toHaveAttribute('aria-current','page');
+});
+
+test('taking a quest from either walkthrough stage returns to that stage', async ({page}) => {
+  for (const stage of ['story-terry-early-arena','story-terry-collection']) {
+    await page.goto(guide+'#field-guide?kind=story&game=dqm1&entry='+stage);
+    const section = page.locator('.walk-stage').filter({has:page.locator('#'+stage)});
+    await section.getByRole('link',{name:'Catch the Sky Dragon egg'}).click();
+    await page.locator('.guide-back').click();
+    await expect(page.locator('#'+stage)).toBeFocused();
+  }
+});
+
 test('Terry’s item search connects Miracle Sign to the queen and her final request', async ({page}) => {
   await page.goto(guide+'#field-guide?kind=item&game=dqm1&q=Miracle+Sign');
   const results = page.locator('.guide-row');

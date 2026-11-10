@@ -72,3 +72,9 @@ main{max-width:60rem;margin:auto;padding:20px}h1,h2{line-height:1.15;font-family
 .spoken-lines{list-style:none;padding:0;max-width:70ch}
 .spoken-lines li{margin:0;padding:.45rem 0}
 .spoken-lines li+li{border-top:1px solid #889a93}
+
+.mechanics-index { width:100%; table-layout:fixed; border-collapse:collapse; text-align:left; }
+.mechanics-index :is(th,td) { padding:.55rem .45rem; border-bottom:1px solid #899c92; overflow-wrap:anywhere; vertical-align:top; }
+.mechanics-index thead th:last-child { width:28%; }
+.mechanics-index button { border:0; padding:.4rem 0; color:inherit; background:transparent; font:inherit; cursor:pointer; }
+.mechanics-index button:is(:hover,:focus-visible) { text-decoration:underline; }
