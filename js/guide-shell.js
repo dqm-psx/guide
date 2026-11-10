@@ -3,7 +3,7 @@
   'use strict';
   const el = id => document.getElementById(id);
   const categories = {story:'Walkthroughs',quest:'Quests',npc:'Characters',boss:'Bosses',location:'Locations',
-    item:'Items',tool:'Tools',mechanic:'Mechanics',skill:'Skills',monster:'Monsters'};
+    item:'Items',tool:'Tools',article:'Gameplay articles',skill:'Skills',monster:'Monsters'};
   const {campaigns,places} = GUIDE_HOME;
   for (const node of document.querySelectorAll('[data-character]')) node.textContent = campaigns[node.dataset.character];
   for (const node of document.querySelectorAll('[data-place]')) node.textContent = places[node.dataset.place];
@@ -16,14 +16,14 @@
     el('guide-home').hidden = false;
     el('guide-directory').hidden = true;
     el('guide-article').hidden = true;
-    return 'Field guide';
+    return 'Guide home';
   }
   // Keep keyboard focus and any further typing while the first query loads.
   let action = 0;
   async function input(submit) {
     const token = ++action, origin = location.href;
     try {
-      await DQMAssets.ready('field-guide','#field-guide?q=search');
+      await DQMAssets.ready('guide','#guide?q=search');
       if (token === action && location.href === origin) window.DQMField.filter(submit);
     } catch {
       if (location.href === origin) {
@@ -31,7 +31,7 @@
         for (const [key,id] of [['q','guide-search'],['kind','guide-kind'],['game','guide-game']]) {
           if (el(id).value) params.set(key,el(id).value);
         }
-        if (params.size) location.hash = 'field-guide?'+params;
+        if (params.size) location.hash = 'guide?'+params;
       }
     }
   }

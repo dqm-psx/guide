@@ -50,8 +50,8 @@ test.describe('sticky chrome and feature surfaces', () => {
     await page.goto(FILE_URL);
     const nav = page.getByRole('navigation', {name:'Guide contents'});
     await expect(page.getByRole('button',{name:'Browse guide'})).toBeHidden();
-    await expect(nav.getByRole('heading')).toHaveText(['Walkthroughs','Places','Reference','Breeding & planning']);
-    for (const name of ['Terry','Cobi & Tara','Terry’s gates','Cobi & Tara’s worlds','Characters','Monster library','My game']) {
+    await expect(nav.getByRole('heading')).toHaveText(['Breeding tools','Reference','Walkthroughs','Places']);
+    for (const name of ['Terry','Cobi & Tara','Terry’s gates','Cobi & Tara’s worlds','Characters','Monster library','Gameplay articles','My game']) {
       await expect(nav.getByRole('link',{name,exact:true})).toBeVisible();
     }
     const terry = nav.getByRole('link',{name:'Terry',exact:true});

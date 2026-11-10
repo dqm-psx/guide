@@ -17,7 +17,7 @@ test.afterAll(async () => {
 });
 
 const VIEWS = [
-  { hash: '#field-guide', id: 'field-guide' },
+  { hash: '#guide', id: 'guide' },
   { hash: '#atlas', id: 'atlas' },
   { hash: '#pair-finder', id: 'pair-finder' },
   { hash: '#offspring-finder', id: 'offspring-finder' },
@@ -43,14 +43,14 @@ async function expectSingleView(page, id) {
 test.describe('served', () => {
   const url = () => serverUrl;
 
-  test('every view id mounts a wrapper and only the Field guide starts visible', async ({ page }) => {
+  test('every view id mounts a wrapper and only the Guide home starts visible', async ({ page }) => {
     await page.goto(url());
     for (const view of VIEWS) {
       await expect(page.locator('#' + view.id)).toHaveCount(1);
       await expect(page.locator('#' + view.id)).toHaveAttribute('data-view', view.id);
       await expect(page.locator('#' + view.id)).toHaveClass(/\bview\b/);
     }
-    await expectSingleView(page, 'field-guide');
+    await expectSingleView(page, 'guide');
   });
 
   test('guidance appears beside the tool it explains and source details remain available', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe('served', () => {
   test('each primary view link opens, titles and distinctly marks its destination', async ({ page }) => {
     await page.goto(url());
     const expected = {
-      '#field-guide': 'Field guide',
+      '#guide': 'Guide home',
       '#atlas': 'Map atlas',
       '#pair-finder': 'Breeding lookup',
       '#breeding-tree': 'Breeding tree',
@@ -177,7 +177,7 @@ test.describe('served', () => {
     expect(await page.evaluate(() => DQMViews.viewFor('#about')))
       .toBe('sources');
     expect(await page.evaluate(() => DQMViews.viewFor('#nope')))
-      .toBe('field-guide');
+      .toBe('guide');
   });
 
   test('a repeated click on the current nav link stays put and takes focus', async ({ page }) => {
@@ -224,7 +224,7 @@ test.describe('served', () => {
 
   test('a direct hash, a reload, and Back/Forward each show the intended view', async ({ page }) => {
     const titles = {
-      'field-guide': 'Field guide',
+      'guide': 'Guide home',
       'species-index': 'Monster library',
     };
     // Every step lands on the same view, marked the same way, under the same
@@ -235,15 +235,28 @@ test.describe('served', () => {
       await expect(page).toHaveTitle(new RegExp('^' + titles[id] + ' · '));
     };
     await page.goto(url());
-    await expectLanded('field-guide');
+    await expectLanded('guide');
     await page.goto(url() + '#species-index');
     await expectLanded('species-index');
     await page.reload();
     await expectLanded('species-index');
     await page.goBack();
-    await expectLanded('field-guide');
+    await expectLanded('guide');
     await page.goForward();
     await expectLanded('species-index');
+  });
+
+  test('old guide bookmarks keep chapter parameters and occupy one history entry', async ({page}) => {
+    await page.goto(url() + '#species-index');
+    const query = '?game=dqm2&kind=story&entry=story-ice-northden';
+    await page.evaluate(query => { location.hash = '#field-guide' + query; }, query);
+    await expect(page).toHaveURL(url() + '#guide' + query);
+    await expect(page.locator('#story-ice-northden')).toBeFocused();
+    await page.goBack();
+    await expect(page.locator('#species-index')).toBeVisible();
+    await page.goForward();
+    await expect(page.locator('#story-ice-northden')).toBeInViewport();
+    await expect(page).toHaveURL(url() + '#guide' + query);
   });
 
   test('legacy guide hashes reach the matching contextual help and keep navigation focus', async ({ page }) => {
@@ -274,11 +287,11 @@ test.describe('served', () => {
     }
   });
 
-  test('an unknown hash falls back to the Field guide and marks its link', async ({ page }) => {
+  test('an unknown hash falls back to the Guide home and marks its link', async ({ page }) => {
     await page.goto(url());
     await page.goto(url() + '#not-a-view');
-    await expectSingleView(page, 'field-guide');
-    await expect(page.locator('.nav a[href="#field-guide"]')).toHaveClass(/\bnav-link-active\b/);
+    await expectSingleView(page, 'guide');
+    await expect(page.locator('.nav a[href="#guide"]')).toHaveClass(/\bnav-link-active\b/);
   });
 
   test('a hidden view is display:none and has no box at all', async ({ page }) => {
@@ -365,7 +378,7 @@ test.describe('narrow screens and print', () => {
     const bounds = await menu.boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x+bounds.width).toBeLessThanOrEqual(320);
-    const campaign = menu.locator('a[href="#field-guide?game=dqm2&kind=story"]');
+    const campaign = menu.locator('a[href="#guide?game=dqm2&kind=story"]');
     await campaign.focus();
     await page.keyboard.press('Escape');
     await expect(button).toBeFocused();

@@ -6,7 +6,7 @@
    The URL hash is the source of truth. The view id is the hash up to its first
    separator, so room is left for route parameters after it. A hash that names
    no view — empty, unknown, or a future parameterised route — falls back to
-   the field guide. Legacy guide anchors open the relevant contextual guidance.
+   the guide. Legacy guide anchors open the relevant contextual guidance.
 
    The router does not own species selections, team data, or planner tabs. A
    view reacts to being revealed by implementing window.DQMApp.viewShown(id),
@@ -19,9 +19,10 @@
   "use strict";
   const P = id => document.getElementById(id);
   const TITLE_SUFFIX = "DQM1&2 PSX Player Guide";
-  const DEFAULT_VIEW = "field-guide";
+  const DEFAULT_VIEW = "guide";
+  const LEGACY_GUIDE = "field-guide";
   const views = [
-    { id: "field-guide", heading: "field-heading" },
+    { id: "guide", heading: "field-heading" },
     { id: "atlas", heading: "atlas-heading" },
     { id: "pair-finder", heading: "pair-heading" },
     { id: "offspring-finder", heading: "offspring-heading" },
@@ -32,7 +33,7 @@
     { id: "team-planner", heading: "planner-heading" },
     { id: "sources", heading: "sources-heading" },
   ];
-  const aliases = { "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "sources" };
+  const aliases = { [LEGACY_GUIDE]: DEFAULT_VIEW, "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "sources" };
   const aliasTargets = { "rules-guide": "offspring-heading", "conditional-rules": "breeding-conditions", "about": "sources-heading" };
   const known = new Set(views.map(view => view.id));
   const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
@@ -64,7 +65,7 @@
   });
   compact.addEventListener("change", closeMenu);
   closeMenu();
-  P("search-shortcut").addEventListener("click", () => go("field-guide", {focusId:"guide-search"}));
+  P("search-shortcut").addEventListener("click", () => go("guide", {focusId:"guide-search"}));
   let activeView = null;
   let pendingFocusId = null;
   let navigation = 0;
@@ -86,7 +87,7 @@
     return (known.has(id) ? id : aliases[id]) || DEFAULT_VIEW;
   }
   function headingFor(viewId) {
-    if (viewId === "field-guide") return [P("article-title"), P("directory-title"), P("field-heading")].find(el => el && !el.closest("[hidden]"));
+    if (viewId === "guide") return [P("article-title"), P("directory-title"), P("field-heading")].find(el => el && !el.closest("[hidden]"));
     const view = views.find(entry => entry.id === viewId);
     return view ? P(view.heading) : null;
   }
@@ -100,13 +101,14 @@
   function markNav(viewId) {
     const params = new URLSearchParams(parse(currentHash()).params);
     let section = "#" + ({monster: "species-index", "offspring-finder": "pair-finder"}[viewId] || viewId);
-    if (viewId === "field-guide") {
+    if (viewId === "guide") {
       const row = window.DQMField?.entryForNav(params.get("entry"));
-      const kind = row?.kind || params.get("kind");
+      const topic = row?.kind || params.get("kind");
+      const kind = topic === "mechanic" ? "article" : topic;
       const game = row?.game || params.get("game");
-      if (kind === "story") section = "#field-guide?game=" + (game || "dqm1") + "&kind=story";
-      else if (kind === "location" && (game === "dqm1" || game === "dqm2")) section = "#field-guide?kind=location&game=" + game;
-      else if (kind && navLinks.some(link => link.hash === "#field-guide?kind=" + kind)) section = "#field-guide?kind=" + kind;
+      if (kind === "story") section = "#guide?game=" + (game || "dqm1") + "&kind=story";
+      else if (kind === "location" && (game === "dqm1" || game === "dqm2")) section = "#guide?kind=location&game=" + game;
+      else if (kind && navLinks.some(link => link.hash === "#guide?kind=" + kind)) section = "#guide?kind=" + kind;
     }
     if (viewId === "atlas" && params.get("tab") === "encounters") section = "#atlas?tab=encounters";
     for (const link of navLinks) {
@@ -141,7 +143,14 @@
   // click, and go() all end up here. The destination is revealed before
   // anything is scrolled or focused, so focus can never land in a hidden view.
   function render(viewId, options) {
-    if (viewId === "field-guide") {
+    const incoming = parse(location.hash);
+    if (incoming.id === LEGACY_GUIDE) {
+      // Preserve the current page and the complete query, including chapter bookmarks.
+      const url = new URL(location.href);
+      url.hash = "#" + DEFAULT_VIEW + incoming.params;
+      history.replaceState(history.state, "", url);
+    }
+    if (viewId === "guide") {
       const query = new URLSearchParams(parse(currentHash()).params);
       if (query.get("kind") === "monster" && !query.has("entry")) {
         const search = query.get("q");
@@ -192,7 +201,7 @@
     }
     markNav(viewId);
     setTitle(viewId);
-    if (viewId === "field-guide" || viewId === "atlas") {
+    if (viewId === "guide" || viewId === "atlas") {
       const title = viewId === "atlas" ? window.DQMAtlas.show() : (window.DQMField || window.DQMGuideShell).show();
       if (title) document.title = title + " · " + TITLE_SUFFIX;
     }
@@ -207,7 +216,7 @@
     }
     activeView = viewId;
     window.dispatchEvent(new Event('guide-view-rendered'));
-    const stageId = viewId === 'field-guide' && new URLSearchParams(parse(currentHash()).params).get('entry');
+    const stageId = viewId === 'guide' && new URLSearchParams(parse(currentHash()).params).get('entry');
     const stage = stageId && P(stageId)?.closest('.walk-stage') ? P(stageId) : null;
     if (settings.scroll === false && !stage) return;
     const heading = headingFor(viewId);
@@ -221,6 +230,7 @@
   // Cross-view handoff: works for a changed hash and for a destination that is
   // already open, where the URL will not change and nothing else would render.
   function go(viewId, options) {
+    if (viewId === LEGACY_GUIDE) viewId = DEFAULT_VIEW;
     if (!known.has(viewId)) return;
     const focusId = (options && options.focusId) || null;
     const query = new URLSearchParams(options?.params || {}).toString();

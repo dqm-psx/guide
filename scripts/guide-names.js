@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const EDITIONS = ['gameboy', 'delocalized', 'vibecoded'];
-// These names were identified in authored field-guide notes, independently of
+// These names were identified in authored guide notes, independently of
 // their appearances in the world articles. Generic role words stay scoped.
 const FIELD_TERMS = new Set([
   'GreatTree','GreatLog','GreatTree Castle','Volcanic Island Cave','Castle of the Dead','Northern Mountain',

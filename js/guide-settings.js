@@ -66,8 +66,8 @@
       }
     }
     const entry=params.get('entry');
-    if (view==='field-guide' && /^[\w-]+$/.test(entry || '')) path=entry.startsWith('skill-') ? 'skills/'+entry.slice(6)+'/' : 'articles/'+entry+'/';
-    if (view==='field-guide') path=window.DQMField?.walkthroughPath?.(params) || path;
+    if (view==='guide' && /^[\w-]+$/.test(entry || '')) path=entry.startsWith('skill-') ? 'skills/'+entry.slice(6)+'/' : 'articles/'+entry+'/';
+    if (view==='guide') path=window.DQMField?.walkthroughPath?.(params) || path;
     // The published edition has standalone entries. A local development server
     // serves the hash router, and a downloaded file needs a public URL to share.
     const published = document.querySelector('.footer-links a[href="entries/"]');

@@ -154,7 +154,7 @@
     return '<ul class="monster-skill-list">' + skills.map(skill => {
       const minimum = names[skill.id]?.minimum_level;
       const entry = skill.system_entry_id || names[skill.id]?.id;
-      const title = entry ? '<a href="#field-guide?kind=skill&amp;entry=skill-' + safe(entry) + '">' + safe(skill.name) + '</a>' : safe(skill.name);
+      const title = entry ? '<a href="#guide?kind=skill&amp;entry=skill-' + safe(entry) + '">' + safe(skill.name) + '</a>' : safe(skill.name);
       return '<li>' + title + (Number.isInteger(minimum) && minimum > 0 ? '<span class="skill-minimum">Min. level ' + minimum + '</span>' : '') + '</li>';
     }).join('') + '</ul>';
   }
@@ -174,7 +174,7 @@
     const locations = groupedLocations(species.locations, campaign);
     return locations.length ? '<div class="table-scroll"><table class="monster-locations"><caption class="sr-only">Recorded encounters for ' + safe(CAMPAIGNS[campaign]) + '</caption><thead><tr><th scope="col">Encounter</th><th scope="col">Floors or rank</th><th scope="col">Level</th></tr></thead><tbody>' + locations.map(entry => {
       const master = entry.kind === 'other' && entry.source?.native_selection;
-      const location = master ? '<a href="#field-guide?entry=field-wandering-masters">Wandering master’s team</a>' : safe(entry.name);
+      const location = master ? '<a href="#guide?entry=field-wandering-masters">Wandering master’s team</a>' : safe(entry.name);
       const ranks = entry.strength_ranks || [];
       const condition = master && ranks.length ? 'Rank' + (ranks.length > 1 ? 's ' : ' ') + ranks.join(', ') : entry.floors;
       return '<tr><th scope="row">' + location + '</th><td>' + safe(condition || '—') + '</td><td>' + safe(entry.levels.join(', ') || '—') + '</td></tr>';

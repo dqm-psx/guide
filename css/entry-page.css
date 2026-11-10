@@ -72,3 +72,9 @@ main{max-width:60rem;margin:auto;padding:20px}h1,h2{line-height:1.15;font-family
 .spoken-lines{list-style:none;padding:0;max-width:70ch}
 .spoken-lines li{margin:0;padding:.45rem 0}
 .spoken-lines li+li{border-top:1px solid #889a93}
+
+.article-index{width:100%;border-collapse:collapse;text-align:left}
+.article-index :is(th,td){padding:.55rem .45rem;border-bottom:1px solid #899c92;overflow-wrap:anywhere}
+.article-index td:last-child{width:25%}
+.article-index button{border:0;padding:.45rem 0;background:transparent;color:inherit;font:inherit;font-weight:700;cursor:pointer}
+.article-index button:hover{text-decoration:underline}

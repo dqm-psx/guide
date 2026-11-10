@@ -2913,24 +2913,34 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "item-96",
       "kind": "item",
-      "game": "dqm2",
+      "game": "both",
       "title": "Miracle Mark",
       "category": "Consumable",
       "summary": "Changes one monster's sex.",
       "details": [
-        "GreatLog residents distinguish this rare item, used on a monster, from the egg appraiser’s blessing before hatching.",
-        "Single use."
+        "Terry can earn one from the Queen of GreatTree. Complete her requests in order and bring Divine Dragon for the last one. Leave one slot free in your bag to collect the mark.",
+        "Use it on a hatched monster. The mark is consumed.",
+        "A GreatLog resident describes Miracle Mark. How Cobi or Tara can obtain one is unconfirmed."
       ],
       "spoiler": "none",
       "source_ids": [
         "e0c07",
         "m_exe_08bf48",
         "s00419800_1bf0",
-        "s003f6800_0473"
+        "s003f6800_0473",
+        "s0adf7000_b999"
       ],
-      "availability": "unconfirmed",
+      "availability": "event",
       "aliases": [
-        "MirclMark"
+        "MirclMark",
+        "Miracle Sign"
+      ],
+      "related": [
+        "quest-the-queen-s-monster-collection-requests",
+        "npc-queen-of-greattree"
+      ],
+      "species_ids": [
+        55
       ]
     },
     {
@@ -2976,7 +2986,7 @@ globalThis.FIELD_GUIDE = {
         "foreign master spawn requirements",
         "Game Boy foreign masters"
       ],
-      "kind": "mechanic",
+      "kind": "article",
       "spoiler": "none",
       "sections": [
         {
@@ -3118,7 +3128,7 @@ globalThis.FIELD_GUIDE = {
         "Terry gate speed",
         "diagonal walking"
       ],
-      "kind": "mechanic",
+      "kind": "article",
       "spoiler": "none"
     },
     {
@@ -3150,7 +3160,7 @@ globalThis.FIELD_GUIDE = {
         "traveling colosseum",
         "restored content"
       ],
-      "kind": "mechanic",
+      "kind": "article",
       "spoiler": "none"
     },
     {
@@ -3177,7 +3187,7 @@ globalThis.FIELD_GUIDE = {
         "update existing save",
         "save state"
       ],
-      "kind": "mechanic",
+      "kind": "article",
       "spoiler": "story"
     },
     {
@@ -3204,12 +3214,12 @@ globalThis.FIELD_GUIDE = {
         "local rules",
         "prize transfer"
       ],
-      "kind": "mechanic",
+      "kind": "article",
       "spoiler": "none"
     },
     {
       "id": "field-recruitment",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Recruit a wild monster",
       "summary": "Feed the monster you want and arrange for it to be the last enemy you defeat.",
@@ -3234,7 +3244,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-storage",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Keep gold safe in storage",
       "summary": "A party wipe costs half the gold you are carrying. Deposited gold stays safe.",
@@ -3250,7 +3260,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-farm",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "dqm1",
       "title": "GreatTree farm and hibernation",
       "summary": "Reserve a farm slot before accepting an egg. The farm can hold 30 monsters and eggs combined.",
@@ -3265,7 +3275,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-packing",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "dqm1",
       "title": "Pack for a Travelers’ Gate",
       "summary": "Terry can carry up to 30 items. Leave space if you plan to collect treasure or accept gifts.",
@@ -3290,17 +3300,25 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-breed",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Prepare a pair for breeding",
       "summary": "Bring a male and a female, each at level 10 or higher, to the Starry Shrine.",
       "details": [
+        "In GreatLog, win the Kids’ Class for permission to use the shrine. Finish Water World and return when the line has cleared.",
         "Breeding leaves an egg. Both parents leave, so keep another monster ready to travel with you.",
         "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents.",
         "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. In the title-screen Breeding room, the same pair from two different Adventure Logs produces Killing Machine 2 at lower + values."
       ],
-      "aliases": ["Roboster2 recipe", "Killing Machine 2 breeding", "Game Boy breeding differences"],
-      "species_ids": [252, 253],
+      "aliases": [
+        "Roboster2 recipe",
+        "Killing Machine 2 breeding",
+        "Game Boy breeding differences"
+      ],
+      "species_ids": [
+        252,
+        253
+      ],
       "spoiler": "none",
       "source_ids": [
         "v0a08bc_01e3",
@@ -3308,15 +3326,19 @@ globalThis.FIELD_GUIDE = {
         "s0ab53000_1027",
         "s003f6800_0c8c",
         "s0ab53000_0e61",
-        "PSX shrine rule 8004AB80 and two-save override 8004B05C"
+        "PSX shrine rule 8004AB80 and two-save override 8004B05C",
+        "s003f6800_1bac",
+        "s003f6800_1c4c",
+        "m_exe_090738"
       ],
       "related": [
-        "field-eggs"
+        "field-eggs",
+        "npc-monster-professor"
       ]
     },
     {
       "id": "field-eggs",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Appraise, bless and hatch an egg",
       "summary": "Have the egg appraised before hatching if you want to choose the hatchling’s sex.",
@@ -3337,7 +3359,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-equipment",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "dqm2",
       "title": "Equip and recover accessories",
       "summary": "Each monster can hold one accessory. Choose between immediate stat bonuses, resistances, recovery and improved growth.",
@@ -3364,7 +3386,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-generated-keys",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "dqm2",
       "title": "Appraise and read magic keys",
       "summary": "Take an unnamed key to GreatLog’s Key Appraiser and pay the quoted fee before using it at the Magic Door.",
@@ -3386,7 +3408,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-medals",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Collect and exchange Tiny Medals",
       "summary": "Bring Tiny Medals to the local collector. Early rewards use your cumulative medal total.",
@@ -3413,7 +3435,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-personality",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Shape personality and obedience",
       "summary": "A master’s orders gradually change a monster’s personality, which influences its battle behavior.",
@@ -3438,7 +3460,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-growth",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Raise a monster’s growth limit",
       "summary": "The level at which growth stops depends on the species. Repeated generations of breeding can push that limit later.",
@@ -3461,7 +3483,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-arena-items",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "both",
       "title": "Prepare for an arena class",
       "summary": "Prepare before entering. Both arenas forbid item use and count fleeing as a loss.",
@@ -3478,7 +3500,7 @@ globalThis.FIELD_GUIDE = {
     },
     {
       "id": "field-triangle",
-      "kind": "mechanic",
+      "kind": "article",
       "game": "dqm2",
       "title": "Use Triangle to cross water, break rock and fly",
       "summary": "Bring each recovered treasure to Warubou to gain its field ability.",

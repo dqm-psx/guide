@@ -37,7 +37,7 @@ The publisher checks the source identity and expected context before applying
 each binding. Authored articles, image assets and release-specific verification
 receipts are versioned in the guide repository.
 
-The workflow first refreshes names, captions, field-guide wording, fixed-encounter
+The workflow first refreshes names, captions, guide wording, fixed-encounter
 labels, and the current patch summary, then packages the site on a lightweight
 runner. Before starting a browser job, it compares the result with the last
 successful deployment:

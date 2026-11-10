@@ -2,7 +2,7 @@
 
 ## Gameplay sources
 
-The v1.0.73 walkthrough audit resolved all 1,293 cited records for the 171
+The v1.0.73 walkthrough audit resolved all 1,295 cited records for the 171
 campaign, quest, boss, character and location articles. It also checked the
 native conditions behind the fixed story keys, spirit rewards and arena rounds.
 The v1.0.73 disc uses **Hale** in nine cited lines. The current published text
@@ -11,7 +11,7 @@ uses **Healie** in dialogue and **Hale** as the default recruit nickname. Both n
 For Terry’s Sky Dragon egg, the farm sign event checks Class F (0x02),
 Pulio’s hint (0x79), whether the egg is already claimed (0xF6), and whether
 Battle Rex was defeated (0x05). Its bytecode matches on the retail Japanese
-and v1.0.73 Current discs. See the [maintainer’s reply to a PSX playtester](https://www.reddit.com/r/DragonQuestMonsters/comments/1weqzrc/comment/p9kzxn2/).
+and v1.0.73 Current discs. [See this reddit thread reply](https://www.reddit.com/r/DragonQuestMonsters/comments/1weqzrc/comment/p9kzxn2/).
 
 After Ice World, the GreatLog guard checks story flag 0x12 and asks if the
 player is Kameha’s friend. Answering yes sets 0xE9 and starts the audience.
@@ -19,6 +19,18 @@ The castle guard’s bytecode also matches on both discs. The king awards the Sk
 stand use separate event flags for the optional monster egg. A [PSX player
 described where they got stuck](https://www.woodus.com/forums/topic/21933-dragon-quest-monsters-12-psx-help/). The [PS1 route](https://renge-record-book.com/%E3%80%90ps%E3%80%91%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA1%E3%83%BB2-%E6%94%BB%E7%95%A5%E3%83%81%E3%83%A3-2/)
 also places the talking pot’s key award after the ending.
+
+The Queen of GreatTree’s final request checks Divine Dragon (species 55),
+selects Miracle Mark (item 96) and checks for room before awarding it. On both
+the retail Japanese and v1.0.73 discs, see archive 5661 at `0x2AD7` for the
+request and `0x2FB8` and `0x2FED` for the inventory calls.
+
+GreatLog’s Kids’ Class victory grants the Pirate Key and permission to use the
+Starry Shrine (`s0039f000_25b7`). The resident describes the line at the shrine
+and egg appraiser in slot 925. His branch for Water World completion (flag
+`0x11`, archive 133 at `0x5EC`) selects slot 926, which says the shrine can
+finally be used without lining up. Those branches match on the retail and
+v1.0.73 discs.
 
 All 43 character pages show PSX artwork. The portraits include 38 field actors,
 the three playable heroes, and species sprites for Healie and Terry’s starter, Slib.
@@ -41,7 +53,7 @@ Items distinguish verified effects from evidence of availability in a
 particular adventure. Shop stock, prices and skill-learning thresholds were
 checked against v1.0.73. Item pages list Japanese names, menu abbreviations and
 the English names used in each published patch edition. Any of these names can
-be used in the field-guide search.
+be used in the guide search.
 
 All 169 learnable skills include PSX tooltip text, MP cost and target. The
 directory links skill upgrades and combinations to their component skills.
@@ -114,9 +126,10 @@ when a stable patch release is published or edited. The guide needs no
 private-repository access or additional repository secret.
 
 NPC names, named locations and reviewed mentions in walkthrough prose follow
-the same snapshot through stable translation record IDs. The guide contents
-link to both campaign walkthroughs, gates and worlds, reference pages, and breeding
-tools. On smaller screens, **Browse guide** opens the same contents; Escape closes it.
+the same snapshot through stable translation record IDs. The guide contents list
+breeding tools first, followed by Reference, Walkthroughs, and Places. Under
+Reference, Gameplay articles can be sorted by article title or campaign section.
+On smaller screens, **Browse guide** opens the same contents; Escape closes it.
 
 **Translation wording, latest patch release, gameplay verification, and site
 deployment are separate versions.** A newer release label or translation snapshot

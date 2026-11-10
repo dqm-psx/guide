@@ -17,13 +17,19 @@ const brightness = rgb => {
 test.describe('file mode', () => {
   test('a bare load from disk renders the reference and parses its data', async ({ page }) => {
     await page.goto(FILE_URL);
-    await expect(page.locator('#field-guide')).toBeVisible();
+    await expect(page.locator('#guide')).toBeVisible();
     await page.locator('.nav a[href="#pair-finder"]').click();
     await expect(page.locator('#pair-finder')).toBeVisible();
     const slots = await page.evaluate(() => DATA.species.length);
     const version = await page.evaluate(() => DATA.metadata.version);
     await expect(page.locator('#coverage-summary')).toContainText(`${slots} table slots`);
     await expect(page.locator('#source-metadata')).toContainText(version);
+  });
+
+  test('an old saved article link opens directly from disk', async ({page}) => {
+    await page.goto(FILE_URL + '#field-guide?entry=npc-teto');
+    await expect(page.locator('#article-title')).toHaveText('Teto');
+    await expect(page).toHaveURL(/#guide\?entry=npc-teto$/);
   });
 
   test('the page issues no external requests and parses its data', async ({ page }) => {

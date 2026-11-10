@@ -1,4 +1,4 @@
-/* Used by the field guide and by the standalone article builder. */
+/* Used by the guide and by the standalone article builder. */
 globalThis.DQMCharacterDialogue = {
   markup(row, escape, questLinks, hideDialogue = false) {
     if (row.kind !== 'npc') return '';

@@ -1,4 +1,4 @@
-/* Apply the checked public names before the atlas and field-guide directories
+/* Apply the checked public names before the atlas and guide directories
    build their indexes. Route IDs, map exits, prices and skill thresholds stay native. */
 (function (root) {
   'use strict';
@@ -26,7 +26,7 @@
     field.default_nicknames = update.default_nicknames || [];
     if (field.default_nicknames.length) {
       const id = 'field-default-nicknames';
-      const directory = rows.get(id) || {id, kind:'mechanic', game:'both', title:'Default monster nicknames',
+      const directory = rows.get(id) || {id, kind:'article', game:'both', title:'Default monster nicknames',
         summary:'Names given to starters, gifts and bosses when they join your party.', details:[], spoiler:'story'};
       const order = {starter:0, boss:1, gift:2};
       directory.nickname_rows = [...field.default_nicknames].sort((a,b) =>
