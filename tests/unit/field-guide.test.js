@@ -31,8 +31,11 @@ test('the Silver Harp uses the cave harp artwork and the Tiny Medal retains its 
   const harp = entries.get('item-33');
   const medal = entries.get('item-44');
   assert.match(DQMItemArt.imageFor(harp), /^data:image\/png;base64,/);
+  const png = Buffer.from(DQMItemArt.imageFor(harp).split(',')[1], 'base64');
+  assert.equal(png.readUInt32BE(16), 28);
+  assert.equal(png.readUInt32BE(20), 35);
   assert.notEqual(DQMItemArt.imageFor(harp), DQMItemArt.imageFor(medal));
-  assert.equal(DQMItemArt.creditFor(harp), 'Related PS1 art: the gold harp in the Volcanic Island Cave treasure room.');
+  assert.equal(DQMItemArt.creditFor(harp), 'PS1 harp from the Volcanic Island Cave treasure room, recolored silver for the guide.');
   assert.equal(DQMItemArt.creditFor(medal), 'PS1 field pickup sprite.');
 });
 
