@@ -168,12 +168,13 @@
     }).join('');
     return '<section class="monster-card monster-natural-skills"><div class="monster-card-heading"><h3>Natural skills</h3>' +
       '<label class="sr-only" for="monster-campaign">Adventure for skills and encounters</label><select id="monster-campaign">' + campaigns +
-      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div></section>';
+      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div><p class="hint">Level and stats both matter. <a href="#field-guide?entry=field-skill-inheritance">Skill inheritance &amp; learning →</a></p></section>';
   }
 
   function locationsMarkup(species) {
     const locations = groupedLocations(species.locations, campaign);
-    return locations.length ? '<div class="table-scroll"><table class="monster-locations"><caption class="sr-only">Recorded encounters for ' + safe(CAMPAIGNS[campaign]) + '</caption><thead><tr><th scope="col">Encounter</th><th scope="col">Floors or rank</th><th scope="col">Level</th></tr></thead><tbody>' + locations.map(entry => {
+    const recruitment = locations.some(entry=>entry.kind==='wild') ? '<a class="monster-recruit-link" href="#field-guide?entry=field-recruitment&amp;rc_species='+species.index+'&amp;rc_game='+campaign+'">Check wild recruitment chances →</a>' : '';
+    return locations.length ? recruitment+'<div class="table-scroll"><table class="monster-locations"><caption class="sr-only">Recorded encounters for ' + safe(CAMPAIGNS[campaign]) + '</caption><thead><tr><th scope="col">Encounter</th><th scope="col">Floors or rank</th><th scope="col">Level</th></tr></thead><tbody>' + locations.map(entry => {
       const master = entry.kind === 'other' && entry.source?.native_selection;
       const location = master ? '<a href="#field-guide?entry=field-wandering-masters">Wandering master’s team</a>' : safe(entry.name);
       const ranks = entry.strength_ranks || [];

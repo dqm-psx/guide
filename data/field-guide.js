@@ -3238,24 +3238,30 @@ globalThis.FIELD_GUIDE = {
       "kind": "mechanic",
       "game": "both",
       "title": "Recruit a wild monster",
-      "summary": "Feed the monster you want and arrange for it to be the last enemy you defeat.",
+      "summary": "Compare how much meat helps for a particular monster and encounter. Previous collection matters, even if you no longer own that species.",
       "details": [
-        "Meat stacks within a battle. On v1.0.66, a second Sirloin raised the tested recruitment chance for a previously collected Metal Slime from about 8% to 24%. A previously collected Slime was already at about 70% with one. These figures apply once the target is eligible and assume no Starry Orb.",
+        "Meat used on enemies adds to a shared food score for that battle. More than one piece can help, but the same species can have different recruitment settings in different encounters. Choose its area and floor band in the calculator before comparing food.",
+        "The game remembers whether a species has ever entered your collection, including through gifts or breeding. Releasing or breeding away your last copy does not restore its first-collection chance. Your current party or farm alone cannot establish this history.",
+        "In the calculator’s Terry examples, a previously collected Metal Slime gets an 8.47% joining check from one Sirloin and 23.87% from two. The Slime example already reaches 70.07% with one Sirloin. These native calculations match the Japanese release and English patch v1.0.73. They assume the monster is the eligible recruitment candidate and no Starry Orb was used.",
+        "The percentages describe the joining check, not the chance per battle: they do not determine which defeated monster becomes the candidate. A Starry Orb guarantees an otherwise eligible joining check, but neither it nor meat bypasses battle or encounter restrictions. Feeding your own monsters changes wildness instead.",
         "In a DQM2 world reached by a generated magic key, defeat its resident boss before trying to recruit the local monsters."
       ],
+      "aliases": ["recruitment calculator", "meat stacking", "Sirloin chance", "taming", "catch a monster", "feeding"],
       "spoiler": "none",
       "source_ids": [
         "s0adf7000_5062",
         "s0039f000_4a3f",
         "s08a74000_0377",
-        "PSX v1.0.66 Sirloin and recruitment decision · 80128154 / 80121320"
+        "Retail Japanese and English v1.0.73 recruitment, feeding and eligibility routines · native executable verification"
       ],
       "related": [
         "item-25",
         "item-26",
         "item-27",
         "item-28",
-        "item-30"
+        "item-30",
+        "field-battle-text-speed",
+        "field-wandering-masters"
       ]
     },
     {
@@ -3287,6 +3293,9 @@ globalThis.FIELD_GUIDE = {
       "source_ids": [
         "s0b113000_167b",
         "s0b113000_0927"
+      ],
+      "related": [
+        "field-skill-inheritance"
       ]
     },
     {
@@ -3342,8 +3351,79 @@ globalThis.FIELD_GUIDE = {
       ],
       "related": [
         "field-eggs",
+        "field-skill-inheritance",
+        "field-two-save-breeding",
         "npc-monster-professor"
       ]
+    },
+    {
+      "id": "field-skill-inheritance",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "How do offspring inherit and learn skills?",
+      "summary": "A hatchling can learn its own species’ natural skills, both parents’ natural skills and the skills its parents actually knew. It must still meet each skill’s learning requirements.",
+      "details": [],
+      "sections": [
+        {
+          "title": "What passes to the egg",
+          "intro": "These are the original PlayStation rules. Breeding creates a pool of possible skills; it does not give a level-1 hatchling every move immediately.",
+          "rows": [
+            ["Natural skills", "The child’s three species skills and each parent species’ three skills enter the pool. A parent does not need to have learned its own natural skills first. Check Natural skills on each species page."],
+            ["Learned skills", "Both parents’ retained skills also enter the pool, converted to the base forms of their upgrade chains. The child learns and upgrades them as it meets the requirements."],
+            ["Keeping a skill through generations", "An unlearned inherited skill is not copied from a parent’s possible-skill pool. If it is not natural to either new parent or the new child, teach it to a parent and keep it among that parent’s learned skills before breeding again."],
+            ["Eight learned skills", "A monster can retain eight learned skills at once. Its breeding pool has 25 candidate slots, including duplicates and empty slots; that is not a 25-move limit for its battle menu."]
+          ]
+        },
+        {
+          "title": "Why a monster has not learned a skill yet",
+          "intro": "A skill’s level requirement is only one part of the check. Open its page in Skills to see the required stats, earlier skill or combination prerequisites.",
+          "rows": [
+            ["Stats and level", "The monster must reach every listed requirement. The game checks its base maximum HP, maximum MP, Attack, Defense, Agility and Intelligence; an accessory’s immediate stat bonus does not satisfy a missing base-stat requirement."],
+            ["Upgrades and combinations", "Some skills evolve from a move the monster already knows. Others require a combination of learned skills as well as their own learning requirements."],
+            ["After farm training", "Awake farm monsters can gain levels and stats without running the party’s skill-learning checks. Bring the monster into the active party and gain a level in battle. The check considers all eligible candidates against its current stats and level, so several learning prompts can appear together."]
+          ]
+        }
+      ],
+      "aliases": ["move inheritance", "inherited skills", "skill breeding", "unlearned skills", "farm learning", "ranch skills", "eight skills", "8 moves", "why has my monster not learned a skill"],
+      "spoiler": "none",
+      "source_ids": [
+        "PSX BreedCreateChild · 80049094 · 9 species candidates + 16 retained-parent skills",
+        "PSX results overlay 104 · 801222DC / 80122724 · learning requirements",
+        "PSX results overlay 104 · 8011E950 / 8011FB38 / 801200D4 · farm and party level-ups"
+      ],
+      "related": ["field-breed", "field-farm", "field-growth", "field-equipment"]
+    },
+    {
+      "id": "field-two-save-breeding",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "Can monsters breed between Adventure Logs?",
+      "summary": "Yes. Choose Breeding on the game’s title screen to pair monsters from two different masters’ saved Adventure Logs.",
+      "details": [
+        "The original PlayStation game already supports this separate breeding room. It is different from the Starry Shrine in an adventure and from wagering monsters in Colosseum battles.",
+        "Breeding between Terry’s adventure and Cobi or Tara’s adventure requires game completion. The game checks the selected Adventure Logs before allowing the session.",
+        "Both offered parents leave their respective saves. Each participant receives an egg, and the session overwrites both Adventure Logs. Let the game finish saving before removing either memory card or turning off the console."
+      ],
+      "aliases": ["cross campaign breeding", "cross-game breeding", "two memory cards", "two saves", "multiplayer breeding", "Terry Cobi Tara breeding"],
+      "spoiler": "none",
+      "source_ids": ["s0a736000_1170", "s0a736000_118d", "s0a736000_11b4", "s0a736000_140e", "s0a736000_1429"],
+      "related": ["field-breed", "field-eggs", "field-skill-inheritance", "field-colosseum-prizes"]
+    },
+    {
+      "id": "field-battle-text-speed",
+      "kind": "mechanic",
+      "game": "both",
+      "title": "How can I slow down battle messages?",
+      "summary": "Choose Tactics → Text Speed → 8 to make paced battle messages wait for confirmation under normal input conditions.",
+      "details": [
+        "Settings 1–7 use fixed waits. Setting 8 selects a button wait for the pacing control used by messages such as meat-feeding results. The menu labels the range Fast to Slow without explaining this difference.",
+        "Avoid holding the confirm button or fast-forwarding while reading. This setting controls the tested message-pacing path; it does not promise that every animation or message waits for a button.",
+        "This manual mode exists in the Japanese PlayStation game too. The English patch retains the native pacing settings. Text wrapping and page layout are separate from how long a battle message remains visible."
+      ],
+      "aliases": ["text speed 8", "battle messages too fast", "meat message", "pause dialogue", "slow battle text", "reading speed"],
+      "spoiler": "none",
+      "source_ids": ["m_exe_08d9ec", "e0af718_206c", "e0af718_207b", "PSX original and v1.0.73 PACE_WAIT · 80035074 / 800C70E0"],
+      "related": ["field-recruitment", "field-movement-settings"]
     },
     {
       "id": "field-eggs",
@@ -3472,16 +3552,21 @@ globalThis.FIELD_GUIDE = {
       "kind": "mechanic",
       "game": "both",
       "title": "Raise a monster’s growth limit",
-      "summary": "The level at which growth stops depends on the species. Repeated generations of breeding can push that limit later.",
+      "summary": "An offspring’s maximum level is its species’ base level limit plus three times its + value, capped at level 99.",
       "details": [
-        "Check the base level limit and six stat growth tables on the monster’s profile when choosing a pedigree. Seeds and nuts raise the corresponding stat when used."
+        "For example, a species with a base limit of 40 can reach level 55 at +5, or level 70 at +10. The + value beside the offspring’s name matters; it is not simply the number of times you have bred a monster.",
+        "Check the base level limit and six stat growth tables on the monster’s profile when choosing a pedigree. Seeds and nuts raise the corresponding stat when used, rather than raising its level limit.",
+        "Learn any inherited skills you want to carry forward before breeding the monster again. Farm training can raise its stats, but skill learning is checked when it gains a level in your active party."
       ],
       "spoiler": "none",
       "source_ids": [
         "s0ab53000_0de3",
-        "s003f6800_027c"
+        "s003f6800_027c",
+        "PSX BreedCreateChild · 80049094 · maxLevel = min(99, species base + 3 × plus)"
       ],
       "related": [
+        "field-breed",
+        "field-skill-inheritance",
         "item-13",
         "item-14",
         "item-15",

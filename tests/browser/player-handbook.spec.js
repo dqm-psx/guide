@@ -192,7 +192,7 @@ test('Mechanics sorts by adventure or article and preserves the reader’s place
   await page.getByRole('link',{name:'Browse all mechanics'}).click();
   const index = page.getByRole('table',{name:'Mechanics articles'});
   const sections = index.locator('tbody td');
-  await expect(index.getByRole('link')).toHaveCount(19);
+  await expect(index.getByRole('link')).toHaveCount(22);
   expect([...new Set(await sections.allTextContents())]).toEqual(['General','Terry','Cobi & Tara']);
   await expect(index.getByRole('columnheader',{name:'Section'})).toHaveAttribute('aria-sort','ascending');
   const articleSort = index.getByRole('button',{name:'Article'});

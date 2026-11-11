@@ -1,0 +1,548 @@
+{
+  "schemaVersion": 1,
+  "currentDiscSha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
+  "originalDiscSha256": "a1217657786430ac1c3ad71f16cdadb65d47b0df9a7e30278900651c1f1eec29",
+  "scope": "Native resource assignments and exact portrait pixels match both discs. Shared conversation hosts are not person identities.",
+  "portraits": {
+    "npc-laura": {
+      "archiveIndex": 4116,
+      "resourceEntry": 207,
+      "resourceSha256": "e9d7a95e9dcac81200d5b989c17f6dc5d95045041266a6e2275f16545f3fd644",
+      "portraitSha256": "841461021d227349ad998fa5d3383e7b2ae21d61913588701946ba343f8b55a3",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 2,
+      "sceneResource": 73,
+      "messageSlot": 102,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-pulio": {
+      "archiveIndex": 5675,
+      "resourceEntry": 24,
+      "resourceSha256": "c7ea6cbe6362b9f22dedb67d6ab326b6a89954da46576a24adb98741820f006d",
+      "portraitSha256": "ad0913ccf6e27af1c1f743d998894bb24e86031484ef078d86b9c6d4f19f2d9c",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 3,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-king-of-greattree": {
+      "archiveIndex": 5635,
+      "resourceEntry": 22,
+      "resourceSha256": "3ec18cb5a462c3c3870696243d21a489b84e0a0262a6ba13014742cf5bfb2bf7",
+      "portraitSha256": "437bf26087990511e00e74e82ed2b9e55a04288629c4dd73037aa47904fcc289",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-monster-elder": {
+      "archiveIndex": 5592,
+      "resourceEntry": 44,
+      "resourceSha256": "cdb8a577e2c748cdc451ca17f3f8d9b5ee5d2484863ba7fe1a7f816a9f6ff20a",
+      "portraitSha256": "da3141f9e4af393e40931cef767fdc028205e6462f7cc59d8ed12d85cca35a06",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 1,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-watabou": {
+      "archiveIndex": 5632,
+      "resourceEntry": 21,
+      "resourceSha256": "28f93c1fe3ff9e0f4fb0e61795054959f3a578c90d3b53f619cf6cb0241e18f8",
+      "portraitSha256": "ef6bf3fcd81a412745d898efd3fdaf3ee9652132e1855f8302feabcc0a882d7c",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 13,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-queen-of-greattree": {
+      "archiveIndex": 5659,
+      "resourceEntry": 35,
+      "resourceSha256": "4dbc8de4ce31f2ac842a151b51fd98985cd89443ae2c399f22afab9b68479906",
+      "portraitSha256": "841461021d227349ad998fa5d3383e7b2ae21d61913588701946ba343f8b55a3",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 5661,
+      "messageSlot": 1278,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-sanchi": {
+      "archiveIndex": 5595,
+      "resourceEntry": 439,
+      "resourceSha256": "065ac57ed29734236caded7b3299f105749d6e1805ec2dc270b53363a1b0fc0d",
+      "portraitSha256": "161c0f068be8ab9c8c2f4f2b5bed4248c82d166a5b86dd987f4d3c028b2a3b2c",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 6,
+      "sceneResource": 5630,
+      "messageSlot": 1317,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-medal-man": {
+      "archiveIndex": 5598,
+      "resourceEntry": 36,
+      "resourceSha256": "2101e2cc9675b5d7da7be76b18439e401228e4daebb244990227e55d4ca79bb8",
+      "portraitSha256": "ac9a056d866cfedd824ba3de51b85a955b3860115742258ba3f67da7fd9eb736",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-teto": {
+      "archiveIndex": 5644,
+      "resourceEntry": 30,
+      "resourceSha256": "6f9bc7ad9cc740b1cac49c3ee31948c31a4f726e73df911a73b8cc73e7987933",
+      "portraitSha256": "dfb59990607ee5c5abb22020398f322b273c19af24f5b05be04af7819b4d3757",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 16,
+      "sceneResource": 5661,
+      "messageSlot": 1250,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-machiko": {
+      "archiveIndex": 5653,
+      "resourceEntry": 34,
+      "resourceSha256": "f74b924c1dce71a84aaab4ae8abcce96c410a79687d75261586270cb2e756ec3",
+      "portraitSha256": "492d4a45760c9d85158436725dca61183ff497252bcb085b0b404f3ed6cb6751",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 3,
+      "sceneResource": 5661,
+      "messageSlot": 1411,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-surao": {
+      "archiveIndex": 5675,
+      "resourceEntry": 24,
+      "resourceSha256": "c7ea6cbe6362b9f22dedb67d6ab326b6a89954da46576a24adb98741820f006d",
+      "portraitSha256": "6ec13a9dc8cacec056488011e9e89c0d20a5c2810f89ab632dad1410a9a101bc",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 4,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-tife": {
+      "archiveIndex": 5644,
+      "resourceEntry": 30,
+      "resourceSha256": "6f9bc7ad9cc740b1cac49c3ee31948c31a4f726e73df911a73b8cc73e7987933",
+      "portraitSha256": "ace193a8781899a7ebe34c6aec6ac6078373b2b270f128d722b1e19bfaf1fa24",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 19,
+      "sceneResource": 5661,
+      "messageSlot": 1208,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-greattree-name-master": {
+      "archiveIndex": 5620,
+      "resourceEntry": 46,
+      "resourceSha256": "52a41932102e00a0cc41a1627ae857b441ec5bb74acb48bf0efaf7c578ff83fc",
+      "portraitSha256": "02778fcc272fa908b6b7f17eddfaa3148f711c1311b4aa5179c098bfc1114104",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 1,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-cobi": {
+      "archiveIndex": 5544,
+      "resourceEntry": 1,
+      "resourceSha256": "466c85833f09412a061cf7cfcd1e4caa99385c29de5b1b4398dd77540b465c04",
+      "portraitSha256": "8bcf6c68b7fd36ed7e9e5d905b0c514d02fd1fdeae2cd19c2d11257027af135a",
+      "frameSize": [
+        20,
+        32
+      ],
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-tara": {
+      "archiveIndex": 5545,
+      "resourceEntry": 2,
+      "resourceSha256": "a6000245eedb5906639f11655acb0b06196beb95b524375f07d016ef1b6f05f2",
+      "portraitSha256": "34bc90fd7f0792912c337599579fc3ce27a807f3f9c5205a386d77bfb0820310",
+      "frameSize": [
+        20,
+        32
+      ],
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-father": {
+      "archiveIndex": 2867,
+      "resourceEntry": 81,
+      "resourceSha256": "c8ce1a63a6c78297bf6b0e30eb3076aaa2fd526c26cf6e64b7784e45198a0804",
+      "portraitSha256": "160e0c7759d393745f12343bad3c2457ab7a4d641fc814e6db4975bb487fdfa0",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 1,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-mother": {
+      "archiveIndex": 2836,
+      "resourceEntry": 52,
+      "resourceSha256": "83651112297fa491a2c24774169ae73b115bdb7533a1cd5bf36eff473345c512",
+      "portraitSha256": "2a27cbc24c1c3738f08f9b032099600d97b62c6ba4320b6c54064c0d2e1afbce",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-kameha": {
+      "archiveIndex": 2863,
+      "resourceEntry": 77,
+      "resourceSha256": "ed3cbe000efa0db97f0aa7db03e649fdacb4bfab8a11da896a342470ccad1798",
+      "portraitSha256": "fb8c187502c00489f27bde45ecc9480e34cf512ebe674dd41d5bc2f8f7411f8b",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 8,
+      "sceneResource": 129,
+      "messageSlot": 363,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-warubou": {
+      "archiveIndex": 5632,
+      "resourceEntry": 21,
+      "resourceSha256": "28f93c1fe3ff9e0f4fb0e61795054959f3a578c90d3b53f619cf6cb0241e18f8",
+      "portraitSha256": "fda658b783050d88da788277340c8f7327e74850ac249728650587e2ec1173d5",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 14,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-king-of-assia": {
+      "archiveIndex": 4185,
+      "resourceEntry": 259,
+      "resourceSha256": "df124883c03e9f40fb7f64702ec22d2cb5e6679ad83e6abfd3d00a1c2850b1ae",
+      "portraitSha256": "9b03b174b9b34277aee51a039f8a6f9dbaf1ffb8c0424fa9e8fd004f0faeb7ee",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 2162,
+      "messageSlot": 592,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-king-of-northden": {
+      "archiveIndex": 2897,
+      "resourceEntry": 108,
+      "resourceSha256": "d62df58351ca61e53611f5e28410d921e8a5573ec0ce7adda911f63de06b5a77",
+      "portraitSha256": "c467bfaa75cbf6b59d744eeb4d08a6a5ab4786b18eabd64ee8f4179163523966",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 9,
+      "sceneResource": 136,
+      "messageSlot": 598,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-king-of-westernia": {
+      "archiveIndex": 2912,
+      "resourceEntry": 123,
+      "resourceSha256": "830ba03a5a0ab9251326b3eb28323326f7feca6393d8aa86e7d4f32d1adffe78",
+      "portraitSha256": "b453d041bc0324e2e686863b4e4939fca6e7a3ffc40e81ce983adddad0adacc9",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 4,
+      "sceneResource": 148,
+      "messageSlot": 388,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-queen-of-eastoria": {
+      "archiveIndex": 2917,
+      "resourceEntry": 128,
+      "resourceSha256": "2f66ee31fde01cbcfc6ed02bb8879a2a29d50268c236835147cb6a78d092aa12",
+      "portraitSha256": "841461021d227349ad998fa5d3383e7b2ae21d61913588701946ba343f8b55a3",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 154,
+      "messageSlot": 469,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-queen-of-the-mermaids": {
+      "archiveIndex": 2886,
+      "resourceEntry": 97,
+      "resourceSha256": "acf6c67c40f905273beb133d9e9aba620cdbea2b9c1757868c5970e43e73f147",
+      "portraitSha256": "5b25945e9e19801d63d7d8cf0b16ea1f4d92e026a1f1baf0c888805fd27b9331",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 141,
+      "messageSlot": 331,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-yuna": {
+      "archiveIndex": 2913,
+      "resourceEntry": 124,
+      "resourceSha256": "d23ed4dc45a01f989401a3ea1523167551396aed02349b34bb1926ed349bf063",
+      "portraitSha256": "1ed852eb31d4cbb7ef30425c9b7496c262087f86945c6ce14822348f2d095ffe",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 1,
+      "sceneResource": 148,
+      "messageSlot": 408,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-monster-professor": {
+      "archiveIndex": 2844,
+      "resourceEntry": 58,
+      "resourceSha256": "a6122b2f5c310521d783414ef957ea7a466a8b96b7d35eb5ff761aebceca1ea3",
+      "portraitSha256": "da3141f9e4af393e40931cef767fdc028205e6462f7cc59d8ed12d85cca35a06",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 131,
+      "messageSlot": 422,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-medal-collector": {
+      "archiveIndex": 2840,
+      "resourceEntry": 56,
+      "resourceSha256": "5caf8158a19f68f8ee12312d4098d71666453edef6c5cefe715ab3edc44446ff",
+      "portraitSha256": "14b6ba9a1336f4d106df897c863599179f0245d5d8d18327488812d1138ffb2f",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 133,
+      "messageSlot": 969,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-king-of-greatlog": {
+      "archiveIndex": 2863,
+      "resourceEntry": 77,
+      "resourceSha256": "ed3cbe000efa0db97f0aa7db03e649fdacb4bfab8a11da896a342470ccad1798",
+      "portraitSha256": "ffbcb16a2b41526f945f2d6d0b392dd2cc6552e4b9c588ab5217695bf50bd048",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 129,
+      "messageSlot": 320,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-milly": {
+      "archiveIndex": 5659,
+      "resourceEntry": 35,
+      "resourceSha256": "4dbc8de4ce31f2ac842a151b51fd98985cd89443ae2c399f22afab9b68479906",
+      "portraitSha256": "383c6aa6188175347ef7b5bf092e9114f8eea39ca2ee7bdc35b61f540e28c96c",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 4,
+      "sceneResource": 5661,
+      "mapId": "map-11-6",
+      "actorIndex": 4,
+      "talkOffset": 13360,
+      "messageSlot": 1371,
+      "identity": "Milly's Queen's Room conversation"
+    },
+    "npc-terry": {
+      "archiveIndex": 5543,
+      "resourceEntry": 0,
+      "resourceSha256": "d478240c5726a752575ab1718fc3b72a0c758e42c006d209995d9d5cb12475a1",
+      "portraitSha256": "2541ca1cf4f90b3b1254aa788a670ea1bdc15ed17123f5156c159276aa17f34a",
+      "frameSize": [
+        20,
+        32
+      ],
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-slash": {
+      "archiveIndex": 2867,
+      "resourceEntry": 81,
+      "resourceSha256": "c8ce1a63a6c78297bf6b0e30eb3076aaa2fd526c26cf6e64b7784e45198a0804",
+      "portraitSha256": "6ec13a9dc8cacec056488011e9e89c0d20a5c2810f89ab632dad1410a9a101bc",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 2,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-petitbou": {
+      "archiveIndex": 2842,
+      "resourceEntry": 194,
+      "resourceSha256": "e7c300ae6ca1fa588e17e4ef4e65388fb11eeec24176ed0d70c1508f41f00781",
+      "portraitSha256": "fda658b783050d88da788277340c8f7327e74850ac249728650587e2ec1173d5",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 3,
+      "sceneResource": 131,
+      "messageSlot": 414,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-eastoria-botanist": {
+      "archiveIndex": 2915,
+      "resourceEntry": 126,
+      "resourceSha256": "52f32abfc44cd268a5ced320052d611a50a16e970a04ad31d502616cc849ad08",
+      "portraitSha256": "9190a4c7bd16a32a335d2c325b544274be677936dfec794b9a00fe469fa84bda",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 15,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greatlog-egg-appraiser": {
+      "archiveIndex": 2845,
+      "resourceEntry": 59,
+      "resourceSha256": "945c23c2a7c0462d07e291f72bb01b2282e2c61a7786920df96f39e3a25c11ec",
+      "portraitSha256": "34b172cca95551b564288bc13050cba6d487aa25ca0fdaaf3f4b4e64f174d908",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greatlog-hibernation-attendant": {
+      "archiveIndex": 2838,
+      "resourceEntry": 54,
+      "resourceSha256": "8b399259afecc18052716658c8dd4fe259ea1e359d59f02bab6429bf1293d21e",
+      "portraitSha256": "e0497ba93cd7e0fed040936216f9407f37e4f2f22c9d90fed0a615b7d01ca544",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greatlog-librarian": {
+      "archiveIndex": 2859,
+      "resourceEntry": 73,
+      "resourceSha256": "e727a6a711ab2679ff7daf8811e7a22ebd5e8fd312cca0e82222cdf177508a04",
+      "portraitSha256": "8a08295cc69215ba3660cd4398ba5d56ef2556148b568106a008c142c8ff1722",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 5,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greatlog-storage-clerk": {
+      "archiveIndex": 2839,
+      "resourceEntry": 55,
+      "resourceSha256": "64f6860a6235c668c5fea05d68ffa7391f736f5059430a846d363cd44acbd08c",
+      "portraitSha256": "195a656d3cb18e8f8dcf6919237bbedcc9d471d6d5aa8cd9c7f4ad26a1f6c73b",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greatlog-storage-customer": {
+      "archiveIndex": 2839,
+      "resourceEntry": 55,
+      "resourceSha256": "64f6860a6235c668c5fea05d68ffa7391f736f5059430a846d363cd44acbd08c",
+      "portraitSha256": "97bfa5a2d28aef17368ebd48b4685e104e5023905aa62d88d042733d3ad5a9ae",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 1,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greattree-egg-appraiser": {
+      "archiveIndex": 5614,
+      "resourceEntry": 42,
+      "resourceSha256": "f68de1df1754a374ee64447a056a4d6738fc5d52b630eb42a195519d2658f6a8",
+      "portraitSha256": "7217c144ee14a3e5137408cb1eba2e7f64ce53ef745e0c73078a72cf3a2f1a62",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greattree-librarian": {
+      "archiveIndex": 5601,
+      "resourceEntry": 37,
+      "resourceSha256": "7ffd98ddf3b630d9fff33811b1e1e6c492cb6b22382783bfdbb8f404035d27b4",
+      "portraitSha256": "358b129d924fd4ef77db895ef90bcb19508c1841675b4f1e843366780d77f1ae",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 2,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-greattree-storage-clerk": {
+      "archiveIndex": 5628,
+      "resourceEntry": 39,
+      "resourceSha256": "0db479f2d8ad54cbc325fdbabb7611e3b4fcc512d7c9410bed28f9b21b12501d",
+      "portraitSha256": "4bb954e7fd50b99f933a1299fc85a1c70a55adb5c3ac8d3ac7affead49cfe2fc",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    },
+    "npc-mud-hand-s-room-rock-paper-scissors-opponent": {
+      "archiveIndex": 5617,
+      "resourceEntry": 45,
+      "resourceSha256": "80ef8020240b9b6c26fceb4b027d4d8ba92ea00558d9bb0d556d9e42d1d9aa2a",
+      "portraitSha256": "d7cbf24f22fae9950708aeeda6bc5c7dd0a90146384f0a60e9b81fba9491a907",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "identity": "Reviewed actor or playable-hero identity"
+    }
+  }
+}

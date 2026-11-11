@@ -152,7 +152,7 @@
     const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const stats=Object.entries(FIELD_GUIDE.skill_requirements?.[row.nativeId] || {}).filter(([,value])=>value>0);
     const requirements=stats.length ? '<section class="monster-card learning skill-thresholds"><div class="monster-card-heading"><h3>Minimum learning stats</h3></div><dl>'+
-      stats.map(([key,n])=>'<div><dt>'+safe(labels[key] || key)+'</dt><dd>'+safe(n)+'</dd></div>').join('')+'</dl></section>' : '';
+      stats.map(([key,n])=>'<div><dt>'+safe(labels[key] || key)+'</dt><dd>'+safe(n)+'</dd></div>').join('')+'</dl><p class="hint">Uses base stats, without equipment. <a href="#field-guide?entry=field-skill-inheritance">How inheritance and learning work →</a></p></section>' : '';
     const progression=[];
     if (skill.upgradesFrom) progression.push(['Upgrades from',skillLink(skill.upgradesFrom)]);
     const next=sortedSkills.filter(skill=>skill.effect.upgradesFrom===row.nativeId);
@@ -406,6 +406,7 @@
         (lead ? '<p class="article-lead">'+linkedProse(lead,row,routeData,p)+'</p>' : '')+
         routeFacts(row,routeData,p)+locationCharacters(row,p)+relatedMarkup+'</header>'+routeMarkup(row,routeData,p)+'</div>';
       body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + (!gate && lead ? '<p class="article-lead">' + linkedProse(lead,row,routeData,p) + '</p>' : '')) +
+        DQMRecruitmentUI.markup(row) +
         (gate ? '<div class="gate-content">' : '')+
         (row.kind==='location' && mapLinks.length ? '<section class="location-maps" aria-label="Maps">'+(gate?'':'<h3 id="location-maps-heading">Maps</h3>')+
           '<div id="location-map-browser"></div></section>' : '')+
@@ -436,6 +437,7 @@
     const locationBack = '<a class="guide-back places-back" href="'+backUrl+'" aria-label="Back to '+safe(backLabel)+'" title="Back to '+safe(backLabel)+'"><span aria-hidden="true">←</span></a>';
     article.innerHTML = (row.kind==='location' ? DQMLocations.navigation(row.game,safe,locationBack) : '<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>') +
       heading + body;
+    if (!guarded(row)) DQMRecruitmentUI.mount(article,row,p);
     if (el('location-map-browser')) DQMAtlas.mountLocationMaps(el('location-map-browser'),row.id,{
       mapId:p.get('map'),variant:p.get('variant'),href:(mapId,variant)=>{
         const next=new URLSearchParams(p);
@@ -598,7 +600,7 @@
     }));
     const linkTo = (id,name) => '<a href="'+linked(p,{entry:id,page:''})+'">'+safe(name)+'</a>';
     const count = matches.length === 1 ? '1 skill' : matches.length+' skills';
-    root.innerHTML = directoryHeading('Skills',count)+DQMSkillIndex.render(items,{escape:safe,linkTo});
+    root.innerHTML = directoryHeading('Skills',count,'<a href="#field-guide?entry=field-skill-inheritance">Inheritance &amp; learning</a>')+DQMSkillIndex.render(items,{escape:safe,linkTo});
     const table = root.querySelector('.skill-index');
     DQMSkillIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
     return 'Skills';

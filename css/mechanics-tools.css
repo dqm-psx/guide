@@ -1,0 +1,45 @@
+.recruitment-calculator{margin:20px 0 24px;padding:20px;border:1px solid var(--guide-rule);border-radius:8px;background:var(--guide-panel)}
+.recruit-heading{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.recruit-heading h3{margin:0!important;font:700 22px/1.3 Georgia,serif;color:var(--guide-green)}
+.recruit-heading>span{color:var(--muted);font-size:12px}
+.recruitment-calculator .recruit-intro{margin:8px 0 18px;font-size:13px;max-width:75ch;color:var(--muted)}
+.recruit-examples{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:-4px 0 16px;font-size:12px;color:var(--muted)}
+.recruit-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px}
+.recruit-selection,.recruit-feeding{min-width:0}
+.recruit-filter-row{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px}
+.recruitment-calculator .recruit-field{display:flex;flex-direction:column;gap:5px;margin:0 0 12px;font-size:12px;font-weight:650}
+.recruit-field select,.recruit-field input{width:100%;min-width:0;min-height:38px;font-size:13px}
+.recruit-field input[aria-invalid=true]{outline:2px solid var(--gold)}
+.recruitment-calculator .recruit-check{display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.45;margin:12px 0}
+.recruit-check input{width:17px;height:17px;min-height:0;flex:none;margin:2px 0 0}
+.recruit-check small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:4px}
+.recruitment-calculator .recruit-location,.recruitment-calculator .recruit-hint{font-size:12px;color:var(--muted);margin:3px 0 12px;line-height:1.5}
+.recruitment-calculator h4{font-size:14px;margin:0 0 6px}
+.recruit-meats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.recruitment-calculator button{font-size:12px;min-height:34px;padding:6px 10px}
+.recruit-result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 20px;align-items:center;margin-top:18px;padding:16px 0;border-top:1px solid var(--guide-rule);border-bottom:1px solid var(--guide-rule)}
+.recruit-monster{display:flex;align-items:center;gap:14px;min-width:0}
+.recruit-monster .monster-sprite{width:64px;height:64px;flex:0 0 64px}
+.recruit-monster .monster-sprite>svg{width:100%;height:100%}
+.recruit-monster a{font-weight:750;font-size:16px}
+.recruit-monster small{display:block;font-size:12px;color:var(--muted);margin-top:5px}
+.recruit-chance{text-align:right}
+.recruit-chance strong{display:block;font-size:32px;font-variant-numeric:tabular-nums;line-height:1.2;color:var(--guide-green)}
+.recruit-chance span{font-size:11px;color:var(--muted)}
+.recruit-result p{grid-column:1/-1;margin:0;font-size:13px}
+.recruit-comparison{margin-top:18px}
+.recruit-comparison:empty{display:none}
+.recruit-comparison table{width:100%;min-width:0;font-size:13px}
+.recruit-comparison th,.recruit-comparison td{padding:8px 10px;white-space:normal}
+.recruit-comparison td{font-variant-numeric:tabular-nums}
+.recruitment-calculator .recruit-scope{font-size:12px;line-height:1.6;color:var(--muted);margin:14px 0}
+.recruit-share{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px}
+.recruit-share input{flex:1 1 100%;min-width:0;font-size:12px}
+.recruit-details{margin-top:16px;font-size:12px;padding:10px 12px;background:var(--guide-soft)}
+.recruit-details summary{font-weight:600}
+.recruitment-calculator .recruit-details p{font-size:12px;line-height:1.6}
+.recruit-note{padding:10px 12px;border-left:3px solid var(--gold);background:var(--guide-soft);font-size:13px}
+.recruit-link{font-size:13px;margin:12px 0}
+.monster-recruit-link{font-size:12px;display:inline-block;margin-bottom:9px}
+@media(max-width:850px){.recruit-layout{grid-template-columns:minmax(0,1fr);gap:16px}.recruit-feeding{border-top:1px solid var(--guide-rule);padding-top:15px}}
+@media(max-width:500px){.recruitment-calculator{padding:14px}.recruit-result{grid-template-columns:minmax(0,1fr)}.recruit-chance{text-align:left;display:flex;align-items:baseline;gap:10px}.recruit-chance strong{font-size:28px}.recruit-filter-row{grid-template-columns:100px minmax(0,1fr)}.recruit-heading h3{font-size:20px}.recruit-comparison th,.recruit-comparison td{font-size:12px;padding:7px 5px}}

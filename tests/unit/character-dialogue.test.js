@@ -49,3 +49,28 @@ test('the character view keeps short conversations behind a disclosure when hidi
   assert.doesNotMatch(render(true), /<details[^>]+ open/);
   assert.match(render(true), /<h3>Quests<\/h3>/);
 });
+
+test('Milly’s Queen’s Room breeding conversation stays separate from her arena matches', () => {
+  const milly = characters.find(row => row.id === 'npc-milly');
+  const scenes = CHARACTER_DIALOGUE.entries['npc-milly'];
+  const queen = scenes.find(scene => scene.place === "Queen's Room");
+  const terryArena = scenes.find(scene => scene.place === 'GreatTree arena · Starry Night Tournament');
+  const greatlog = scenes.find(scene => scene.place === 'GreatLog arena district');
+  assert.ok(milly.map_ids.includes('map-11-6'));
+  assert.ok(milly.map_ids.includes('map-21-35'));
+  assert.match(milly.region, /GreatTree.*GreatLog/);
+  assert.match(milly.summary, /Queen's Room.*Skeleton Swordsman/);
+  assert.match(queen.passages.join(' '), /chatting with the queen.*Skeleton Swordsman/);
+  assert.match(queen.passages.join(' '), /Low-level monsters can't breed/);
+  assert.match(terryArena.passages.join(' '), /celebrate our reunion with a match/);
+  assert.doesNotMatch(terryArena.passages.join(' '), /Skeleton Swordsman|breed/);
+  assert.match(greatlog.passages.join(' '), /strongest master in GreatLog/);
+  assert.equal(scenes.flatMap(scene => scene.passages).length, 24);
+  assert.ok(!scenes.some(scene => scene.passages.includes('Milly')), 'A name-menu label is not spoken dialogue');
+  const places = require('../../scripts/world-name-bindings.json').terms;
+  for (const spelling of ['GreatTree', "Queen's Room"]) {
+    assert.ok(places.find(term => term.spelling === spelling).affected_entries.includes('npc-milly'));
+  }
+  const spriteProof = require('../../docs/npc-sprite-evidence.json').portraits['npc-milly'];
+  assert.ok(milly.map_ids.includes(spriteProof.mapId));
+});

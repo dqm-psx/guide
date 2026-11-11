@@ -2,6 +2,13 @@
 
 ## Gameplay sources
 
+The [research audit](research-audit.md) records this pass's scope and remaining
+priorities. [Recruitment](recruitment-evidence.md) and
+[learning mechanics](learning-mechanics-evidence.md) have reproducible native
+checks against the Japanese release and English v1.0.73. Recruitment names
+and floor labels follow the existing translation refresh by stable species
+and encounter IDs; changed game mechanics require a new native audit.
+
 The v1.0.73 walkthrough audit resolved all 1,490 cited records for the 188
 campaign, quest, boss, character and location articles. It also checked the
 native conditions behind the fixed story keys, spirit rewards and arena rounds.
@@ -34,6 +41,9 @@ v1.0.73 discs.
 
 All 43 character pages show PSX artwork. The portraits include 38 field actors,
 the three playable heroes, and species sprites for Healie and Terry’s starter, Slib.
+The [native sprite audit](npc-sprites.md) verifies all 41 native portrait images
+against the Japanese and v1.0.73 discs and records their character identities. Milly uses her Queen’s Room actor;
+Laura’s royal sprite and Tife’s dancer sprite are native DQM1 assignments.
 
 Default monster nicknames follow the builder’s starter, boss and gift name tables
 in the same four-hour refresh as species names. Each row keeps its native ID,

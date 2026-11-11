@@ -174,7 +174,8 @@
       "labels": ["Milly"],
       "scenes": {
         "GreatLog arena district": ["s0039f000_3faa", "s0039f000_3ffe", "s0039f000_404e", "s0039f000_4070", "s0039f000_4099", "s0039f000_40f6", "s0039f000_4120", "s0039f000_417c", "s0039f000_426b"],
-        "GreatTree arena district": ["s0adf7000_0a60", "s0adf7000_0a87", "s0adf7000_0aac", "s0adf7000_0b40", "s0adf7000_0b4a", "s0adf7000_4242", "s0adf7000_43ff", "s0adf7000_4468", "s0adf7000_cb0b", "s0adf7000_cbc2", "s0adf7000_cbe8", "s0adf7000_cc0e", "s0adf7000_cc35", "s0adf7000_cc81", "s0adf7000_ccbc", "s0adf7000_cd0b"]
+        "GreatTree arena · Starry Night Tournament": ["s0adf7000_4242", "s0adf7000_43ff", "s0adf7000_4468"],
+        "Queen's Room": ["s0adf7000_cb0b", "s0adf7000_cbc2", "s0adf7000_cbe8", "s0adf7000_cc0e", "s0adf7000_cc35", "s0adf7000_cc81", "s0adf7000_ccbc", "s0adf7000_cd0b", "s0adf7000_0a60", "s0adf7000_0a87", "s0adf7000_0aac", "s0adf7000_0b4a"]
       }
     },
     "npc-monster-elder": {
