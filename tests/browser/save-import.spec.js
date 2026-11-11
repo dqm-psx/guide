@@ -10,14 +10,17 @@ test.afterAll(async () => {
   await stopGuideServer();
 });
 
-test('previews a local card, creates a team in its campaign and uses it in both parent orders', async ({page}) => {
+for (const viewport of [{width:1280,height:720}, {width:390,height:844}]) {
+test(`previews a local card, creates a team in its campaign and uses it in both parent orders at ${viewport.width}px`, async ({page}) => {
   const writes = [];
   page.on('request', req => { if (req.method() !== 'GET') writes.push(req.method()); });
+  await page.setViewportSize(viewport);
   await page.goto(url + '#team-planner');
   const team = page.locator('#planner-team-select');
   const original = await team.inputValue();
   const card = fixture.card([[1, 5, fixture.block()], [2, 7, fixture.block(2)]]);
   const file = {name: 'example.mcd', mimeType: 'application/octet-stream', buffer: card};
+  await page.locator('#planner-open-import').click();
   await page.getByRole('button', {name: 'Import a PlayStation save', exact: true}).setInputFiles(file);
   await expect(page.locator('#save-import-status')).toContainText('2 saves');
   await page.getByLabel('Save slot', {exact: true}).selectOption({index: 1});
@@ -31,12 +34,14 @@ test('previews a local card, creates a team in its campaign and uses it in both 
   await expect(team).toHaveValue(original);
   await page.getByRole('button', {name: 'Create team from save'}).click();
   await expect(team.locator('option:checked')).toHaveText('DQM2 · Tara · Slot 7');
-  await expect(page.getByRole('tab', {name: 'Team breeding'})).toHaveAttribute('aria-selected', 'true');
-  await page.getByRole('tab', {name: 'My monsters'}).click();
-  await expect(page.locator('#planner-males')).toContainText('Lv 30');
-  await expect(page.locator('#planner-males').getByRole('link', {name: 'Bob'})).toHaveAttribute('href', '#monster?id=26');
+  await expect(page.getByRole('tab', {name: 'My monsters'})).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#save-import-dialog')).not.toBeVisible();
+  await expect(page.locator('#planner-party')).toContainText(/Lv\.? 30/);
+  await expect(page.locator('#planner-party').getByRole('link', {name: 'Bob'})).toHaveAttribute('href', '#monster?id=26');
+  await expect(page.locator('#planner-party .planner-card').first()).toBeInViewport({ratio:0.9});
   await page.getByRole('tab', {name: 'Team breeding'}).click();
-  await page.getByLabel('Include farm monsters').check();
+  await expect(page.getByLabel('Include farm monsters')).toBeChecked();
+  await page.selectOption('#planner-breeding-view','matrix');
   await expect(page.locator('#planner-male-grid a[href="#monster?id=26"]')).toBeVisible();
   await expect(page.locator('#planner-female-grid a[href="#monster?id=0"]')).toBeVisible();
   await page.reload();
@@ -44,6 +49,7 @@ test('previews a local card, creates a team in its campaign and uses it in both 
   await expect(team.locator('option[value="' + original + '"]')).toHaveCount(1);
   expect(writes).toEqual([]);
 });
+}
 
 test('rejects damaged bytes and cancellation leaves the current team available', async ({page}) => {
   await page.goto(url + '#team-planner');
@@ -51,10 +57,12 @@ test('rejects damaged bytes and cancellation leaves the current team available',
   const original = await team.inputValue();
   const file = {name: 'slot.sav', mimeType: 'application/octet-stream', buffer: fixture.block()};
   const input = page.getByRole('button', {name: 'Import a PlayStation save', exact: true});
+  await page.locator('#planner-open-import').click();
   await input.setInputFiles(file);
   await page.locator('#save-import-cancel').click();
   await expect(page.locator('#save-import-preview')).toBeHidden();
   file.buffer[0x1000] ^= 1;
+  await page.locator('#planner-open-import').click();
   await input.setInputFiles(file);
   await expect(page.locator('#save-import-status')).toContainText('checksum');
   await expect(page.locator('#save-import-preview')).toBeHidden();

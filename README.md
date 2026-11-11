@@ -18,7 +18,7 @@ Walkthroughs, maps, monster profiles and breeding tools for the English PlayStat
 
 ## Bring your own team
 
-Choose a 128 KiB PlayStation memory card, an 8 KiB Adventure Log or a single-save MCS export. Preview the slot, then choose **Create team from save** to open Team breeding. You can also add monsters by hand. Your save stays on your device. Use the backup controls in **My game** to move teams and plans between browsers.
+Choose a 128 KiB PlayStation memory card, an 8 KiB Adventure Log or a single-save MCS export. Preview the slot, then choose **Create team from save** to see your party and farm in **My monsters**. Search, filter or sort the roster, and choose **Breed** on a monster to see its offspring with your other monsters. **Team breeding** includes farm monsters by default and offers an offspring list or breeding tables. You can also add and edit monsters by hand. Your save stays on your device. Use **Import, export & backup** in **My game** to move teams and plans between browsers.
 
 ## Names and offline use
 

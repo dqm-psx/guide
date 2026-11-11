@@ -1,3 +1,4 @@
+const {openMonsterEditor, openTeamSettings, memberAction} = require('../helpers/planner-ui');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -40,6 +41,7 @@ const expectTeamGroups = async (select, expected) =>
     .map(group => [group.label, [...group.querySelectorAll('option')].map(option => option.textContent)])), expected);
 
 const addMonster = async (page, speciesIndex) => {
+  await openMonsterEditor(page);
   await page.selectOption('#planner-add-species', String(speciesIndex));
   await page.click('#planner-add-button');
 };
@@ -56,10 +58,10 @@ test.describe('served', () => {
       localStorage.setItem(spriteKey, sprite);
     }, { teamKey: LEGACY_TEAM_KEY, spriteKey: SPRITE_KEY, team, sprite: 'overworld' });
     await page.goto(url() + '#team-planner');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slime');
-    await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Drake');
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slime');
+    await expect(page.locator('.planner-card[data-sex="female"] .planner-card-name')).toHaveText('Drake');
     const stored = JSON.parse(await readStored(page, STATE_KEY));
     assert.equal(stored.teams.length, 1);
     assert.equal(stored.teams[0].entries.length, 2);
@@ -75,6 +77,7 @@ test.describe('served', () => {
     await expect(page.locator('#planner-team-select option')).toHaveCount(1);
 
     // Create a team through the name form.
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await expect(page.locator('#planner-team-name-form')).toBeVisible();
     await page.fill('#planner-team-name', 'Breeders');
@@ -85,13 +88,15 @@ test.describe('served', () => {
       ['Unassigned teams', ['My team']],
     ]);
     await expect(page.locator('#planner-message')).not.toHaveText('');
-    await expect(page.locator('#planner-team-summary')).toContainText('Breeders');
+    await expect(page.locator('#planner-team-select option:checked')).toHaveText('Breeders');
+    await expect(page.locator('#planner-team-summary')).toHaveText('No monsters yet');
 
     // The new team is active: a monster added now belongs to it.
     await addMonster(page, 11);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
 
     // Rename with the keyboard: Enter submits the form.
+    await openTeamSettings(page);
     await page.click('#planner-team-rename');
     await page.fill('#planner-team-name', 'Renamed');
     await page.keyboard.press('Enter');
@@ -104,11 +109,12 @@ test.describe('served', () => {
     // Switching teams switches the active roster.
     await page.selectOption('#planner-team-select', { label: 'My team' });
     await expect(page.locator('#planner-message')).not.toHaveText('');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(0);
     await page.selectOption('#planner-team-select', { label: 'Renamed' });
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
 
     // Escape cancels the name form.
+    await openTeamSettings(page);
     await page.click('#planner-team-rename');
     await page.fill('#planner-team-name', 'Nope');
     await page.keyboard.press('Escape');
@@ -119,23 +125,25 @@ test.describe('served', () => {
     ]);
 
     // Delete the second team; the first becomes active again.
+    await openTeamSettings(page);
     await page.click('#planner-team-delete');
     await expect(page.locator('#planner-team-select option')).toHaveCount(1);
     await expect(page.locator('#planner-message')).not.toHaveText('');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(0);
     await expect(page.locator('#planner-team-delete')).toBeDisabled();
   });
 
   test('roster favorites: star toggles, survive edits, follow deletions, and filter', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await addMonster(page, 11);
+    await openMonsterEditor(page);
     await page.check('#planner-sex-female');
     await addMonster(page, 99);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
 
     // Star the male monster.
-    const star = page.locator('#planner-males button[data-member-favorite]');
+    const star = page.locator('.planner-card[data-sex="male"] button[data-member-favorite]');
     await expect(star).toHaveAttribute('aria-pressed', 'false');
     await expect(star).toHaveAttribute('aria-label', 'Favorite Slime');
     await star.click();
@@ -143,34 +151,37 @@ test.describe('served', () => {
     await expect(page.locator('#planner-message')).not.toHaveText('');
 
     // Editing the entry keeps the star.
-    await page.click('#planner-males button[data-member-edit]');
+    await page.click('.planner-card[data-sex="male"] button[data-member-edit]');
+    await openMonsterEditor(page);
     await page.fill('#planner-add-nickname', 'Star');
     await page.click('#planner-add-button');
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Star');
-    await expect(page.locator('#planner-males button[data-member-favorite]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Star');
+    await expect(page.locator('.planner-card[data-sex="male"] button[data-member-favorite]')).toHaveAttribute('aria-pressed', 'true');
 
     // Deleting the entry removes the favorite.
-    await page.click('#planner-males button[data-member-remove]');
-    await expect(page.locator('#planner-males button[data-member-favorite]')).toHaveCount(0);
+    await memberAction(page, '.planner-card[data-sex="male"] button[data-member-remove]');
+    await expect(page.locator('.planner-card[data-sex="male"] button[data-member-favorite]')).toHaveCount(0);
 
     // The favorites filter shows only starred entries per column.
-    const femaleStar = page.locator('#planner-females button[data-member-favorite]');
+    const femaleStar = page.locator('.planner-card[data-sex="female"] button[data-member-favorite]');
     await femaleStar.click();
     await expect(femaleStar).toHaveAttribute('aria-pressed', 'true');
     await page.check('#planner-roster-favorites');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(0);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
     await expect(page.locator('#planner-roster-favorites')).toBeChecked();
     await page.uncheck('#planner-roster-favorites');
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
   });
 
   test('full backup round trips and a malformed import changes nothing', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await addMonster(page, 11);
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'Second');
     await page.click('#planner-team-name-save');
+    await openMonsterEditor(page);
     await page.check('#planner-sex-female');
     await addMonster(page, 99);
 
@@ -200,9 +211,11 @@ test.describe('served', () => {
     fs.writeFileSync(tmp, JSON.stringify(exported));
 
     // Change the current document so the replace is observable.
+    await openMonsterEditor(page);
+    await page.check('#planner-sex-female');
     await addMonster(page, 13);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(2);
-    await expect(page.locator('#planner-females .planner-card-name')).toHaveText(['Dracky', await page.evaluate(() => displayName(byId.get(13)))]);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(2);
+    await expect(page.locator('.planner-card[data-sex="female"] .planner-card-name')).toHaveText(['Dracky', await page.evaluate(() => displayName(byId.get(13)))]);
 
     // Import the backup and confirm the preview counts.
     if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
@@ -214,8 +227,8 @@ test.describe('served', () => {
     await page.click('#planner-import-confirm');
     await expect(page.locator('#planner-import-preview')).toBeHidden();
     await expect(page.locator('#guide-settings [data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed','true');
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Dracky');
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"] .planner-card-name')).toHaveText('Dracky');
     const stored = JSON.parse(await readStored(page, STATE_KEY));
     assert.equal(stored.teams.length, 2);
     assert.equal(stored.teams[1].targets.length, 1);
@@ -233,7 +246,7 @@ test.describe('served', () => {
     await expect(page.locator('#planner-backup-import')).toHaveValue('');
     await expect(page.locator('#planner-import-preview')).toBeHidden();
     await expect(page.locator('#guide-settings [data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed','true');
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
     assert.equal(await readStored(page, STATE_KEY), storedBefore);
   });
 
@@ -251,7 +264,7 @@ test.describe('served', () => {
 
     // Clicking around mutates the session but must not write.
     await addMonster(page, 11);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
     await page.locator('#guide-settings > summary').click();
     await page.click('#guide-settings button[data-sprite-style="overworld"]');
     await expect(page.locator('#guide-settings button[data-sprite-style="overworld"]')).toHaveAttribute('aria-pressed', 'true');
@@ -330,14 +343,14 @@ test.describe('served', () => {
     await addMonster(page, 11);
     await addMonster(page, 99);
     await addMonster(page, 13);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(3);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(3);
 
-    const stars = page.locator('#planner-males button[data-member-favorite]');
+    const stars = page.locator('.planner-card[data-sex="male"] button[data-member-favorite]');
     await stars.nth(0).click();
     await stars.nth(2).click();
     await page.check('#planner-roster-favorites');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(2);
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText(['Slime', await page.evaluate(() => displayName(byId.get(13)))]);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(2);
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText(['Slime', await page.evaluate(() => displayName(byId.get(13)))]);
   });
 
   test('storage unavailable keeps the session usable and offers export', async ({ page }) => {
@@ -353,7 +366,7 @@ test.describe('served', () => {
 
     // The page is still usable.
     await addMonster(page, 11);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
 
     // Export works from the in-memory document.
     if (!(await page.locator('#planner-data-tools').evaluate(el => el.open))) {
@@ -371,6 +384,7 @@ test.describe('served', () => {
 
   test('the team select is labeled and switching announces', async ({ page }) => {
     await page.goto(url() + '#team-planner');
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'Second');
     await page.click('#planner-team-name-save');
@@ -394,20 +408,21 @@ test.describe('served', () => {
     await addMonster(page, 11);
 
     // The star is reachable and toggles with the keyboard.
-    const star = page.locator('#planner-males button[data-member-favorite]');
+    const star = page.locator('.planner-card[data-sex="male"] button[data-member-favorite]');
     await star.focus();
     await page.keyboard.press('Enter');
     await expect(star).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('#planner-message')).not.toHaveText('');
 
     // Team creation announces through the status message.
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'Second');
     await page.click('#planner-team-name-save');
     await expect(page.locator('#planner-message')).not.toHaveText('');
     // Switch back to the team holding the monster so it is on screen.
     await page.selectOption('#planner-team-select', { label: 'My team' });
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
 
     // The import preview announces its counts and is keyboard-operable.
     const tmp = path.join(os.tmpdir(), 'dqm-guide-backup-kb.json');
@@ -429,7 +444,7 @@ test.describe('served', () => {
     await page.keyboard.press('Tab');
     await page.keyboard.press('Enter');
     await expect(page.locator('#planner-import-preview')).toBeHidden();
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
   });
 
   test('cross-tab: a team created in one tab appears in another', async ({ page }) => {
@@ -440,6 +455,7 @@ test.describe('served', () => {
     await expect(pageB.locator('#planner-team-select option')).toHaveCount(1);
 
     // Create a team in page A; page B adopts it through the storage event.
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'Shared');
     await page.click('#planner-team-name-save');
@@ -510,13 +526,13 @@ test.describe('served', () => {
     await expect(page.locator('#app-storage-error-download')).toBeHidden();
     await expect(page.locator('#app-storage-error-fresh')).toBeHidden();
     assert.equal(await readStored(page, STATE_KEY), savedBefore);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(0);
 
     // Page B still has the previous saved roster. Its normal save must
     // replace page A's oversized session and clear every stale warning.
     await addMonster(pageB, 99);
     await expect(page.locator('#planner-message')).not.toHaveText('');
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText(['Slime', 'Dracky']);
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText(['Slime', 'Dracky']);
     await expect(page.locator('#app-storage-error')).toBeHidden();
     await expect(page.locator('#planner-save-status')).toContainText(/[Ss]aved/);
     const recovered = await readStored(page, STATE_KEY);
@@ -555,6 +571,7 @@ test.describe('served', () => {
     await expect(pageB.locator('#planner-team-select option')).toHaveText(['Recovered']);
 
     // Page B can now save again.
+    await openTeamSettings(pageB);
     await pageB.click('#planner-team-new');
     await pageB.fill('#planner-team-name', 'After recovery');
     await pageB.click('#planner-team-name-save');

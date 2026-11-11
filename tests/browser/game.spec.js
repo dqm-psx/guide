@@ -1,3 +1,4 @@
+const {openMonsterEditor, openTeamSettings, memberAction} = require('../helpers/planner-ui');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -29,6 +30,7 @@ const expectTeamGroups = async (select, expected) =>
     .map(group => [group.label, [...group.querySelectorAll('option')].map(option => option.textContent)])), expected);
 
 const addMonster = async (page, speciesIndex, location) => {
+  await openMonsterEditor(page);
   await page.check(location === 'farm' ? '#planner-location-farm' : '#planner-location-party');
   await page.selectOption('#planner-add-species', String(speciesIndex));
   await page.click('#planner-add-button');
@@ -37,6 +39,7 @@ const addMonster = async (page, speciesIndex, location) => {
 // Rename the active team, which is how a test tells two teams apart when both
 // would otherwise carry the default name.
 const renameActiveTeam = async (page, name) => {
+  await openTeamSettings(page);
   await page.click('#planner-team-rename');
   await page.fill('#planner-team-name', name);
   await page.click('#planner-team-name-save');
@@ -53,6 +56,7 @@ test.describe('served', () => {
     // A fresh document has one unassigned team and is viewing DQM1.
     await expect(page.locator('#planner-game-dqm1')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('#planner-team-game')).toHaveValue('');
+    await openTeamSettings(page);
     await expect(page.locator('#planner-team-game-hint')).toBeVisible();
     await expectTeamGroups(page.locator('#planner-team-select'), [
       ['Unassigned teams', ['My team']],
@@ -60,6 +64,7 @@ test.describe('served', () => {
 
     // A new team belongs to the game being viewed, so it joins the DQM1 group.
     await renameActiveTeam(page, 'DQM1 roster');
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'DQM1 second');
     await page.click('#planner-team-name-save');
@@ -112,17 +117,18 @@ test.describe('served', () => {
     await expect(page.locator('#app-storage-error')).toBeHidden();
 
     // Every monster survived, and it is a party monster under both games.
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females button[data-member-favorite]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"] button[data-member-favorite]')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('#planner-team-summary')).toContainText('2 party · 0 farm');
+    await openTeamSettings(page);
     await expect(page.locator('#planner-team-game-hint')).toBeVisible();
     for (const game of ['dqm1', 'dqm2']) {
       await page.click('#planner-game-' + game);
       await expectTeamGroups(page.locator('#planner-team-select'), [
         ['Unassigned teams', ['Old save']],
       ]);
-      await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Drake');
+      await expect(page.locator('.planner-card[data-sex="female"] .planner-card-name')).toHaveText('Drake');
     }
 
     // Its target is still there.
@@ -132,10 +138,11 @@ test.describe('served', () => {
 
     // Choosing a game files the whole team, monsters and target together.
     await page.click('#planner-tab-roster');
+    await openTeamSettings(page);
     await page.selectOption('#planner-team-game', 'dqm2');
     await expect(page.locator('#planner-message')).not.toHaveText('');
     await expect(page.locator('#planner-team-game-hint')).toBeHidden();
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slime');
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slime');
     await page.click('#planner-tab-targets');
     await expect(page.locator('#target-list .target-item')).toHaveCount(1);
 
@@ -152,6 +159,7 @@ test.describe('served', () => {
     await renameActiveTeam(page, 'DQ2 run');
     await addMonster(page, 11, 'party');
 
+    await openTeamSettings(page);
     await page.selectOption('#planner-team-game', 'dqm2');
     await expect(page.locator('#planner-message')).toContainText('DQ2 run');
     await expect(page.locator('#planner-team-game-hint')).toBeHidden();
@@ -160,14 +168,14 @@ test.describe('served', () => {
     await expectTeamGroups(page.locator('#planner-team-select'), [
       ['DQM2 teams', ['DQ2 run']],
     ]);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
 
     // DQM1 now has no team of its own, so switching creates a fresh empty one.
     await page.click('#planner-game-dqm1');
     await expect(page.locator('#planner-message')).toContainText('DQM1');
-    await expect(page.locator('#planner-team-summary')).toHaveText('No monsters in My team.');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(0);
+    await expect(page.locator('#planner-team-summary')).toHaveText('No monsters yet');
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(0);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(0);
     await expect(page.locator('#planner-team-game')).toHaveValue('dqm1');
     await expectTeamGroups(page.locator('#planner-team-select'), [
       ['DQM1 teams', ['My team']],
@@ -179,20 +187,23 @@ test.describe('served', () => {
     assert.equal(stored.teams[0].game, 'dqm2');
     assert.equal(stored.teams[1].game, 'dqm1');
     await page.click('#planner-game-dqm2');
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slime');
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slime');
     await expect(page.locator('#planner-team-summary')).toContainText('1 party · 0 farm');
   });
 
   test('unassigning a team brings it back under both games', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await renameActiveTeam(page, 'Filed');
+    await openTeamSettings(page);
     await page.selectOption('#planner-team-game', 'dqm1');
     await expectTeamGroups(page.locator('#planner-team-select'), [
       ['DQM1 teams', ['Filed']],
     ]);
 
+    await openTeamSettings(page);
     await page.selectOption('#planner-team-game', '');
     await expect(page.locator('#planner-message')).toContainText('Filed');
+    await openTeamSettings(page);
     await expect(page.locator('#planner-team-game-hint')).toBeVisible();
     // The switch does not follow an unassignment: the team is still visible.
     await expect(page.locator('#planner-game-dqm1')).toHaveAttribute('aria-pressed', 'true');
@@ -203,73 +214,81 @@ test.describe('served', () => {
 
   test('move to farm and back keeps the nickname, sex, + value, and favorite', async ({ page }) => {
     await page.goto(url() + '#team-planner');
+    await openMonsterEditor(page);
     await page.selectOption('#planner-add-species', '11');
     await page.fill('#planner-add-plus', '3');
+    await openMonsterEditor(page);
     await page.fill('#planner-add-nickname', 'Slimo');
     await page.click('#planner-add-button');
-    await page.locator('#planner-males button[data-member-favorite]').click();
-    await expect(page.locator('#planner-males .planner-card-meta')).toContainText('Slime +3');
+    await page.locator('.planner-card[data-sex="male"] button[data-member-favorite]').click();
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-meta')).toContainText('Slime');
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-stats')).toContainText('+3');
 
-    // The card starts in the party subsection of the male column.
-    const partyList = page.locator('#planner-males > .planner-card-list').first();
-    const farmList = page.locator('#planner-males > .planner-card-list').nth(1);
+    // The roster starts in the party section and moves between locations.
+    const partyList = page.locator('#planner-party');
+    const farmList = page.locator('#planner-farm');
     await expect(partyList.locator('.planner-card-name')).toHaveText('Slimo');
     await expect(farmList.locator('.planner-card')).toHaveCount(0);
     await expect(page.locator('#planner-team-summary')).toContainText('1 party · 0 farm');
 
-    const move = page.locator('#planner-males button[data-member-move]');
+    const move = page.locator('.planner-card[data-sex="male"] button[data-member-move]');
     await expect(move).toHaveText(/Move to farm/);
-    await expect(move).toHaveAttribute('aria-label', /farm/);
-    await move.click();
+    await memberAction(page, move);
     await expect(page.locator('#planner-message')).toContainText(/Moved Slimo/);
     await expect(partyList.locator('.planner-card')).toHaveCount(0);
     await expect(farmList.locator('.planner-card-name')).toHaveText('Slimo');
-    await expect(farmList.locator('.planner-card-meta')).toContainText('Slime +3');
+    await expect(farmList.locator('.planner-card-meta')).toContainText('Slime');
+    await expect(farmList.locator('.planner-card-stats')).toContainText('+3');
     await expect(farmList.locator('button[data-member-favorite]')).toHaveAttribute('aria-pressed', 'true');
-    // Still the male column, and the summary counts it as a farm monster.
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(0);
+    // The location changes while sex and other monster data stay intact.
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(0);
     await expect(page.locator('#planner-team-summary')).toContainText('0 party · 1 farm');
-    await expect(page.locator('#planner-males .planner-location-heading')).toHaveText([/Party/, /Farm/]);
+    await expect(farmList.locator('.planner-card')).toHaveAttribute('data-location', 'farm');
 
     // Moving back is the same one-field move in reverse.
-    const back = page.locator('#planner-males button[data-member-move]');
+    const back = page.locator('.planner-card[data-sex="male"] button[data-member-move]');
     await expect(back).toHaveText(/Move to party/);
-    await back.click();
+    await memberAction(page, back);
     await expect(page.locator('#planner-message')).toContainText(/Moved Slimo/);
     await expect(partyList.locator('.planner-card-name')).toHaveText('Slimo');
-    await expect(partyList.locator('.planner-card-meta')).toContainText('Slime +3');
+    await expect(partyList.locator('.planner-card-meta')).toContainText('Slime');
+    await expect(partyList.locator('.planner-card-stats')).toContainText('+3');
     await expect(partyList.locator('button[data-member-favorite]')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('#planner-males .planner-location-heading')).toHaveText([/Party/, /Farm/]);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
     await expect(page.locator('#planner-team-summary')).toContainText('1 party · 0 farm');
   });
 
   test('a monster added as a farm monster is filed on the farm from the start', async ({ page }) => {
     await page.goto(url() + '#team-planner');
+    await openMonsterEditor(page);
     await page.check('#planner-sex-female');
     await addMonster(page, 99, 'farm');
-    await expect(page.locator('#planner-females > .planner-card-list').nth(1).locator('.planner-card-name')).toHaveText('Dracky');
-    await expect(page.locator('#planner-females > .planner-card-list').first().locator('.planner-card')).toHaveCount(0);
+    await expect(page.locator('#planner-farm').locator('.planner-card-name')).toHaveText('Dracky');
+    await expect(page.locator('#planner-party').locator('.planner-card')).toHaveCount(0);
     await expect(page.locator('#planner-team-summary')).toContainText('0 party · 1 farm');
 
     // The form resets to party for the next monster.
     await expect(page.locator('#planner-location-party')).toBeChecked();
     await addMonster(page, 13, 'party');
-    await expect(page.locator('#planner-females > .planner-card-list').first().locator('.planner-card-name')).toHaveText(await page.evaluate(() => displayName(byId.get(13))));
+    await expect(page.locator('#planner-party').locator('.planner-card-name')).toHaveText(await page.evaluate(() => displayName(byId.get(13))));
     await expect(page.locator('#planner-team-summary')).toContainText('1 party · 1 farm');
   });
 
-  test('the breeding grid excludes farm monsters until the toggle adds them, tagged', async ({ page }) => {
+  test('the breeding grid includes farm monsters by default and can show party only', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await addMonster(page, 11, 'party');  // male, party
     await addMonster(page, 13, 'farm');   // male, farm
+    await openMonsterEditor(page);
     await page.check('#planner-sex-female');
     await addMonster(page, 99, 'party');  // female, party
-    await page.check('#planner-sex-male');
     await page.click('#planner-tab-breeding');
     await expect(page.locator('#planner-breeding')).toBeVisible();
 
-    // Party only by default: the farm male is not a row or a column.
+    await page.selectOption('#planner-breeding-view', 'matrix');
+    await expect(page.locator('#planner-breeding-include-farm')).toBeChecked();
+    await page.uncheck('#planner-breeding-include-farm');
+    // Party-only mode removes farm monsters from rows and columns.
     await expect(page.locator('#planner-breeding-summary')).toContainText(/ordered pairings/);
     await expect(page.locator('#planner-male-grid tbody tr')).toHaveCount(1);
     await expect(page.locator('#planner-male-grid tbody th')).toHaveText(['Slime+0']);
@@ -299,9 +318,9 @@ test.describe('served', () => {
     await page.goto(url() + '#team-planner');
     // Drake Slime breeds Winged Slime with Picky; keep one parent in each place.
     await addMonster(page, 0, 'party');
+    await openMonsterEditor(page);
     await page.check('#planner-sex-female');
     await addMonster(page, 89, 'farm');
-
     await page.click('.nav a[href="#pair-finder"]');
     await page.locator('#pair-finder [data-parent-mode]').click();
     await page.selectOption('#target', '2');
@@ -319,7 +338,7 @@ test.describe('served', () => {
 
     // Moving Drake Slime to the farm rewrites its badge and nothing else.
     await page.click('#planner-tab-roster');
-    await page.locator('#planner-males button[data-member-move]').click();
+    await memberAction(page, '.planner-card[data-sex="male"] button[data-member-move]');
     await page.click('#planner-tab-targets');
     const moved = page.locator('#plan-suggestions .plan-suggestion').first();
     await expect(moved.locator('.plan-suggestion-badge')).toHaveText(['Pedigree in farm', 'Mate in farm']);
@@ -328,8 +347,10 @@ test.describe('served', () => {
   test('a full backup exported from a game-and-farm save imports into a fresh page intact', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await renameActiveTeam(page, 'DQ2 run');
+    await openTeamSettings(page);
     await page.selectOption('#planner-team-game', 'dqm2');
     await addMonster(page, 11, 'party');
+    await openMonsterEditor(page);
     await page.check('#planner-sex-female');
     await addMonster(page, 99, 'farm');
 
@@ -373,8 +394,8 @@ test.describe('served', () => {
     await expectTeamGroups(page.locator('#planner-team-select'), [
       ['DQM2 teams', ['DQ2 run']],
     ]);
-    await expect(page.locator('#planner-males > .planner-card-list').first().locator('.planner-card-name')).toHaveText('Slime');
-    await expect(page.locator('#planner-females > .planner-card-list').nth(1).locator('.planner-card-name')).toHaveText('Dracky');
+    await expect(page.locator('#planner-party').locator('.planner-card-name')).toHaveText('Slime');
+    await expect(page.locator('#planner-farm').locator('.planner-card-name')).toHaveText('Dracky');
     await expect(page.locator('#planner-team-summary')).toContainText('1 party · 1 farm');
 
     const restored = JSON.parse(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY));

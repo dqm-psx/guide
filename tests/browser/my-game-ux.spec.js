@@ -1,3 +1,4 @@
+const {openTeamSettings} = require('../helpers/planner-ui');
 const { test, expect } = require('@playwright/test');
 
 let serverUrl;
@@ -23,6 +24,7 @@ test.describe('served', () => {
     await page.click('#target-view-plan');
     const originalId = await page.locator('#planner-team-select').inputValue();
     await expect(page.locator('#planner-team-select')).toBeVisible();
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'Second team');
     await page.click('#planner-team-name-save');
@@ -51,7 +53,7 @@ test.describe('served', () => {
     await page.goto(url() + '#team-planner');
     await expect(page.locator('#planner-backup-export')).toBeHidden();
     const afterRoster = await page.evaluate(() => Boolean(
-      document.querySelector('.planner-roster-columns').compareDocumentPosition(
+      document.querySelector('#planner-farm').compareDocumentPosition(
         document.querySelector('#planner-data-tools')) & Node.DOCUMENT_POSITION_FOLLOWING));
     expect(afterRoster).toBe(true);
     const summary = page.locator('#planner-data-tools > summary');
@@ -66,6 +68,7 @@ test.describe('served', () => {
   test('manage teams and data on a narrow screen', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url() + '#team-planner');
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'Mobile team');
     await page.click('#planner-team-name-save');

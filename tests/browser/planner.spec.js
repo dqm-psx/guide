@@ -1,3 +1,4 @@
+const {openMonsterEditor, memberAction} = require('../helpers/planner-ui');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -40,10 +41,10 @@ test.describe('served', () => {
     }, { seed: team, key: LEGACY_TEAM_KEY });
     await page.goto(url() + '#team-planner');
     await page.reload();
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slime');
-    await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Drake');
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slime');
+    await expect(page.locator('.planner-card[data-sex="female"] .planner-card-name')).toHaveText('Drake');
   });
 
   test('export team downloads the versioned JSON document', async ({ page }) => {
@@ -91,9 +92,9 @@ test.describe('served', () => {
     await page.setInputFiles('#planner-import', tmp);
     await expect(page.locator('#planner-team-select option')).toHaveCount(2);
     await expect(page.locator('#planner-team-select option')).toHaveText(['My team', 'dqm-guide-import-test']);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card-name')).toHaveText('Healy');
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"] .planner-card-name')).toHaveText('Healy');
     const saved = JSON.parse(await page.evaluate(key => localStorage.getItem(key), STORAGE_KEY));
     assert.equal(saved.version, 2);
     assert.equal(saved.teams.length, 2);
@@ -115,28 +116,30 @@ test.describe('served', () => {
 
   test('add, edit, switch sex, remove, and undo a monster', async ({ page }) => {
     await page.goto(url() + '#team-planner');
+    await openMonsterEditor(page);
     await page.selectOption('#planner-add-species', '11');
     await page.click('#planner-add-button');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slime');
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slime');
 
-    await page.click('#planner-males button[data-member-edit]');
+    await page.click('.planner-card[data-sex="male"] button[data-member-edit]');
+    await openMonsterEditor(page);
     await page.fill('#planner-add-nickname', 'Slimo');
     await page.click('#planner-add-button');
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slimo');
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slimo');
 
-    await page.click('#planner-males button[data-member-switch]');
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
+    await memberAction(page, '.planner-card[data-sex="male"] button[data-member-switch]');
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(0);
     await page.click('#planner-undo');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(0);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(0);
 
-    await page.click('#planner-males button[data-member-remove]');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(0);
+    await memberAction(page, '.planner-card[data-sex="male"] button[data-member-remove]');
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(0);
     await page.click('#planner-undo');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slimo');
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slimo');
   });
 
   test('breeding table opens directly at full width and preserves filters through Back', async ({ page }) => {
@@ -188,9 +191,12 @@ test.describe('served', () => {
     await page.click('.nav a[href="#team-planner"]');
     await page.click('#planner-demo');
     await page.click('#planner-tab-breeding');
+    await page.selectOption('#planner-breeding-view','matrix');
     await page.locator('#planner-male-grid button[data-planner-pair]').first().click();
     await expect(page.locator('#planner-team-detail-host #planner-pair-detail')).toBeVisible();
     await expect(page.locator('#breeding-table')).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#planner-pair-dialog')).toBeHidden();
     await page.click('.nav a[href="#breeding-table"]');
     await expect(page.locator('#planner-row-range')).toHaveText(rowRange);
     await page.locator('#planner-all-grid button[data-planner-pair]').first().click();
@@ -225,15 +231,14 @@ test.describe('served', () => {
   test('team breeding and breeding table pagination work', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await page.click('#planner-demo');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(2);
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(3);
-
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(2);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(3);
     await page.click('#planner-tab-breeding');
+    await page.selectOption('#planner-breeding-view','matrix');
     await expect(page.locator('#planner-breeding')).toBeVisible();
     await expect(page.locator('#planner-roster')).toBeHidden();
     await expect(page.locator('#planner-male-grid tbody tr')).toHaveCount(2);
     await expect(page.locator('#planner-female-grid tbody tr')).toHaveCount(3);
-
     await page.click('.nav a[href="#breeding-table"]');
     await expect(page.locator('#breeding-table')).toBeVisible();
     await expect(page.locator('#team-planner')).toBeHidden();

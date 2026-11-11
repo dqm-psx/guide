@@ -18,6 +18,7 @@ const PRECACHE = [
   "./css/entry-page.css",
   "./css/player-guide.css",
   "./css/reference-tables.css",
+  "./css/my-game.css",
   "./media/greattree.webp",
   "./media/terry.webp",
   "./media/cobi.webp",

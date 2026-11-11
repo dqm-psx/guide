@@ -1,3 +1,4 @@
+const {openMonsterEditor} = require('../helpers/planner-ui');
 const assert = require('node:assert/strict');
 const { test, expect } = require('@playwright/test');
 
@@ -19,8 +20,10 @@ test.afterAll(async () => {
 });
 
 const addMonster = async (page, speciesIndex, sex, location) => {
+  await openMonsterEditor(page);
   await page.check(sex === 'female' ? '#planner-sex-female' : '#planner-sex-male');
   await page.check(location === 'farm' ? '#planner-location-farm' : '#planner-location-party');
+  await openMonsterEditor(page);
   await page.selectOption('#planner-add-species', String(speciesIndex));
   await page.click('#planner-add-button');
 };
@@ -184,13 +187,11 @@ test.describe('served', () => {
     await page.click('button[data-species-pedigree="13"]');
     await expect(page.locator('#pair-finder')).toBeVisible();
     await expect(page.locator('#pedigree')).toHaveValue('13');
-
     await page.click('.nav a[href="#species-index"]');
     await page.fill('#species-search', 'Dracky');
     await page.click('button[data-species-mate="99"]');
     await expect(page.locator('#pair-finder')).toBeVisible();
     await expect(page.locator('#mate')).toHaveValue('99');
-
     await page.click('.nav a[href="#species-index"]');
     await page.fill('#species-search', 'Slime');
     await page.click('button[data-species-parents="11"]');
@@ -271,6 +272,7 @@ test.describe('served', () => {
     await page.goto(url() + '#team-planner');
     await page.click('#planner-demo');
     await page.click('#planner-tab-breeding');
+    await page.selectOption('#planner-breeding-view','matrix');
     await expect(page.locator('#planner-male-grid tbody th').first()).toBeVisible();
     const positions = await page.evaluate(() => ({
       head: getComputedStyle(document.querySelector('#planner-male-grid thead th')).position,
@@ -306,9 +308,9 @@ test.describe('served', () => {
     // DQM1 now has no team of its own: an empty one, then the filed roster
     // with its stabled monster comes back on the return trip.
     await page.click('#planner-game-dqm1');
-    await expect(page.locator('#planner-females .planner-card')).toHaveCount(0);
+    await expect(page.locator('.planner-card[data-sex="female"]')).toHaveCount(0);
     await page.click('#planner-game-dqm2');
-    await expect(page.locator('#planner-males .planner-card-name')).toHaveText('Slime');
-    await expect(page.locator('#planner-females > .planner-card-list').nth(1).locator('.planner-card-name')).toHaveText('Dracky');
+    await expect(page.locator('.planner-card[data-sex="male"] .planner-card-name')).toHaveText('Slime');
+    await expect(page.locator('#planner-farm').locator('.planner-card-name')).toHaveText('Dracky');
   });
 });
