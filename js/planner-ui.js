@@ -51,6 +51,7 @@
   let undoPlan = null;
   let focusSelector = null;
   let currentTargetId = null;
+  let rosterTeamId = null, breedingPage = 0, editorReturnId = null;
 
   const listeners = new Set();
   function subscribe(listener) {
@@ -148,7 +149,7 @@
   function updateSaveStatus() {
     P("planner-save-status").textContent = (storageBlocked || !storageHealthy || documentTooLarge)
       ? "Changes are unsaved."
-      : "Teams are saved in this browser. Save files stay on this device.";
+      : "Saved in this browser · Save files stay on this device";
   }
   function commit(nextState, message) {
     undoState = copy(state);
@@ -162,10 +163,43 @@
     emit();
   }
   function cancelEdit() {
+    const dialog = P("planner-entry-dialog");
+    const restore = editorReturnId;
     editing = null;
+    editorReturnId = null;
     P("planner-add-button").textContent = "Add monster";
     P("planner-cancel-edit").hidden = true;
     P("planner-location-party").checked = true;
+    P("planner-entry-error").textContent = "";
+    if (dialog.open) {
+      dialog.close();
+      requestAnimationFrame(() => {
+        const button = restore && document.querySelector('button[data-member-edit="'+restore+'"]');
+        (button || P("planner-open-add")).focus({preventScroll:true});
+      });
+    }
+  }
+  function openEditor(member = null) {
+    editing = member?.id || null;
+    editorReturnId = editing;
+    refreshAddSpecies(member?.speciesIndex ?? 11);
+    P("planner-sex-"+(member?.sex || "male")).checked = true;
+    P("planner-location-"+(member ? entryLocation(member) : "party")).checked = true;
+    P("planner-add-plus").value = member?.plus ?? 0;
+    P("planner-add-nickname").value = member?.nickname || "";
+    P("planner-entry-heading").textContent = member ? "Edit "+memberName(member) : "Add a monster";
+    P("planner-add-button").textContent = member ? "Save changes" : "Add monster";
+    P("planner-cancel-edit").hidden = false;
+    P("planner-entry-error").textContent = "";
+    P("planner-entry-dialog").showModal();
+    (P("planner-entry-dialog").querySelector('.monster-combo input') || P("planner-add-species")).focus({preventScroll:true});
+  }
+  function resetRosterFilters() {
+    P("planner-roster-search").value = "";
+    P("planner-roster-location").value = "all";
+    P("planner-roster-sex").value = "all";
+    P("planner-roster-sort").value = "order";
+    P("planner-roster-favorites").checked = false;
   }
   function downloadText(text, filename) {
     const blob = new Blob([text], {type:"application/json"});
@@ -176,6 +210,13 @@
 
   // ---- rendering ----
   function renderTeams() {
+    if (rosterTeamId !== state.activeTeamId) {
+      rosterTeamId = state.activeTeamId;
+      resetRosterFilters();
+      P("planner-breeding-member").value = "";
+      P("planner-result-search").value = "";
+      breedingPage = malePage = femalePage = 0;
+    }
     const select = P("planner-team-select");
     select.replaceChildren();
     // Teams filed under the game being viewed come first; unassigned teams stay
@@ -209,66 +250,100 @@
   }
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
-    const level = Number.isInteger(entry.level) && entry.level > 0 && entry.level <= 127 ? " · Lv " + entry.level : "";
-    const star = '<button type="button" data-member-favorite="'+safe(entry.id)+'" aria-pressed="'+entry.favorite+'" aria-label="Favorite '+safe(memberName(entry))+'">★</button>';
-    return '<article class="planner-card"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family)+" +"+entry.plus+level)+'</p></div></div><div class="planner-card-actions">'+star+'<button type="button" data-member-edit="'+safe(entry.id)+'" aria-label="Edit '+safe(fullName(entry))+'">Edit</button><button type="button" data-member-remove="'+safe(entry.id)+'" aria-label="Remove '+safe(fullName(entry))+'">Remove</button><button type="button" data-member-switch="'+safe(entry.id)+'" aria-label="Switch '+safe(fullName(entry))+' to '+(sex === "male" ? "female" : "male")+'">Switch sex</button><button type="button" data-member-move="'+safe(entry.id)+'" aria-label="Move '+safe(fullName(entry))+' to the '+otherLocation(entryLocation(entry))+'">Move to '+otherLocation(entryLocation(entry))+'</button></div></article>';
+    const level = Number.isInteger(entry.level) && entry.level > 0 && entry.level <= 127 ? "Lv " + entry.level : "Level unknown";
+    const id = safe(entry.id), name = safe(fullName(entry));
+    const star = '<button type="button" class="planner-card-favorite" data-member-favorite="'+id+'" aria-pressed="'+entry.favorite+'" aria-label="Favorite '+safe(memberName(entry))+'">'+(entry.favorite?'★':'☆')+'</button>';
+    return '<article class="planner-card" data-entry-id="'+id+'" data-sex="'+sex+'" data-location="'+entryLocation(entry)+'"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family))+'</p><div class="planner-card-stats"><span class="planner-card-sex">'+(sex==='male'?'♂ Male':'♀ Female')+'</span><span>'+level+'</span><span>+'+entry.plus+'</span></div></div>'+star+'</div><div class="planner-card-actions">'+
+      '<button type="button" class="planner-card-breed" data-member-breed="'+id+'" aria-label="See breeding options for '+name+'">Breed</button><button type="button" data-member-edit="'+id+'" aria-label="Edit '+name+'">Edit</button>'+
+      '<details class="planner-card-more"><summary aria-label="More actions for '+name+'">More</summary><div><button type="button" data-member-move="'+id+'">Move to '+otherLocation(entryLocation(entry))+'</button><button type="button" data-member-switch="'+id+'">Switch to '+(sex==='male'?'female':'male')+'</button><button type="button" data-member-remove="'+id+'" aria-label="Remove '+name+'">Remove</button></div></details></div></article>';
   }
   function renderRoster() {
-    malePage = femalePage = 0;
     const team = activeTeam();
     const favoritesOnly = P("planner-roster-favorites").checked;
-    const visible = favoritesOnly ? team.entries.filter(entry => entry.favorite) : team.entries;
-    for (const sex of ["male","female"]) {
-      const entries = visible.filter(e => e.sex === sex);
-      P("planner-"+sex+"-count").textContent = entries.length;
-      P("planner-"+sex+"s").closest("section").hidden = !visible.length;
-      P("planner-"+sex+"s").innerHTML = entries.length ? ["party","farm"].map(loc => {
-        const group = entries.filter(e => entryLocation(e) === loc);
-        return '<h4 class="planner-location-heading">'+loc[0].toUpperCase()+loc.slice(1)+' <span class="planner-count">'+group.length+'</span></h4>' +
-          '<div class="planner-card-list">'+group.map(e => cardMarkup(e, sex)).join("")+'</div>';
-      }).join("") : "";
+    const query = P("planner-roster-search").value.trim(), loc = P("planner-roster-location").value, sex = P("planner-roster-sex").value;
+    const fold = value => value.toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
+    const visible = team.entries.filter(entry => (!favoritesOnly || entry.favorite) &&
+      (loc==='all' || entryLocation(entry)===loc) && (sex==='all' || entry.sex===sex) &&
+      (!query || fold(entry.nickname || '').includes(fold(query)) || matchesName(byId.get(entry.speciesIndex),query)));
+    const sort = P("planner-roster-sort").value;
+    if (sort==='name') visible.sort((a,b)=>memberName(a).localeCompare(memberName(b)));
+    if (sort==='level') visible.sort((a,b)=>(b.level || -1)-(a.level || -1));
+    if (sort==='plus') visible.sort((a,b)=>b.plus-a.plus);
+    for (const place of ["party","farm"]) {
+      const entries = visible.filter(e => entryLocation(e) === place);
+      P("planner-"+place+"-count").textContent = entries.length;
+      P("planner-"+place).closest("section").hidden = !entries.length;
+      P("planner-"+place).innerHTML = '<div class="planner-card-list">'+entries.map(e=>cardMarkup(e,e.sex)).join('')+'</div>';
     }
     const party = team.entries.filter(e => entryLocation(e) === "party").length;
     const summary = P("planner-team-summary");
-    if (!team.entries.length) summary.textContent = "No monsters in "+team.name+".";
-    else if (!visible.length) summary.textContent = "No favorites in "+team.name+". Star a monster to include it.";
-    else summary.textContent = team.entries.length+" / "+DQMPlannerCore.MAX_ENTRIES+" monsters in "+team.name+" ("+party+" party · "+(team.entries.length-party)+" farm)";
+    summary.textContent = team.entries.length ? (visible.length!==team.entries.length ? visible.length+" of " : '')+team.entries.length+" monsters · "+party+" party · "+(team.entries.length-party)+" farm" : "No monsters yet";
+    P("planner-roster-empty").hidden = Boolean(team.entries.length);
+    P("planner-filter-empty").hidden = !team.entries.length || Boolean(visible.length);
+    P("planner-roster-search").closest('.my-game-roster-toolbar')?.classList.toggle('is-empty',!team.entries.length);
     P("planner-export").disabled = !team.entries.length;
   }
   function renderBreeding() {
     const team = activeTeam();
-    // The grid shows party monsters by default; the farm toggle adds the rest,
-    // tagged in the row and column headers.
+    const memberSelect = P("planner-breeding-member"), selected = memberSelect.value;
+    memberSelect.replaceChildren(new Option("All my monsters", ""), ...team.entries.map(entry=>new Option(fullName(entry),entry.id)));
+    memberSelect.value = team.entries.some(entry=>entry.id===selected) ? selected : "";
+    const member = memberSelect.value;
     const includeFarm = P("planner-breeding-include-farm").checked;
     const pool = team.entries.filter(e => includeFarm || entryLocation(e) !== "farm");
     const males = pool.filter(e => e.sex === "male"), females = pool.filter(e => e.sex === "female");
     const context = P("planner-context").value, query = P("planner-result-search").value;
-    malePage = Math.max(0,Math.min(malePage, Math.max(0, Math.ceil(males.length/PAGE)-1)));
-    femalePage = Math.max(0, Math.min(femalePage, Math.max(0, Math.ceil(females.length/PAGE)-1)));
-    let matches = 0;
+    const listView = P("planner-breeding-view").value === "list";
+    const outcomes = new Map();
+    let total = 0, matches = 0;
     for (const male of males) for (const female of females) {
+      if (member && male.id!==member && female.id!==member) continue;
       for (const [a,b] of [[male,female],[female,male]]) {
+        total++;
         const result = core.result(a.speciesIndex, b.speciesIndex, a.plus, b.plus, context);
-        if (matchesName(byId.get(result.resultIndex), query)) matches++;
+        if (!matchesName(byId.get(result.resultIndex), query)) continue;
+        matches++;
+        if (!outcomes.has(result.resultIndex)) outcomes.set(result.resultIndex,[]);
+        outcomes.get(result.resultIndex).push({a,b,result});
       }
     }
-    const total = 2*males.length*females.length;
     for (const sex of ["male","female"]) {
       const grid = P("planner-"+sex+"-grid");
-      grid.closest("section").hidden = !total;
+      grid.closest("section").hidden = !total || listView;
       if (!total) grid.replaceChildren();
     }
+    P("planner-team-results").hidden = !listView || !total;
+    P("planner-team-results-pagination").hidden = !listView || !total;
     P("team-breeding-eligibility").hidden = !total;
     if (!total) {
       const needed = !males.length && !females.length ? "a male and a female" : !males.length ? "a male" : "a female";
-      P("planner-breeding-summary").textContent = "Add "+needed+" to your "+(includeFarm ? "team" : "party")+" to see pairings.";
+      P("planner-breeding-summary").textContent = member && !pool.some(entry=>entry.id===member) ? "This monster is on the farm. Include farm monsters to see its pairings." : "Add "+needed+" to your "+(includeFarm ? "team" : "party")+" to see pairings.";
+      P("planner-team-results").replaceChildren();
       return;
     }
-    P("planner-breeding-summary").textContent = total.toLocaleString()+" ordered pairings · "+(includeFarm ? "party + farm" : "party only")+(query ? " · "+matches.toLocaleString()+" matching offspring highlighted" : "");
-    renderMatrix("planner-male-grid", males.slice(malePage*PAGE, (malePage+1)*PAGE), females, context, query, "Male pedigree and female mate: offspring by ordered pairing");
-    renderMatrix("planner-female-grid", females.slice(femalePage*PAGE, (femalePage+1)*PAGE), males, context, query, "Female pedigree and male mate: offspring by ordered pairing");
-    pageRange("planner-male", malePage, males.length, "Pedigrees");
-    pageRange("planner-female", femalePage, females.length, "Pedigrees");
+    P("planner-breeding-summary").textContent = outcomes.size+" offspring · "+matches.toLocaleString()+" ordered pairings · "+(includeFarm ? "party + farm" : "party only")+(query && !listView ? " · matching offspring highlighted" : "");
+    P("team-breeding-eligibility").textContent = "Both parent orders are included. Results use your saved + values; check breeding eligibility in game.";
+    if (listView) {
+      const groups=[...outcomes].sort(([a],[b])=>named(a).localeCompare(named(b)));
+      breedingPage=Math.max(0,Math.min(breedingPage,Math.ceil(groups.length/PAGE)-1));
+      const parent=(entry,role)=>'<span class="team-pair-parent"><small>'+role+'</small>'+spriteMarkup(entry.speciesIndex)+'<span>'+safe(memberName(entry))+' <strong>+'+entry.plus+'</strong></span></span>';
+      const pairing=({a,b,result})=>'<div class="team-pair">'+parent(a,'Pedigree')+parent(b,'Mate')+
+        '<button type="button" data-planner-pair data-a="'+a.speciesIndex+'" data-b="'+b.speciesIndex+'" data-ap="'+a.plus+'" data-bp="'+b.plus+'" data-context="'+context+'" aria-label="Inspect '+safe(fullName(a)+' as pedigree and '+fullName(b)+' as mate')+'">Inspect</button>'+
+        (result.ruleKind!=='base'?'<small class="team-pair-rule">'+safe(ruleLabel(result))+'</small>':'')+'</div>';
+      P("planner-team-results").innerHTML = groups.length ? groups.slice(breedingPage*PAGE,(breedingPage+1)*PAGE).map(([id,pairs])=>
+        '<article class="team-result-card"><div class="team-result-heading">'+spriteMarkup(id)+'<div><h3>'+profileLink(id)+'</h3><small>'+pairs.length+' pairing'+(pairs.length===1?'':'s')+'</small></div></div>'+pairs.slice(0,3).map(pairing).join('')+
+        (pairs.length>3?'<details><summary>'+ (pairs.length-3)+' more pairings</summary>'+pairs.slice(3).map(pairing).join('')+'</details>':'')+'</article>').join('') : '<p class="planner-empty">No offspring match this search.</p>';
+      pageRange("planner-team-results",breedingPage,groups.length,"Offspring");
+      return;
+    }
+    const chosen=pool.find(entry=>entry.id===member);
+    const maleRows=chosen?.sex==='male'?[chosen]:males, femaleRows=chosen?.sex==='female'?[chosen]:females;
+    malePage = Math.max(0,Math.min(malePage, Math.max(0, Math.ceil(maleRows.length/PAGE)-1)));
+    femalePage = Math.max(0, Math.min(femalePage, Math.max(0, Math.ceil(femaleRows.length/PAGE)-1)));
+    renderMatrix("planner-male-grid", maleRows.slice(malePage*PAGE, (malePage+1)*PAGE), femaleRows, context, query, "Male pedigree and female mate: offspring by ordered pairing");
+    renderMatrix("planner-female-grid", femaleRows.slice(femalePage*PAGE, (femalePage+1)*PAGE), maleRows, context, query, "Female pedigree and male mate: offspring by ordered pairing");
+    pageRange("planner-male", malePage, maleRows.length, "Pedigrees");
+    pageRange("planner-female", femalePage, femaleRows.length, "Pedigrees");
   }
   function renderTargets() {
     const team = activeTeam();
@@ -806,8 +881,12 @@
 
   function movePairDetail(hostId) {
     const host = P(hostId);
-    const panel = P("planner-pair-detail");
+    const panel = P("planner-pair-dialog");
     if (panel.parentElement !== host) host.append(panel);
+  }
+  function hidePairDetail() {
+    P("planner-pair-dialog").close();
+    P("planner-pair-detail").hidden = true;
   }
   function showDetail(event) {
     const cell = event.target.closest("button[data-planner-pair]");
@@ -821,7 +900,7 @@
     P("planner-pair-copy-status").textContent = "";
     P("planner-pair-detail-body").innerHTML = '<p class="kicker">'+safe(contextLabel(detail.context))+'</p><h3>'+profileLink(detail.a)+" +"+detail.ap+" + "+profileLink(detail.b)+" +"+detail.bp+' → '+spriteLabel(forward.resultIndex, named(forward.resultIndex))+'</h3><p>'+safe(forward.detail||forward.condition)+" Base table: "+safe(named(forward.baseIndex))+'.</p><p><strong>Reversed parents:</strong> '+spriteLabel(reverse.resultIndex, named(reverse.resultIndex))+" · "+safe(ruleLabel(reverse))+'.</p>';
     P("planner-pair-detail").hidden = false;
-    P("planner-pair-detail").scrollIntoView({behavior:"smooth", block:"nearest"});
+    P("planner-pair-dialog").showModal();
   }
   function setPlannerTab(name, focus = false) {
     activeTab = name;
@@ -830,7 +909,7 @@
       const tab = P("planner-tab-"+mode);
       tab.setAttribute("aria-selected", String(mode === name)); tab.tabIndex = mode === name ? 0 : -1;
     }
-    P("planner-pair-detail").hidden = true;
+    hidePairDetail();
     if (name === "targets") { renderTargets(); renderPlan(); }
     if (name === "breeding") renderBreeding();
     if (focus) P("planner-tab-"+name).focus();
@@ -852,7 +931,17 @@
     const edit = event.target.closest("button[data-member-edit]");
     const switchSex = event.target.closest("button[data-member-switch]");
     const move = event.target.closest("button[data-member-move]");
-    if (favorite) {
+    const breed = event.target.closest("button[data-member-breed]");
+    if (breed) {
+      const member = team.entries.find(e=>e.id===breed.dataset.memberBreed);
+      if (!member) return;
+      P("planner-breeding-include-farm").checked = true;
+      P("planner-breeding-member").value = member.id;
+      P("planner-breeding-view").value = "list";
+      P("planner-result-search").value = "";
+      breedingPage = 0;
+      DQMViews.go("team-planner",{params:new URLSearchParams({tab:"breeding"}),focusId:"planner-tab-breeding"});
+    } else if (favorite) {
       const member = team.entries.find(e => e.id === favorite.dataset.memberFavorite);
       if (!member) return;
       const next = !member.favorite;
@@ -866,34 +955,25 @@
       if (!member) return;
       const sex = member.sex === "male" ? "female" : "male";
       commit(app.updateEntry(state, team.id, member.id, {sex}), "Switched "+memberName(member)+" to "+sex+". Undo is available.");
-      const target = P("planner-"+sex+"s").querySelector('button[data-member-switch="'+member.id+'"]');
+      const target = document.querySelector('button[data-member-edit="'+member.id+'"]');
       if (target) target.focus({preventScroll: true});
     } else if (move) {
       const member = team.entries.find(e => e.id === move.dataset.memberMove);
       if (!member) return;
       const location = otherLocation(entryLocation(member));
       commit(app.updateEntry(state, team.id, member.id, {location}), "Moved "+memberName(member)+" to the "+location+". Nickname, sex, and + value kept.");
-      const target = P("planner-"+member.sex+"s").querySelector('button[data-member-move="'+member.id+'"]');
+      const target = document.querySelector('button[data-member-edit="'+member.id+'"]');
       if (target) target.focus({preventScroll: true});
     } else if (edit) {
       const member = team.entries.find(e => e.id === edit.dataset.memberEdit);
       if (!member) return;
-      editing = member.id;
-      refreshAddSpecies(member.speciesIndex);
-      P("planner-sex-"+member.sex).checked = true;
-      P("planner-location-"+entryLocation(member)).checked = true;
-      P("planner-add-plus").value = member.plus;
-      P("planner-add-nickname").value = member.nickname;
-      P("planner-add-button").textContent = "Save changes";
-      P("planner-cancel-edit").hidden = false;
-      P("planner-entry-form").scrollIntoView({behavior:"smooth", block:"start"});
-      P("planner-add-species").focus({preventScroll: true});
-      notice("Editing "+fullName(member)+".");
+      openEditor(member);
     }
   }
 
   // ---- teams panel ----
   function openTeamForm(mode) {
+    P("manage-teams").open = true;
     teamFormMode = mode;
     const team = activeTeam();
     P("planner-team-name").value = mode === "rename" && team ? team.name : "";
@@ -904,6 +984,10 @@
     teamFormMode = null;
     P("planner-team-name-form").hidden = true;
     P("planner-team-name").value = "";
+  }
+  function closeTeamSettings(focus = false) {
+    P("manage-teams").open = false;
+    if (focus) P("manage-teams").querySelector("summary").focus({preventScroll:true});
   }
 
   // ---- import (shared by the team input and the full backup input) ----
@@ -1008,6 +1092,7 @@
       const file = input.files[0];
       clear();
       if (!file) return;
+      if (!P("save-import-dialog").open) P("save-import-dialog").showModal();
       const request = generation;
       try {
         if (!DQMSaveImport.acceptedSizes.includes(file.size)) throw new Error("Choose a raw 128 KiB card, an 8 KiB save block, or an .mcs single-save export.");
@@ -1032,9 +1117,10 @@
     useNames.addEventListener("change", renderPreview);
     P("save-import-cancel").addEventListener("click", () => {
       clear();
-      status.textContent = "Import cancelled.";
-      input.focus({preventScroll: true});
+      P("save-import-dialog").close();
     });
+    P("planner-close-import").addEventListener("click",()=>{clear();P("save-import-dialog").close();});
+    P("save-import-dialog").addEventListener("cancel",clear);
     apply.addEventListener("click", () => {
       const save = saves[select.selectedIndex];
       if (!save || !save.entries.length) return;
@@ -1045,8 +1131,8 @@
         const next = app.insertTeam(state, team);
         commit(app.setActiveGame(app.setActiveTeam(next, team.id), save.game), "Imported " + team.entries.length + " monsters into " + name + ".");
         clear();
-        location.hash = "team-planner?tab=breeding";
-        setPlannerTab("breeding",true);
+        P("save-import-dialog").close();
+        DQMViews.go("team-planner",{params:new URLSearchParams({tab:"roster"}),focusId:"planner-heading"});
       } catch (error) { status.textContent = error.message; }
     });
   }
@@ -1105,11 +1191,20 @@
       commit(next, message);
       P("planner-add-nickname").value = "";
       P("planner-location-party").checked = true;
-    } catch (error) { notice(error.message); }
+    } catch (error) { P("planner-entry-error").textContent = error.message; }
   });
   P("planner-cancel-edit").addEventListener("click", () => { cancelEdit(); notice("Edit cancelled."); });
-  P("planner-males").addEventListener("click", cardAction);
-  P("planner-females").addEventListener("click", cardAction);
+  P("planner-close-editor").addEventListener("click",cancelEdit);
+  P("planner-entry-dialog").addEventListener("cancel",event=>{event.preventDefault();cancelEdit();});
+  P("planner-open-add").addEventListener("click",()=>openEditor());
+  const openImport=()=>{ if (!P("save-import-dialog").open) P("save-import-dialog").showModal(); };
+  P("planner-open-import").addEventListener("click",openImport);
+  for (const button of document.querySelectorAll('[data-planner-open]')) button.addEventListener("click",()=>button.dataset.plannerOpen==='import'?openImport():openEditor());
+  P("planner-party").addEventListener("click", cardAction);
+  P("planner-farm").addEventListener("click", cardAction);
+  for (const id of ["planner-roster-location","planner-roster-sex","planner-roster-sort"]) P(id).addEventListener("change",renderRoster);
+  P("planner-roster-search").addEventListener("input",renderRoster);
+  P("planner-clear-filters").addEventListener("click",()=>{resetRosterFilters();renderRoster();P("planner-roster-search").focus({preventScroll:true});});
   P("planner-undo").addEventListener("click", () => {
     if (!undoState) return;
     state = undoState; undoState = null;
@@ -1160,6 +1255,8 @@
     try {
       const next = app.setActiveTeam(state, teamId);
       commit(next, 'Switched to team "'+app.findTeam(next, teamId).name+'".');
+      closeTeamForm();
+      closeTeamSettings();
     } catch (error) {
       notice(error.message);
       renderTeams();
@@ -1170,6 +1267,8 @@
       if (state.activeGame === game) return;
       try {
         commit(app.setActiveGame(state, game), "Viewing "+gameLabel(game)+".");
+        closeTeamForm();
+        closeTeamSettings();
       } catch (error) {
         notice(error.message);
         renderGameSwitch();
@@ -1183,6 +1282,7 @@
     try {
       commit(app.setTeamGame(state, team.id, value === "" ? null : value),
         value === "" ? 'Team "'+team.name+'" is unassigned.' : 'Team "'+team.name+'" filed under '+gameLabel(value)+'.');
+      closeTeamSettings(true);
     } catch (error) {
       notice(error.message);
       renderTeams();
@@ -1216,7 +1316,7 @@
         commit(app.renameTeam(state, team.id, name), 'Renamed team to "'+name.trim()+'".');
       }
       closeTeamForm();
-      P("planner-team-rename").focus({preventScroll: true});
+      closeTeamSettings(true);
     } catch (error) { notice(error.message); }
   });
   P("planner-team-name-form").addEventListener("keydown", event => {
@@ -1231,6 +1331,21 @@
     const team = activeTeam();
     if (!team || state.teams.length <= 1) return;
     commit(app.deleteTeam(state, team.id), 'Deleted team "'+team.name+'".');
+    closeTeamForm();
+    closeTeamSettings(true);
+  });
+  document.addEventListener("pointerdown", event => {
+    for (const menu of document.querySelectorAll("#manage-teams[open], .planner-card-more[open]")) {
+      if (!menu.contains(event.target)) menu.open = false;
+    }
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape" || event.defaultPrevented) return;
+    const menu = document.querySelector("#manage-teams[open], .planner-card-more[open]");
+    if (!menu) return;
+    event.preventDefault();
+    menu.open = false;
+    menu.querySelector("summary").focus({preventScroll:true});
   });
   P("planner-backup-export").addEventListener("click", () => {
     const s = app.summarize(state);
@@ -1318,12 +1433,17 @@
       if (next !== undefined) { event.preventDefault(); setPlannerTab(PLANNER_TABS[next], true); }
     });
   }
-  P("planner-context").addEventListener("change", () => { P("planner-pair-detail").hidden = true; renderBreeding(); });
-  P("planner-result-search").addEventListener("input", renderBreeding);
+  for (const id of ["planner-context","planner-breeding-member","planner-breeding-view"]) P(id).addEventListener("change", () => { hidePairDetail(); breedingPage=malePage=femalePage=0; renderBreeding(); });
+  P("planner-result-search").addEventListener("input",()=>{breedingPage=0;renderBreeding();});
   P("planner-breeding-include-farm").addEventListener("change", () => {
-    P("planner-pair-detail").hidden = true;
+    hidePairDetail();
+    breedingPage=malePage=femalePage=0;
     renderBreeding();
   });
+  P("planner-team-results-prev").addEventListener("click",()=>{breedingPage--;renderBreeding();});
+  P("planner-team-results-next").addEventListener("click",()=>{breedingPage++;renderBreeding();});
+  P("planner-team-results").addEventListener("click",showDetail);
+  P("planner-close-pair").addEventListener("click",hidePairDetail);
   P("planner-male-prev").addEventListener("click", () => { malePage--; renderBreeding(); });
   P("planner-male-next").addEventListener("click", () => { malePage++; renderBreeding(); });
   P("planner-female-prev").addEventListener("click", () => { femalePage--; renderBreeding(); });
@@ -1331,26 +1451,26 @@
   for (const prefix of ["row","column"]) {
     for (const suffix of ["search","family","plus"]) P("planner-"+prefix+"-"+suffix).addEventListener(suffix === "family" ? "change" : "input", () => {
       if (prefix === "row" || P("matrix-view").value === "list") rowPage = 0; else columnPage = 0;
-      P("planner-pair-detail").hidden = true; renderEverything();
+      hidePairDetail(); renderEverything();
     });
     P("planner-"+prefix+"-prev").addEventListener("click", () => { if (prefix === "row") rowPage--; else columnPage--; renderEverything(); });
     P("planner-"+prefix+"-next").addEventListener("click", () => { if (prefix === "row") rowPage++; else columnPage++; renderEverything(); });
   }
   for (const id of ["matrix-result-search","matrix-view","matrix-page-size"]) P(id).addEventListener(id === "matrix-result-search" ? "input" : "change", () => {
-    rowPage = 0; columnPage = 0; P("planner-pair-detail").hidden = true; renderEverything();
+    rowPage = 0; columnPage = 0; hidePairDetail(); renderEverything();
   });
   P("matrix-reset").addEventListener("click", () => {
     for (const axis of ["row","column"]) for (const field of ["search","family","plus"]) P("planner-"+axis+"-"+field).value = field === "plus" ? "0" : "";
-    P("matrix-result-search").value = ""; rowPage = columnPage = 0; P("planner-pair-detail").hidden = true; renderEverything();
+    P("matrix-result-search").value = ""; rowPage = columnPage = 0; hidePairDetail(); renderEverything();
   });
   P("matrix-swap-axes").addEventListener("click", () => {
     for (const field of ["search","family","plus"]) {
       const row = P("planner-row-"+field), col = P("planner-column-"+field), value = row.value;
       row.value = col.value; col.value = value;
     }
-    rowPage = columnPage = 0; P("planner-pair-detail").hidden = true; renderEverything();
+    rowPage = columnPage = 0; hidePairDetail(); renderEverything();
   });
-  P("planner-all-context").addEventListener("change", () => { P("planner-pair-detail").hidden = true; renderEverything(); });
+  P("planner-all-context").addEventListener("change", () => { hidePairDetail(); renderEverything(); });
   for (const id of ["planner-male-grid","planner-female-grid","planner-all-grid"]) P(id).addEventListener("click", showDetail);
   P("planner-copy-pairing").addEventListener("click", () => {
     const text = P("planner-copy-pairing").dataset.copyText || "";
@@ -1366,16 +1486,14 @@
       try {
         const area = document.createElement("textarea");
         area.value = text; area.setAttribute("readonly", ""); area.style.position = "fixed"; area.style.opacity = "0";
-        document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); done();
+        P("planner-pair-dialog").append(area); area.select(); document.execCommand("copy"); area.remove(); done();
       } catch (error) { feedback(text); }
     }
   });
   P("planner-inspect-reference").addEventListener("click", () => {
     if (!detail) return;
-    // Set the pair first, then hand off; go() also works when Find a pairing
-    // is already open, where no hashchange would follow.
-    choosePair(detail.a, detail.b);
-    DQMViews.go("pair-finder", { focusId: "result-name" });
+    hidePairDetail();
+    DQMReference.openPair(detail);
   });
   P("target-pin").addEventListener("click", () => {
     const index = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
@@ -1432,10 +1550,7 @@
   });
   P("target-view-plan").addEventListener("click", () => {
     if (!activeTarget()) return;
-    // Switch the tab first: the router re-applies the current tab when it
-    // reveals the planner, so the plan is on screen before it is focused.
-    setPlannerTab("targets");
-    DQMViews.go("team-planner", { focusId: "plan-heading" });
+    DQMViews.go("team-planner", { params:{tab:"targets"}, focusId: "plan-heading" });
   });
   P("target").addEventListener("change", renderTargets);
   // ---- breeding plan events ----
@@ -1671,14 +1786,20 @@
     // Called by js/router.js once this view is displayed, so the active tab
     // and its panels are current whenever the planner comes back into view.
     viewShown: id => {
+      hidePairDetail();
+      if (id !== "team-planner") {
+        cancelEdit();
+        P("save-import-dialog").close();
+      }
       if (id === "team-planner") {
         movePairDetail("planner-team-detail-host");
         const query = new URLSearchParams(location.hash.split("?")[1]);
         const tab = query.get("tab");
-        setPlannerTab(PLANNER_TABS.includes(tab) ? tab : activeTab);
+        setPlannerTab(PLANNER_TABS.includes(tab) ? tab : "roster");
+        if (query.get("import")==="save") openImport();
+        if (query.get("manage")==="teams") P("manage-teams").open=true;
       } else if (id === "breeding-table") {
         movePairDetail("planner-all-detail-host");
-        P("planner-pair-detail").hidden = true;
         renderEverything();
       }
     },

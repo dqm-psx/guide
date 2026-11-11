@@ -1,3 +1,4 @@
+const {openMonsterEditor} = require('../helpers/planner-ui');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -419,9 +420,10 @@ test.describe('served', () => {
 
     // Change the current document so the replace is observable.
     await page.click('#planner-nav-link');
+    await openMonsterEditor(page);
     await page.selectOption('#planner-add-species', '11');
     await page.click('#planner-add-button');
-    await expect(page.locator('#planner-males .planner-card')).toHaveCount(2);
+    await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(2);
 
     // Reimport the backup.
     const tmp = path.join(os.tmpdir(), 'dqm-guide-backup-plan-test.json');
@@ -631,9 +633,10 @@ test.describe('served', () => {
     for (const [name, bad] of [['duplicate-ids', duplicateIds], ['flagged', flaggedAndBroken], ['wrong-species', wrongSpecies]]) {
       test(`${name} is rejected and leaves the document intact`, async ({ page }) => {
         await page.goto(url() + '#team-planner');
+        await openMonsterEditor(page);
         await page.selectOption('#planner-add-species', '11');
         await page.click('#planner-add-button');
-        await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+        await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
         const before = await readStored(page, STORAGE_KEY);
 
         await page.locator('#planner-data-tools > summary').click();
@@ -648,7 +651,7 @@ test.describe('served', () => {
         await expect(page.locator('#planner-backup-import')).toHaveValue('');
         await expect(page.locator('#planner-import-preview')).toBeHidden();
         assert.equal(await readStored(page, STORAGE_KEY), before);
-        await expect(page.locator('#planner-males .planner-card')).toHaveCount(1);
+        await expect(page.locator('.planner-card[data-sex="male"]')).toHaveCount(1);
       });
     }
   });

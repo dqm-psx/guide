@@ -19,6 +19,8 @@ test('recipe list searches the whole filtered matrix and links its exact results
   await expect(page.locator('#planner-all-grid tbody tr').first().locator('td').nth(2).locator('a')).toHaveAttribute('href','#monster?id=2');
   await page.locator('#planner-all-grid button[data-planner-pair]').first().click();
   await expect(page.locator('#planner-pair-detail')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#planner-all-grid button[data-planner-pair]').first()).toBeFocused();
   await page.locator('#planner-all-grid tbody tr').first().locator('td').nth(2).locator('a').click();
   await expect(page.locator('#monster')).toBeVisible();
 });

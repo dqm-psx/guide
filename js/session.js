@@ -14,6 +14,9 @@
   const asIndex = value => (Number.isInteger(value) && value >= 0) ? value : null;
   const asText = value => (typeof value === "string" ? value : "");
   const asBool = value => value === true;
+  const asPlus = value => Number.isInteger(value) && value >= 0 && value <= 255 ? value : 0;
+  const asContext = value => ['base','shrine','room'].includes(value) ? value : 'shrine';
+  const pairing = value => ({a:asIndex(value?.a),b:asIndex(value?.b),ap:asPlus(value?.ap),bp:asPlus(value?.bp),context:asContext(value?.context)});
 
   /** Coerce anything read from storage into the one accepted shape. */
   function normalize(raw) {
@@ -27,13 +30,13 @@
     const species = isRecord(source.species) ? source.species : {};
     const recent = Array.isArray(source.recent)
       ? source.recent
-        .map(item => ({ a: asIndex(item && item.a), b: asIndex(item && item.b) }))
+        .map(pairing)
         .filter(item => item.a !== null && item.b !== null)
         .slice(0, MAX_RECENT)
       : [];
     return {
       version: VERSION,
-      pair: { a: asIndex(pair.a), b: asIndex(pair.b) },
+      pair: pairing(pair),
       pedigree: parent(source.pedigree),
       mate: parent(source.mate),
       target: asIndex(source.target),

@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="css/dark-mode.css">
 <link rel="stylesheet" href="css/player-guide.css">
 <link rel="stylesheet" href="css/reference-tables.css">
+<link rel="stylesheet" href="css/my-game.css">
 <script>
 /* Apply the saved theme before the first paint so a dark choice never flashes
    light. js/theme.js owns the picker once the page is loaded. */
@@ -161,9 +162,10 @@
 </section>
 <section id="pair-finder" hidden class="section view" data-view="pair-finder" aria-labelledby="pair-heading"><div class="section-head"><div><h2 id="pair-heading" tabindex="-1">Find offspring</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder" aria-current="page">Find offspring</a><a href="#offspring-finder" data-parent-mode>Find parents</a></nav></div></div>
 <div class="panel"><div class="pair-layout">
-<div><div class="parent-title"><h3>Pedigree</h3></div><div class="field"><label class="sr-only" for="pedigree">Choose pedigree</label><div class="monster-picker"><span id="pedigree-sprite" class="monster-preview" aria-hidden="true"></span><select id="pedigree"></select></div></div></div>
+<div><div class="parent-title"><h3>Pedigree</h3></div><div class="field"><label class="sr-only" for="pedigree">Choose pedigree</label><div class="monster-picker"><span id="pedigree-sprite" class="monster-preview" aria-hidden="true"></span><select id="pedigree"></select></div></div><label class="pair-plus-field" for="pair-pedigree-plus">Parent + value <input id="pair-pedigree-plus" type="number" min="0" max="255" step="1" value="0" required></label></div>
 <button id="swap" class="swap" type="button" aria-label="Swap pedigree and mate" title="Swap pedigree and mate">⇄</button>
-<div><div class="parent-title"><h3>Mate</h3></div><div class="field"><label class="sr-only" for="mate">Choose mate</label><div class="monster-picker"><span id="mate-sprite" class="monster-preview" aria-hidden="true"></span><select id="mate"></select></div></div></div>
+<div><div class="parent-title"><h3>Mate</h3></div><div class="field"><label class="sr-only" for="mate">Choose mate</label><div class="monster-picker"><span id="mate-sprite" class="monster-preview" aria-hidden="true"></span><select id="mate"></select></div></div><label class="pair-plus-field" for="pair-mate-plus">Parent + value <input id="pair-mate-plus" type="number" min="0" max="255" step="1" value="0" required></label></div>
+</div><div class="pair-options"><label for="pair-context">Breed at <select id="pair-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></label><p class="hint">Uses each parent’s current + value, before breeding.</p>
 </div><div class="result" id="pair-result" aria-live="polite" aria-atomic="true"><div><div class="kicker">Base offspring</div><span id="result-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="result-name">Choose two parents</h3><p id="result-detail" class="short"></p><p id="pair-description"></p><p id="pair-room-note" class="hint" hidden></p><p id="pair-plus-note" class="pair-plus-note" hidden></p><div class="pair-result-actions"><button id="result-find-parents" type="button" hidden>Find parents ↗</button><button id="copy-pairing" type="button">Copy pairing</button></div></div><div class="reverse-result"><div class="kicker">Reversed order</div><span id="reverse-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="reverse-name">—</h3><p id="reverse-detail" class="short"></p><p id="reverse-comparison"></p><p id="reverse-room-note" class="hint" hidden></p><div class="pair-result-actions"><button id="reverse-find-parents" type="button" hidden>Find parents ↗</button></div></div></div></div><p id="copy-pairing-status" class="hint" role="status"></p><section id="recent-pairs" class="panel recent-pairs" aria-labelledby="recent-pairs-heading" hidden><div class="planner-panel-heading"><h3 id="recent-pairs-heading">Recent pairings</h3></div><ul id="recent-pairs-list" class="recent-pairs-list" aria-label="Recent pairings"></ul><div class="recent-pairs-actions"><button id="recent-pairs-clear" type="button">Clear history</button></div></section>
 </section>
 <section id="offspring-finder" class="section view" data-view="offspring-finder" aria-labelledby="offspring-heading" hidden><div class="section-head"><div><h2 id="offspring-heading" tabindex="-1">Find parents</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder">Find offspring</a><a href="#offspring-finder" data-parent-mode aria-current="page">Find parents</a></nav></div></div>
@@ -225,16 +227,28 @@
 <p><a href="https://anonymous.4open.science/r/DQM-1-2-PSX-translation-D1FC/README.txt">English patch release</a> · <a href="https://github.com/dqm-psx/guide/tree/main/docs">Verification notes</a> · <a href="https://dqm-psx.github.io/translations/">Compare translation editions</a></p><div class="source-body"><div id="source-version-summary"></div><p id="coverage-summary"></p><p>Names, library wording, skill/location labels, and the latest patch version update automatically from the translation project's public export. Publication is checked every four hours. Gameplay verification is a separate check against a release build; a text update does not advance it. All shipped data works offline.</p><details><summary>Technical provenance and original extraction</summary><pre id="source-metadata"></pre></details></div></section>
 
 <section id="team-planner" class="section planner view" data-view="team-planner" aria-labelledby="planner-heading" hidden>
-  <div class="section-head">
+  <div class="section-head my-game-heading">
     <h2 id="planner-heading" tabindex="-1">My game</h2>
-
-
+    <button type="button" id="planner-open-import" class="planner-primary">Import save</button>
   </div>
-    <section class="panel save-import-panel" id="save-import-panel" aria-labelledby="save-import-heading"><div><h3 id="save-import-heading"><label for="save-import-file">Import a PlayStation save</label></h3><p class="hint" id="save-import-formats">Open your memory card to see what your team can breed. Supports .mcd, .mcr, .srm and extracted Adventure Logs.</p></div>
-      <div class="field"><input id="save-import-file" type="file" aria-describedby="save-import-formats" accept=".mcd,.mcr,.srm,.mc,.sav,.bin,.raw,.mcs"></div><p id="save-import-status" role="status"></p>
-      <div id="save-import-preview" hidden><div class="field"><label for="save-import-slot">Save slot</label><select id="save-import-slot"></select></div><label class="planner-toggle"><input id="save-import-nicknames" type="checkbox" checked> Use English-patch monster nicknames</label><div id="save-import-summary"></div><div class="controls"><button type="button" id="save-import-apply" class="planner-primary">Create team from save</button><button type="button" id="save-import-cancel">Cancel</button></div></div>
-    </section>
-  <div class="team-shortcuts"><a href="#team-planner?tab=breeding">See team breeding</a><a href="#team-planner?manage=teams">Manage teams</a></div>
+  <div class="my-game-context">
+    <div class="planner-game-group"><div class="planner-game-switch" role="group" aria-label="Game"><span class="sr-only">Game</span><div class="planner-game-options"><button id="planner-game-dqm1" type="button" data-game="dqm1" aria-pressed="true">DQM1</button><button id="planner-game-dqm2" type="button" data-game="dqm2" aria-pressed="false">DQM2</button></div></div><button id="planner-file-game" type="button" class="planner-file-game" hidden>File under DQM1</button></div>
+    <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
+    <details class="planner-teams-panel" id="manage-teams" tabindex="-1">
+      <summary>Team settings</summary>
+      <div class="my-game-settings-body">
+        <div class="field planner-team-game-field"><label for="planner-team-game">Team game</label><select id="planner-team-game"><option value="">Unassigned</option><option value="dqm1">DQM1</option><option value="dqm2">DQM2</option></select></div>
+        <div class="planner-actions"><button id="planner-team-new" type="button">New team</button><button id="planner-team-rename" type="button">Rename</button><button id="planner-team-delete" type="button">Delete</button></div>
+        <form id="planner-team-name-form" class="planner-team-name" hidden>
+          <div class="field"><label for="planner-team-name">Team name</label><input id="planner-team-name" maxlength="40" autocomplete="off" required></div>
+          <button id="planner-team-name-save" type="submit" class="planner-primary">Save name</button><button id="planner-team-name-cancel" type="button">Cancel</button>
+        </form>
+        <p id="planner-team-game-hint" class="hint planner-team-game-hint" hidden>Unassigned teams appear in both games.</p>
+      </div>
+    </details>
+  </div>
+  <div class="my-game-status"><p id="planner-save-status" class="hint" role="status"></p><button id="planner-undo" type="button" disabled>Undo last change</button></div>
+  <p id="planner-message" class="planner-message" role="status"></p>
   <div class="planner-tabs" role="tablist" aria-label="My game views">
     <button id="planner-tab-roster" type="button" role="tab" aria-selected="true" aria-controls="planner-roster" data-planner-tab="roster">My monsters</button>
     <button id="planner-tab-targets" type="button" role="tab" aria-selected="false" aria-controls="planner-targets" tabindex="-1" data-planner-tab="targets">Targets &amp; plans</button>
@@ -242,35 +256,34 @@
   </div>
 
   <div id="planner-roster" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-roster">
-
-    <div class="panel planner-entry">
-      <div class="planner-panel-heading"><h3>Add a monster</h3></div>
-      <form id="planner-entry-form" class="planner-entry-form">
-        <div class="field planner-entry-species"><label for="planner-add-species">Monster</label><div class="monster-picker"><span id="planner-add-sprite" class="monster-preview" aria-hidden="true"></span><select id="planner-add-species" required></select></div></div>
-        <fieldset class="planner-sex-field"><legend>Sex</legend><div class="planner-sex-options"><label for="planner-sex-male"><input id="planner-sex-male" type="radio" name="planner-sex" value="male" checked> Male</label><label for="planner-sex-female"><input id="planner-sex-female" type="radio" name="planner-sex" value="female"> Female</label></div></fieldset>
-        <fieldset class="planner-location-field"><legend>Location</legend><div class="planner-location-options"><label for="planner-location-party"><input id="planner-location-party" type="radio" name="planner-location" value="party" checked> Party</label><label for="planner-location-farm"><input id="planner-location-farm" type="radio" name="planner-location" value="farm"> Farm</label></div></fieldset>
-        <div class="field"><label for="planner-add-plus">+ value</label><input id="planner-add-plus" type="number" min="0" max="255" step="1" value="0" required inputmode="numeric"></div>
-        <div class="field planner-entry-nickname"><label for="planner-add-nickname">Nickname <span class="planner-optional">(optional)</span></label><input id="planner-add-nickname" type="text" maxlength="40" autocomplete="off"></div>
-        <div class="planner-entry-actions"><button id="planner-add-button" class="planner-primary planner-add-button" type="submit">Add monster</button><button id="planner-cancel-edit" type="button" hidden>Cancel edit</button></div>
-      </form>
-    </div>
-    <div class="planner-team-tools">
-      <div class="planner-actions">
-        <button id="planner-demo" type="button">Load example team</button>
-        <button id="planner-undo" type="button" disabled>Undo last change</button>
-        <label class="planner-toggle"><input id="planner-roster-favorites" type="checkbox"> Favorites only</label>
+    <div class="my-game-roster-toolbar">
+      <div class="field my-game-roster-search"><label class="sr-only" for="planner-roster-search">Search my monsters</label><input id="planner-roster-search" type="search" placeholder="Search your monsters" autocomplete="off"></div>
+      <button type="button" id="planner-open-add">Add monster</button>
+      <div class="my-game-roster-filters">
+        <div class="field"><label class="sr-only" for="planner-roster-location">Filter by location</label><select id="planner-roster-location"><option value="all">Party &amp; farm</option><option value="party">Party</option><option value="farm">Farm</option></select></div>
+        <div class="field"><label class="sr-only" for="planner-roster-sex">Filter by sex</label><select id="planner-roster-sex"><option value="all">All sexes</option><option value="male">Male</option><option value="female">Female</option></select></div>
+        <div class="field"><label class="sr-only" for="planner-roster-sort">Sort monsters</label><select id="planner-roster-sort"><option value="order">Save order</option><option value="name">Name</option><option value="level">Level</option><option value="plus">+ value</option></select></div>
+        <label class="planner-toggle"><input id="planner-roster-favorites" type="checkbox"> Favorites</label>
       </div>
     </div>
-    <p id="planner-message" class="planner-message" role="status"></p>
     <p id="planner-team-summary" class="planner-summary" role="status"></p>
+    <div id="planner-roster-empty" class="my-game-empty" hidden>
+      <h3>Bring in your monsters</h3>
+      <p>Import a save to bring in your party and farm, or add monsters yourself. Then see what they can breed.</p>
+      <div class="planner-actions"><button type="button" data-planner-open="import" class="planner-primary">Import a save</button><button type="button" data-planner-open="add">Add a monster</button><button id="planner-demo" type="button">Try an example team</button></div>
+      <p class="hint">Your save stays on this device.</p>
+    </div>
+    <div id="planner-filter-empty" class="my-game-empty my-game-filter-empty" hidden>
+      <h3>No monsters match these filters</h3><p>Try another name or show the rest of your team.</p><button type="button" id="planner-clear-filters">Clear filters</button>
+    </div>
     <div class="planner-roster-columns">
-      <section class="panel planner-roster-column" aria-labelledby="planner-male-heading">
-        <div class="planner-roster-heading"><h3 id="planner-male-heading">Male monsters</h3><span id="planner-male-count" class="planner-count">0</span></div>
-        <div id="planner-males"></div>
+      <section class="planner-roster-column" aria-labelledby="planner-party-heading">
+        <div class="planner-roster-heading"><h3 id="planner-party-heading">Party</h3><span id="planner-party-count" class="planner-count">0</span></div>
+        <div id="planner-party" class="my-game-monsters"></div>
       </section>
-      <section class="panel planner-roster-column" aria-labelledby="planner-female-heading">
-        <div class="planner-roster-heading"><h3 id="planner-female-heading">Female monsters</h3><span id="planner-female-count" class="planner-count">0</span></div>
-        <div id="planner-females"></div>
+      <section class="planner-roster-column" aria-labelledby="planner-farm-heading">
+        <div class="planner-roster-heading"><h3 id="planner-farm-heading">Farm</h3><span id="planner-farm-count" class="planner-count">0</span></div>
+        <div id="planner-farm" class="my-game-monsters"></div>
       </section>
     </div>
     <details id="planner-data-tools" class="planner-data-tools">
@@ -353,11 +366,15 @@
       <div class="planner-controls">
         <div class="field"><label for="planner-context">Breeding context</label><select id="planner-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></div>
         <div class="field"><label for="planner-result-search">Find an offspring</label><input id="planner-result-search" type="search" autocomplete="off"></div>
-        <label class="settings-inline"><input id="planner-breeding-include-farm" type="checkbox"> Include farm monsters</label>
+        <div class="field"><label for="planner-breeding-member">Use a monster</label><select id="planner-breeding-member"><option value="">All monsters</option></select></div>
+        <div class="field"><label for="planner-breeding-view">View</label><select id="planner-breeding-view"><option value="list">Offspring list</option><option value="matrix">Breeding tables</option></select></div>
+        <label class="settings-inline"><input id="planner-breeding-include-farm" type="checkbox" checked> Include farm monsters</label>
       </div>
       <p id="team-breeding-eligibility" class="hint planner-context-note">Check breeding eligibility in game.</p>
     </div>
     <p id="planner-breeding-summary" class="planner-summary" role="status"></p>
+    <div id="planner-team-results" class="team-results-grid"></div>
+    <div id="planner-team-results-pagination" class="planner-pagination team-results-pagination"><span id="planner-team-results-range" role="status"></span><div class="planner-page-actions"><button id="planner-team-results-prev" type="button">← Previous</button><button id="planner-team-results-next" type="button">Next →</button></div></div>
     <section class="panel planner-matrix-panel" aria-labelledby="planner-male-grid-heading">
       <div class="planner-panel-heading"><h3 id="planner-male-grid-heading">Male pedigree + female mate</h3></div>
       <div id="planner-male-grid" class="planner-grid" tabindex="0" role="region" aria-label="Male pedigree breeding matrix"></div>
@@ -371,31 +388,36 @@
   </div>
 
   <div id="planner-team-detail-host">
+  <dialog id="planner-pair-dialog" class="my-game-dialog planner-pair-dialog" aria-label="Pairing details">
+  <div class="my-game-dialog-heading"><h3>Pairing details</h3><button id="planner-close-pair" type="button" class="my-game-dialog-close" aria-label="Close pairing details">✕</button></div>
   <aside id="planner-pair-detail" class="planner-pair-detail" aria-live="polite" hidden>
     <div><div id="planner-pair-detail-body"></div><p id="planner-pair-copy-status" role="status"></p></div>
     <button id="planner-copy-pairing" type="button">Copy pairing</button>
     <button id="planner-inspect-reference" type="button">Open in pair finder ↗</button>
   </aside>
+  </dialog>
   </div>
-  <div class="panel planner-teams-panel" id="manage-teams" tabindex="-1">
-    <div class="planner-panel-heading"><h3>Your teams</h3><p id="planner-save-status" class="hint" role="status"></p></div>
-    <div class="planner-game-group"><div class="planner-game-switch" role="group" aria-label="Game"><span>Game</span><div class="planner-game-options"><button id="planner-game-dqm1" type="button" data-game="dqm1" aria-pressed="true">DQM1</button><button id="planner-game-dqm2" type="button" data-game="dqm2" aria-pressed="false">DQM2</button></div></div><button id="planner-file-game" type="button" class="planner-file-game" hidden>File under DQM1</button></div>
-    <div class="planner-team-bar">
-      <div class="field planner-team-select-field"><label for="planner-team-select">Active team</label><select id="planner-team-select"></select></div>
-      <div class="field planner-team-game-field"><label for="planner-team-game">Team game</label><select id="planner-team-game"><option value="">Unassigned</option><option value="dqm1">DQM1</option><option value="dqm2">DQM2</option></select></div>
-      <div class="planner-actions">
-        <button id="planner-team-new" type="button">New team</button>
-        <button id="planner-team-rename" type="button">Rename</button>
-        <button id="planner-team-delete" type="button">Delete</button>
-      </div>
-      <form id="planner-team-name-form" class="planner-team-name" hidden>
-        <div class="field"><label for="planner-team-name">Team name</label><input id="planner-team-name" maxlength="40" autocomplete="off" required></div>
-        <button id="planner-team-name-save" type="submit" class="planner-primary">Save name</button>
-        <button id="planner-team-name-cancel" type="button">Cancel</button>
-      </form>
-    </div>
-    <p id="planner-team-game-hint" class="hint planner-team-game-hint" hidden>Unassigned teams appear in both games.</p>
-  </div>
+  <dialog id="save-import-dialog" class="my-game-dialog" aria-labelledby="save-import-heading">
+    <div class="my-game-dialog-heading"><h3 id="save-import-heading"><label for="save-import-file">Import a PlayStation save</label></h3><button type="button" id="planner-close-import" class="my-game-dialog-close" aria-label="Close save import">✕</button></div>
+    <section class="save-import-panel" id="save-import-panel" aria-labelledby="save-import-heading">
+      <p id="save-import-formats">Choose a memory card or Adventure Log. Supports .mcd, .mcr, .srm and extracted saves.</p>
+      <div class="field"><input id="save-import-file" type="file" aria-describedby="save-import-formats" accept=".mcd,.mcr,.srm,.mc,.sav,.bin,.raw,.mcs"></div>
+      <p class="hint">Your save stays on this device. Importing adds a new team.</p><p id="save-import-status" role="status"></p>
+      <div id="save-import-preview" hidden><div class="field"><label for="save-import-slot">Save slot</label><select id="save-import-slot"></select></div><label class="planner-toggle"><input id="save-import-nicknames" type="checkbox" checked> Use English-patch monster nicknames</label><div id="save-import-summary"></div><div class="controls"><button type="button" id="save-import-apply" class="planner-primary">Create team from save</button><button type="button" id="save-import-cancel">Cancel</button></div></div>
+    </section>
+  </dialog>
+  <dialog id="planner-entry-dialog" class="my-game-dialog" aria-labelledby="planner-entry-heading">
+    <div class="my-game-dialog-heading"><h3 id="planner-entry-heading">Add a monster</h3><button type="button" id="planner-close-editor" class="my-game-dialog-close" aria-label="Close monster editor">✕</button></div>
+    <p id="planner-entry-error" class="my-game-dialog-error" role="alert"></p>
+    <form id="planner-entry-form" class="planner-entry-form">
+      <div class="field planner-entry-species"><label for="planner-add-species">Monster</label><div class="monster-picker"><span id="planner-add-sprite" class="monster-preview" aria-hidden="true"></span><select id="planner-add-species" required></select></div></div>
+      <fieldset class="planner-sex-field"><legend>Sex</legend><div class="planner-sex-options"><label for="planner-sex-male"><input id="planner-sex-male" type="radio" name="planner-sex" value="male" checked> Male</label><label for="planner-sex-female"><input id="planner-sex-female" type="radio" name="planner-sex" value="female"> Female</label></div></fieldset>
+      <fieldset class="planner-location-field"><legend>Location</legend><div class="planner-location-options"><label for="planner-location-party"><input id="planner-location-party" type="radio" name="planner-location" value="party" checked> Party</label><label for="planner-location-farm"><input id="planner-location-farm" type="radio" name="planner-location" value="farm"> Farm</label></div></fieldset>
+      <div class="field"><label for="planner-add-plus">+ value</label><input id="planner-add-plus" type="number" min="0" max="255" step="1" value="0" required inputmode="numeric"></div>
+      <div class="field planner-entry-nickname"><label for="planner-add-nickname">Nickname <span class="planner-optional">(optional)</span></label><input id="planner-add-nickname" type="text" maxlength="40" autocomplete="off"></div>
+      <div class="planner-entry-actions"><button id="planner-add-button" class="planner-primary planner-add-button" type="submit">Add monster</button><button id="planner-cancel-edit" type="button" hidden>Cancel edit</button></div>
+    </form>
+  </dialog>
 </section>
 
 </main>
@@ -411,7 +433,7 @@
 {"shared":["data/sprite-sheets.js","js/sprites.js"],
 "dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
 "field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","js/current-names.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/player-guide.js","js/player-atlas.js"],
-"tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/reference.js","js/planner-core.js","js/recipe-planner.js","js/app-state.js","js/save-import.js","js/planner-ui.js"],
+"tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/planner-core.js","js/reference.js","js/recipe-planner.js","js/app-state.js","js/save-import.js","js/planner-ui.js"],
 "tree":["js/breeding-tree.js"],"matrix":["js/matrix-tools.js"],
 "profile":["data/monster-reference.js","js/monster-reference.js"]}
 </script>

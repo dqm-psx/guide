@@ -1,0 +1,214 @@
+/* My game keeps the player's collection in front; setup opens on demand. */
+#team-planner{--game-surface:var(--guide-panel);--game-soft:var(--guide-soft)}
+#team-planner .my-game-heading{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+#team-planner .my-game-heading h2{font:700 28px/1.2 Georgia,serif;color:var(--guide-green)}
+#team-planner .my-game-heading>button{margin-left:auto;font-size:13px;min-height:36px;padding:7px 13px}
+#team-planner .my-game-context{display:grid;grid-template-columns:auto minmax(180px,1fr) auto;align-items:end;gap:14px;padding:12px 14px;background:var(--game-surface);border:1px solid var(--guide-rule);border-radius:8px}
+#team-planner .planner-game-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0;padding:0;min-width:0}
+#team-planner .planner-game-switch{margin:0;gap:0}
+#team-planner .planner-game-options{border-color:var(--line)}
+#team-planner .planner-game-options button{min-height:36px;padding:6px 12px;font-size:12px}
+#team-planner .planner-team-select-field{min-width:0}
+#team-planner .planner-team-select-field label{margin:0 0 4px;font-size:11px}
+#team-planner .planner-team-select-field select{min-height:36px;padding:6px 30px 6px 10px;font-size:13px}
+#team-planner #planner-file-game{padding:5px 8px;min-height:30px;font-size:11px}
+#team-planner #manage-teams{position:relative;margin:0;padding:0;border:0;background:transparent;z-index:4}
+#team-planner #manage-teams>summary{font-size:12px;min-height:36px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;white-space:nowrap}
+#team-planner #manage-teams[open]>summary{background:var(--game-soft);border-color:var(--guide-accent)}
+#team-planner .my-game-settings-body{position:absolute;top:calc(100% + 8px);right:0;display:grid;gap:14px;width:min(380px,calc(100vw - 40px));padding:18px;border:1px solid var(--guide-rule);border-radius:8px;background:var(--game-surface);box-shadow:0 12px 28px #0002}
+#team-planner .my-game-settings-body .field label{margin-top:0}
+#team-planner .my-game-settings-body .planner-team-name{margin:0;padding:12px 0 0;border-top:1px solid var(--line);gap:8px}
+#team-planner .my-game-settings-body .planner-team-name .field{flex-basis:100%}
+#team-planner .my-game-settings-body .planner-team-name input{max-width:none}
+#team-planner .my-game-settings-body .planner-team-game-hint{margin:0;padding:0}
+#team-planner .my-game-status{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:35px;margin:4px 0 2px}
+#team-planner .my-game-status .hint{margin:0;font-size:11px;line-height:1.45}
+#team-planner #planner-undo{flex-shrink:0;padding:4px 8px;font-size:11px;min-height:28px;background:transparent}
+#team-planner #planner-message{margin:2px 0 10px;font-size:12px;line-height:1.45}
+#team-planner .planner-tabs{gap:4px;margin:0 0 15px;padding:0;border-bottom:1px solid var(--guide-rule);flex-wrap:nowrap}
+#team-planner .planner-tabs button{position:relative;padding:10px 13px;border:0;border-radius:0;background:transparent;color:var(--muted);font-size:13px;white-space:nowrap}
+#team-planner .planner-tabs button[aria-selected=true]{color:var(--guide-green);background:transparent;box-shadow:inset 0 -3px var(--guide-accent)}
+#team-planner .planner-tabs button:hover{background:var(--game-soft)}
+#team-planner .my-game-roster-toolbar{display:grid;grid-template-columns:minmax(150px,1fr) auto;align-items:center;gap:10px}
+#team-planner .my-game-roster-toolbar.is-empty,#team-planner .my-game-roster-toolbar.is-empty+#planner-team-summary{display:none}
+#team-planner .my-game-roster-toolbar input[type=search],#team-planner .my-game-roster-toolbar select{min-height:36px;font-size:12px;padding:7px 9px}
+#team-planner .my-game-roster-toolbar #planner-open-add{padding:7px 12px;min-height:36px;font-size:12px}
+#team-planner .my-game-roster-filters{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#team-planner .my-game-roster-filters>.field{flex:0 1 145px;min-width:100px}
+#team-planner .my-game-roster-filters .planner-toggle{margin-left:auto;padding:4px 0;min-height:32px;font-size:12px}
+#team-planner #planner-team-summary{margin:10px 0 8px;font-size:12px;line-height:1.5}
+#team-planner .planner-roster-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+#team-planner .planner-roster-column{min-width:0}
+#team-planner .planner-roster-heading{justify-content:flex-start;gap:8px;padding:0 0 8px;background:transparent;border:0}
+#team-planner .planner-roster-heading h3{font:700 18px/1.3 Georgia,serif;color:var(--guide-green)}
+#team-planner .planner-roster-heading .planner-count{min-width:23px;height:23px;padding:0 7px;background:var(--game-soft);font-size:11px}
+#team-planner .my-game-monsters{min-width:0}
+#team-planner .my-game-monsters>.planner-card-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0}
+#team-planner .planner-card{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px 12px;min-width:0;margin:0;padding:13px 14px;border:1px solid var(--guide-rule);border-radius:8px;background:var(--game-surface)}
+#team-planner .planner-card:last-child{border-bottom:1px solid var(--guide-rule)}
+#team-planner .planner-card-identity{flex:1 1 180px;gap:12px;min-width:0}
+#team-planner .planner-card-identity>div{min-width:0;flex:1}
+#team-planner .planner-card-favorite{align-self:flex-start;flex:none;margin-left:auto;min-width:30px;min-height:30px;padding:3px 6px;background:transparent;border-color:transparent;font-size:18px;color:var(--muted)}
+#team-planner .planner-card-favorite[aria-pressed=true]{color:var(--gold)}
+#team-planner .planner-card-favorite:hover{border-color:var(--line)}
+#team-planner .planner-card-identity .monster-sprite{width:56px;height:56px;flex:0 0 56px}
+#team-planner .planner-card-name{font-size:14px;line-height:1.35;margin:0}
+#team-planner .planner-card-name a{text-decoration:none}
+#team-planner .planner-card-name a:hover{text-decoration:underline}
+#team-planner .planner-card-meta{margin:3px 0 0;font-size:11px;line-height:1.4}
+#team-planner .planner-card-sex{display:inline-flex;align-items:center;justify-content:center;min-width:24px;font-size:11px;line-height:1.5;padding:1px 5px;border:1px solid var(--line);border-radius:4px;color:var(--muted);background:var(--game-soft);font-weight:650}
+#team-planner .planner-card-stats{display:flex;align-items:center;flex-wrap:wrap;gap:4px 9px;font-size:12px;white-space:nowrap}
+#team-planner .planner-card-stats small{font-size:10px;color:var(--muted)}
+#team-planner .planner-card-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:6px;flex:1 1 100%;padding-top:9px;border-top:1px solid var(--line)}
+#team-planner .planner-card-actions button{min-height:30px;font-size:11px;padding:5px 9px}
+#team-planner .planner-card-actions button[data-member-breed]{color:var(--guide-accent);border-color:var(--guide-accent);font-weight:750}
+#team-planner .planner-card-actions button[data-member-favorite]{margin-right:auto;font-size:16px;min-width:30px;padding:3px 7px;background:transparent;border-color:transparent}
+#team-planner .planner-card-actions button[data-member-favorite][aria-pressed=true]{color:var(--gold)}
+#team-planner .planner-card-more{position:relative;margin:0;padding:0;border:0;border-radius:0;background:transparent}
+#team-planner .planner-card-more>summary{padding:5px 8px;min-height:30px;border:1px solid var(--line);border-radius:5px;font-size:11px;line-height:18px}
+#team-planner .planner-card-more[open]{z-index:3}
+#team-planner .planner-card-more[open]>summary{background:var(--game-soft)}
+#team-planner .planner-card-more>div{position:absolute;top:calc(100% + 5px);right:0;display:grid;gap:5px;min-width:150px;padding:8px;background:var(--game-surface);border:1px solid var(--guide-rule);border-radius:7px;box-shadow:0 8px 20px #0002}
+#team-planner .planner-card-more>div button{text-align:left;white-space:nowrap}
+#team-planner .planner-card-more button[data-member-remove]{color:#a4392e}
+#team-planner .my-game-empty{padding:25px 22px;border:1px solid var(--guide-rule);border-radius:8px;background:var(--game-surface)}
+#team-planner .my-game-empty h3{font:700 22px/1.3 Georgia,serif;color:var(--guide-green)}
+#team-planner .my-game-empty p{max-width:580px;margin:8px 0 15px;font-size:14px;color:var(--muted)}
+#team-planner .my-game-empty .hint{font-size:11px;margin:12px 0 0}
+#team-planner .my-game-empty .planner-actions{gap:8px}
+#team-planner .my-game-empty button{font-size:12px;min-height:36px}
+#team-planner .my-game-empty #planner-demo{background:transparent;border-color:transparent;text-decoration:underline;text-underline-offset:3px;color:var(--muted);padding-inline:4px}
+#team-planner .my-game-filter-empty{text-align:center;padding:24px}
+#team-planner .my-game-filter-empty h3{font-size:18px}
+#team-planner .my-game-filter-empty p{margin-inline:auto;font-size:13px}
+#team-planner .planner-data-tools{margin-top:24px;padding:12px 15px;border-radius:7px;background:transparent}
+#team-planner .planner-data-tools>summary{font-size:12px;color:var(--muted)}
+#team-planner .planner-data-tools .planner-backup-panel{box-shadow:none;border:0;background:transparent}
+#team-planner .planner-data-tools .planner-backup-panel .planner-panel-heading{padding:14px 0 0}
+#team-planner .planner-data-tools .planner-backup-panel .planner-actions{padding:12px 0}
+#team-planner .planner-data-tools .planner-backup-panel .hint{max-width:660px}
+
+/* Dialogs contain the import/setup flow without pushing a saved roster away. */
+#team-planner .my-game-dialog{width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);padding:0;margin:auto;color:var(--ink);background:var(--game-surface);border:1px solid var(--guide-rule);border-radius:12px;box-shadow:0 22px 80px #0005;overscroll-behavior:contain}
+#team-planner .my-game-dialog::backdrop{background:#06161399;backdrop-filter:blur(2px)}
+#team-planner .my-game-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;border-bottom:1px solid var(--guide-rule)}
+#team-planner .my-game-dialog-heading h3{font:700 23px/1.3 Georgia,serif;color:var(--guide-green);margin:0}
+#team-planner .my-game-dialog-close{min-width:34px;min-height:34px;padding:4px 8px;flex:none;background:transparent;border-color:transparent;font-size:16px}
+#team-planner .my-game-dialog-close:hover{border-color:var(--line)}
+#team-planner .my-game-dialog .save-import-panel{padding:18px 20px 22px;margin:0}
+#team-planner .my-game-dialog #save-import-formats{font-size:13px;color:var(--muted);line-height:1.55;margin:0 0 14px}
+#team-planner .my-game-dialog input[type=file]{display:block;width:100%;padding:12px;font-size:12px;background:var(--game-soft);border-style:dashed;min-height:48px}
+#team-planner .my-game-dialog #save-import-status{font-size:13px;margin:12px 0 0;color:var(--teal)}
+#team-planner .my-game-dialog #save-import-status:empty{display:none}
+#team-planner .my-game-dialog #save-import-preview{border-top:1px solid var(--line);margin-top:16px;padding-top:4px}
+#team-planner .my-game-dialog #save-import-summary{font-size:13px}
+#team-planner .my-game-dialog #save-import-summary p{margin:8px 0}
+#team-planner .my-game-dialog #save-import-summary details{padding:11px;margin:12px 0}
+#team-planner .my-game-dialog #save-import-summary table{min-width:460px;font-size:12px}
+#team-planner .my-game-dialog #save-import-summary th,#team-planner .my-game-dialog #save-import-summary td{padding:7px 9px}
+#team-planner .my-game-dialog .planner-toggle{padding:10px 0;align-items:flex-start;font-size:12px;line-height:1.5}
+#team-planner .my-game-dialog .planner-toggle input{flex:none;margin-top:1px}
+#team-planner .my-game-dialog .controls{margin-top:16px;gap:8px}
+#team-planner .my-game-dialog .controls button{font-size:12px;min-height:38px}
+#team-planner .my-game-dialog .planner-entry-form{padding:8px 20px 20px;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 18px}
+#team-planner .my-game-dialog .planner-entry-species{grid-column:1/-1}
+#team-planner .my-game-dialog .planner-entry-nickname{grid-column:auto}
+#team-planner .my-game-dialog .planner-entry-actions{grid-column:1/-1;padding-top:12px;border-top:1px solid var(--line);margin-top:10px}
+#team-planner .my-game-dialog .planner-entry-actions button{font-size:12px;min-height:38px}
+#team-planner .my-game-dialog .planner-sex-options,#team-planner .my-game-dialog .planner-location-options{min-height:36px;gap:7px 12px}
+#team-planner .my-game-dialog .planner-sex-options label,#team-planner .my-game-dialog .planner-location-options label{font-size:13px}
+#team-planner .my-game-dialog .planner-sex-options input,#team-planner .my-game-dialog .planner-location-options input{width:16px;min-height:0}
+#team-planner .my-game-dialog-error{margin:12px 20px 0;padding:9px 11px;background:var(--game-soft);border-left:3px solid var(--gold);font-size:13px}
+#team-planner .my-game-dialog-error:empty{display:none}
+
+/* Owned-monster breeding starts with outcomes; the matrices remain available. */
+#team-planner #planner-breeding .planner-controls-panel{padding:13px 15px;border-radius:8px;box-shadow:none}
+#team-planner #planner-breeding .planner-controls{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#team-planner #planner-breeding .planner-controls .field label{font-size:11px;margin-bottom:4px}
+#team-planner #planner-breeding .planner-controls select,#team-planner #planner-breeding .planner-controls input[type=search]{min-height:36px;font-size:12px;padding:7px 9px}
+#team-planner #planner-breeding .planner-controls>.settings-inline{font-size:12px;margin-top:0}
+#team-planner #planner-breeding .planner-context-note{margin-top:8px;font-size:11px;line-height:1.5}
+#team-planner #planner-breeding-summary{margin:12px 0;font-size:12px}
+#team-planner .team-results-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#team-planner .team-result-card{min-width:0;padding:14px 15px;border:1px solid var(--guide-rule);border-radius:8px;background:var(--game-surface)}
+#team-planner .team-result-heading{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+#team-planner .team-result-heading .monster-sprite{width:56px;height:56px;flex:0 0 56px}
+#team-planner .team-result-heading>div{min-width:0}
+#team-planner .team-result-heading h3{font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+#team-planner .team-result-heading h3 a{text-decoration:none}
+#team-planner .team-result-heading h3 a:hover{text-decoration:underline}
+#team-planner .team-result-heading p,#team-planner .team-result-heading small{font-size:11px;color:var(--muted);margin:3px 0 0}
+#team-planner .team-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;align-items:center;gap:7px;min-width:0;padding:7px 0;font-size:12px;line-height:1.4}
+#team-planner .team-pair-parent{display:grid;grid-template-columns:26px minmax(0,1fr);column-gap:5px;align-items:center;min-width:0}
+#team-planner .team-pair-parent>small{grid-column:1/-1;margin-bottom:3px}
+#team-planner .team-pair-parent>.monster-sprite{width:26px;height:26px;min-width:26px}
+#team-planner .team-pair-parent>span{overflow-wrap:anywhere;font-size:11px}
+#team-planner .team-pair-parent strong{white-space:nowrap;font-size:10px;color:var(--muted);font-weight:500}
+#team-planner .team-pair-rule{grid-column:1/-1}
+#team-planner .team-pair>div{min-width:0;flex:1}
+#team-planner .team-pair a{overflow-wrap:anywhere}
+#team-planner .team-pair button{margin-left:auto;flex:none;min-height:30px;padding:4px 8px;font-size:11px}
+#team-planner .team-pair small{font-size:10px;color:var(--muted)}
+#team-planner .team-result-card details{margin:7px 0 0;padding:0;border:0;background:transparent}
+#team-planner .team-result-card details>summary{font-size:11px;color:var(--teal);padding:6px 0}
+#team-planner .team-results-pagination{padding:12px 0;border:0;font-size:12px}
+#team-planner .team-results-pagination button{font-size:12px;min-height:34px}
+#team-planner .planner-matrix-panel{border-radius:8px;box-shadow:none}
+#team-planner .planner-matrix-panel>.planner-panel-heading{padding:13px 15px}
+#team-planner .planner-matrix-panel>.planner-panel-heading h3{font-size:14px}
+
+/* Pair details are also opened from the full breeding table. */
+.planner-pair-dialog,#team-planner .planner-pair-dialog{width:min(680px,calc(100vw - 28px));max-height:calc(100dvh - 36px);padding:0;margin:auto;overflow:auto;color:var(--ink);background:var(--guide-panel);border:1px solid var(--guide-rule);border-radius:10px;box-shadow:0 24px 80px #0005}
+.planner-pair-dialog::backdrop{background:#06100dcc;backdrop-filter:blur(3px)}
+.planner-pair-dialog .my-game-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--guide-rule)}
+.planner-pair-dialog .my-game-dialog-heading h3{margin:0;font:600 23px/1.2 Georgia,serif;color:var(--ink)}
+.planner-pair-dialog .my-game-dialog-close{min-height:34px;width:34px;padding:4px;flex:none;font-size:16px}
+.planner-pair-dialog .planner-pair-detail{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:12px;margin:0;padding:20px;border:0;border-radius:0;background:transparent}
+.planner-pair-dialog .planner-pair-detail[hidden]{display:none}
+.planner-pair-dialog .planner-pair-detail>div{flex:1 1 100%}
+.planner-pair-dialog .planner-pair-detail>button{font-size:12px;min-height:36px}
+:root[data-theme=dark] #team-planner .planner-card-more button[data-member-remove]{color:#f4a49b}
+:root[data-theme=dark] #team-planner .my-game-settings-body,:root[data-theme=dark] #team-planner .planner-card-more>div{box-shadow:0 12px 28px #0007}
+@media(min-width:1400px){#team-planner .my-game-roster-toolbar{grid-template-columns:minmax(180px,1fr) auto auto}#team-planner .my-game-roster-search{grid-column:1;grid-row:1}#team-planner .my-game-roster-filters{grid-column:2;grid-row:1;gap:8px}#team-planner .my-game-roster-filters>.field{flex-basis:auto;width:130px}#team-planner #planner-open-add{grid-column:3;grid-row:1}#team-planner .my-game-roster-filters .planner-toggle{white-space:nowrap;margin-left:4px}}
+@media(min-width:1400px){#team-planner .my-game-monsters>.planner-card-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1000px){#team-planner .my-game-monsters>.planner-card-list{grid-template-columns:minmax(0,1fr)}#team-planner .planner-card{flex-wrap:nowrap}#team-planner .planner-card-actions{flex:0 1 auto;padding:0;border:0}#team-planner .planner-card-actions button[data-member-favorite]{margin:0}#team-planner .team-results-grid{grid-template-columns:minmax(0,1fr)}#team-planner #planner-breeding .planner-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){
+  #team-planner .my-game-heading h2{font-size:25px}
+  #team-planner .my-game-context{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px}
+  #team-planner .planner-team-select-field{grid-column:1/-1;grid-row:1}
+  #team-planner .planner-team-select-field label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  #team-planner .planner-game-group{grid-column:1;grid-row:2}
+  #team-planner #manage-teams{grid-column:2;grid-row:2;justify-self:end}
+  #team-planner .my-game-status{align-items:flex-start;margin-top:8px}
+  #team-planner .my-game-status .hint{max-width:240px;font-size:10px}
+  #team-planner #planner-undo{font-size:10px;padding:3px 6px;min-height:26px}
+  #team-planner .planner-tabs{gap:0;margin-bottom:12px}
+  #team-planner .planner-tabs button{flex:1;padding:10px 6px;font-size:11px}
+  #team-planner .my-game-roster-toolbar{gap:8px}
+  #team-planner .my-game-roster-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  #team-planner .my-game-roster-filters>.field{min-width:0}
+  #team-planner .my-game-roster-filters select{font-size:11px;padding-inline:6px}
+  #team-planner .my-game-roster-filters .planner-toggle{grid-column:1/-1;justify-self:start;margin:0;padding:0;min-height:26px;font-size:11px}
+  #team-planner .planner-roster-columns{gap:18px}
+  #team-planner .planner-card{flex-wrap:wrap;padding:12px;gap:8px}
+  #team-planner .planner-card-identity{flex-basis:160px;gap:10px}
+  #team-planner .planner-card-identity .monster-sprite{width:48px;height:48px;flex-basis:48px}
+  #team-planner .planner-card-actions{flex:1 1 100%;padding-top:8px;border-top:1px solid var(--line)}
+  #team-planner .planner-card-actions button[data-member-favorite]{margin-right:auto}
+  #team-planner .my-game-empty{padding:20px 16px}
+  #team-planner .my-game-empty h3{font-size:21px}
+  #team-planner .my-game-empty p{font-size:13px}
+  #team-planner .my-game-dialog-heading{padding:14px 16px;gap:8px}
+  #team-planner .my-game-dialog-heading h3{font-size:21px}
+  #team-planner .my-game-dialog .save-import-panel{padding:15px 16px 18px}
+  #team-planner .my-game-dialog .planner-entry-form{padding:5px 16px 18px;gap:8px 12px}
+  #team-planner .my-game-dialog .planner-entry-form .field label,#team-planner .my-game-dialog legend{font-size:11px}
+  #team-planner .my-game-dialog .planner-sex-options,#team-planner .my-game-dialog .planner-location-options{gap:5px 10px}
+  #team-planner .my-game-dialog .planner-sex-options label,#team-planner .my-game-dialog .planner-location-options label{font-size:12px}
+  #team-planner #planner-breeding .planner-controls-panel{padding:11px}
+  #team-planner #planner-breeding .planner-controls{gap:10px 8px}
+  #team-planner .team-result-card{padding:12px}
+  #team-planner .team-result-heading{gap:10px}
+  #team-planner .team-result-heading h3{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){#team-planner{scroll-behavior:auto}}

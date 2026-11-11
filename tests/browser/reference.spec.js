@@ -22,7 +22,7 @@ test.describe('served', () => {
     await expect(page.locator('#pedigree')).toHaveValue('11');
     await expect(page.locator('#mate')).toHaveValue('99');
     await expect(page.locator('#result-name')).toHaveText('Winged Slime');
-    await expect(page.locator('#pair-description')).toHaveText('Slime + Dracky');
+    await expect(page.locator('#pair-description')).toHaveText('Slime +0 × Dracky +0');
     await expect(page.locator('#reverse-name')).toHaveText('Picky');
   });
 
@@ -32,7 +32,7 @@ test.describe('served', () => {
     await expect(page.locator('#pedigree')).toHaveValue('99');
     await expect(page.locator('#mate')).toHaveValue('11');
     await expect(page.locator('#result-name')).toHaveText('Picky');
-    await expect(page.locator('#pair-description')).toHaveText('Dracky + Slime');
+    await expect(page.locator('#pair-description')).toHaveText('Dracky +0 × Slime +0');
     await expect(page.locator('#reverse-name')).toHaveText('Winged Slime');
   });
 

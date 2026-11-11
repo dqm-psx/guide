@@ -1,3 +1,4 @@
+const {openTeamSettings} = require('../helpers/planner-ui');
 const assert = require('node:assert/strict');
 const { test, expect } = require('@playwright/test');
 
@@ -212,6 +213,7 @@ test.describe('served', () => {
     await page.selectOption('#target', '11');
     await page.click('#target-pin');
     await page.click('#planner-nav-link');
+    await openTeamSettings(page);
     await page.click('#planner-team-new');
     await page.fill('#planner-team-name', 'Team B');
     await page.click('#planner-team-name-save');
@@ -268,7 +270,7 @@ test.describe('served', () => {
     await expect(viewPlan).toContainText('Winged Slime');
     await viewPlan.click();
     await expect(page.locator('#team-planner')).toBeVisible();
-    await expect(page).toHaveURL(/#team-planner$/);
+    await expect(page).toHaveURL(/#team-planner\?tab=targets$/);
     await expect(page.locator('#planner-targets')).toBeVisible();
     await expect(page.locator('#plan-body')).toBeVisible();
     await expect(page.locator('#plan-heading')).toBeFocused();
