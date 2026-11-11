@@ -1,0 +1,90 @@
+{
+  "speakers": {
+    "boss-dam-builder": {
+      "labels": [],
+      "scenes": {
+        "Underground Waterway": ["s004c3000_0254", "s004c3000_02a6", "s004c3000_034f", "s004c3000_0379", "s004c3000_03c0", "s004c3000_03e1", "s004c3000_0452", "s004c3000_04ca", "s004c3000_05dd", "s004c3000_06ed"],
+        "Mirage Lake · after recovering the clan's home": ["s00488000_082d", "s00488000_0857", "s00488000_08c5", "s00488000_08e4", "s00488000_0943", "s00488000_096a"]
+      }
+    },
+    "boss-bandit-leader": {
+      "labels": [],
+      "scenes": {
+        "Bandits' Hideout": ["s00488000_01de", "s00488000_0257", "s00488000_02ff", "s00488000_0364", "s00488000_038d", "s00488000_0461"]
+      }
+    },
+    "boss-western-cape-dancer": {
+      "labels": [],
+      "scenes": {
+        "Cape Cave": ["s00530000_0009", "s00530000_006f", "s00530000_00b0", "s00530000_00ee", "s00530000_0112", "s00530000_017c", "s00530000_019a", "s00530000_01dd", "s00530000_020a"]
+      }
+    },
+    "boss-ghost-ship-pirates": {
+      "labels": [],
+      "scenes": {
+        "Ghost Ship · restless crew": ["s00494000_0228", "s00494000_024c", "s00494000_0273", "s00494000_0294"],
+        "Ghost Ship · confrontation": ["s00494000_02ae", "s00494000_02f9", "s00494000_0320", "s00494000_0349"]
+      }
+    },
+    "boss-northden-impostor": {
+      "labels": ["King"],
+      "scenes": {
+        "Northden Castle · posing as the king": ["s0044a800_1317", "s0044a800_1643", "s0044a800_1763", "s0044a800_1af6", "s0044a800_1b47"],
+        "Northden Castle · the impostor exposed": ["s0044a800_1ea3", "s0044a800_1ef3", "s0044a800_1f73", "s0044a800_2002", "s0044a800_2077"]
+      }
+    },
+    "boss-yuna-puppet": {
+      "labels": [],
+      "scenes": {
+        "Westernia Castle · the puppet": ["s004ee000_1def", "s004ee000_1e0f", "s004ee000_1e72", "s004ee000_1e93", "s004ee000_1ea7", "s004ee000_1ecd", "s004ee000_1ef3"]
+      }
+    },
+    "boss-spring-attacker": {
+      "labels": [],
+      "scenes": {
+        "Spirit's Spring · the attacker": ["s004d6000_0553", "s004d6000_05f0", "s004d6000_0634", "s004d6000_065a", "s004d6000_06aa"]
+      }
+    },
+    "boss-lake-tower-wizard": {
+      "labels": [],
+      "scenes": {
+        "Lake Tower · the wizard": ["s00368000_02f3", "s00368000_0420", "s00368000_0494", "s00368000_0524"],
+        "Lake Tower · the wizard's guardian": ["s00368000_0080", "s00368000_045d", "s00368000_04e0"]
+      }
+    },
+    "boss-dead-king": {
+      "labels": [],
+      "scenes": {
+        "Castle of the Dead · the king": ["s002d3000_04bd", "s002d3000_050e", "s002d3000_053c", "s002d3000_0562", "s002d3000_058b"]
+      }
+    },
+    "boss-small-cave-guardian": {
+      "labels": [],
+      "scenes": {
+        "Small Cave · the treasure guardian": ["s00373000_025e", "s00373000_02a4", "s00373000_02ca"]
+      }
+    },
+    "boss-sky-impostor": {
+      "labels": ["Kameha"],
+      "scenes": {
+        "Demon King's Castle · posing as the Demon Lord": ["s002e4800_031a", "s002e4800_0343", "s002e4800_0375", "s002e4800_0390", "s002e4800_0421", "s002e4800_04a0"],
+        "Demon King's Castle · identity revealed": ["s002e4800_04e8", "s002e4800_0534", "s002e4800_0678", "s002e4800_07bd", "s002e4800_0854", "s002e4800_08d3", "s002e4800_0d39"]
+      }
+    },
+    "boss-dark-master": {
+      "labels": [],
+      "scenes": {
+        "Demon King's Castle · confronting the impostor": ["s002e4800_072b", "s002e4800_0758", "s002e4800_07e1", "s002e4800_0ce7"],
+        "Darck's Manor · the final confrontation": ["s002f4000_001a", "s002f4000_00b7", "s002f4000_00fe", "s002f4000_0150", "s002f4000_01b6", "s002f4000_01dd", "s002f4000_0200", "s002f4000_0279", "s002f4000_032d", "s002f4000_0377", "s002f4000_03d3"]
+      }
+    },
+    "boss-darck": {
+      "labels": ["Darck"],
+      "scenes": {
+        "Demon King's Castle · the bargain": ["s002e4800_0879", "s002e4800_0902", "s002e4800_09b4", "s002e4800_0a30", "s002e4800_0a86", "s002e4800_0aaf", "s002e4800_0ba6", "s002e4800_0bf7", "s002e4800_0c3f", "s002e4800_0ca7"],
+        "Darck's Manor": ["s002f4000_0443", "s002f4000_05ee", "s002f4000_069a", "s002f4000_072c", "s002f4000_07c7"]
+      }
+    }
+  },
+  "omitLines": {}
+}

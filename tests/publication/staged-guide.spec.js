@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
+const loadStagedData = require('./staged-data');
 const { test, expect } = require('@playwright/test');
 
 const STAGED_ROOT = path.resolve(__dirname, '../../site-dist');
@@ -15,11 +15,7 @@ test.beforeAll(async () => {
   }
   // Expectations come from this exact artifact, not checked-in wording or a
   // hardcoded release version. Read the classic data scripts without a DOM.
-  const context = vm.createContext({});
-  for (const file of ['data/breeding-data.js', 'data/monster-reference.js', 'data/skill-descriptions.js']) {
-    vm.runInContext(fs.readFileSync(path.join(STAGED_ROOT, file), 'utf8'), context, { timeout: 3000 });
-  }
-  shipped = JSON.parse(JSON.stringify({ data: context.DATA, reference: context.MONSTER_REFERENCE, skills: context.SKILL_DESCRIPTIONS }));
+  shipped = loadStagedData(STAGED_ROOT);
   const worker = fs.readFileSync(path.join(STAGED_ROOT, 'sw.js'), 'utf8');
   const declaration = worker.match(/const PRECACHE = (\[[\s\S]*?\]);/);
   if (!declaration) throw new Error('Staged worker has no precache declaration.');
@@ -228,9 +224,9 @@ test('real entry URLs expose crawlable references and open the matching interact
   try {
     const reader = await staticContext.newPage();
     await reader.goto(url+'articles/boss-golem/');
-    await expect(reader.getByRole('heading',{level:1})).toHaveText('Golem');
+    await expect(reader.getByRole('heading',{level:1})).toHaveText(shipped.entry('boss-golem').title);
     await expect(reader.locator('main')).toContainText('HP 100');
-    await expect(reader.getByRole('link',{name:'Guardian Gate'}).first()).toBeVisible();
+    await expect(reader.locator('a[href="articles/location-guardian-gate/"]').first()).toHaveText(shipped.entry('location-guardian-gate').title);
     await reader.goto(url+'entries/#skills');
     const skills=reader.getByRole('table',{name:'Skills',exact:true});
     const names=Object.values(shipped.reference.guide_names.skills);
@@ -269,7 +265,7 @@ test('real entry URLs expose crawlable references and open the matching interact
   await search.press('Enter');
   const directory=page.locator('#guide-directory');
   await expect(directory).toBeVisible();
-  await expect(directory).toContainText(/bard/i);
+  await expect(directory.locator('a[href*="entry=field-wandering-masters"]')).toBeVisible();
   const resultsUrl=page.url();
   await page.goBack();
   await expect(page).toHaveURL(url+entry);
@@ -279,7 +275,7 @@ test('real entry URLs expose crawlable references and open the matching interact
   await expect(page).toHaveURL(resultsUrl);
   await expect(search).toHaveValue('bard');
   await expect(directory).toBeVisible();
-  await expect(directory).toContainText(/bard/i);
+  await expect(directory.locator('a[href*="entry=field-wandering-masters"]')).toBeVisible();
   await page.goBack();
   await page.locator('.nav a[href="#species-index"]').click();
   await expect(page.locator('#species-rows a').first()).toBeVisible();
@@ -339,22 +335,22 @@ test('published quests and characters can be followed with JavaScript disabled',
     await expect(reader.locator('#items').getByText('Columns',{exact:true})).toBeHidden();
     await expect(items.locator('tbody th a[href="articles/item-41/"]')).toBeVisible();
     await expect(items.locator('tbody th a[href="articles/item-43/"]')).toBeVisible();
-    await reader.getByRole('link',{name:'Show monsters to the queen',exact:true}).click();
+    await reader.locator('#quests-dqm1 a[href="articles/quest-the-queen-s-monster-collection-requests/"]').click();
     const requests=reader.getByRole('heading',{name:'Monsters in request order'}).locator('..');
     await expect(requests.locator('ol li a')).toHaveCount(16);
-    await reader.getByRole('link',{name:'Queen of GreatTree',exact:true}).click();
+    await reader.locator('a[href="articles/npc-queen-of-greattree/"]').click();
     const dialogue=reader.locator('.character-dialogue');
-    await expect(dialogue).toContainText('A Winged Slime!');
-    await expect(reader.getByRole('link',{name:'Show monsters to the queen',exact:true})).toHaveCount(1);
+    await expect(dialogue).toContainText(shipped.dialogue['npc-queen-of-greattree'][0].passages[0]);
+    await expect(reader.locator('a[href="articles/quest-the-queen-s-monster-collection-requests/"]')).toHaveCount(1);
     await reader.goto(url+'articles/quest-sky-shield-and-flight/');
     const route=reader.locator('.entry-content > ol');
-    await expect(route).toContainText('Prince Kameha’s friend');
+    await expect(route).toContainText(shipped.entry('quest-sky-shield-and-flight').details[0]);
     await expect(route).not.toContainText('bookcase');
-    await reader.getByRole('link',{name:'Find the egg from the message in a bottle'}).click();
+    await reader.locator('a[href="articles/quest-greatlog-buried-egg/"]').click();
     await expect(reader.locator('.entry-content > ol')).toContainText('bookcase');
-    await reader.getByRole('navigation',{name:'Walkthrough chapters'}).getByRole('link',{name:'The Sky Shield and flight'}).click();
+    await reader.getByRole('navigation',{name:'Walkthrough chapters'}).locator('a[href="walkthroughs/cobi-tara/#story-ice-shield"]').click();
     await expect(reader.locator('#story-ice-shield')).toBeInViewport();
-    await reader.getByRole('link',{name:'Cobi & Tara quests',exact:true}).click();
+    await reader.locator('a[href="entries/#quests-dqm2"]').click();
     await expect(reader.locator('#quests-dqm2 h2')).toBeInViewport();
   } finally {await context.close();}
 });
@@ -380,14 +376,14 @@ test('canonical walkthrough pages keep stage bookmarks with or without JavaScrip
   try {
     const reader=await staticContext.newPage();
     await reader.goto(url+path);
-    await expect(reader.getByRole('heading',{level:1})).toHaveText('Cobi & Tara walkthrough');
+    await expect(reader.getByRole('heading',{level:1})).toHaveText(shipped.adventure('dqm2')+' walkthrough');
     await expect(reader.locator('#story-sky-treasures')).toBeInViewport();
     await expect(reader.locator('main')).toContainText('two right-hand tiles once each');
-    await reader.getByRole('navigation',{name:'Jump to a stage'}).getByRole('link',{name:'Water World'}).click();
+    await reader.getByRole('navigation',{name:'Jump to a stage'}).locator('a[href="walkthroughs/cobi-tara/#story-pirate-mermaids"]').click();
     await expect(reader.locator('#story-pirate-mermaids')).toBeInViewport();
   } finally { await staticContext.close(); }
   await page.goto(url+path);
-  await expect(page.locator('#article-title')).toHaveText('Cobi & Tara walkthrough');
+  await expect(page.locator('#article-title')).toHaveText(shipped.adventure('dqm2')+' walkthrough');
   await expect(page.locator('#story-sky-treasures')).toBeInViewport();
   await expect(page.locator('#story-between-worlds')).toBeAttached();
 });

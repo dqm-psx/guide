@@ -64,6 +64,7 @@ test('a wording refresh updates names, aliases, library, skills and locations by
   const location = baseline.species[0].locations.find(r => r.kind === 'wild');
   const menu = comparison.rows.find(r => r.id === location.source.text_id);
   const prefix = location.context_id.toString(16).toUpperCase().padStart(2, '0') + ':';
+  menu.raw.translations.gameboy = {english_lines:[prefix+'Classic Gate 6~8F']};
   menu.raw.translations.current.english_lines = menu.raw.translations.current.english_lines.map(line => line.startsWith(prefix) ? prefix + 'Reviewed Gate 6~8F' : line);
   const result = buildReference(baseline, breeding, comparison, manifest, publicRevision);
   assert.equal(result.species[0].current_name, 'New Drake Slime');
@@ -73,6 +74,9 @@ test('a wording refresh updates names, aliases, library, skills and locations by
   assert.equal(result.species[0].library.text, 'A newly reviewed description.');
   assert.equal(result.species[0].skills.terry[0].name, 'Reviewed skill');
   assert.ok(result.species[0].locations.some(r => r.name === 'Reviewed Gate' && r.floors === '6–8F'));
+  const renamedLocation = result.species[0].locations.find(r => r.context_id === location.context_id && r.game === location.game);
+  assert.ok(renamedLocation.aliases.includes(location.name));
+  assert.ok(renamedLocation.aliases.includes('Classic Gate'));
   assert.deepEqual(result.species.map(s => s.stats), baseline.species.map(s => s.stats));
   assert.equal(result.species[290].display_name, result.species[290].current_name + ' (form 1)');
   assert.equal(result.species[291].display_name, result.species[291].current_name + ' (form 2)');
@@ -89,6 +93,30 @@ test('a wording refresh updates names, aliases, library, skills and locations by
     if (rule.mate_index != null) assert.equal(rule.mate_name, data.species[rule.mate_index].display_name);
   }
   assert.equal(generateScript(result), generateScript(buildReference(baseline, breeding, comparison, manifest, publicRevision)));
+});
+
+test('translation refresh preserves unused gate classification by native context and retains the raw pools', () => {
+  const {comparison, manifest} = fixture();
+  const labels = comparison.rows.find(row => row.id === 'm_exe_09202c').raw.translations.current.english_lines;
+  for (let i=0; i<labels.length; i++) {
+    if (/^7[A-D]:/.test(labels[i])) labels[i] = labels[i].replace('Hidden Gate', 'Renamed gate');
+  }
+  const result = buildReference(baseline, breeding, comparison, manifest, publicRevision);
+  const pools = result.species.flatMap(monster => monster.locations);
+  const unused = pools.filter(location => location.availability === 'unused');
+  assert.equal(unused.length, 20);
+  assert.deepEqual([...new Set(unused.map(location => location.context_id))].sort(), [122,123,124,125]);
+  for (const location of unused) {
+    assert.equal(location.game, 'terry');
+    assert.equal(location.kind, 'wild');
+    assert.equal(location.name, 'Renamed gate');
+    assert.ok(location.source.archive_index);
+    assert.ok(location.levels.length);
+  }
+  assert.equal(pools.length, baseline.species.reduce((count, monster) => count + monster.locations.length, 0));
+  assert.ok(pools.some(location => location.game === 'terry' && location.context_id === 121 && !location.availability));
+  assert.ok(pools.some(location => location.game === 'cobi' && location.kind === 'wild' && !location.availability));
+  assert.ok(baseline.species.every(monster => monster.locations.every(location => !location.availability)));
 });
 
 test('current release metadata has a strict public-only schema and remains separate from wording', () => {

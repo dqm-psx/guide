@@ -2,6 +2,9 @@
 
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
 const {buildGuideNames} = require('../../scripts/guide-names');
 const {apply} = require('../../js/current-names');
 
@@ -96,6 +99,61 @@ test('missing, stale, duplicated or ambiguous source data cannot replace the rel
     assert.throws(()=>buildGuideNames(f),/Guide name sync/);
     assert.equal(f.field.entries[0].title,'Medicinal Herb');
   }
+});
+
+test('a gate rename keeps old and edition names searchable and preserves its portal and final-map relationships', () => {
+  const f=fixture(), id='location-townsperson-s-gate', sourceId='e169f';
+  f.comparison.rows.push({catalog:'text/system.json',table:'system',id:sourceId,source_revision:f.revision,
+    labels:['Gate names'],raw:{id:sourceId,japanese:'まちびとのとびら<END>',translations:{
+      current:{english:'Gate of Awaiting<END>',english_short:'Awaiting<END>'},
+      gameboy:{english:'Villager Gate<END>'},delocalized:{english:'Awaiting Gate<END>'},
+      vibecoded:{english:"Townsperson's Gate<END>"}
+    }}});
+  f.world.entries.push({id,kind:'location',game:'dqm1',title:"Townsperson's Gate",source_ids:[sourceId],
+    summary:"Reach Townsperson’s Gate.",details:[],places:["Townsperson's Gate"]});
+  f.world.entries[0].details.push("Visit Townsperson’s Gate after the arena.");
+  const mapBefore=structuredClone(f.atlas.maps[0]);
+  apply({guide_names:buildGuideNames(f),species:[]},f.field,f.world,f.atlas);
+  const gate=f.world.entries.find(row=>row.id===id);
+  assert.equal(gate.title,'Gate of Awaiting');
+  assert.equal(gate.summary,'Reach Gate of Awaiting.');
+  assert.equal(f.world.entries[0].details.at(-1),'Visit Gate of Awaiting after the arena.');
+  assert.deepEqual(gate.places,['Gate of Awaiting']);
+  for (const alias of ["Townsperson's Gate",'Gate of Awaiting','Awaiting','Villager Gate','Awaiting Gate','まちびとのとびら']) {
+    assert.ok(gate.aliases.includes(alias),alias);
+  }
+  const context=vm.createContext({});
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../../js/place-context.js'),'utf8'),context);
+  const places=context.DQMPlaceContext.create({entries:f.world.entries,maps:[...f.atlas.maps,
+    {id:'map-72-0',placeId:'map-72-0',title:'Swamp Cave'}],
+    entrances:{entries:{[id]:[{map:mapBefore.id,x:.2,y:.6}]}},
+    generation:{entries:{[id]:{finalMaps:['map-72-0']}}}});
+  assert.equal(places.entrancesForMap(mapBefore.id)[0].location.title,'Gate of Awaiting');
+  assert.equal(places.locationForMap('map-72-0').id,id);
+  assert.deepEqual(Array.from(places.mapsForLocation(id),map=>map.id),[mapBefore.id,'map-72-0']);
+  assert.deepEqual(f.atlas.maps[0].exits,mapBefore.exits);
+});
+
+test('generated side-gate articles retain encounter aliases after a wording refresh', () => {
+  const context=vm.createContext({});
+  const root=path.join(__dirname,'../..');
+  for (const file of ['data/handbook-reference.js','data/world-guide.js','data/field-routes.js']) {
+    vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
+  }
+  for (const monster of context.GUIDE_REFERENCE.species) {
+    for (const area of monster.locations) {
+      if (area.game==='terry' && area.context_id===10) {
+        area.name='Reviewed Bazaar Gate';
+        area.aliases=['Bazaar Gate','Classic Bazaar Gate'];
+      }
+    }
+  }
+  vm.runInContext(fs.readFileSync(path.join(root,'js/locations.js'),'utf8'),context);
+  const gate=context.WORLD_GUIDE.entries.find(row=>row.id==='location-bazaar-gate');
+  assert.equal(gate.title,'Reviewed Bazaar Gate');
+  assert.deepEqual(Array.from(gate.aliases),['Bazaar Gate','Classic Bazaar Gate']);
+  assert.deepEqual(Array.from(context.FIELD_ROUTES.routes[gate.id].encounters.terry),[10,11,12]);
+  assert.ok(gate.related.includes('quest-fire-at-the-bazaar'));
 });
 
 test('default nicknames track creation records independently of speakers, species and saved names', () => {

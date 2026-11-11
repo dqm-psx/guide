@@ -257,6 +257,8 @@ def inspect(args, old, new, manifest, index):
     shipped = {r["id"]: r for r in old_ship["maps"]}
     ids = {f"map-{r[0]}-{r[1]}" for r in index["maps"]}
     require(ids == shipped.keys() and len(ids) == len(index["maps"]), "Atlas identity inventory differs")
+    native_supplement = set(index.get("nativeSupplementMaps", []))
+    require(native_supplement <= ids, "Unknown supplemental native map")
     for guard in index["consumers"]:
         _, start, end, digest = guard
         for disc in (old, new):
@@ -292,7 +294,7 @@ def inspect(args, old, new, manifest, index):
             images[image_id] = image_file(render(b["graphic"], banks[b["tiles"]]), old_name, args.write)
         name, full_digest = images[image_id]
         baseline_key = sha(a["graphic"]) + ":" + sha(previous)
-        if baseline_key not in baseline_pixels:
+        if key not in native_supplement and baseline_key not in baseline_pixels:
             if differences["graphics"] or differences["tilesets"]:
                 if a["tiles"] not in baseline_banks:
                     baseline_banks[a["tiles"]] = TileBank(previous)
@@ -326,6 +328,9 @@ def inspect(args, old, new, manifest, index):
                  scope="Fixed named layouts, static background tile layers and palettes, scene title strings, "
                        "and grid-backed native doorway selectors. Scripted events, generated floors, "
                        "animated layers and story-state access are outside this proof.")
+    if native_supplement:
+        proof["nativeSupplementMaps"] = sorted(native_supplement)
+        proof["scope"] += " Supplemental maps are verified from authenticated baseline/current native descriptors and assets; they are outside the independent PNG baseline fingerprint."
     atlas = dict(source=f"PSX {manifest['version']} verified static maps", verification=summary, maps=rows)
     require(args.write or read_json(PROOF) == proof, "Checked-in atlas verification receipt differs")
     # Public names and aliases are refreshed independently; the native identity, art and doors must still match.

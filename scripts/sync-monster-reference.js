@@ -161,8 +161,25 @@ function buildReference(baseline, breeding, comparison, manifest, publicRevision
       requireValue(matches.length === 1, `encounter context differs for ${row.id}:${prefix}`);
       const label = clean(matches[0].slice(prefix.length), 'encounter label');
       const parts = label.match(/^(.*?)\s*(\d+~\d+F)$/);
+      const aliases = [location.name];
       location.name = parts ? parts[1].trim() : label;
       location.floors = parts ? parts[2].replace('~', '–') : null;
+      for (const edition of ['gameboy','delocalized','vibecoded']) {
+        const alternatives = row.raw.translations[edition]?.english_lines;
+        if (!Array.isArray(alternatives)) continue;
+        for (const line of alternatives.filter(line => typeof line === 'string' && line.startsWith(prefix))) {
+          const text = clean(line.slice(prefix.length), 'encounter alias');
+          const range = text.match(/^(.*?)\s*(\d+~\d+F)$/);
+          aliases.push(range ? range[1].trim() : text);
+        }
+      }
+      location.aliases = [...new Set(aliases.filter(alias => alias && alias !== location.name))];
+      // Native gate 32 is unused. Keep its recorded encounter pools for the
+      // unused-content article, but never offer them as acquisition routes.
+      // Classify by native identity so a translation rename cannot undo this.
+      if (location.game === 'terry' && location.context_id >= 122 && location.context_id <= 125) {
+        location.availability = 'unused';
+      }
     }
     return monster;
   });
@@ -244,8 +261,8 @@ async function main(argv) {
       short_name: row.short_name, japanese: row.japanese, aliases: row.aliases,
       skills: Object.fromEntries(Object.entries(row.skills).map(([game, list]) =>
         [game, list.map(({id,system_entry_id}) => ({id,system_entry_id}))])),
-      locations: row.locations.filter(loc => loc.kind === 'wild').map(({kind, game, context_id, name, floors, levels}) =>
-        ({kind, game, context_id, name, floors, levels}))
+      locations: row.locations.filter(loc => loc.kind === 'wild').map(({kind, game, context_id, name, aliases, floors, levels, availability}) =>
+        ({kind, game, context_id, name, aliases, floors, levels, ...(availability ? {availability} : {})}))
     }));
     const names = reference.guide_names;
     const shell = {

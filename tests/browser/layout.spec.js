@@ -51,14 +51,14 @@ test.describe('sticky chrome and feature surfaces', () => {
     const nav = page.getByRole('navigation', {name:'Guide contents'});
     await expect(page.getByRole('button',{name:'Browse guide'})).toBeHidden();
     await expect(nav.getByRole('heading')).toHaveText(['Breeding tools','Reference','Places','Walkthroughs']);
-    for (const name of ['Guide home','Terry','Cobi & Tara','Terry’s gates','Cobi & Tara’s worlds','Characters','Monster library','My game']) {
+    for (const name of ['Guide home','Terry','Cobi & Tara','Locations & maps','Characters','Monster library','My game']) {
       await expect(nav.getByRole('link',{name,exact:true})).toBeVisible();
     }
     const terry = nav.getByRole('link',{name:'Terry',exact:true});
     await terry.click();
     await expect(terry).toHaveAttribute('aria-current','page');
     await expect(page.locator('#article-title')).toBeFocused();
-    const siblings = nav.getByRole('link',{name:'Cobi & Tara’s worlds',exact:true});
+    const siblings = nav.getByRole('link',{name:'Locations & maps',exact:true});
     await siblings.click();
     await expect(siblings).toHaveAttribute('aria-current','page');
     await expect(page.locator('#directory-title')).toBeFocused();

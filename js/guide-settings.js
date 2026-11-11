@@ -67,6 +67,16 @@
     }
     const entry=params.get('entry');
     if (view==='field-guide' && /^[\w-]+$/.test(entry || '')) path=entry.startsWith('skill-') ? 'skills/'+entry.slice(6)+'/' : 'articles/'+entry+'/';
+    if (view==='field-guide' && entry?.startsWith('location-')) {
+      const map=window.PLAYER_ATLAS?.maps.find(row=>row.id===params.get('map'));
+      const belongs=map && window.DQMAtlas?.context.mapsForLocation(entry).some(row=>row.id===(map.placeId || map.id));
+      if (belongs) {
+        const selection=new URLSearchParams({entry,map:map.id});
+        if (map.arrivalVariants?.some(row=>row.id===params.get('variant'))) selection.set('variant',params.get('variant'));
+        if (params.get('section')==='encounters') selection.set('section','encounters');
+        path+='#field-guide?'+selection;
+      } else if (params.get('section')==='encounters') path+='#location-encounters';
+    }
     if (view==='field-guide') path=window.DQMField?.walkthroughPath?.(params) || path;
     // The published edition has standalone entries. A local development server
     // serves the hash router, and a downloaded file needs a public URL to share.

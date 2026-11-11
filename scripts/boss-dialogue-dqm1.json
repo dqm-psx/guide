@@ -1,0 +1,511 @@
+{
+  "speakers": {
+    "boss-dragon": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001b5000_033c",
+          "s001b5000_035c"
+        ],
+        "Rematch": [
+          "s001b5000_03a1"
+        ],
+        "After battle": [
+          "s001b5000_03c9"
+        ]
+      }
+    },
+    "boss-golem": {
+      "labels": [
+        "Golemus"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s001bc000_0016",
+          "s001bc000_001f"
+        ],
+        "Rematch": [
+          "s001bc000_00a3"
+        ],
+        "After battle": [
+          "s001bc000_00cd"
+        ]
+      }
+    },
+    "boss-great-sabrecat": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001c2800_0016"
+        ],
+        "Rematch": [
+          "s001c2800_007f"
+        ],
+        "After battle": [
+          "s001c2800_009d"
+        ]
+      }
+    },
+    "boss-treeface": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001c8800_003c"
+        ],
+        "Rematch": [
+          "s001c8800_0086"
+        ],
+        "After battle": [
+          "s001c8800_00b1"
+        ]
+      }
+    },
+    "boss-fang-slime": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001d6000_041d",
+          "s001d6000_046f"
+        ],
+        "Rematch": [
+          "s001d6000_04bb"
+        ],
+        "After battle": [
+          "s001d6000_04e8"
+        ]
+      }
+    },
+    "boss-big-eye": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001dd000_0014"
+        ],
+        "Rematch": [
+          "s001dd000_0064"
+        ],
+        "After battle": [
+          "s001dd000_0083"
+        ]
+      }
+    },
+    "boss-living-statue": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001ea800_00ae"
+        ],
+        "Rematch": [
+          "s001ea800_00c2"
+        ],
+        "After battle": [
+          "s001ea800_00d8"
+        ]
+      }
+    },
+    "boss-battle-rex": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s00200800_0068",
+          "s00200800_00d8",
+          "s00200800_01af"
+        ],
+        "Rematch": [
+          "s00200800_0200"
+        ],
+        "After battle": [
+          "s00200800_0227"
+        ]
+      }
+    },
+    "boss-funky-bird": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001f8000_0018",
+          "s001f8000_003c"
+        ],
+        "Rematch": [
+          "s001f8000_0064"
+        ],
+        "After battle": [
+          "s001f8000_0091"
+        ]
+      }
+    },
+    "boss-sky-dragon": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001f1800_0015"
+        ],
+        "Rematch": [
+          "s001f1800_0039"
+        ],
+        "After battle": [
+          "s001f1800_005f"
+        ]
+      }
+    },
+    "boss-jamiras": {
+      "labels": [],
+      "scenes": {
+        "The speech": [
+          "s00211000_0054",
+          "s00211000_00ca",
+          "s00211000_013f",
+          "s00211000_0183"
+        ],
+        "Rematch": [
+          "s00211000_01b6"
+        ],
+        "After battle": [
+          "s00211000_0215"
+        ]
+      }
+    },
+    "boss-demon-servant": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s00217800_0018",
+          "s00217800_005f",
+          "s00217800_00aa"
+        ],
+        "Rematch": [
+          "s00217800_00f3"
+        ],
+        "After battle": [
+          "s00217800_0111"
+        ]
+      }
+    },
+    "boss-dark-horn": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s00225800_006b"
+        ],
+        "Rematch": [
+          "s00225800_00dc"
+        ],
+        "After battle": [
+          "s00225800_0126"
+        ]
+      }
+    },
+    "boss-akbar": {
+      "labels": [],
+      "scenes": {
+        "The trial": [
+          "s0022d800_0095",
+          "s0022d800_0120",
+          "s0022d800_016a",
+          "s0022d800_01af",
+          "s0022d800_01d5",
+          "s0022d800_01f9",
+          "s0022d800_021f"
+        ],
+        "Rematch": [
+          "s0022d800_026f"
+        ],
+        "After battle": [
+          "s0022d800_0296"
+        ]
+      }
+    },
+    "boss-durran": {
+      "labels": [],
+      "scenes": {
+        "The challenges": [
+          "s0023b800_0018",
+          "s0023b800_0094",
+          "s0023b800_00b4",
+          "s0023b800_00ff",
+          "s0023b800_0188",
+          "s0023b800_01d7",
+          "s0023b800_022b"
+        ],
+        "The final duel": [
+          "s0023b800_0258",
+          "s0023b800_02d9",
+          "s0023b800_02fb"
+        ],
+        "After battle": [
+          "s0023b800_036e"
+        ]
+      }
+    },
+    "boss-darkdrium": {
+      "labels": [
+        "Darkdrium"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s00288800_0055",
+          "s00288800_009d"
+        ],
+        "Rematch": [
+          "s00288800_0115"
+        ],
+        "After battle": [
+          "s00288800_01d7"
+        ]
+      }
+    },
+    "boss-demon-knight": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001cf800_0017"
+        ],
+        "Rematch": [
+          "s001cf800_005d"
+        ],
+        "After battle": [
+          "s001cf800_0087"
+        ]
+      }
+    },
+    "boss-gigantes": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s001e3800_0015"
+        ],
+        "Rematch": [
+          "s001e3800_002b"
+        ],
+        "After battle": [
+          "s001e3800_0049"
+        ]
+      }
+    },
+    "boss-king-slime": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s0021e800_0166"
+        ],
+        "After battle": [
+          "s0021e800_0193"
+        ]
+      }
+    },
+    "boss-lips": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s0021e800_0102"
+        ],
+        "After battle": [
+          "s0021e800_0124"
+        ]
+      }
+    },
+    "boss-matango": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s0021e800_01de"
+        ],
+        "After battle": [
+          "s0021e800_0205"
+        ]
+      }
+    },
+    "boss-orochi": {
+      "labels": [],
+      "scenes": {
+        "Before battle": [
+          "s00234000_0018"
+        ],
+        "Rematch": [
+          "s00234000_0068"
+        ],
+        "After the confrontation": [
+          "s00234000_008c",
+          "s00234000_00b9"
+        ]
+      }
+    },
+    "boss-dragonlord": {
+      "labels": [
+        "Dragonlord"
+      ],
+      "scenes": {
+        "The offer": [
+          "s00244000_0017",
+          "s00244000_00cf",
+          "s00244000_0136",
+          "s00244000_0181"
+        ],
+        "Rematch": [
+          "s00244000_01ce"
+        ],
+        "After battle": [
+          "s00244000_023f"
+        ]
+      }
+    },
+    "boss-hargon": {
+      "labels": [
+        "Hargon"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s0024b800_0016",
+          "s0024b800_005f",
+          "s0024b800_00af"
+        ],
+        "Rematch": [
+          "s0024b800_0102"
+        ],
+        "After battle": [
+          "s0024b800_0151"
+        ]
+      }
+    },
+    "boss-shido": {
+      "labels": [
+        "Shido"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s0024b800_0226"
+        ],
+        "Rematch": [
+          "s0024b800_026f"
+        ],
+        "After battle": [
+          "s0024b800_0296"
+        ]
+      }
+    },
+    "boss-baramos": {
+      "labels": [
+        "Baramos"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s00254000_0016"
+        ],
+        "Rematch": [
+          "s00254000_00d2"
+        ],
+        "After battle": [
+          "s00254000_013c"
+        ]
+      }
+    },
+    "boss-zoma": {
+      "labels": [
+        "Zoma"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s0025b800_0015"
+        ],
+        "Rematch": [
+          "s0025b800_010e"
+        ],
+        "After battle": [
+          "s0025b800_0185"
+        ]
+      }
+    },
+    "boss-psaro": {
+      "labels": [
+        "Psaro"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s00263000_0014",
+          "s00263000_00de",
+          "s00263000_0124"
+        ],
+        "Rematch": [
+          "s00263000_01c0"
+        ],
+        "After battle": [
+          "s00263000_025c"
+        ]
+      }
+    },
+    "boss-estark": {
+      "labels": [
+        "Estark"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s0026b000_0016",
+          "s0026b000_00e0",
+          "s0026b000_0109",
+          "s0026b000_0164"
+        ],
+        "Rematch": [
+          "s0026b000_01cc"
+        ],
+        "After battle": [
+          "s0026b000_0230"
+        ]
+      }
+    },
+    "boss-mildrath": {
+      "labels": [
+        "Mildrath"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s00272800_0017",
+          "s00272800_006d",
+          "s00272800_0113"
+        ],
+        "Rematch": [
+          "s00272800_01bc"
+        ],
+        "After battle": [
+          "s00272800_0223"
+        ]
+      }
+    },
+    "boss-mudo": {
+      "labels": [
+        "Mudo"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s0027a000_0015",
+          "s0027a000_004d",
+          "s0027a000_0079",
+          "s0027a000_00b6",
+          "s0027a000_00de"
+        ],
+        "Rematch": [
+          "s0027a000_0103"
+        ],
+        "After battle": [
+          "s0027a000_014e"
+        ]
+      }
+    },
+    "boss-deathmore": {
+      "labels": [
+        "Deathmore"
+      ],
+      "scenes": {
+        "Before battle": [
+          "s00281000_0015"
+        ],
+        "Rematch": [
+          "s00281000_0157"
+        ],
+        "After battle": [
+          "s00281000_02b6"
+        ]
+      }
+    }
+  },
+  "omitLines": {}
+}

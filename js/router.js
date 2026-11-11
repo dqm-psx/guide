@@ -107,11 +107,11 @@
       const kind = row?.kind || params.get("kind");
       const game = row?.game || params.get("game");
       if (kind === "story") section = "#field-guide?game=" + (game || "dqm1") + "&kind=story";
-      else if (kind === "location" && (game === "dqm1" || game === "dqm2")) section = "#field-guide?kind=location&game=" + game;
+      else if (kind === "location") section = "#field-guide?kind=location";
       else if (kind === "tool") section = "#field-guide?kind=item";
       else if (kind && navLinks.some(link => link.hash === "#field-guide?kind=" + kind)) section = "#field-guide?kind=" + kind;
     }
-    if (viewId === "atlas" && params.get("tab") === "encounters") section = "#atlas?tab=encounters";
+    if (viewId === "atlas") section = "#field-guide?kind=location";
     for (const link of navLinks) {
       const active = link.hash === section;
       if (active) link.setAttribute("aria-current", "page");
@@ -204,6 +204,9 @@
     markNav(viewId);
     setTitle(viewId);
     if (viewId === "field-guide" || viewId === "atlas") {
+      if (viewId === "atlas") P('atlas-places-nav').innerHTML = DQMLocations.navigation(
+        new URLSearchParams(parse(currentHash()).params).get('tab') === 'encounters' ? 'encounters' : 'maps',
+        value => String(value).replaceAll('&','&amp;'));
       const title = viewId === "atlas" ? window.DQMAtlas.show() : (window.DQMField || window.DQMGuideShell).show();
       if (title) document.title = title + " · " + TITLE_SUFFIX;
     }
@@ -225,13 +228,16 @@
     window.dispatchEvent(new Event('guide-view-rendered'));
     const stageId = viewId === 'field-guide' && new URLSearchParams(parse(currentHash()).params).get('entry');
     const stage = stageId && P(stageId)?.closest('.walk-stage') ? P(stageId) : null;
+    const sectionId = {encounters:'location-encounters',maps:'location-map-browser'}[new URLSearchParams(parse(currentHash()).params).get('section')];
+    const locationSection = viewId === 'field-guide' && sectionId ?
+      sectionId==='location-map-browser' ? P('gate-map-selected') || P(sectionId) : P(sectionId) : null;
     if (keepAtlasPosition && settings.focus && !previouslyFocused.isConnected) {
       const replacement = previouslyFocused.id && P(previouslyFocused.id);
       focusable(replacement || P('atlas-location'))?.focus({ preventScroll: true });
     }
-    if ((settings.scroll === false || keepAtlasPosition) && !stage) return;
+    if ((settings.scroll === false || keepAtlasPosition) && !stage && !locationSection) return;
     const heading = headingFor(viewId);
-    const requested = settings.focusId ? P(settings.focusId) : stage;
+    const requested = settings.focusId ? P(settings.focusId) : stage || locationSection;
     const focusTarget = focusable(requested || heading);
     const scrollTarget = requested || fragmentIn(view) || heading || view;
     if (scrollTarget) scrollTarget.scrollIntoView({ block: "start", behavior: "instant" });
@@ -320,6 +326,13 @@
       render(activeView || DEFAULT_VIEW, { focus: true, scroll: true });
     });
   }
+
+  document.addEventListener('click', event => {
+    const link = event.target.closest('.places-nav a[data-atlas-tab]');
+    if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    go('atlas', {focusId:'atlas-heading', params:new URLSearchParams(parse(link.hash).params)});
+  });
 
   window.DQMViews = Object.freeze({ go, search, current: () => activeView, viewFor, parse });
 

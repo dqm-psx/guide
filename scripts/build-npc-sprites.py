@@ -30,6 +30,7 @@ ACTORS = {
 # Each line identifies the speaking field actor in this particular scene and story state.
 # Some other conversations contain several speakers, including a king and his impostor.
 SPEAKERS = {
+    "laura": (73, 102, "resident-r73-f5d78-a2-t7b-b4116-s2", "I am Laura, princess of Radatome."),
     "queen-of-greattree": (5661, 1278, "resident-r5661-f17db8-a0-t2912-b5659-s0", "I am the queen of GreatTree"),
     "sanchi": (5630, 1317, "resident-r5630-f15a58-a6-t3ab-b5595-s6", "It's Sanchi."),
     "tife": (5661, 1208, "resident-r5661-f15754-a19-t1294-b5644-s19", "Tife:"),

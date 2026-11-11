@@ -1,6 +1,14 @@
 'use strict';
 
-const bindings = require('./character-dialogue-bindings.json');
+const bundles = ['character-dialogue-bindings','boss-dialogue-dqm1','boss-dialogue-dqm2'].map(name=>require('./'+name+'.json'));
+const bindings = {speakers:{},omitLines:{}};
+for (const bundle of bundles) {
+  for (const [id,speaker] of Object.entries(bundle.speakers)) {
+    if (bindings.speakers[id]) throw new Error('Duplicate dialogue speaker '+id);
+    bindings.speakers[id]=speaker;
+  }
+  Object.assign(bindings.omitLines,bundle.omitLines);
+}
 
 // Only reviewed public catalog IDs appear here. Actor talk scripts can contain
 // replies, narration or an impostor using the same "King:" prefix.
@@ -44,4 +52,4 @@ function buildCharacterDialogue(comparison, revision) {
   }
   return {revision, entries};
 }
-module.exports = {buildCharacterDialogue};
+module.exports = {buildCharacterDialogue, bindings};

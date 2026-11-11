@@ -2,7 +2,7 @@
 
 ## Gameplay sources
 
-The v1.0.73 walkthrough audit resolved all 1,295 cited records for the 171
+The v1.0.73 walkthrough audit resolved all 1,490 cited records for the 188
 campaign, quest, boss, character and location articles. It also checked the
 native conditions behind the fixed story keys, spirit rewards and arena rounds.
 The v1.0.73 disc uses **Hale** in nine cited lines. The current published text
@@ -41,13 +41,44 @@ Japanese name and English variants. The starter’s walkthrough name comes from
 its recruitment record. Healie’s speaker name and recruit nickname come from
 separate records and appear together when they differ.
 
-The atlas groups 406 fixed layouts into 183 named places. Each layout keeps
+The atlas groups 407 fixed layouts into 184 named places. Each layout keeps
 its own link and doors. The v1.0.73 disc check verified the static background
 art, native map titles and 829 linked doorway destinations, including a
 different Small Cave background when returning from the cave interior.
 The atlas follows recorded doorways. Story triggers, moving actors and
 generated dungeon floors fall outside its scope. Map images load on demand
 and can be revisited offline once cached.
+
+Location articles embed their maps; atlas pages link back to the corresponding
+gate or world and explicitly associated quests, walkthrough sections and
+characters. These relationships use native map and encounter IDs. A world's
+encounter list describes the world, not every room inside it.
+
+Terry's gate entrances use a separate native portal index, including the three
+Gate Chamber floors and the gates around GreatTree. Run
+`python scripts/build-gate-entrances.py --bin <current-disc.bin> --check` to
+verify its 31 entrances. The event grids, dispatch tables and collision patches
+match on the Japanese original, the v1.0.66 atlas baseline and v1.0.73. Portal
+coordinates select an exact floor image; sharing a room does not mean one gate
+owns that room. Entrance markers do not assert that a gate is currently unlocked.
+Hidden Gate is unused content in both checked discs. Its destination has an
+empty event script, so the retained Darkdrium dialogue is not a playable boss
+event. Its encounter records remain visible on the unused-content page but
+are excluded from monster acquisition lists. See [the native audit](hidden-gate-evidence.md).
+
+Gate pages show entrance and final-area maps together. Final destinations come
+from the native terminal table, including Farm Gate's return to the Young
+Woman's Room. Spirit's Spring (`map-84-0`) supplements the original atlas
+inventory; its native baseline/current checks are recorded separately from the
+unchanged fingerprint of the independently exported map PNGs.
+
+`python scripts/build-gate-generation.py --bin <current-disc.bin> --original-bin <japanese-disc.bin> --check`
+checks each gate's floor count, possible terrain types and final destination.
+The 12 terrain images show original room-pattern graphics, not complete floors
+or fixed routes. Room-and-passage terrain and open terrain use different native
+layout generators. Special-room possibilities are labeled for the Current
+English patch and follow the native selector, including its byte arithmetic;
+a positive table weight alone does not prove that a room can be selected.
 
 Items distinguish verified effects from evidence of availability in a
 particular adventure. Shop stock, prices and skill-learning thresholds were

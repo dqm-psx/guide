@@ -1,5 +1,11 @@
 {
   "speakers": {
+    "npc-laura": {
+      "labels": ["Laura"],
+      "scenes": {
+        "Swamp Cave": ["s001b5000_0058", "s001b5000_008e", "s001b5000_009d", "s001b5000_00c2", "s001b5000_00e1", "s001b5000_0107", "s001b5000_017d", "s001b5000_01ed", "s001b5000_0210", "s001b5000_0310"]
+      }
+    },
     "npc-cobi": {
       "labels": ["Cobi"],
       "scenes": {

@@ -23,30 +23,58 @@
   ];
   const familyGates = ['extinction','manipulation','ambition','sleep','domination','destruction'];
   const sideId = slug => 'location-'+slug+'-gate';
+  const unverifiedEntrances = new Set((globalThis.GATE_ENTRANCES?.unmapped || []).map(row=>row.location));
+  // These leads repeat the dedicated arena, map or encounter sections.
+  const redundantGateLeads = new Set(['townsperson-s','guardian','memory','peace','courage',
+    'strength','joy','wisdom','happiness','judgment','mirror','farm','arena-left','arena-right'].map(sideId));
+  function leadFor(row) {
+    if (row.kind!=='location' || row.game!=='dqm1') return row.summary || '';
+    if (row.availability==='unused') return row.summary;
+    if (redundantGateLeads.has(row.id)) return '';
+    if (familyGates.some(slug=>sideId(slug)===row.id)) return 'Available after the Starry Night Tournament.';
+    if (unverifiedEntrances.has(row.id)) return 'An entrance for this gate has not been verified.';
+    if (['location-confusion-gate','location-temptation-gate'].includes(row.id)) return row.summary.split('. ').slice(1).join('. ');
+    return row.summary || '';
+  }
 
-  // Ten GreatTree gates have encounter tables but no separate story chapter.
+  // These ten gate encounter groups have no separate story chapter.
   // Give them the same searchable, shareable floor-by-floor articles as the
   // arena gates, reusing the unlock quest when its requirements are known.
   const encounters = new Map();
   for (const monster of GUIDE_REFERENCE.species) {
     for (const area of monster.locations || []) {
       if (area.game!=='terry' || area.kind!=='wild') continue;
-      if (!encounters.has(area.context_id)) encounters.set(area.context_id,{name:area.name,levels:[]});
+      if (!encounters.has(area.context_id)) encounters.set(area.context_id,{name:area.name,aliases:area.aliases || [],levels:[]});
       encounters.get(area.context_id).levels.push(...area.levels);
     }
   }
   for (const [slug,start,end,questId] of sideGates) {
-    const name=encounters.get(start).name;
+    const {name,aliases}=encounters.get(start);
     const contexts=Array.from({length:end-start+1},(_,i)=>start+i);
     const levels=contexts.flatMap(id=>encounters.get(id).levels);
     const levelRange='Lv. '+Math.min(...levels)+'–'+Math.max(...levels);
     const quest=WORLD_GUIDE.entries.find(row=>row.id===questId);
     const id=sideId(slug);
-    WORLD_GUIDE.entries.push({id,kind:'location',game:'dqm1',campaigns:['terry'],title:name,region:'GreatTree',
-      summary:quest?.summary || 'Wild monsters in this gate are '+levelRange+'.',levelRange,
-      related:quest ? [quest.id] : [], details:[], spoiler:quest?.spoiler || 'story',
+    const unused=globalThis.GATE_GENERATION?.entries[id]?.availability==='unused';
+    WORLD_GUIDE.entries.push({id,kind:'location',game:'dqm1',campaigns:['terry'],title:name,aliases,region:'GreatTree',
+      ...(unused ? {availability:'unused'} : {}),
+      summary:unused ? 'Unused content retained in the original Japanese game and the English patch. There is no normal entrance or working boss event; this is not a gate you can unlock.' :
+        unverifiedEntrances.has(id) ? 'An entrance for this gate has not been verified. Its recorded wild monsters are '+levelRange+'.' :
+        quest?.summary || 'Wild monsters in this gate are '+levelRange+'.',levelRange,
+      related:unused ? ['boss-darkdrium'] : quest ? [quest.id] : [],
+      details:unused ? ['Nameless Place retains Darkdrium’s dialogue, but its event script is empty.'] : [], spoiler:unused ? 'ending' : quest?.spoiler || 'story',
       source_ids:quest?.source_ids || []});
     FIELD_ROUTES.routes[id]={encounters:{terry:contexts}};
+  }
+
+  // Boss articles use stable gate/species identities. This also preserves the
+  // separate choices and return visits in gates with more than one boss.
+  for (const boss of WORLD_GUIDE.entries.filter(row=>row.kind==='boss' && row.gate_id)) {
+    FIELD_ROUTES.routes[boss.id]={gate:boss.gate_id,maps:boss.map_ids || []};
+    const generation=globalThis.GATE_GENERATION?.entries[boss.gate_id];
+    for (const record of generation?.bosses || (generation?.boss ? [generation.boss] : [])) {
+      if (boss.species_ids.includes(record.species)) record.entry=boss.id;
+    }
   }
 
   function render(game,{byId,routes,escape,entryLink,mapLink,hidden,adventures}) {
@@ -64,14 +92,20 @@
         const note=row.summary.replace(/^Third basement floor, /i,'').replace(';',' ·').replace(/ monsters\.$/, '');
         return '<li>'+entryLink(row.id)+(hidden(row) ? '' : '<small>'+escape(note)+'</small>')+'</li>';
       });
-      const aroundTown=sideGates.map(([slug,,,questId,condition])=>{
+      const aroundTown=sideGates.filter(([slug])=>!unverifiedEntrances.has(sideId(slug))).map(([slug,,,questId,condition])=>{
         const row=byId.get(sideId(slug));
         const info=questId ? entryLink(questId,condition) : escape(row.levelRange);
         return '<li>'+entryLink(row.id)+(hidden(row) ? '' : '<small>'+info+'</small>')+'</li>';
       });
-      return heading('Travelers’ Gate Chamber')+'<dl class="gate-ranks">'+rankRow('First assignment',['location-departure-gate'])+ranks.join('')+'</dl>'+
+      const extraGates=[...unverifiedEntrances].filter(id=>byId.has(id));
+      const extraSections=[['Unused content',true],['Unverified entrance',false]].map(([label,unused])=>{
+        const ids=extraGates.filter(id=>(byId.get(id).availability==='unused')===unused);
+        return ids.length ? heading(label)+compact(ids.map(id=>entryLink(id))) : '';
+      }).join('');
+      return '<p class="place-hub-map">'+mapLink('map-6-0')+' · Town map and rooms</p>'+heading('Travelers’ Gate Chamber')+'<dl class="gate-ranks">'+rankRow('First assignment',['location-departure-gate'])+ranks.join('')+'</dl>'+
         heading('Gates around GreatTree')+'<ul class="town-gates">'+aroundTown.join('')+'</ul>'+
-        heading('Postgame · Gate Chamber B3')+'<ul class="family-gates">'+families.join('')+'</ul>';
+        heading('Postgame · Gate Chamber B3')+'<ul class="family-gates">'+families.join('')+'</ul>'+
+        extraSections;
     }
     function siblings() {
       return worldStops.map(([slug,keyQuest,stops])=>{
@@ -93,5 +127,14 @@
     }
     return sections.join('');
   }
-  globalThis.DQMLocations={render};
+  function navigation(active,escape,backLink='') {
+    const links=[['all','#field-guide?kind=location','Overview'],
+      ['dqm1','#field-guide?kind=location&game=dqm1','Terry’s gates'],
+      ['dqm2','#field-guide?kind=location&game=dqm2','Cobi & Tara’s worlds'],
+      ['maps','#atlas','All maps'],['encounters','#atlas?tab=encounters','Wild encounters']];
+    return '<nav class="places-nav" aria-label="Locations and maps">'+backLink+links.map(([key,href,label])=>
+      '<a href="'+escape(href)+'"'+(['maps','encounters'].includes(key)?' data-atlas-tab="'+key+'"':'')+
+      (active===key?' aria-current="page"':'')+'>'+escape(label)+'</a>').join('')+'</nav>';
+  }
+  globalThis.DQMLocations={render,navigation,leadFor};
 })();

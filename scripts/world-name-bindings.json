@@ -22,6 +22,16 @@
   },
   "terms": [
     {
+      "spelling": "Laura",
+      "source_id": "s001b5000_0310",
+      "catalog": "dialogue/main/0000_1999.json",
+      "extract": "phrase",
+      "prefix": "I am ",
+      "suffix": ", princess of ",
+      "aliases": ["Princess Laura"],
+      "affected_entries": ["npc-laura"]
+    },
+    {
       "spelling": "Demon King's Castle Shrine",
       "source_id": "s0028f000_0015",
       "catalog": "dialogue/main/0000_1999.json",
