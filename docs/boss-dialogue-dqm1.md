@@ -53,6 +53,10 @@ The JSON lists each full source ID explicitly. Phase headings distinguish the
 initial encounter, repeat challenge and aftermath; alternate responses within
 a phase remain separate passages.
 
+Darkdrium is an exception: these are retained unused lines, not an executable
+boss encounter. Nameless Place's script directory is empty in both the original
+Japanese game and v1.0.73. See [the native audit](hidden-gate-evidence.md).
+
 ## Native checks and exclusions
 
 The original Japanese disc was authenticated with SHA-256

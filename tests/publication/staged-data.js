@@ -8,7 +8,7 @@ module.exports = function loadStagedData(root) {
   const context = vm.createContext({});
   for (const file of ['data/breeding-data.js','data/monster-reference.js','data/handbook-reference.js',
     'data/world-guide.js','data/field-guide.js','data/player-atlas.js','data/field-routes.js',
-    'data/gate-entrances.js','data/character-dialogue.js','data/skill-descriptions.js',
+    'data/gate-entrances.js','data/gate-generation.js','data/character-dialogue.js','data/skill-descriptions.js',
     'js/current-names.js','js/locations.js']) {
     vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context,{timeout:5000});
   }

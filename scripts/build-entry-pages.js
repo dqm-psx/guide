@@ -127,7 +127,7 @@ function addEntryPages(assets) {
         const map=entrance ? maps.get(entrance.map) : place;
         const caption=entrance ? link('places/'+place.id+'/#'+map.id,map.title+(entrance.floor ? ' · '+entrance.floor : '')) : mapLink(map);
         return '<figure class="entry-gate-map" data-map-role="'+(entrance?'entrance':'final')+'"><figcaption><strong>'+
-          (entrance?'Entrance':'Final area')+'</strong> · '+caption+'</figcaption>'+
+          (entrance?'Entrance':row.availability==='unused'?'Unused final area':'Final area')+'</strong> · '+caption+'</figcaption>'+
           markedMap(map,entrance?[entrance]:[],true)+'</figure>';
       });
       return '<section class="location-maps" aria-label="Gate maps">'+
@@ -196,10 +196,10 @@ function addEntryPages(assets) {
       return escape([readable[game], location.name, location.floors].filter(Boolean).join(' · '))+' — '+monsters.join(', ');
     })).filter(Boolean);
   }
-  function gateEncounterTable(groups) {
+  function gateEncounterTable(groups,unused=false) {
     const rows=Object.entries(groups || {}).flatMap(([game,ids])=>ids.map(id=>encounters.get(game+'/'+id)))
       .filter(Boolean).map(({location,monsters})=>'<tr><th scope="row">'+escape(location.floors)+'</th><td>'+monsters.join(' · ')+'</td></tr>');
-    return rows.length ? '<section id="location-encounters" class="entry-gate-encounters"><h2>Wild encounters</h2>'+
+    return rows.length ? '<section id="location-encounters" class="entry-gate-encounters"><h2>'+(unused?'Unused encounter records':'Wild encounters')+'</h2>'+
       '<table><thead><tr><th>Floors</th><th>Wild monsters</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></section>' : '';
   }
   function battleList(groups) {
@@ -247,7 +247,7 @@ function addEntryPages(assets) {
     const gateSummary=gate ? '<div class="entry-gate-summary"><div class="entry-gate-overview"><h1>'+escape(row.title)+'</h1>'+
       paragraph(db.DQMLocations.leadFor(row))+gateFacts(row,routeData)+locationCharacters(row)+
       (gateLinks.length ? '<nav class="entry-gate-links" aria-label="Related guide entries">'+gateLinks.join('')+'</nav>' : '')+
-      '</div>'+gateEncounterTable(routeData.encounters)+'</div>' : '';
+      '</div>'+gateEncounterTable(routeData.encounters,row.availability==='unused')+'</div>' : '';
     const mapsAndFloors=gate ? '<div class="entry-gate-content">'+locationMaps(row)+db.DQMGateGeneration.render(row.id,{escape,headingLevel:2})+'</div>' : locationMaps(row);
     add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+db.DQMArticleSections(row,escape,escape,2)+nicknameNote+stepsMarkup+walkChapters+requests+mapsAndFloors+
       (gate?'':locationCharacters(row))+contextLinks('Locations',characterLocations)+
@@ -285,7 +285,7 @@ function addEntryPages(assets) {
       return '<a class="entry-skill-link" href="skills/'+escape(skill.id)+'/"><span>'+escape(skill.title)+'</span><small>'+
         (Number.isInteger(level) ? 'Min. level '+level : 'Minimum level unverified')+'</small></a>';
     },'Natural skills unverified for this entry.');
-    const locations=(m.locations || []).filter(l=>l.kind==='wild').map(l=>escape([readable[l.game],l.name,l.floors,'Lv. '+l.levels.join(', ')].filter(Boolean).join(' · ')));
+    const locations=(m.locations || []).filter(l=>l.kind==='wild' && l.availability!=='unused').map(l=>escape([readable[l.game],l.name,l.floors,'Lv. '+l.levels.join(', ')].filter(Boolean).join(' · ')));
     const masters=(m.locations || []).filter(l=>l.source?.native_selection && l.strength_ranks?.length).map(l=>
       escape(readable[l.game]+' · Strength rank '+l.strength_ranks.join(', ')+' · Lv. '+l.levels.join(', ')));
     const pairs=profiles.firstRecipes(m.index).map(recipe=>{

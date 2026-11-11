@@ -80,7 +80,9 @@ test('a gate translation reaches static titles, portal labels, indexes and boss 
   assert.match(chamber,new RegExp('href="articles/'+id+'/"[^>]*>Gate of Awaiting<'));
   const index=assets.get('entries/index.html').toString();
   assert.match(index,new RegExp('href="articles/'+id+'/"[^>]*>Gate of Awaiting<'));
-  assert.match(assets.get('articles/boss-dragon/index.html').toString(),/Encounter: Gate of Awaiting\./);
+  const boss=assets.get('articles/boss-dragon/index.html').toString();
+  assert.match(boss,new RegExp('href="articles/'+id+'/"[^>]*>Gate of Awaiting<'));
+  assert.doesNotMatch(boss,/Townsperson[’']s Gate/);
 });
 
 test('packaging rejects a missing referenced file instead of publishing a broken offline bundle', () => {

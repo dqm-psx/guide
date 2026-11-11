@@ -97,14 +97,16 @@
     area.pool=pool;
   }
   function subtitle(row, list = true) {
-    if (row.roster) return names[row.game] + (row.floors ? ' · '+ row.floors : '');
+    if (row.roster) return names[row.game] + (row.floors ? ' · '+ row.floors : '')+
+      (context.locationForEncounter(row.game,row.context)?.availability==='unused' ? ' · Unused content' : '');
     const place = places.get(row.placeId || row.id);
     const region = row.scene >= 6 && row.scene <= 11 ? maps.get('map-6-0').title :
       [12,13,14,15,16,21].includes(row.scene) ? maps.get('map-12-0').title :
       regions[place.region] || '';
     return [region && region !== row.title && !row.title.startsWith(region + ' ') ? region : '',
       place.locationNumber ? 'Location '+place.locationNumber : '',
-      list && place.layouts.length > 1 ? place.layouts.length+' layouts' : ''].filter(Boolean).join(' · ');
+      list && place.layouts.length > 1 ? place.layouts.length+' layouts' : '',
+      context.locationForMap(row.id)?.availability==='unused' ? 'Unused content' : ''].filter(Boolean).join(' · ');
   }
   const poolTerms = area => searchText([area.title,area.floors || '',names[area.game]].join(' '));
   const poolMatches = (area,q) => !q || poolTerms(area).includes(q) || area.search.includes(q);
@@ -135,7 +137,8 @@
     const groupsOnPage=new Map();
     const links=visible.map(r=>{
       const dest = isMap ? r : choice(r,q);
-      const note=isMap ? subtitle(r) : names[dest.game]+(r.pools.length>1 ? ' · '+r.pools.length+' pools' : dest.floors ? ' · '+dest.floors : '');
+      const note=isMap ? subtitle(r) : names[dest.game]+(r.pools.length>1 ? ' · '+r.pools.length+' pools' : dest.floors ? ' · '+dest.floors : '')+
+        (context.locationForEncounter(dest.game,dest.context)?.availability==='unused' ? ' · Unused content' : '');
       const link='<a href="' + safe(href({[key]:dest.id,variant:''})) + '"' +
         (selected===r ? ' aria-current="true"' : '') + '><span>'+safe(r.title)+'</span>'+
         (note ? '<small>'+safe(note)+'</small>' : '')+'</a>';
@@ -291,7 +294,7 @@
     const choices=context.mapsForLocation(locationId);
     if (!root || !choices.length) return false;
     const entrances=context.entrancesForLocation?.(locationId) || [];
-    const gate=[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries].some(row=>row.id===locationId && row.game==='dqm1');
+    const gate=[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries].find(row=>row.id===locationId && row.game==='dqm1');
     const entranceFor=map=>entrances.find(entrance=>maps.has(entrance.map) && placeId(maps.get(entrance.map))===placeId(map));
     const choiceTarget=map=>entranceFor(map)?.map || map.id;
     const choiceLabel=map=>{
@@ -324,7 +327,7 @@
         const requested=placeId(map)===placeId(selected);
         return [placeId(map),{map:requested ? selected : maps.get(choiceTarget(map)),
           variant:requested ? variant : '',prefix:prefix+'-'+i,
-          caption:entrance ? 'Entrance' : 'Final area',role:entrance ? 'entrance' : 'final'}];
+          caption:entrance ? 'Entrance' : gate.availability==='unused' ? 'Unused final area' : 'Final area',role:entrance ? 'entrance' : 'final'}];
       }));
       root.innerHTML=Array.from(panels,([id,panel])=>'<section class="location-map-section" data-map-place="'+safe(id)+
         '" data-map-role="'+panel.role+'" aria-label="'+panel.caption+' · '+safe(panel.map.title)+'" tabindex="-1"'+
@@ -394,6 +397,7 @@
     const owner=context.locationForEncounter(row.game,row.context);
     const ownerLink=owner && !window.DQMField.guarded(owner) ? '<div class="map-notes"><p><a href="'+safe(articleHref(owner))+'">'+safe(owner.title)+' guide and maps</a></p></div>' : '';
     el('atlas-detail').innerHTML='<div class="atlas-caption"><div><small>'+safe(subtitle(row))+'</small><h3 id="atlas-location" tabindex="-1">'+safe(row.title)+'</h3></div>'+selector+'</div>'+
+      (owner?.availability==='unused' ? '<p class="map-notes">Unused encounter records. This gate is not accessible in the Japanese game or English patch.</p>' : '')+
       '<div class="encounters"><ul aria-label="Wild monsters">'+entries.map(([id,levels])=>
         '<li>'+spriteLabel(id,GUIDE_REFERENCE.species[id].display_name)+(levels.size ? '<small>Lv. '+[...levels].sort((a,b)=>a-b).join(', ')+'</small>' : '')+'</li>').join('')+'</ul></div>'+ownerLink;
     el('atlas-pool')?.addEventListener('change', e=>{

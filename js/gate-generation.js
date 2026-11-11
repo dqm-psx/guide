@@ -16,12 +16,16 @@
       '<ul class="gate-terrain-list" aria-label="Possible terrain types">'+group.map(terrain=>'<li><img src="'+escape(terrain.image)+'" alt="" loading="lazy" width="240" height="192">'+
         '<strong>'+escape(terrain.name)+'</strong></li>').join('')+'</ul></div>').join('');
     const special=gate.specialFloors;
+    const unused=gate.availability==='unused';
     const rooms=special?.rooms || [];
     const specials=rooms.length ? '<div class="gate-special-floors"><h'+(heading+1)+'>Special floors · English patch</h'+(heading+1)+'>'+
       '<p>Special rooms can replace a regular floor on '+escape(special.floors.map(floor=>floor+'F').join(', '))+'. They are not guaranteed.</p>'+
       '<ul>'+rooms.map(room=>'<li>'+escape(room.name)+'</li>').join('')+'</ul></div>' : '';
-    return '<section class="gate-generation" aria-label="Generated floors"><h'+heading+'>Generated floors</h'+heading+'>'+
-      '<p><strong>'+escape(range(gate.ordinaryFloors))+'</strong> · The final area is on <strong>'+escape(gate.finalFloor)+'F</strong>. These are terrain samples; floor layouts are generated for each visit.</p>'+
+    const label=unused ? 'Unused floor data' : 'Generated floors';
+    const description=unused ? 'The retained definition specifies '+escape(range(gate.ordinaryFloors))+' and a final area on '+escape(gate.finalFloor)+'F. The encounter labels still end at 39F; that inconsistency is also in the Japanese game. These records do not describe an accessible dungeon.' :
+      '<strong>'+escape(range(gate.ordinaryFloors))+'</strong> · The final area is on <strong>'+escape(gate.finalFloor)+'F</strong>. These are terrain samples; floor layouts are generated for each visit.';
+    return '<section class="gate-generation" aria-label="'+label+'"><h'+heading+'>'+label+'</h'+heading+'>'+
+      '<p>'+description+'</p>'+
       cards+specials+'</section>';
   }
   globalThis.DQMGateGeneration={render};

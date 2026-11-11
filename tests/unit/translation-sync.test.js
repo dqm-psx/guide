@@ -95,6 +95,30 @@ test('a wording refresh updates names, aliases, library, skills and locations by
   assert.equal(generateScript(result), generateScript(buildReference(baseline, breeding, comparison, manifest, publicRevision)));
 });
 
+test('translation refresh preserves unused gate classification by native context and retains the raw pools', () => {
+  const {comparison, manifest} = fixture();
+  const labels = comparison.rows.find(row => row.id === 'm_exe_09202c').raw.translations.current.english_lines;
+  for (let i=0; i<labels.length; i++) {
+    if (/^7[A-D]:/.test(labels[i])) labels[i] = labels[i].replace('Hidden Gate', 'Renamed gate');
+  }
+  const result = buildReference(baseline, breeding, comparison, manifest, publicRevision);
+  const pools = result.species.flatMap(monster => monster.locations);
+  const unused = pools.filter(location => location.availability === 'unused');
+  assert.equal(unused.length, 20);
+  assert.deepEqual([...new Set(unused.map(location => location.context_id))].sort(), [122,123,124,125]);
+  for (const location of unused) {
+    assert.equal(location.game, 'terry');
+    assert.equal(location.kind, 'wild');
+    assert.equal(location.name, 'Renamed gate');
+    assert.ok(location.source.archive_index);
+    assert.ok(location.levels.length);
+  }
+  assert.equal(pools.length, baseline.species.reduce((count, monster) => count + monster.locations.length, 0));
+  assert.ok(pools.some(location => location.game === 'terry' && location.context_id === 121 && !location.availability));
+  assert.ok(pools.some(location => location.game === 'cobi' && location.kind === 'wild' && !location.availability));
+  assert.ok(baseline.species.every(monster => monster.locations.every(location => !location.availability)));
+});
+
 test('current release metadata has a strict public-only schema and remains separate from wording', () => {
   const f = fixture();
   f.manifest.current_patch = currentPatch();

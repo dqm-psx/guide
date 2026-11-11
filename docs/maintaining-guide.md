@@ -61,7 +61,10 @@ verify its 31 entrances. The event grids, dispatch tables and collision patches
 match on the Japanese original, the v1.0.66 atlas baseline and v1.0.73. Portal
 coordinates select an exact floor image; sharing a room does not mean one gate
 owns that room. Entrance markers do not assert that a gate is currently unlocked.
-The separate Hidden Gate encounter pool has no verified entrance marker.
+Hidden Gate is unused content in both checked discs. Its destination has an
+empty event script, so the retained Darkdrium dialogue is not a playable boss
+event. Its encounter records remain visible on the unused-content page but
+are excluded from monster acquisition lists. See [the native audit](hidden-gate-evidence.md).
 
 Gate pages show entrance and final-area maps together. Final destinations come
 from the native terminal table, including Farm Gate's return to the Young

@@ -31,6 +31,10 @@ test('all native gate definitions have existing final maps, including nonsequent
   assert.equal(gates['location-arena-left-gate'].finalMaps[0],'map-84-0');
   assert.equal(gates['location-hidden-gate'].finalMaps[0],'map-101-0');
   assert.equal(gates['location-hidden-gate'].specialFloors,null);
+  assert.equal(gates['location-hidden-gate'].availability,'unused');
+  assert.equal(gates['location-hidden-gate'].finalFloor,50);
+  assert.equal(data.WORLD_GUIDE.entries.find(row=>row.id==='location-hidden-gate').availability,'unused');
+  assert.equal(data.WORLD_GUIDE.entries.find(row=>row.id==='boss-darkdrium').availability,'unused');
 });
 
 test('terrain possibilities use per-gate native weights and actual immutable artwork',()=>{

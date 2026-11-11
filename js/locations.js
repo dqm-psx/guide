@@ -29,6 +29,7 @@
     'strength','joy','wisdom','happiness','judgment','mirror','farm','arena-left','arena-right'].map(sideId));
   function leadFor(row) {
     if (row.kind!=='location' || row.game!=='dqm1') return row.summary || '';
+    if (row.availability==='unused') return row.summary;
     if (redundantGateLeads.has(row.id)) return '';
     if (familyGates.some(slug=>sideId(slug)===row.id)) return 'Available after the Starry Night Tournament.';
     if (unverifiedEntrances.has(row.id)) return 'An entrance for this gate has not been verified.';
@@ -54,10 +55,14 @@
     const levelRange='Lv. '+Math.min(...levels)+'–'+Math.max(...levels);
     const quest=WORLD_GUIDE.entries.find(row=>row.id===questId);
     const id=sideId(slug);
+    const unused=globalThis.GATE_GENERATION?.entries[id]?.availability==='unused';
     WORLD_GUIDE.entries.push({id,kind:'location',game:'dqm1',campaigns:['terry'],title:name,aliases,region:'GreatTree',
-      summary:unverifiedEntrances.has(id) ? 'An entrance for this gate has not been verified. Its recorded wild monsters are '+levelRange+'.' :
+      ...(unused ? {availability:'unused'} : {}),
+      summary:unused ? 'Unused content retained in the original Japanese game and the English patch. There is no normal entrance or working boss event; this is not a gate you can unlock.' :
+        unverifiedEntrances.has(id) ? 'An entrance for this gate has not been verified. Its recorded wild monsters are '+levelRange+'.' :
         quest?.summary || 'Wild monsters in this gate are '+levelRange+'.',levelRange,
-      related:quest ? [quest.id] : [], details:[], spoiler:quest?.spoiler || 'story',
+      related:unused ? ['boss-darkdrium'] : quest ? [quest.id] : [],
+      details:unused ? ['Nameless Place retains Darkdrium’s dialogue, but its event script is empty.'] : [], spoiler:unused ? 'ending' : quest?.spoiler || 'story',
       source_ids:quest?.source_ids || []});
     FIELD_ROUTES.routes[id]={encounters:{terry:contexts}};
   }
@@ -92,10 +97,15 @@
         const info=questId ? entryLink(questId,condition) : escape(row.levelRange);
         return '<li>'+entryLink(row.id)+(hidden(row) ? '' : '<small>'+info+'</small>')+'</li>';
       });
+      const extraGates=[...unverifiedEntrances].filter(id=>byId.has(id));
+      const extraSections=[['Unused content',true],['Unverified entrance',false]].map(([label,unused])=>{
+        const ids=extraGates.filter(id=>(byId.get(id).availability==='unused')===unused);
+        return ids.length ? heading(label)+compact(ids.map(id=>entryLink(id))) : '';
+      }).join('');
       return '<p class="place-hub-map">'+mapLink('map-6-0')+' · Town map and rooms</p>'+heading('Travelers’ Gate Chamber')+'<dl class="gate-ranks">'+rankRow('First assignment',['location-departure-gate'])+ranks.join('')+'</dl>'+
         heading('Gates around GreatTree')+'<ul class="town-gates">'+aroundTown.join('')+'</ul>'+
         heading('Postgame · Gate Chamber B3')+'<ul class="family-gates">'+families.join('')+'</ul>'+
-        (unverifiedEntrances.size ? heading('Unverified entrance')+compact([...unverifiedEntrances].filter(id=>byId.has(id)).map(id=>entryLink(id))) : '');
+        extraSections;
     }
     function siblings() {
       return worldStops.map(([slug,keyQuest,stops])=>{

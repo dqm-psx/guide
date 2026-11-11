@@ -32,6 +32,7 @@
   function groupedLocations(locations, campaign) {
     const groups = new Map();
     for (const entry of locations || []) {
+      if (entry.availability === 'unused') continue;
       if (campaign && entry.game !== campaign) continue;
       const key = JSON.stringify([entry.game, entry.name, entry.floors, entry.kind]);
       if (!groups.has(key)) groups.set(key, { ...entry, levels: [] });

@@ -242,6 +242,9 @@ def generate(disc, write):
         entries[key] = {"gateId": gate, "ordinaryFloors": [1, final_floor-1], "finalFloor": final_floor,
                         "finalMaps": [final_map], "terrains": [{"id": f"terrain-{i}", "weight": weights[i]}
                                                               for i in sorted(selected)], "specialFloors": special}
+        if gate == 32:
+            # Retained definition, not a playable route: see hidden-gate-evidence.md.
+            entries[key]["availability"] = "unused"
         boss, boss_evidence = fixed_boss(disc, gate, final_descriptor, indices)
         if boss:
             entries[key]["boss"] = boss

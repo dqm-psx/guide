@@ -174,6 +174,12 @@ function buildReference(baseline, breeding, comparison, manifest, publicRevision
         }
       }
       location.aliases = [...new Set(aliases.filter(alias => alias && alias !== location.name))];
+      // Native gate 32 is unused. Keep its recorded encounter pools for the
+      // unused-content article, but never offer them as acquisition routes.
+      // Classify by native identity so a translation rename cannot undo this.
+      if (location.game === 'terry' && location.context_id >= 122 && location.context_id <= 125) {
+        location.availability = 'unused';
+      }
     }
     return monster;
   });
@@ -255,8 +261,8 @@ async function main(argv) {
       short_name: row.short_name, japanese: row.japanese, aliases: row.aliases,
       skills: Object.fromEntries(Object.entries(row.skills).map(([game, list]) =>
         [game, list.map(({id,system_entry_id}) => ({id,system_entry_id}))])),
-      locations: row.locations.filter(loc => loc.kind === 'wild').map(({kind, game, context_id, name, aliases, floors, levels}) =>
-        ({kind, game, context_id, name, aliases, floors, levels}))
+      locations: row.locations.filter(loc => loc.kind === 'wild').map(({kind, game, context_id, name, aliases, floors, levels, availability}) =>
+        ({kind, game, context_id, name, aliases, floors, levels, ...(availability ? {availability} : {})}))
     }));
     const names = reference.guide_names;
     const shell = {

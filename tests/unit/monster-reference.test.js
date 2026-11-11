@@ -77,6 +77,17 @@ test('encounter grouping keeps campaigns, floors and kinds distinct while removi
   assert.equal(groupedLocations(locations, 'tara').length, 0);
 });
 
+test('unused encounter pools never become monster acquisition routes or encounter counts', () => {
+  const hidden = {game:'terry', name:'Renamed secret gate', floors:'1–10F', kind:'wild', levels:[38], availability:'unused'};
+  const reachable = {game:'terry', name:'A real gate', floors:'1–5F', kind:'wild', levels:[12]};
+  const otherCampaign = {...reachable, game:'cobi', levels:[20]};
+  const locations = [hidden, reachable, otherCampaign];
+  assert.deepEqual(groupedLocations(locations, 'terry'), [reachable]);
+  assert.deepEqual(groupedLocations(locations), [reachable, otherCampaign]);
+  assert.deepEqual(groupedLocations([hidden], 'terry'), []);
+  assert.equal(locations[0].availability, 'unused');
+});
+
 test('base breeding references count concrete ordered pairs and retain exact examples', () => {
   const sample = 11;
   for (const role of ['pedigree', 'mate']) {

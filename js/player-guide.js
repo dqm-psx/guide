@@ -277,7 +277,7 @@
     return (stageLinks ? '<section class="route-section"><h3>Arena and gate order</h3><ol>'+stageLinks+'</ol></section>' : '')+
       (chapters ? '<section class="route-section"><h3>Walkthrough</h3><ol>'+chapters+'</ol></section>' : '')+
       (row.kind==='location' && row.game==='dqm1' ? '' : routeFacts(row,data,p))+
-      battleMarkup(data.fights,p)+(tables ? '<section class="route-section"'+(row.kind==='location'?' id="location-encounters" tabindex="-1"':'')+'><h3>Wild encounters</h3>'+tables+'</section>' : '');
+      battleMarkup(data.fights,p)+(tables ? '<section class="route-section"'+(row.kind==='location'?' id="location-encounters" tabindex="-1"':'')+'><h3>'+(row.availability==='unused'?'Unused encounter records':'Wild encounters')+'</h3>'+tables+'</section>' : '');
   }
   function linkedProse(line, row, data, p, used) {
     const terms=new Map();
@@ -692,7 +692,7 @@
       let summary=shop ? shop.locations[0]+' · '+shop.buy+' G' : r.summary;
       if (match) summary=match.label+' · '+match.detail;
       if (speciesMatches.length) {
-        const locations = GUIDE_REFERENCE.species[r.index].locations.filter(loc=>loc.kind==='wild' &&
+        const locations = GUIDE_REFERENCE.species[r.index].locations.filter(loc=>loc.kind==='wild' && loc.availability!=='unused' &&
           (!hunt[2] || loc.game===hunt[2]) && (!game || (loc.game==='terry' ? 'dqm1' : 'dqm2')===game));
         if (locations.length) {
           const first = locations[0];

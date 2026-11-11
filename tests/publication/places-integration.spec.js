@@ -32,6 +32,33 @@ test('published gate characters and boss conversations work without JavaScript',
   } finally {await context.close();}
 });
 
+test('published unused gate and dialogue stay documented without becoming acquisition routes',async ({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const page=await context.newPage();
+    const hidden=shipped.entry('location-hidden-gate');
+    await page.goto(url+'articles/location-hidden-gate/');
+    await expect(page.locator('.entry-content')).toContainText('not a gate you can unlock');
+    await expect(page.locator('#location-encounters h2')).toHaveText('Unused encounter records');
+    await expect(page.locator('#location-encounters tbody tr')).toHaveCount(4);
+    await expect(page.locator('.entry-gate-map figcaption')).toContainText('Unused final area');
+    await expect(page.locator('.gate-generation')).toContainText('39F');
+    await expect(page.locator('.gate-generation')).toContainText('50F');
+    await page.locator('a[href="articles/boss-darkdrium/"]').first().click();
+    await expect(page.locator('.entry-content')).toContainText('cannot be fought there during normal play');
+    await page.locator('.character-dialogue > summary').click();
+    await expect(page.locator('.spoken-lines').first()).toContainText(shipped.dialogue['boss-darkdrium'][0].passages[0]);
+    await page.goto(url+'monsters/21/');
+    const encounters=page.getByRole('heading',{name:'Wild encounters',exact:true}).locator('..');
+    await expect(encounters).not.toContainText(hidden.title);
+    const active=shipped.reference.species[21].locations.find(row=>row.game==='terry' && row.kind==='wild' && row.availability!=='unused');
+    await expect(encounters).toContainText(active.name);
+    await page.goto(url+'entries/');
+    await expect(page.locator('#locations-dqm1').getByRole('heading',{name:'Unused content',exact:true})).toBeVisible();
+    await expect(page.locator('#locations-dqm1 .town-gates a[href="articles/location-hidden-gate/"]')).toHaveCount(0);
+  } finally {await context.close();}
+});
+
 test('published location and map pages connect their maps and guide context without JavaScript',async ({browser})=>{
   const context=await browser.newContext({javaScriptEnabled:false});
   try {
