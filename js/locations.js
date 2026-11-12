@@ -28,7 +28,7 @@
   const redundantGateLeads = new Set(['townsperson-s','guardian','memory','peace','courage',
     'strength','joy','wisdom','happiness','judgment','mirror','farm','arena-left','arena-right'].map(sideId));
   function leadFor(row) {
-    if (row.kind!=='location' || row.game!=='dqm1') return row.summary || '';
+    if (!isGate(row)) return row.summary || '';
     if (row.availability==='unused') return row.summary;
     if (redundantGateLeads.has(row.id)) return '';
     if (familyGates.some(slug=>sideId(slug)===row.id)) return 'Available after the Starry Night Tournament.';
@@ -102,7 +102,8 @@
         const ids=extraGates.filter(id=>(byId.get(id).availability==='unused')===unused);
         return ids.length ? heading(label)+compact(ids.map(id=>entryLink(id))) : '';
       }).join('');
-      return '<p class="place-hub-map">'+mapLink('map-6-0')+' · Town map and rooms</p>'+heading('Travelers’ Gate Chamber')+'<dl class="gate-ranks">'+rankRow('First assignment',['location-departure-gate'])+ranks.join('')+'</dl>'+
+      return heading('Home and GreatTree')+compact([entryLink('location-terry-home'),mapLink('map-6-0')+' · Town map and rooms'])+
+        heading('Travelers’ Gate Chamber')+'<dl class="gate-ranks">'+rankRow('First assignment',['location-departure-gate'])+ranks.join('')+'</dl>'+
         heading('Gates around GreatTree')+'<ul class="town-gates">'+aroundTown.join('')+'</ul>'+
         heading('Postgame · Gate Chamber B3')+'<ul class="family-gates">'+families.join('')+'</ul>'+
         extraSections;
@@ -127,6 +128,10 @@
     }
     return sections.join('');
   }
+  function isGate(row) {
+    return row?.kind === 'location' && row.game === 'dqm1' &&
+      Boolean(globalThis.GATE_GENERATION?.entries?.[row.id]);
+  }
   function navigation(active,escape,backLink='') {
     const links=[['all','#field-guide?kind=location','Overview'],
       ['dqm1','#field-guide?kind=location&game=dqm1','Terry’s gates'],
@@ -136,5 +141,5 @@
       '<a href="'+escape(href)+'"'+(['maps','encounters'].includes(key)?' data-atlas-tab="'+key+'"':'')+
       (active===key?' aria-current="page"':'')+'>'+escape(label)+'</a>').join('')+'</nav>';
   }
-  globalThis.DQMLocations={render,navigation,leadFor};
+  globalThis.DQMLocations={render,navigation,leadFor,isGate};
 })();

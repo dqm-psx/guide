@@ -64,14 +64,14 @@
     const m=GUIDE_REFERENCE.species[i]; return [m.display_name, m.short_name, ...(m.aliases || [])].join(' ');
   }).join(' '));
   const regions = {greattree:maps.get('map-6-0').title, greatlog:maps.get('map-12-0').title, 'gate-ends':'Travelers’ Gates',
-    otherworld:'Otherworlds', other:'Other locations', side:'Side adventures'};
+    'terry-home':WORLD_GUIDE.entries.find(row=>row.id==='location-terry-home').title, otherworld:'Otherworlds', other:'Other locations', side:'Side adventures'};
   for (const [id, article] of Object.entries({desert:'desert-world',water:'water-world',ice:'ice-world',sky:'sky-world',between:'world-between-worlds'})) {
     regions[id]=WORLD_GUIDE.entries.find(row=>row.id==='location-'+article).title;
   }
   const mapRegions = new Map(Object.entries(FIELD_ROUTES.scenes).flatMap(([region, scenes])=>scenes.map(scene=>[scene,region])));
   for (const place of places.values()) {
     place.region=mapRegions.get(place.scene) || (place.scene>=184 ? 'otherworld' : 'other');
-    place.games=['greattree','gate-ends'].includes(place.region) ? ['terry'] :
+    place.games=['greattree','gate-ends','terry-home'].includes(place.region) ? ['terry'] :
       place.region==='other' ? [] : ['cobi','tara'];
   }
   const sameName=new Map();
@@ -225,7 +225,7 @@
     const portalLegend=!options.gateId && portals.length ? '<section class="map-gate-legend" aria-label="Gate portals"><h4>Gate portals</h4><ul class="gate-portal-links">'+
       portals.map((entrance,i)=>'<li><a href="'+safe(articleHref(entrance.location))+'"><span class="gate-marker-key">G'+(i+1)+'</span> '+safe(portalName(entrance))+'</a>'+
         (entrance.note && !window.DQMField.guarded(entrance.location) ? '<small>'+safe(entrance.note)+'</small>' : '')+'</li>').join('')+'</ul></section>' : '';
-    const npcs=context.contextForMap(row.id).characters.filter(r=>!window.DQMField.guarded(r));
+    const npcs=context.contextForMap(row.id).characters.filter(r=>window.DQMField.appearanceVisible(r,[row.id]));
     const floorLabel=map=>{
       const floors=[...new Set((context.entrancesForMap?.(map.id) || []).map(entrance=>entrance.floor).filter(Boolean))];
       return floors.length===1 ? floors[0] : '';
@@ -247,7 +247,7 @@
       '<button type="button" id="'+prefix+'-zoom" data-map-control="zoom" aria-pressed="false">Zoom in</button></div></div>'+
       '<div class="map-scroll" tabindex="0" aria-label="Scrollable field map"><div class="map-image"><img src="maps/'+safe(imageFile)+'" alt="Static field layout of '+safe(row.title)+'"><div class="map-pins">'+pins+'</div><div class="map-gate-pins">'+portalPins+'</div></div></div>'+
       '<div class="map-notes">'+portalLegend+(doors ? '<h4>Connected maps</h4><ol class="map-doors">'+doors+'</ol>' : '')+
-      (!options.inline && npcs.length ? '<section class="location-characters"><h4>Characters here</h4><ul>'+npcs.map(n=>'<li>'+window.DQMField.characterLink(n)+'</li>').join('')+'</ul></section>' : '')+
+      (!options.inline && npcs.length ? '<section class="location-characters"><h4>Characters here</h4><ul>'+npcs.map(n=>'<li>'+window.DQMField.characterLink(n,[row.id])+'</li>').join('')+'</ul></section>' : '')+
       (options.inline ? '' : contextMarkup(row))+'</div>';
     const control=name=>detail.querySelector('[data-map-control="'+name+'"]');
     control('layout')?.addEventListener('change',e=>{
@@ -294,7 +294,7 @@
     const choices=context.mapsForLocation(locationId);
     if (!root || !choices.length) return false;
     const entrances=context.entrancesForLocation?.(locationId) || [];
-    const gate=[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries].find(row=>row.id===locationId && row.game==='dqm1');
+    const gate=[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries].find(row=>row.id===locationId && DQMLocations.isGate(row));
     const entranceFor=map=>entrances.find(entrance=>maps.has(entrance.map) && placeId(maps.get(entrance.map))===placeId(map));
     const choiceTarget=map=>entranceFor(map)?.map || map.id;
     const choiceLabel=map=>{

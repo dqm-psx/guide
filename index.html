@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="css/player-guide.css">
 <link rel="stylesheet" href="css/reference-tables.css">
 <link rel="stylesheet" href="css/my-game.css">
+<link rel="stylesheet" href="css/mechanics-tools.css">
 <script>
 /* Apply the saved theme before the first paint so a dark choice never flashes
    light. js/theme.js owns the picker once the page is loaded. */
@@ -85,6 +86,7 @@
       <a href="#offspring-finder">Find parents</a>
       <a href="#breeding-tree">Breeding tree</a>
       <a href="#breeding-table">Breeding table</a>
+      <a href="#skill-planner">Skill planner</a>
     </div>
     <div class="contents-group"><h2>Reference</h2>
       <a href="#species-index">Monster library</a>
@@ -92,6 +94,7 @@
       <a href="#field-guide?kind=item">Items</a>
       <a href="#field-guide?kind=skill">Skills</a>
       <a href="#field-guide?kind=mechanic">Mechanics</a>
+      <a href="#combat-planner">Damage calculator</a>
     </div>
     <div class="contents-group"><h2>Places</h2>
       <a href="#field-guide?kind=location">Locations &amp; maps</a>
@@ -134,11 +137,15 @@
               <span>Import a memory card<small>See what your monsters can breed</small></span>
             </a>
           </div>
+          <a class="browse-mechanics" href="#skill-planner">Plan skills &amp; growth →</a>
         </section>
         <a class="hero-map" href="#atlas?map=map-6-0"><img src="media/greattree.webp" width="640" height="360" alt=""><span><span><span data-place="map-6-0">GreatTree</span> map</span></span></a>
       </div>
       <div class="home-columns">
         <div class="home-topics"><h2>Player questions</h2><div class="topic-links question-links">
+          <a href="#field-guide?entry=field-recruitment">How much meat should I use?</a>
+          <a href="#combat-planner">How much damage will this move do?</a>
+          <a href="#field-guide?entry=field-skill-inheritance">Why hasn’t my monster learned a skill?</a>
           <a href="#field-guide?entry=field-wandering-masters">How do I find a foreign master?</a>
           <a href="#field-guide?entry=field-restored-content">What changed in Terry’s PS1 adventure?</a>
           <a href="#field-guide?entry=field-movement-settings">Why does my walking speed change?</a>
@@ -171,8 +178,10 @@
 <section id="offspring-finder" class="section view" data-view="offspring-finder" aria-labelledby="offspring-heading" hidden><div class="section-head"><div><h2 id="offspring-heading" tabindex="-1">Find parents</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder">Find offspring</a><a href="#offspring-finder" data-parent-mode aria-current="page">Find parents</a></nav></div></div>
 <div class="panel"><div class="target-row"><div class="field"><label for="target">Desired offspring</label><div class="monster-picker"><span id="target-sprite" class="monster-preview" aria-hidden="true"></span><select id="target"></select></div></div><div class="target-pin-block"><div class="target-toolbar"><a id="target-tree" href="#breeding-tree">Breeding tree ↗</a><button id="target-pin" type="button" class="planner-primary">Pin current offspring</button><button id="target-view-plan" type="button" hidden>View plan in My game ↗</button></div></div></div><div class="lookup-recipe-choice"><label for="reverse-copy-mode">Parent recipes</label><select id="reverse-copy-mode"><option value="first">For a first copy</option><option value="repeat">Already have the target</option></select></div><details class="matrix-filter-drawer lookup-filters" open><summary>Filters</summary><div class="toolbar"><div class="field"><label for="reverse-pedigree-family">Pedigree family</label><select id="reverse-pedigree-family"></select></div><div class="field"><label for="reverse-mate-family">Mate family</label><select id="reverse-mate-family"></select></div><div class="field"><label for="reverse-search">Either parent’s name</label><input id="reverse-search" type="search" placeholder="Search parent names" autocomplete="off"></div></div></details><div class="table-info"><p id="reverse-count" role="status"></p></div><div class="table-scroll"><table><caption class="sr-only">Ordered parent combinations for the desired offspring</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col"><span class="sr-only">Inspect pairing</span></th></tr></thead><tbody id="reverse-rows"></tbody></table></div><div class="pagination"><span id="reverse-range"></span><div class="controls"><button id="reverse-prev" type="button">← Previous</button><span id="reverse-page"></span><button id="reverse-next" type="button">Next →</button></div></div></div>
 <details id="lookup-glossary" class="lookup-glossary"><summary>Breeding terms</summary><dl><dt>Pedigree</dt><dd>Your first parent. Swapping parents can change the result.</dd><dt>Mate</dt><dd>The second parent.</dd><dt>+ value</dt><dd>The breeding bonus beside a monster’s name. A threshold applies to either parent individually.</dd><dt>Base table</dt><dd>The offspring for an ordered pair before special breeding rules apply.</dd><dt>Ordinary shrine</dt><dd>Breed monsters from the same save. Some pairs produce a different offspring at higher + values.</dd><dt>First copy</dt><dd>A recipe where neither parent is the desired offspring.</dd><dt>Breeding room</dt><dd>Breed across two saves from the title screen. Certain pairs have exclusive results here.</dd><dt>Eligible parents</dt><dd>Confirm each parent’s sex and level in game before breeding.</dd></dl></details>
-<p id="breeding-conditions" class="hint">Either parent can meet a + threshold. In the title-screen Breeding room, each player’s monster is their pedigree.</p>
+<p id="breeding-conditions" class="hint">Either parent can meet a + threshold. In the title-screen Breeding room, each player’s monster is their pedigree. <a href="#field-guide?entry=field-two-save-breeding">Breeding between saves</a> · <a href="#field-guide?entry=field-skill-inheritance">Skill inheritance</a></p>
 </section>
+<section id="combat-planner" class="section view" data-view="combat-planner" hidden aria-labelledby="combat-planner-heading"></section>
+<section id="skill-planner" class="section view" data-view="skill-planner" hidden aria-labelledby="skill-planner-heading"></section>
 <section id="breeding-tree" class="section view breeding-tree-view" data-view="breeding-tree" hidden aria-labelledby="tree-heading"></section>
 <section id="monster" class="section view" data-view="monster" hidden aria-labelledby="monster-heading"><div id="monster-detail"></div></section>
 <section id="breeding-table" class="section planner view breeding-table-view" data-view="breeding-table" aria-labelledby="breeding-table-heading" hidden>
@@ -432,8 +441,10 @@
 <script type="application/json" id="guide-assets">
 {"shared":["data/sprite-sheets.js","js/sprites.js"],
 "dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
-"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","js/current-names.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/player-guide.js","js/player-atlas.js"],
+"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","data/recruitment-reference.js","js/current-names.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/recruitment.js","js/recruitment-ui.js","js/player-guide.js","js/player-atlas.js"],
 "tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/planner-core.js","js/reference.js","js/recipe-planner.js","js/app-state.js","js/save-import.js","js/planner-ui.js"],
+"combat":["data/handbook-reference.js","data/combat-reference.js","js/monster-picker.js","js/combat-planner.js","js/combat-planner-ui.js"],
+"learning":["data/handbook-reference.js","data/skill-learning-reference.js","js/monster-picker.js","js/skill-learning.js","js/skill-planner-ui.js"],
 "tree":["js/breeding-tree.js"],"matrix":["js/matrix-tools.js"],
 "profile":["data/monster-reference.js","js/monster-reference.js"]}
 </script>

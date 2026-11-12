@@ -103,8 +103,8 @@ test('supplemental Spirit’s Spring retains the original independent atlas fing
   const index=JSON.parse(fs.readFileSync(path.join(root,'scripts/atlas-native-index.json'),'utf8'));
   const proof=JSON.parse(fs.readFileSync(path.join(root,'scripts/atlas-verification.json'),'utf8'));
   assert.equal(index.sourcePixelsSha256,'e08c153ec4f1c7a675c3ce9914f23c62e7ef6e488718e6486e09e5d4e452fc36');
-  assert.deepEqual(index.nativeSupplementMaps,['map-84-0']);
-  assert.deepEqual(proof.nativeSupplementMaps,['map-84-0']);
+  assert.deepEqual(index.nativeSupplementMaps.slice().sort(),['map-103-0','map-84-0']);
+  assert.deepEqual(proof.nativeSupplementMaps.slice().sort(),['map-103-0','map-84-0']);
   const row=data.PLAYER_ATLAS.maps.find(map=>map.id==='map-84-0');
   assert.equal(row.titleRow,'dialogue_full_0000_1999.json:s00208000_0000');
   assert.equal(row.scene,84);

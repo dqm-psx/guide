@@ -17,10 +17,10 @@
     return includeFamily && familyNames.some(value => normalize(value).includes(q)) ? 4 : -1;
   }
 
-  function attach(select, {label, includeFamily = true} = {}) {
+  function attach(select, {label, includeFamily = true, species = root.DATA?.species, families: familyRows = root.DATA?.families || []} = {}) {
     if (mounted.has(select)) return mounted.get(select);
-    const rows = new Map(root.DATA.species.map(s => [String(s.index), s]));
-    const families = new Map(root.DATA.families.map(family => [family.id, family]));
+    const rows = new Map(species.map(s => [String(s.index), s]));
+    const families = new Map(familyRows.map(family => [family.id, family]));
     const wrap = document.createElement('div');
     wrap.className = 'monster-combo';
     const input = document.createElement('input');

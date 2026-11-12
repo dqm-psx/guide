@@ -15,6 +15,37 @@ test.afterAll(async () => {
   await new Promise(resolve=>server.close(resolve));
 });
 
+test('published home map, contextual Milly appearance and opening dialogue work without JavaScript',async({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const page=await context.newPage();
+    await page.goto(url+'articles/location-terry-home/');
+    await expect(page.locator('.entry-content h1')).toHaveText(shipped.entry('location-terry-home').title);
+    await expect(page.locator('.location-maps .entry-map')).toBeVisible();
+    await expect(page.locator('.location-maps')).toContainText(shipped.map('map-103-0').title);
+    await expect(page.locator('.gate-generation,.gate-facts')).toHaveCount(0);
+    const characters=page.locator('.entry-location-characters');
+    await expect(characters.locator('li')).toHaveCount(4);
+    const milly=characters.locator('a[href="articles/npc-milly/"]');
+    const homeSprite=await milly.locator('img').getAttribute('src');
+    await milly.click();
+    await expect(page.locator('.entry-npc-appearances figcaption')).toHaveText(['At home',"Queen's Room"]);
+    await expect(page.locator('.entry-npc-appearances img').first()).toHaveAttribute('src',homeSprite);
+    for (const id of ['npc-milly','npc-watabou','npc-warubou']) {
+      await page.goto(url+'articles/'+id+'/');
+      await page.locator('.character-dialogue > summary').click();
+      const opening=page.locator('.character-dialogue > details').first();
+      await opening.locator('> summary').click();
+      await expect(opening.locator('.spoken-lines li').first()).toHaveText(shipped.dialogue[id][0].passages[0]);
+      await expect(opening.locator('.spoken-lines li').first()).toBeVisible();
+    }
+    await page.goto(url+'places/map-103-0/');
+    await expect(page.locator('.entry-map')).toBeVisible();
+    await expect(page.locator('a[href="articles/location-terry-home/"]').first()).toBeVisible();
+    await expect(page.locator('a[href="walkthroughs/terry/#story-terry-opening"]')).toBeVisible();
+  } finally {await context.close();}
+});
+
 test('published gate characters and boss conversations work without JavaScript',async ({browser})=>{
   const context=await browser.newContext({javaScriptEnabled:false});
   try {

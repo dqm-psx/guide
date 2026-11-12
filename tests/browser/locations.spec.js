@@ -63,7 +63,8 @@ test('Terry’s directory covers every gate and links its unlock and encounter f
   await page.goto(url+'#field-guide?kind=location&game=dqm1');
   const directory=page.locator('#guide-directory');
   await expect(directory.getByRole('heading',{name:'Terry’s gates'})).toBeVisible();
-  await expect(directory.locator('a[href*="entry=location-"]')).toHaveCount(32);
+  await expect(directory.locator('a[href*="entry=location-"]:not([href*="entry=location-terry-home"])')).toHaveCount(32);
+  await expect(directory.locator('a[href*="entry=location-terry-home"]')).toBeVisible();
   await expect(directory.locator('.gate-ranks>div').filter({hasText:'Win Class F'})).toContainText('Memory Gate');
   const medal=directory.locator('.town-gates li').filter({hasText:'Medal Gate'});
   await expect(medal.getByRole('link',{name:'Turn in 13 Tiny Medals'})).toHaveAttribute('href',/entry=quest-medal-gate/);

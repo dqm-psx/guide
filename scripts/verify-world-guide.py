@@ -135,7 +135,7 @@ class Disc:
             self.resources[index] = native.extent(self.raw, 23 + offset//2048, size)
         return self.resources[index]
 
-    def resident_memory(self):
+    def resident_memory(self, fixup_offset=FIXUP_OFFSET, fixup_count=FIXUP_COUNT):
         # Locate the sector-aligned, checksummed resident header on the release
         # disc. Setup installs EXE and opening resource pointers before menus run.
         at = self.raw.find(b"DQMENG02")
@@ -151,13 +151,13 @@ class Disc:
         require(start+size <= len(mem), "Resident exceeds memory")
         mem[start:start+size] = blob
         opening = self.resource(5574)
-        require(len(opening) == FIXUP_OFFSET + FIXUP_COUNT * 8 + 4, "Unexpected loader extent")
-        addr = SCRIPT_BASE + FIXUP_OFFSET
+        require(len(opening) == fixup_offset + fixup_count * 8 + 4, "Unexpected loader extent")
+        addr = SCRIPT_BASE + fixup_offset
         instructions = struct.pack("<II", 0x3C120000 | addr >> 16, 0x36520000 | addr & 0xFFFF)
-        require(opening[:FIXUP_OFFSET].count(instructions) == 2, "Loader does not reference this fixup table")
-        count_load = struct.pack("<II", 0x3C110000, 0x36310000 | FIXUP_COUNT)
-        require(opening[:FIXUP_OFFSET].count(count_load+instructions) == 1, "Unexpected relocation count")
-        for target, relative in struct.iter_unpack("<II", opening[FIXUP_OFFSET:-4]):
+        require(opening[:fixup_offset].count(instructions) == 2, "Loader does not reference this fixup table")
+        count_load = struct.pack("<II", 0x3C110000, 0x36310000 | fixup_count)
+        require(opening[:fixup_offset].count(count_load+instructions) == 1, "Unexpected relocation count")
+        for target, relative in struct.iter_unpack("<II", opening[fixup_offset:-4]):
             require(0x80010000 <= target < 0x80200000 and target % 4 == 0, "Invalid relocation target")
             require(relative & 0xDFFE0000 == 0 and (relative & 0x1FFFF) < size, "Invalid relocation")
             struct.pack_into("<I", mem, target & PHYSICAL, base + relative)

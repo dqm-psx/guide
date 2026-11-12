@@ -28,6 +28,16 @@ function readBreeding(file = path.join(ROOT, 'data/breeding-data.js')) {
   return JSON.parse(JSON.stringify(context.DATA));
 }
 
+function readNativeLearning(file = path.join(ROOT, 'data/skill-learning-reference.js')) {
+  const context = vm.createContext({});
+  vm.runInContext(fs.readFileSync(file, 'utf8'), context, {timeout: 3000});
+  const reference = JSON.parse(JSON.stringify(context.SKILL_LEARNING_REFERENCE));
+  requireValue(reference.schemaVersion === 1 && reference.species.length === 315 &&
+    reference.provenance.originalDiscSha256 === 'a1217657786430ac1c3ad71f16cdadb65d47b0df9a7e30278900651c1f1eec29',
+  'unsupported native learning reference');
+  return reference;
+}
+
 function exactKeys(value, keys, label) {
   requireValue(value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).sort().join('|') === [...keys].sort().join('|'), `${label} fields differ`);
 }
@@ -99,6 +109,10 @@ function buildReference(baseline, breeding, comparison, manifest, publicRevision
   requireValue(SHA.test(publicRevision), 'public source must be pinned to a full commit');
   const currentPatch = validateCurrentPatch(manifest.current_patch);
   const verifiedGameplay = validateGameplayVerification(gameplayVerification, baseline, breeding);
+  const nativeLearning = readNativeLearning();
+  const naturalSkills = new Map(nativeLearning.species.map(row => [row.speciesIndex, row.naturalSkills]));
+  const nativeSkillNames = new Map(JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/skill-name-bindings.json'), 'utf8'))
+    .map(skill => [skill.id, {id:skill.id, name:skill.spelling, system_entry_id:skill.source_id}]));
   if (currentPatch && verifiedGameplay && currentPatch.version === verifiedGameplay.version) {
     requireValue(currentPatch.source_revision === verifiedGameplay.source_revision && currentPatch.package_sha256 === verifiedGameplay.package_sha256,
       'gameplay verification does not match this version\'s released package');
@@ -123,6 +137,17 @@ function buildReference(baseline, breeding, comparison, manifest, publicRevision
   const species = baseline.species.map(native => {
     const original = breeding.species[native.index];
     const monster = JSON.parse(JSON.stringify(native));
+    // The original library fallback reused DQM2's set for extra species.
+    // Use the independently compared campaign tables before translating names.
+    const verifiedNatural = naturalSkills.get(monster.index);
+    if (verifiedNatural) for (const [campaign, ids] of Object.entries(verifiedNatural)) {
+      requireValue(ids.every(id => nativeSkillNames.has(id)), 'missing native skill identity');
+      if (monster.skills[campaign].map(skill => skill.id).join(',') !== ids.join(',')) {
+        monster.skills[campaign] = ids.map(id => ({...nativeSkillNames.get(id)}));
+        monster.skills_source = {reference: 'data/skill-learning-reference.js', version: nativeLearning.provenance.version,
+          method: 'Natural skill tables match Japanese retail and English v1.0.73; preserve campaign and native slot order.'};
+      }
+    }
     let currentName = original.name;
     let shortName = original.short_name;
     const aliases = [original.name, original.short_name, original.display_name];

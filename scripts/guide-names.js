@@ -133,7 +133,9 @@ function extractTerm(index, binding) {
 function atlasRecord(index, map) {
   check(typeof map.titleRow === 'string', 'map has no native title identity: ' + map.id);
   const row = index.byTable(map.titleRow);
-  check(row.catalog.startsWith('dialogue/') && row.labels?.includes('Location names'), 'invalid map title identity: ' + map.id);
+  const staticRoomTitle = map.id === 'map-103-0' && row.catalog === 'text/static_pools.json' && row.id === 'e0affe4_0000';
+  check((row.catalog.startsWith('dialogue/') && row.labels?.includes('Location names')) || staticRoomTitle,
+    'invalid map title identity: ' + map.id);
   const title = label(row.raw.translations.current.english, map.titleRow);
   const saved = index.optional('text/location_titles.json',row.id);
   const aliases = [map.title, title, label(row.raw.japanese, row.id)];

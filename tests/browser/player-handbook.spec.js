@@ -192,7 +192,7 @@ test('Mechanics sorts by adventure or article and preserves the reader’s place
   await page.getByRole('link',{name:'Browse all mechanics'}).click();
   const index = page.getByRole('table',{name:'Mechanics articles'});
   const sections = index.locator('tbody td');
-  await expect(index.getByRole('link')).toHaveCount(19);
+  await expect(index.getByRole('link')).toHaveCount(22);
   expect([...new Set(await sections.allTextContents())]).toEqual(['General','Terry','Cobi & Tara']);
   await expect(index.getByRole('columnheader',{name:'Section'})).toHaveAttribute('aria-sort','ascending');
   const articleSort = index.getByRole('button',{name:'Article'});
@@ -322,9 +322,9 @@ test('the Skills directory sorts the whole list and keeps the chosen order throu
   await page.getByLabel('Search the guide').fill('');
   await page.getByRole('button',{name:'Search filters'}).click();
   await page.locator('#guide-game').selectOption('dqm1');
-  await expect(rows).toHaveCount(124);
+  await expect(rows).toHaveCount(125); // Includes the verified Terry-only Dimension Dragon skill.
   await page.reload();
-  await expect(rows).toHaveCount(124);
+  await expect(rows).toHaveCount(125); // Includes the verified Terry-only Dimension Dragon skill.
   await expect(table.getByRole('columnheader',{name:'MP cost'})).toHaveAttribute('aria-sort','ascending');
 });
 

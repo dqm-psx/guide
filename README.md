@@ -10,6 +10,8 @@ Walkthroughs, maps, monster profiles and breeding tools for the English PlayStat
 | Explore a gate or world, its maps, walkthrough and encounters | [Locations & maps](https://dqm-psx.github.io/guide/#field-guide?kind=location) |
 | Find a quest, its requirements or the person to speak to | [Quests](https://dqm-psx.github.io/guide/#field-guide?kind=quest) · [Characters and dialogue](https://dqm-psx.github.io/guide/#field-guide?kind=npc) |
 | Look up an item, skill or gameplay question | [Items](https://dqm-psx.github.io/guide/#field-guide?kind=item) · [Skills](https://dqm-psx.github.io/guide/#field-guide?kind=skill) · [Mechanics](https://dqm-psx.github.io/guide/#field-guide?kind=mechanic) |
+| Compare meat for a particular wild encounter | [Recruitment calculator](https://dqm-psx.github.io/guide/#field-guide?entry=field-recruitment) |
+| Understand inherited skills and learning on the farm | [Skill inheritance & learning](https://dqm-psx.github.io/guide/#field-guide?entry=field-skill-inheritance) |
 | Follow a doorway or see which monsters appear on a floor | [Map atlas](https://dqm-psx.github.io/guide/#atlas) |
 | Find a monster’s locations, parents, stats, skills and library text | [Monster library](https://dqm-psx.github.io/guide/#species-index) |
 | Check two parents or find recipes for a first copy | [Find offspring](https://dqm-psx.github.io/guide/#pair-finder) · [Find parents](https://dqm-psx.github.io/guide/#offspring-finder) |

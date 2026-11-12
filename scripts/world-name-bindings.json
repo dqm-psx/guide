@@ -1039,7 +1039,8 @@
       "extract": "full",
       "affected_entries": [
         "story-terry-collection",
-        "quest-the-queen-s-monster-collection-requests"
+        "quest-the-queen-s-monster-collection-requests",
+        "npc-milly"
       ]
     },
     {
@@ -1527,6 +1528,7 @@
         "npc-tife",
         "npc-greattree-name-master",
         "npc-terry",
+        "npc-milly",
         "location-departure-gate",
         "location-townsperson-s-gate",
         "location-guardian-gate",

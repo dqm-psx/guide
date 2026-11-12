@@ -27,6 +27,36 @@ test('field reference preserves native item identities and skips magic-key and r
   }
 });
 
+test('research-backed learning articles remain public-safe and connected to the guide', () => {
+  const ids = ['field-skill-inheritance', 'field-two-save-breeding', 'field-battle-text-speed'];
+  const articles = new Set([...entries.keys(), ...WORLD_GUIDE.entries.map(row => row.id)]);
+  for (const id of ids) {
+    const matches = guide.entries.filter(row => row.id === id);
+    assert.equal(matches.length, 1, id + ' must have one stable identity');
+    const row = matches[0];
+    assert.equal(row.kind, 'mechanic');
+    assert.equal(row.game, 'both');
+    assert.equal(row.spoiler, 'none');
+    assert.ok(row.title.trim() && row.summary.trim());
+    assert.ok(row.aliases.length && row.source_ids.length && row.related.length);
+    assert.equal(new Set(row.related).size, row.related.length, id + ' repeats a related link');
+    for (const related of row.related) assert.ok(articles.has(related), id + ' links to ' + related);
+    for (const section of row.sections || []) {
+      assert.ok(section.title.trim() && section.intro.trim() && section.rows.length);
+      for (const pair of section.rows) {
+        assert.equal(pair.length, 2);
+        assert.ok(pair.every(value => typeof value === 'string' && value.trim()));
+      }
+    }
+    const content = JSON.stringify(row);
+    assert.doesNotMatch(content, /[A-Z]:[\\/]|file:\/\/|chatgpt\.com\/c\/|\.codex[\\/]|phakic\/(?:dqm1|dqm-decomp)/i,
+      id + ' must not expose private research references');
+  }
+  assert.ok(entries.get('field-breed').related.includes('field-skill-inheritance'));
+  assert.ok(entries.get('field-breed').related.includes('field-two-save-breeding'));
+  assert.ok(entries.get('field-farm').related.includes('field-skill-inheritance'));
+});
+
 test('the Silver Harp uses the cave harp artwork and the Tiny Medal retains its native pickup sprite', () => {
   const harp = entries.get('item-33');
   const medal = entries.get('item-44');

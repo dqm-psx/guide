@@ -29,6 +29,7 @@ GATES = {
 # Scene ranges reflect the verified campaign field-map blocks. Names come from
 # their guide articles or native map labels after each public translation refresh.
 REGIONS = {
+    "terry-home": [103],
     "greattree": [6, 7, 8, 9, 10, 11], "greatlog": [12, 13, 14, 15, 16, 21],
     "desert": [17, 22, 23, 24, 102], "water": [18, 25, 26, 27, 28, 29, 30],
     "ice": [19, *range(31, 41)], "sky": [*range(41, 51)], "between": [51, 52],
@@ -295,7 +296,7 @@ def build(image):
         for title in a.get("places", []):
             matches = list(by_title[normalized(title)].values())
             if a["game"] == "dqm1":
-                matches = [m for m in matches if m["scene"] in REGIONS["greattree"] + REGIONS["gate-ends"]]
+                matches = [m for m in matches if m["scene"] in REGIONS["greattree"] + REGIONS["gate-ends"] + REGIONS["terry-home"]]
             else:
                 matches = [m for m in matches if m["scene"] < 70 or m["scene"] == 102]
             if len(matches) == 1 and matches[0]["placeId"] not in found:

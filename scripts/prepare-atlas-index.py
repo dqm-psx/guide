@@ -59,13 +59,31 @@ def generate(args, disc):
             digest = atlas.sha(png.convert("RGBA").tobytes())
         key = gfx_sha + ":" + tile_sha
         atlas.require(pixels.setdefault(key, digest) == digest, "Ambiguous source render")
+    # The old export omitted maps whose native identity was verified later.
+    # Retain those explicit additions and re-read their native descriptors;
+    # reconstructing the baseline must not quietly remove them.
+    supplements = atlas.read_json(atlas.INDEX)
+    supplemental_ids = supplements.get("nativeSupplementMaps", [])
+    present = {f"map-{item[0]}-{item[1]}" for item in entries}
+    for item in supplements["maps"]:
+        identity = f"map-{item[0]}-{item[1]}"
+        if identity not in supplemental_ids or identity in present:
+            continue
+        spec = supplements["scenes"][str(item[0])]
+        atlas.require(scenes.setdefault(item[0], spec) == spec, "Inconsistent supplemental scene locator")
+        atlas.native_map(disc, spec, item)
+        entries.append(item)
+        present.add(identity)
+    atlas.require(set(supplemental_ids) <= present, "Missing native supplemental map")
+    entries.sort(key=lambda item: (item[0], item[1]))
     guards = [[g[k] for k in ("name", "start", "end", "sha256")]
               for g in atlas.read_json(args.consumer_evidence)["consumers"]]
     index = dict(schema=1, baseline="v1.0.66", baselineBinSha256=atlas.BASELINE,
                  sceneFields=["scene resource", "map descriptor offset", "native title descriptor offset"],
                  mapFields=["scene", "area", "incoming resource (null = executable)", "incoming offset",
                             "native title ordinal", "public dialogue row", "place representative"],
-                 consumers=guards, scenes={str(k): v for k, v in scenes.items()}, maps=entries,
+                 consumers=guards, scenes={str(k): v for k, v in sorted(scenes.items())}, maps=entries,
+                 nativeSupplementMaps=supplemental_ids,
                  sourcePixelsSha256=atlas.json_digest(pixels))
     if args.write:
         fields = []

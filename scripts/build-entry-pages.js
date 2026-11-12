@@ -83,22 +83,29 @@ function addEntryPages(assets) {
   }
   const articleLink = id => linkArticle(id);
   const storyContext = row => ['story','ending'].includes(row.spoiler) ? ' data-story-context' : '';
-  function contextLinks(title,rows) {
+  function contextLinks(title,rows,mapIds=[]) {
     if (!rows.length) return '';
-    return '<section data-place-context><h2>'+escape(title)+'</h2><ul>'+rows.map(row=>
-      '<li'+storyContext(row)+'>'+articleLink(row.id)+'</li>').join('')+'</ul></section>';
+    return '<section data-place-context'+(mapIds.length?' class="entry-location-characters"':'')+'><h2>'+escape(title)+'</h2><ul>'+rows.map(row=>{
+      const base=db.NPC_SPRITES[row.id],contextual=base?.variants?.find(variant=>variant.mapIds.some(id=>mapIds.includes(id)));
+      const sprite=contextual||base;
+      const image=mapIds.length && sprite?.image ? '<img class="entry-character-sprite" alt="" src="'+escape(sprite.image)+'">' : '';
+      return '<li'+(contextual?.spoiler==='none'?'':storyContext(row))+'><a href="'+escape(articlePath(row))+'">'+image+escape(row.title)+'</a></li>';
+    }).join('')+'</ul></section>';
   }
   function locationCharacters(row) {
     if (row.kind!=='location') return '';
+    const mapIds=placeContext.mapsForLocation(row.id).map(map=>map.id);
     const generation=db.GATE_GENERATION.entries[row.id];
     const bosses=new Set([db.FIELD_ROUTES.routes[row.id]?.boss,generation?.boss?.entry,...(generation?.bosses || []).map(record=>record.entry)]);
     return Object.entries(placeContext.charactersForLocation(row.id)).map(([key,characters])=>[key,characters.filter(character=>!bosses.has(character.id))]).map(([key,characters])=>characters.length ?
       '<section class="entry-location-characters" data-place-context><h2>'+(key==='here'?'Characters here':'Related characters')+'</h2><ul>'+
       characters.map(character=>{
-        const sprite=db.NPC_SPRITES[character.id];
+        const base=db.NPC_SPRITES[character.id];
+        const contextual=base?.variants?.find(variant=>variant.mapIds.some(id=>mapIds.includes(id)));
+        const sprite=contextual || base;
         const image=sprite?.image ? '<img class="entry-character-sprite" alt="" src="'+escape(sprite.image)+'">' :
           sprite?.species!=null ? portrait(sprite.species) : '';
-        return '<li'+storyContext(character)+'><a href="'+escape(articlePath(character))+'">'+image+'<span>'+escape(character.title)+'</span></a></li>';
+        return '<li'+(contextual?.spoiler==='none'?'':storyContext(character))+'><a href="'+escape(articlePath(character))+'">'+image+'<span>'+escape(character.title)+'</span></a></li>';
       }).join('')+'</ul></section>' : '').join('');
   }
   function markedMap(map,entrances=[],label=false) {
@@ -121,7 +128,7 @@ function addEntryPages(assets) {
     const places=placeContext.mapsForLocation(row.id);
     if (!places.length) return '';
     const entrances=placeContext.entrancesForLocation(row.id);
-    if (row.game==='dqm1') {
+    if (db.DQMLocations.isGate(row)) {
       const panels=places.map(place=>{
         const entrance=entrances.find(record=>(maps.get(record.map).placeId || record.map)===place.id);
         const map=entrance ? maps.get(entrance.map) : place;
@@ -141,7 +148,7 @@ function addEntryPages(assets) {
       (remaining.length ? '<ul>'+remaining.map(map=>'<li>'+mapLink(map)+'</li>').join('')+'</ul>' : '')+'</section>';
   }
   function gateFacts(row,data) {
-    if (row.kind!=='location' || row.game!=='dqm1') return '';
+    if (!db.DQMLocations.isGate(row)) return '';
     const entries=[];
     if (data.arena) {
       const rank=data.arena.split('-').at(-1).toUpperCase();
@@ -213,14 +220,16 @@ function addEntryPages(assets) {
   }
   for (const row of articles.values()) {
     const routeData = db.FIELD_ROUTES?.routes?.[row.id] || {};
-    const gate=row.kind==='location' && row.game==='dqm1';
+    const gate=db.DQMLocations.isGate(row);
     const contacts=new Set(Object.values(placeContext.charactersForLocation(row.id)).flat().map(character=>character.id));
     const characterLocations=row.kind==='npc' ? placeContext.locationsForCharacter(row.id) : [];
     const npcart=db.NPC_SPRITES[row.id]?.image;
     const item = db.DQMItemReference.items[row.id];
     const image = item ? db.DQMItemArt.imageFor(row) : row.image || npcart;
     const art = /^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(image || '') ? '<img class="entry-icon" src="'+image+'" alt="">' : '';
-    const identity = item ? db.DQMItemIndex.profileHeading(row,{escape,art,level:1}) : art;
+    const appearances=db.NPC_SPRITES[row.id]?.variants;
+    const identity = item ? db.DQMItemIndex.profileHeading(row,{escape,art,level:1}) : appearances?.length ?
+      '<div class="entry-npc-appearances" aria-label="Character appearances">'+appearances.map(variant=>'<figure><img alt="'+escape(row.title+' · '+variant.label)+'" src="'+escape(variant.image)+'"><figcaption>'+escape(variant.label)+'</figcaption></figure>').join('')+'</div>' : art;
     const stock=(row.prices || []).map(p=>p.locations.map(location=>db.DQMItemIndex.shopLink(location,itemOptions)).join(', ')+
       escape(' · '+p.buy+' G (Gold Pass '+p.gold_pass+' G)'));
     const quests = row.kind === 'npc' ? [...articles.values()].filter(quest=>quest.kind==='quest' &&
@@ -274,7 +283,7 @@ function addEntryPages(assets) {
     const learners=campaignLists('Natural learners',campaign=>species.filter(m=>m.skills[campaign]?.some(s=>s.id===Number(id))).map(m=>m.index),
       illustratedMonster,'No natural learners recorded.');
     add('skills',name.id,name.title,description,
-      facts(skillFacts)+
+      facts(skillFacts)+'<p>'+link('#skill-planner?skill='+id,'Check skill learning and growth')+'</p>'+
       (minimums.length ? '<section><h2>Minimum learning stats</h2>'+facts(minimums)+'</section>' : '')+
       learners,'#field-guide?kind=skill&entry=skill-'+name.id);
   }
@@ -295,11 +304,11 @@ function addEntryPages(assets) {
         (recipe.condition ? '<small>'+escape(recipe.condition)+'</small>' : '')+'</li>';
     });
     const desc=m.library?.text || [m.display_name, db.DATA.species[m.index]?.family_display, 'PlayStation monster profile'].filter(Boolean).join(' · ');
-    add('monsters',m.index,m.display_name,desc,skills+
+    add('monsters',m.index,m.display_name,desc,skills+'<p>'+link('#skill-planner?species='+m.index,'Plan skills and growth')+' · '+link('#combat-planner?species='+m.index,'Compare damage')+'</p>'+
       '<section><h2>First-copy breeding</h2>'+(pairs.length ? '<p class="entry-note">Pedigree + mate</p><ul class="entry-recipes">'+pairs.join('')+'</ul>' : paragraph('No recorded pairing produces a first copy.'))+'</section>'+
       list('Wild encounters',[...new Set(locations)])+
       (masters.length ? list('Wandering master teams',masters)+'<p>'+articleLink('field-wandering-masters')+'</p>' : '')+
-      paragraph(m.stats?.base_level_limit ? 'Base level limit: '+m.stats.base_level_limit : ''),'#monster?id='+m.index);
+      paragraph(m.stats?.base_level_limit ? 'Usual recruitment level cap: '+Math.max(1,m.stats.base_level_limit-2)+'–'+Math.min(99,m.stats.base_level_limit+2)+'. Bred offspring use a separate base limit plus three times their + value.' : ''),'#monster?id='+m.index);
   }
   const places=new Map();
   for (const row of maps.values()) {
@@ -325,7 +334,7 @@ function addEntryPages(assets) {
     }).join('') : markedMap(row);
     add('places',id,row.title,desc,mapContent+
       overview+contextLinks('Walkthrough',context.chapters)+contextLinks('Quests',context.quests)+contextLinks('Bosses',context.bosses)+
-      list('Connected places',destinations)+contextLinks('Characters',context.characters),'#atlas?map='+id);
+      list('Connected places',destinations)+contextLinks('Characters',context.characters,rows.map(map=>map.id)),'#atlas?map='+id);
   }
   function documentFor(p) {
     const title=escape(p.title+' · DQM1&2 PSX Player Guide');
@@ -336,9 +345,9 @@ function addEntryPages(assets) {
     const monster=p.kind==='monsters' ? bySpecies.get(p.id) : null;
     const item = p.kind === 'articles' && db.DQMItemReference.items[p.id];
     const location=p.kind==='articles' && articles.get(p.id)?.kind==='location' ? articles.get(p.id) : null;
-    const gate=location?.game==='dqm1';
+    const gate=db.DQMLocations.isGate(location);
     const locationNav=location ? '<nav class="entry-places-nav" aria-label="Locations and maps">'+
-      '<a href="entries/#locations-'+location.game+'" aria-label="Back to '+escape(adventures[location.game])+(gate?' gates':' worlds')+'" title="Back to locations"><span aria-hidden="true">←</span></a>'+
+      '<a href="entries/#locations-'+location.game+'" aria-label="Back to '+escape(adventures[location.game])+(gate?' gates':' locations')+'" title="Back to locations"><span aria-hidden="true">←</span></a>'+
       link('entries/#locations','Overview')+link('entries/#locations-dqm1',adventures.dqm1+'’s gates')+
       link('entries/#locations-dqm2',adventures.dqm2+'’s worlds')+'</nav>' : '';
     let introduction=item || gate ? '' : '<h1>'+escape(p.title)+'</h1>'+paragraph(p.description);

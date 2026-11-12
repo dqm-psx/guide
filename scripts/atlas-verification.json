@@ -1,10 +1,10 @@
 {
   "version": "v1.0.73",
   "baseline": "v1.0.66",
-  "maps": 407,
-  "places": 184,
-  "scenes": 120,
-  "images": 240,
+  "maps": 408,
+  "places": 185,
+  "scenes": 121,
+  "images": 241,
   "doorwaySelectors": 983,
   "exitPins": 829,
   "verifiedDestinations": 829,
@@ -13,8 +13,8 @@
   "sourceRevision": "dbf5b12cc419268e5dda0d227ab273ba702be53d",
   "baselineBinSha256": "69213c55d5c2957d2c0509ab7fc40f0e41d5ac2402adb2465fac63356da555ad",
   "patchedBinSha256": "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812",
-  "nativeIndexSha256": "c3649f40e9bd434b52b74efd7035d18e1c781672409379fd712c25f9ce19ade7",
-  "mapEvidenceSha256": "24bdadc56b1ae38ae17a6d5252267b057c33a817fda9348a6f50619f5d01add8",
+  "nativeIndexSha256": "c33c81e7c73622dd2bcba1c962b68711fa805568d267243c2b4b84a48b82d0c6",
+  "mapEvidenceSha256": "f19adea431d6dcc6c855afd0a8980503863e1bb9fb0e9fd00ff217920df3e43e",
   "destinationEvidenceSha256": "62ee4088af19fc65d64c86d2802317a976b84b486fee3dc3f4084d458d81c44f",
   "changesFromBaseline": {
     "titles": [
@@ -24,6 +24,7 @@
   },
   "scope": "Fixed named layouts, static background tile layers and palettes, scene title strings, and grid-backed native doorway selectors. Scripted events, generated floors, animated layers and story-state access are outside this proof. Supplemental maps are verified from authenticated baseline/current native descriptors and assets; they are outside the independent PNG baseline fingerprint.",
   "nativeSupplementMaps": [
+    "map-103-0",
     "map-84-0"
   ]
 }

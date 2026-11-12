@@ -114,6 +114,48 @@ test('the staged artifact boots with fingerprinted assets and its synchronized n
   check.assertClean();
 });
 
+test('downloading from home includes unopened planning tools and retains calculations offline',async({page,context})=>{
+  const check=audit(page,context);
+  await page.goto(url);
+  await waitForOfflineCache(page);
+  await page.locator('#guide-settings > summary').click();
+  await page.locator('#download-offline').click();
+  await expect(page.locator('#offline-status')).toHaveText('Ready to use offline.',{timeout:30000});
+  await page.locator('#guide-settings > summary').click();
+  check.assertClean();
+  check.offline();await context.setOffline(true);
+  await page.goto(url+'#skill-planner?species=11&skill=4&level=1&target=10&hp=10');
+  await expect(page.locator('#training-growth')).toContainText('521 EXP');
+  await expect(page.locator('#training-monster')).toContainText(name(11));
+  await page.reload();
+  await expect(page.locator('#training-hp')).toHaveValue('10');
+  await page.goto(url+'#combat-planner?species=11&game=terry&area=1&enemy=0&attack=100&defense=100&skill=1');
+  await expect(page.locator('.combat-physical').first()).toContainText('45–53 damage');
+  await expect(page.locator('.combat-damage').first()).toHaveText('12–15 damage');
+  await page.reload();
+  await expect(page.locator('#combat-attack')).toHaveValue('100');
+  check.assertClean();
+});
+
+test('recruitment uses synchronized names and survives a shared calculation offline', async ({page,context}) => {
+  const check=audit(page,context);
+  await page.goto(url+'#field-guide?entry=field-recruitment&rc_game=terry&rc_area=22&rc_species=20&rc_owned=1&rc_28=2');
+  await expect(page.locator('.recruit-monster a')).toHaveText(name(20));
+  await expect(page.locator('.recruit-chance strong')).toHaveText('23.87%');
+  const currentLocation=reference(20).locations.find(row=>row.game==='terry'&&row.context_id===22);
+  await expect(page.locator('#recruit-result')).toContainText(currentLocation.name);
+  await waitForOfflineCache(page);
+  const saved=page.url();
+  check.offline();
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.locator('.recruit-chance strong')).toHaveText('23.87%');
+  expect(page.url()).toBe(saved);
+  await page.locator('#recruit-meat-28').fill('1');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('8.47%');
+  check.assertClean();
+});
+
 test('current-name search opens the matching library, growth, and provenance profile', async ({ page, context }) => {
   const check = audit(page, context);
   const index = 11;
@@ -326,7 +368,7 @@ test('published quests and characters can be followed with JavaScript disabled',
     const reader=await context.newPage();
     await reader.goto(url+'entries/');
     const articles = reader.getByRole('table',{name:'Mechanics articles'});
-    await expect(articles.getByRole('link')).toHaveCount(19);
+    await expect(articles.getByRole('link')).toHaveCount(22);
     await expect(articles.getByRole('button')).toHaveCount(0);
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');
     const items=reader.getByRole('table',{name:'Items',exact:true});
