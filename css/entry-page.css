@@ -1,4 +1,4 @@
-:root{color-scheme:light dark;font:16px/1.55 system-ui,sans-serif;background:#f6f7f3;color:#182f28}
+:root{--guide-rule:#acbcb3;--ink:#182f28;--muted:#4e655b;--guide-panel:#e5ece3;--guide-accent:#1b604e;color-scheme:light dark;font:16px/1.55 system-ui,sans-serif;background:#f6f7f3;color:#182f28}
 *{box-sizing:border-box}body{margin:0}
 header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.25rem 1rem;padding:.65rem max(18px,calc((100vw - 58rem)/2));background:#163b33}
 header a{color:white;font-weight:700;text-decoration:none}
@@ -56,7 +56,7 @@ a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:p
 .gate-terrain-list img{display:block;width:100%;max-width:15rem;height:auto}
 .gate-terrain-list strong{display:block;margin-top:.3rem;font-size:.9rem}
 .gate-special-floors h3{margin-bottom:.4rem}.gate-special-floors p{margin-top:0}
-@media(prefers-color-scheme:dark){:root{background:#18231f;color:#ebf3ea}a{color:#a7dfbf}}
+@media(prefers-color-scheme:dark){:root{--guide-rule:#394a46;--ink:#ebf3ea;--muted:#abc0b6;--guide-panel:#202e28;--guide-accent:#a7dfbf;--guide-soft:#202e28;background:#18231f;color:#ebf3ea}a{color:#a7dfbf}}
 .entry-shield,.hide-story .entry-content{display:none}.hide-story .entry-shield{display:block}
 .article-topic dl{display:grid;grid-template-columns:minmax(7rem,auto) 1fr;align-items:baseline;gap:.65rem 1rem;margin:1rem 0}
 .article-topic dt{font-weight:650}.article-topic dd{margin:0}
@@ -97,7 +97,7 @@ a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:p
 .entry-library p{margin-top:.35rem}
 .entry-identity{display:flex;align-items:center;gap:1rem}
 .entry-identity p,.entry-profile .entry-note{margin:.2rem 0 .6rem;color:var(--muted);font-size:.875rem}
-.entry-portrait{flex:none;width:2rem;height:2rem;image-rendering:pixelated}
+.entry-portrait{object-fit:contain;flex:none;width:2rem;height:2rem;image-rendering:pixelated}
 .entry-identity>.entry-portrait{width:4.5rem;height:4.5rem;padding:.35rem;background:var(--soft);border-radius:.55rem}
 .entry-monster-profile .entry-identity>.entry-portrait{width:8rem;height:8rem}
 @media(max-width:480px){.entry-monster-profile .entry-identity>.entry-portrait{width:7rem;height:7rem}.entry-monster-profile .entry-identity{gap:.75rem}}

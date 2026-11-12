@@ -1,3 +1,5 @@
+.training-input-summary{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:.3rem;line-height:1.5}
+.training-block[open]>summary{margin-bottom:.8rem}
 .recruitment-calculator{margin:20px 0 24px;padding:20px;border:1px solid var(--guide-rule);border-radius:8px;background:var(--guide-panel)}
 .recruit-heading{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .recruit-heading h3{margin:0!important;font:700 22px/1.3 Georgia,serif;color:var(--guide-green)}
@@ -20,7 +22,7 @@
 .recruit-result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 20px;align-items:center;margin-top:18px;padding:16px 0;border-top:1px solid var(--guide-rule);border-bottom:1px solid var(--guide-rule)}
 .recruit-monster{display:flex;align-items:center;gap:14px;min-width:0}
 .recruit-monster .monster-sprite{width:64px;height:64px;flex:0 0 64px}
-.recruit-monster .monster-sprite>svg{width:100%;height:100%}
+.recruit-monster .monster-sprite>img{width:100%;height:100%}
 .recruit-monster a{font-weight:750;font-size:16px}
 .recruit-monster small{display:block;font-size:12px;color:var(--muted);margin-top:5px}
 .recruit-chance{text-align:right}
@@ -64,7 +66,7 @@
 .training-block .monster-combo{width:100%}
 .training-monster{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .training-monster .monster-sprite{height:72px;width:72px;flex-basis:72px}
-.training-monster .monster-sprite>svg{width:100%;height:100%}
+.training-monster .monster-sprite>img{width:100%;height:100%}
 .training-monster>div>a{font-size:18px;font-weight:700}
 .training-monster>div>span{display:block;font-size:12px;margin-top:6px}
 .training-status{border-left:3px solid var(--guide-rule);padding:8px 12px;margin:12px 0;background:var(--guide-soft);font-size:13px;line-height:1.55}

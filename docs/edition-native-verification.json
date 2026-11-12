@@ -1,0 +1,58 @@
+{
+  "passed": true,
+  "discSha256": [
+    "a1217657786430ac1c3ad71f16cdadb65d47b0df9a7e30278900651c1f1eec29",
+    "c7fd48e4decd7747a3e8b72ff052960b4ae0943ad61b6a95c57c946791cba812"
+  ],
+  "identicalSpans": [
+    {
+      "name": "status expiration and adjacent cleanup",
+      "resource": 5502,
+      "start": "0x8014c760",
+      "endExclusive": "0x8014ddb0",
+      "bytes": 5712,
+      "sha256": "3f98a56d6ae269f7b63eb9df01e40d6b8cd0a3fa95098422354de886d13bae6b"
+    },
+    {
+      "name": "repeated command tracking",
+      "resource": 5502,
+      "start": "0x80143ef4",
+      "endExclusive": "0x80144060",
+      "bytes": 364,
+      "sha256": "2afbd46b27255f28b28d83fdcbe73b68d3f8d9f67aac1b3af943588ac416f890"
+    },
+    {
+      "name": "repeated command resistance adjustment",
+      "resource": 5502,
+      "start": "0x80126fa4",
+      "endExclusive": "0x80127148",
+      "bytes": 420,
+      "sha256": "1557a2f1c395972fde5a5739e35f74eb8147246653836e650c3df67c39c64af0"
+    },
+    {
+      "name": "repeated command damage adjustment",
+      "resource": 5502,
+      "start": "0x80127148",
+      "endExclusive": "0x8012726c",
+      "bytes": 292,
+      "sha256": "05a1338dd9b30afefe0d36319d79a8729f56255512af2aacc659ed23c23da482"
+    },
+    {
+      "name": "22 status duration limits",
+      "resource": 5502,
+      "start": "0x80115964",
+      "endExclusive": "0x8011597a",
+      "bytes": 22,
+      "sha256": "c81a46c771d0e4885a90c8633f5271806df3ea2c78394a233e3fe618518e6225"
+    },
+    {
+      "name": "resistance by repeated-use count",
+      "resource": 5502,
+      "start": "0x80114da4",
+      "endExclusive": "0x80114dc4",
+      "bytes": 32,
+      "sha256": "7fd3140b8a8c3f9a2b7884b249be3707e26bee4f323e20b0145357b1f430703b"
+    }
+  ],
+  "scope": "Byte comparison of native duration and repeated-action routines/tables. Not a full battle replay or a handheld code comparison."
+}

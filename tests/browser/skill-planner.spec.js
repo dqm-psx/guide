@@ -55,7 +55,7 @@ test('parent candidates use native base forms and keep the chosen species',async
   await expect(page.locator('#training-inherited-list')).toContainText('Blaze');
   await expect(page.locator('#training-inherited-list')).not.toContainText('Blazemost');
   expect(new URLSearchParams(new URL(page.url()).hash.split('?')[1]).get('species')).toBe('11');
-  await expect(page.locator('#training-routes')).toContainText('Inherited candidate');
+  await expect(page.locator('#training-routes')).toContainText('Candidate skill');
 });
 
 test('planner fits phones, loads from disk, and offers a fallback copy link',async({page})=>{

@@ -168,7 +168,7 @@
     }).join('');
     return '<section class="monster-card monster-natural-skills"><div class="monster-card-heading"><h3>Natural skills</h3>' +
       '<label class="sr-only" for="monster-campaign">Adventure for skills and encounters</label><select id="monster-campaign">' + campaigns +
-      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div><p class="hint">Level and stats both matter. <a id="monster-skill-planner" href="#skill-planner?species='+species.index+'&amp;campaign='+campaign+'">Plan growth &amp; skill learning →</a> · <a href="#field-guide?entry=field-skill-inheritance">Learning rules</a></p></section>';
+      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div><p class="hint">Level and stats both matter. <a id="monster-skill-planner" href="#skill-planner?species='+species.index+'&amp;campaign='+campaign+'">Plan growth &amp; skill learning →</a> · <a href="#field-guide?entry=field-skill-inheritance">Learning rules</a> · <a href="#combat-planner?species='+species.index+'">Calculate damage →</a></p></section>';
   }
 
   function locationsMarkup(species) {
@@ -246,7 +246,6 @@
       acquisitionMarkup(species) +
       '<div class="monster-profile-grid monster-lower-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">Usual recruitment cap '+Math.max(1,species.stats.base_level_limit-2)+'–'+Math.min(99,species.stats.base_level_limit+2)+'</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
       '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint"><a href="#offspring-finder?target=' + index + '">' + parents.toLocaleString() + ' base-table parent pairings</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section></div>' +
-      '<p class="hint"><a href="#combat-planner?species='+species.index+'">Compare damage against a wild encounter →</a></p>' +
       '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' + safe(species.resistances && species.resistances.text || 'PSX resistance values have not yet been verified for this reference.') + '</p>' +
       '<p>' + safe(species.location_coverage || 'Encounter coverage is incomplete.') + '</p>' +
       (root.DQMReference?.sourceSummaryMarkup ? root.DQMReference.sourceSummaryMarkup() : '') +

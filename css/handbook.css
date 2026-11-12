@@ -1,0 +1,55 @@
+/* Chapter navigation and readable reference prose share the same quiet rules. */
+.mechanics-mode,.handbook-topics{display:flex;flex-wrap:wrap;gap:.35rem 1rem;align-items:center}
+.mechanics-mode{margin-left:auto;font-size:.875rem}
+.mechanics-mode a,.handbook-topics a{text-decoration:none;padding:.35rem 0;border-bottom:2px solid transparent}
+.mechanics-mode a[aria-current],.handbook-topics a[aria-current]{border-color:var(--guide-accent,var(--teal,#1b604e));font-weight:700;color:var(--ink,#182f28)}
+.handbook-topics{margin:.25rem 0 1rem;padding-bottom:.6rem;border-bottom:1px solid var(--guide-rule,#acbcb3);font-size:.875rem}
+.handbook-chapters{max-width:65rem}
+.handbook-chapter{padding:1.1rem 0 1.3rem;border-bottom:1px solid var(--guide-rule,#acbcb3)}
+.handbook-chapter-heading{display:flex;gap:.8rem;align-items:baseline}
+.handbook-chapter-heading .chapter-number{font:600 .85rem system-ui;color:var(--muted,#4e655b);font-variant-numeric:tabular-nums}
+.handbook-chapter h3{font-family:Georgia,serif;font-size:1.3rem;margin:0 0 .3rem;color:var(--ink,#182f28)}
+.handbook-chapter-heading p{margin:0;color:var(--muted,#4e655b);font-size:.9rem;max-width:65ch}
+.handbook-chapter>ul{list-style:none;padding:0;margin:.8rem 0 0 2.15rem;columns:1}
+.handbook-chapter>ul li{margin:0;border-top:1px solid var(--guide-rule,#acbcb3)}
+.handbook-chapter>ul a{display:block;padding:.55rem 0;text-decoration:none;font-weight:600}
+.handbook-chapter>ul a:hover{text-decoration:underline}
+.handbook-tools{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;margin:.7rem 0 0 2.15rem;font-size:.875rem}
+.article-contents{border-block:1px solid var(--guide-rule,#acbcb3);padding:.75rem 0 1rem;margin:1rem 0 1.5rem}
+.article-contents summary{font-size:.85rem;font-weight:700;letter-spacing:.035em;cursor:pointer}
+.article-contents>details{border:0;border-radius:0;padding:0;margin:0;background:transparent;box-shadow:none}
+.guide-article a.guide-action{color:var(--guide-panel)}
+.article-contents ol{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;list-style:none;padding:0;margin:.6rem 0 0;font-size:.9rem;columns:1}
+.article-contents li{margin:0}
+.article-topic{margin-top:1.75rem;padding-top:1.2rem;border-top:1px solid var(--guide-rule,#acbcb3)}
+.article-topic :is(h2,h3){margin:0 0 .75rem;scroll-margin-top:5rem}
+.article-topic :is(p,li,dd){line-height:1.7}
+.article-topic>p,.article-topic>ul,.article-topic>dl{max-width:80ch}
+.article-topic>ul{columns:1}
+.article-topic p{margin:.65rem 0}
+.article-topic dt{font-weight:700;margin-top:.85rem}
+.article-topic dd{margin:.2rem 0 0}
+.article-table{max-width:100%;overflow:auto;margin:1rem 0;scrollbar-width:thin}
+.article-table table{width:100%;border-collapse:collapse;font-size:.9rem;line-height:1.55}
+.article-table :is(th,td){padding:.75rem;border:1px solid var(--guide-rule,#acbcb3);vertical-align:top;min-width:11rem;white-space:normal;letter-spacing:0;text-transform:none}
+.article-table thead th{font-weight:700;background:var(--guide-soft,#e5ece3);color:var(--ink,#182f28)}
+.article-table tbody th{min-width:9rem;max-width:13rem;background:transparent;color:var(--ink,#182f28);font-weight:650}
+.article-table caption{text-align:left;margin-bottom:.5rem;font-weight:600}
+.article-sources{font-size:.8rem;color:var(--muted,#4e655b)}
+.article-topic-links{font-size:.9rem;font-weight:600}
+.mechanic-profile>.article-lead{max-width:78ch}
+.guide-article.mechanic-profile{max-width:none;margin:0;padding:0;border:0;border-radius:0;background:transparent}
+.mechanic-profile .article-topic{max-width:70rem}
+.mechanic-profile>.article-lead,.mechanic-profile .article-topic>p,.mechanic-profile .article-topic>ul,.mechanic-profile .article-topic>dl{max-width:78ch}
+.guide-article .article-table :is(th,td){font-size:.9rem;line-height:1.6;letter-spacing:0;text-transform:none}
+.article-contents+.article-topic{margin-top:0;border-top:0;padding-top:.2rem}
+.atlas-chapter-back{display:block;padding:.75rem 1rem 0;font-size:.875rem}
+.owned-monster-picker{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.4rem 1rem;align-items:center;padding:1rem 0;border-block:1px solid var(--line);margin-bottom:1.2rem}
+.owned-monster-picker .owned-monster-label{grid-column:1/-1;font-size:.9rem;margin:0;font-weight:700}
+.owned-monster-picker select{min-width:0;width:100%}
+.owned-monster-picker>a{font-size:.875rem}
+.owned-monster-picker .owned-monster-note{grid-column:1/-1;margin:0;line-height:1.5}
+.planner-card-tool{font-size:.8rem}
+.home-topics .question-links a{padding:.5rem 0;line-height:1.4}
+@media(max-width:560px){.mechanics-mode{margin-left:0;width:100%}.handbook-chapter>ul,.handbook-tools{margin-left:0}.article-contents ol{display:block}.article-contents li{margin:.4rem 0}.article-table :is(th,td){min-width:10rem}.owned-monster-picker{grid-template-columns:minmax(0,1fr)}.owned-monster-picker>a{grid-row:4}}
+@media print{.article-table{overflow:visible}.article-table :is(th,td){min-width:0}.handbook-topics,.mechanics-mode,.owned-monster-picker{display:none}.article-topic{break-inside:auto}.article-table tr{break-inside:avoid}}

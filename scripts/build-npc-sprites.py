@@ -43,6 +43,7 @@ ACTORS = {
 # Each line identifies the speaking field actor in this particular scene and story state.
 # Some other conversations contain several speakers, including a king and his impostor.
 SPEAKERS = {
+    "bunny": (5671, 169, "resident-r5671-fa11c-a15-tdd6-b5663-s15", "Hi! I'm Bunny!"),
     "laura": (73, 102, "resident-r73-f5d78-a2-t7b-b4116-s2", "I am Laura, princess of Radatome."),
     "queen-of-greattree": (5661, 1278, "resident-r5661-f17db8-a0-t2912-b5659-s0", "I am the queen of GreatTree"),
     "sanchi": (5630, 1317, "resident-r5630-f15a58-a6-t3ab-b5595-s6", "It's Sanchi."),
@@ -60,6 +61,17 @@ SPEAKERS = {
     "machiko": (5661, 1411, "resident-r5661-f17a38-a3-t2398-b5653-s3", "Machiko: My Living Statue"),
     "queen-of-the-mermaids": (141, 331, "resident-r141-fa928-a0-t46d-b2886-s0", "I am the queen of the mermaids"),
     "king-of-northden": (136, 598, "resident-r136-feebc-a9-t85e-b2897-s9", "King: Ah, our savior,"),
+}
+
+
+# These unnamed service/quest roles are identified by their own conversation,
+# rather than a visual guess or a name spoken by another actor.
+ROLE_ACTORS = {
+    "greatlog-key-appraiser": (133, 987, "resident-r133-f135b4-a0-t93c-b2858-s0", "This is the key shop. I appraise keys."),
+    "bazaar-cook": (5671, 104, "resident-r5671-fa11c-a8-t74b-b5663-s8", "Do you have a monster that can make fire?"),
+    "bazaar-muscleman": (5671, 205, "resident-r5671-fa11c-a9-tafb-b5663-s9", "Do you know the skill Summon?"),
+    "well-professor": (5630, 1380, "resident-r5630-f15f04-a0-tbd8-b5607-s0", "I need a monster with a lightning skill"),
+    "greattree-storage-apprentice": (5630, 1212, "great-tree-bank-apprentice", "Our first-rate security will protect your valuables!"),
 }
 
 
@@ -114,6 +126,37 @@ def speaker_actor(key, named_id, catalog, supplement, actors, disc, descriptors,
         require(joins and all(source_bytes(native_disc.resource(j["source_resource"]), j["source_offset"], j["native_hex"])
                               and source_bytes(native_disc.resource(j["source_resource"]), j["setup_offset"], j["setup_hex"])
                               for j in joins), f"{key}: actor artwork assignment changed")
+    return portrait
+
+
+def role_actor(key, catalog, actors, disc, descriptors, original):
+    resource, slot, actor_id, spoken = ROLE_ACTORS[key]
+    actor = catalog[actor_id]
+    setup = actor["source"]
+    if "sprite_joins" not in setup:
+        setup = next(place["source"] for place in actor["locations"] if "sprite_joins" in place["source"])
+    text = world.table_message(disc.resource(resource), descriptors[str(resource)], slot,
+                               world.SCRIPT_BASE & world.PHYSICAL)
+    require(spoken in text, f"{key}: role-identifying conversation changed")
+    matches = [row for row in actor["dialogue"] if spoken in row["text"]]
+    require(len(matches) == 1, f"{key}: ambiguous role-identifying conversation")
+    source = matches[0]["source"]
+    opcode = source.get("event_opcode_offset")
+    if opcode is None:
+        opcode = source["opcode_address"] - world.SCRIPT_BASE
+    portrait = actors[actor_id]
+    archive = portrait["artwork"][0]["source"]["archiveIndex"]
+    joins = [j for j in setup["sprite_joins"] if j["sprite_archive_index"] == archive]
+    for native_disc in (disc, original):
+        scene = native_disc.resource(resource)
+        require(scene[opcode:opcode + 3] == bytes((0x29, source["group"], source["message"])),
+                f"{key}: role dialogue instruction changed")
+        require(source_bytes(scene, setup["definition_offset"], setup["definition_hex"]) and
+                source_bytes(scene, setup["talk_pointer_offset"], setup["talk_pointer_hex"]),
+                f"{key}: actor or talk selector changed")
+        require(joins and all(source_bytes(native_disc.resource(j["source_resource"]), j["source_offset"], j["native_hex"])
+                              and source_bytes(native_disc.resource(j["source_resource"]), j["setup_offset"], j["setup_hex"])
+                              for j in joins), f"{key}: artwork assignment changed")
     return portrait
 
 
@@ -276,7 +319,8 @@ def build(wiki, image, original_image):
             continue
         named_id = ACTORS.get(key, key)
         actor = (speaker_actor(key, named_id, catalog, supplement, actors, disc, descriptors, original)
-                 if key in SPEAKERS else actors[named_id])
+                 if key in SPEAKERS else role_actor(key, catalog, actors, disc, descriptors, original)
+                 if key in ROLE_ACTORS else actors[named_id])
         portrait = actor["primarySprite"]
         if not portrait:
             continue
@@ -290,6 +334,9 @@ def build(wiki, image, original_image):
         if key in SPEAKERS:
             archive, slot, _, _ = SPEAKERS[key]
             proof.update(sceneResource=archive, messageSlot=slot, identity="Single named speaker in the actor conversation")
+        elif key in ROLE_ACTORS:
+            archive, slot, _, _ = ROLE_ACTORS[key]
+            proof.update(sceneResource=archive, messageSlot=slot, identity="Service or quest role identified by its own actor conversation")
         else:
             proof["identity"] = "Reviewed actor or playable-hero identity"
         evidence[entry["id"]] = proof
@@ -319,4 +366,4 @@ if __name__ == "__main__":
                 require(path.read_text(encoding="utf8") == content, f"Stale {path.name}")
             else:
                 path.write_bytes(content.encode())
-        print("Verified 41 native NPC/hero portraits and Milly's home variant against both discs.")
+        print("Verified native NPC/hero portraits and Milly's home variant against both discs.")

@@ -61,14 +61,33 @@
     }
   }
   // Both the interactive guide and its standalone HTML use these same rows.
-  function articleSections(row, escape, prose, level, campaign) {
+  function sectionText(section) {
+    return [section.title,section.intro,...(section.paragraphs || []),...(section.bullets || []),
+      ...(section.rows || []).flat(),section.table?.caption,...(section.table?.columns || []),...(section.table?.rows || []).flat()].filter(Boolean);
+  }
+  function articleSections(row, escape, prose, level, campaign, options = {}) {
     const heading = 'h' + level;
     const sections = row.sections || [];
     const ordered = campaign ? sections.filter(s => s.game === campaign).concat(sections.filter(s => s.game !== campaign)) : sections;
-    return ordered.map(section => '<section class="route-section article-topic"><'+heading+'>'+
-      escape(section.title)+'</'+heading+'><p>'+prose(section.intro)+'</p><dl>'+
-      section.rows.map(([label,text]) => '<dt>'+escape(label)+'</dt><dd>'+prose(text)+'</dd>').join('')+
-      '</dl></section>').join('');
+    const sectionId = section => section.id || String(sections.indexOf(section)+1);
+    const toc = ordered.length > 2 && options.sectionHref ? '<nav class="article-contents" aria-label="In this article"><details'+(options.compactContents?'':' open')+'><summary>In this article</summary><ol>'+ordered.map(section=>
+      '<li><a href="'+escape(options.sectionHref(sectionId(section)))+'">'+escape(section.title)+'</a></li>').join('')+'</ol></details></nav>' : '';
+    return toc+ordered.map(section => {
+      const table=section.table;
+      const sources=(section.sources || []).filter(source=>/^https?:\/\//.test(source.url)).map(source=>
+        '<a href="'+escape(source.url)+'" rel="noopener noreferrer">'+escape(source.label)+'</a>');
+      return '<section class="route-section article-topic" aria-labelledby="article-section-'+escape(sectionId(section))+'"><'+heading+' id="article-section-'+escape(sectionId(section))+'" tabindex="-1">'+
+        escape(section.title)+'</'+heading+'>'+
+        (section.intro ? '<p>'+prose(section.intro)+'</p>' : '')+
+        (section.paragraphs || []).map(text=>'<p>'+prose(text)+'</p>').join('')+
+        (section.bullets?.length ? '<ul>'+section.bullets.map(text=>'<li>'+prose(text)+'</li>').join('')+'</ul>' : '')+
+        (section.rows?.length ? '<dl>'+section.rows.map(([label,text])=>'<dt>'+escape(label)+'</dt><dd>'+prose(text)+'</dd>').join('')+'</dl>' : '')+
+        (table ? '<div class="article-table" role="region" tabindex="0" aria-label="'+escape(table.caption || section.title)+'"><table>'+
+          (table.caption ? '<caption>'+escape(table.caption)+'</caption>' : '')+'<thead><tr>'+table.columns.map(title=>'<th scope="col">'+escape(title)+'</th>').join('')+'</tr></thead><tbody>'+
+          table.rows.map(cells=>'<tr>'+cells.map((cell,i)=>i ? '<td>'+prose(cell)+'</td>' : '<th scope="row">'+prose(cell)+'</th>').join('')+'</tr>').join('')+'</tbody></table></div>' : '')+
+        (section.links?.length && options.articleLink ? '<p class="article-topic-links">'+section.links.map(options.articleLink).filter(Boolean).join(' · ')+'</p>' : '')+
+        (sources.length ? '<p class="article-sources"><span>Sources</span> · '+sources.join(' · ')+'</p>' : '')+'</section>';
+    }).join('');
   }
   function nicknameMarkup(row, escape, articleLink) {
     if (row.nickname_rows) {
@@ -82,9 +101,10 @@
     const label = row.id === 'npc-machiko' ? 'Gift nickname' : 'Default nickname';
     return '<p><strong>'+label+'</strong> · '+nicknames.map(name => escape(name.title)).join(', ')+'</p>';
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = {apply};
+  if (typeof module !== 'undefined' && module.exports) module.exports = {apply,articleSections,sectionText};
   else {
     root.DQMArticleSections = articleSections;
+    root.DQMSectionText = sectionText;
     root.DQMNicknameMarkup = nicknameMarkup;
     apply(root.GUIDE_REFERENCE, root.FIELD_GUIDE, root.WORLD_GUIDE, root.PLAYER_ATLAS);
   }

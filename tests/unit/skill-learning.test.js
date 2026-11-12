@@ -112,6 +112,8 @@ test('invalid or unsupported inputs cannot quietly become a training forecast',(
   assert.throws(()=>model.check({...base,skillId:4,knownSkills:[1,1]}),RangeError);
   assert.throws(()=>model.check({...base,skillId:4,knownSkills:[1,2,3,4,5,6,7,8,9]}),RangeError);
   assert.throws(()=>model.check({...base,skillId:4,stats:{wisdom:100}}),RangeError);
+  assert.throws(()=>model.check({...base,skillId:4,candidateSkills:null}),RangeError);
+  assert.throws(()=>model.check({...base,skillId:4,candidateSkills:[4,4]}),RangeError);
   assert.equal(reference.species.length,315);
   assert.ok(reference.species.every(row=>DATA.species[row.speciesIndex].playable));
 });

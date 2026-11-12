@@ -190,9 +190,11 @@ test('Mechanics sorts by adventure or article and preserves the reader’s place
   await page.setViewportSize({width:320,height:760});
   await page.goto(url);
   await page.getByRole('link',{name:'Browse all mechanics'}).click();
+  await expect(page.getByRole('navigation',{name:'Mechanics topics'})).toBeVisible();
+  await page.getByRole('navigation',{name:'Mechanics view'}).getByRole('link',{name:'All articles'}).click();
   const index = page.getByRole('table',{name:'Mechanics articles'});
   const sections = index.locator('tbody td');
-  await expect(index.getByRole('link')).toHaveCount(22);
+  await expect(index.getByRole('link')).toHaveCount(23);
   expect([...new Set(await sections.allTextContents())]).toEqual(['General','Terry','Cobi & Tara']);
   await expect(index.getByRole('columnheader',{name:'Section'})).toHaveAttribute('aria-sort','ascending');
   const articleSort = index.getByRole('button',{name:'Article'});
@@ -209,7 +211,8 @@ test('Mechanics sorts by adventure or article and preserves the reader’s place
   const search = page.getByLabel('Search the guide');
   await search.fill('Bard');
   await expect(search).toBeFocused();
-  await expect(index.getByRole('link')).toHaveCount(1);
+  await expect(index.locator('a[href*="entry=field-wandering-masters"]')).toBeVisible();
+  await expect(index.locator('a[href*="entry=field-restored-content"]')).toBeVisible();
   await expect(index.locator('tbody')).toContainText('Bard');
   await search.fill('zzzzzz');
   await expect(page.getByRole('link',{name:'Search all topics for “zzzzzz”'})).toBeVisible();
@@ -340,7 +343,7 @@ test('skill profiles explain the effect and link upgrades and learner profiles',
   await expect(page.locator('.skill-progression').getByRole('link',{name:'Blazemost',exact:true})).toBeVisible();
   await page.locator('.skill-progression').getByRole('link',{name:'Blaze',exact:true}).click();
   await expect(page.locator('#article-title')).toHaveText('Blaze');
-  await expect(page.locator('.skill-learner-list svg').first()).toBeVisible();
+  await expect(page.locator('.skill-learner-list img').first()).toBeVisible();
   await expect(page.locator('.skill-profile .monster-japanese')).toHaveText('メラ');
   await page.locator('.skill-campaign[open] a').first().click();
   await page.locator('#monster-skills a').filter({hasText:/^Blaze$/}).click();

@@ -3,7 +3,7 @@
 The portrait audit compares the original Japanese PSX disc with the Current
 v1.0.73 English patch. [The generated receipt](npc-sprite-evidence.json) records
 the disc hashes, native resource and sprite slot, exported PNG hash and dimensions
-for all 41 primary native portraits and Milly's alternate home portrait. Healie and Slib use their existing monster-species
+for all 48 primary native portraits and Milly's alternate home portrait. Healie and Slib use their existing monster-species
 sprites instead.
 
 ## Milly
@@ -85,6 +85,58 @@ Two further Terry scenes use exactly the same first-facing pixels:
 The definitions, talk pointers, arrivals, graphics selectors and frame pixels
 for these appearances were checked against both discs. The artwork is not
 exclusive to Cobi and Tara's adventure, so Tife's portrait is retained.
+
+## Bazaar and well contacts
+
+The expanded directory adds six contacts chosen for a named conversation,
+service advice, or an actionable gate quest. The named Bunny record had been
+omitted even though her native talk script and portrait were already identifiable.
+
+| Guide character | Map | Scene / identifying message slot | Graphics / slot |
+| --- | --- | --- | --- |
+| Bunny | Bazaar, `map-8-0` | `5671 / 169` | `5663 / 15` |
+| Bazaar cook | Bazaar, `map-8-0` | `5671 / 104` | `5663 / 8` |
+| Bazaar muscleman | Bazaar, `map-8-0` | `5671 / 205` | `5663 / 9` |
+| Well professor | Inside the Well, `map-6-7` | `5630 / 1380` | `5607 / 0` |
+| GreatTree storage apprentice | Storage, `map-6-6` | `5630 / 1212` | `5628 / 1` |
+| GreatLog key appraiser | Key Appraiser, `map-12-28` | `133 / 987` | `2858 / 0` |
+
+For each, the builder checks the role-identifying text in the current disc,
+the native dialogue instruction, actor definition, talk selector, scene arrival
+and graphics-pack assignment against both authenticated discs. It re-decodes
+the exact first-facing pixels. Bunny is identified by her own introduction;
+the other roles are identified by their own service or request dialogue.
+No likeness matching or another character's name is used to choose a portrait.
+
+Reviewed canonical dialogue IDs retain eight Bunny passages, five apprentice
+passages, nine cook passages, six muscleman passages, ten well-professor
+passages and three key-appraiser passages. Post-tournament lines stay in the same actor's transcript. The cook,
+muscleman and professor link to their respective gate quests, and the quests
+link back to their contact. Bunny's page describes the conversation without
+claiming an unverified healing, stat or combat benefit.
+
+The key appraiser's own service introduction (`s003f6800_2fa0`, native slot 987)
+identifies the role. Slots 992 and 994 are also explicit appraisal greetings.
+The shared conversation tree reaches slot 988 (`s003f6800_3013`), whose current
+English line speaks of “my appraised key.” That customer-like line is omitted
+rather than assigned on the strength of a shared script alone. Native actor
+table `0x135B4`, actor 0, definition `0x13498` and talk script `0x93C` join the
+verified room arrival to graphics archive 2858, slot 0. The appraiser links to
+the magic-key reference and the postgame route, which links back to the service.
+
+Source-wording note: `s003f6800_31fe` (slot 994) is published as “Hey, ! Here to
+have a key appraised?” in the reviewed translation snapshot and v1.0.73 disc.
+The Japanese source has an ordinary greeting, not a player-name placeholder.
+The transcript preserves the published English; the guide does not invent or
+insert a missing name. This is an upstream wording issue, separate from the
+verified actor and sprite assignment.
+
+The broader named-record audit found other potential characters in shared or
+text-only event passages, including Mickey and the Monster Minister. A named
+passage alone does not prove a particular sprite, position or event trigger;
+those records are not converted into guessed portraits. Existing verified
+Monster Professor, Petitbou, appraisers, storage and hibernation contacts remain
+in the directory. This pass is not a claim to cover every anonymous resident.
 
 ## Reproducing the audit
 

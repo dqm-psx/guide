@@ -10,10 +10,11 @@ const paragraph = text => text ? '<p>'+escape(text)+'</p>' : '';
 
 function addEntryPages(assets) {
   const db=vm.createContext({});
-  for (const file of ['breeding-data','monster-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-sheets']) {
+  for (const file of ['breeding-data','monster-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-images']) {
     vm.runInContext(assets.get('data/'+file+'.js').toString(),db,{timeout:5000});
   }
   vm.runInContext(assets.get('js/current-names.js').toString(),db,{timeout:5000});
+  vm.runInContext(assets.get('js/walkthrough-context.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/walkthrough.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/locations.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/place-context.js').toString(),db,{timeout:5000});
@@ -44,16 +45,13 @@ function addEntryPages(assets) {
   const mapLink = m=>link('places/'+(m.placeId || m.id)+'/',m.title);
   const campaigns = ['terry','cobi','tara'];
   const readable = Object.fromEntries(campaigns.map(key=>[key,articles.get('npc-'+key).title]));
-  const portraits = db.SPRITE_SHEETS.portrait;
-  const sheets = portraits.sheets.map(([url,width,height])=>[versioned(url),width,height]);
+  const portraits = db.SPRITE_IMAGES.portrait;
   function portrait(index) {
-    const frame = portraits.frames[index];
-    if (!frame) return '';
-    const [sheet,x,y,width,height] = frame;
-    const [url,sheetWidth,sheetHeight] = sheets[sheet];
-    return '<svg class="entry-portrait" aria-hidden="true" focusable="false" viewBox="0 0 '+width+' '+height+'"><svg width="'+width+'" height="'+height+
-      '" viewBox="'+[x,y,width,height].join(' ')+'" overflow="hidden"><image href="'+escape(url)+'" width="'+sheetWidth+'" height="'+sheetHeight+'"/></svg></svg>';
+    const image = portraits[index];
+    if (!image) return '';
+    return '<img class="entry-portrait" alt="" loading="lazy" decoding="async" src="'+escape(versioned(image.src))+'" width="'+image.width+'" height="'+image.height+'">';
   }
+
   function illustratedMonster(index) {
     const monster = bySpecies.get(index);
     return '<a class="entry-monster-link" href="monsters/'+index+'/">'+portrait(index)+'<span>'+escape(monster.display_name)+'</span></a>';
@@ -79,7 +77,8 @@ function addEntryPages(assets) {
   }
   function linkArticle(id,label) {
     const article = articles.get(id);
-    return article ? link(articlePath(article),label || article.title) : '';
+    const skill = Object.values(names).find(skill=>'skill-'+skill.id===id);
+    return article ? link(articlePath(article),label || article.title) : skill ? link('skills/'+skill.id+'/',label || skill.title) : '';
   }
   const articleLink = id => linkArticle(id);
   const storyContext = row => ['story','ending'].includes(row.spoiler) ? ' data-story-context' : '';
@@ -179,6 +178,13 @@ function addEntryPages(assets) {
     const path = db.DQMWalkthrough.paths[game];
     const content = db.DQMWalkthrough.render(game,{
       byId:articles, routes:db.FIELD_ROUTES.routes, escape, hidden:()=>false, title:row=>row.title,
+      maps:db.PLAYER_ATLAS.maps,itemReferences:db.DQMItemReference.items,
+      mapHref:map=>'places/'+(map.placeId || map.id)+'/',mapImage:map=>'maps/'+map.image,
+      entryArt:(row,mapIds)=>{
+        const base=db.NPC_SPRITES[row.id],contextual=base?.variants?.find(variant=>variant.mapIds.some(id=>mapIds.includes(id)));
+        const sprite=contextual || base;
+        return sprite?.image ? '<img alt="" src="'+escape(sprite.image)+'">' : row.species_ids?.length ? portrait(row.species_ids[0]) : '';
+      },
       entryLink:articleLink, prose:escape,
       sectionLink:(row,name)=>link(path+'#'+row.id,name),
       campaignLink:(key,current)=>'<a href="'+db.DQMWalkthrough.paths[key]+'"'+(current ? ' aria-current="page"' : '')+'>'+escape(adventures[key])+'</a>',
@@ -258,7 +264,10 @@ function addEntryPages(assets) {
       (gateLinks.length ? '<nav class="entry-gate-links" aria-label="Related guide entries">'+gateLinks.join('')+'</nav>' : '')+
       '</div>'+gateEncounterTable(routeData.encounters,row.availability==='unused')+'</div>' : '';
     const mapsAndFloors=gate ? '<div class="entry-gate-content">'+locationMaps(row)+db.DQMGateGeneration.render(row.id,{escape,headingLevel:2})+'</div>' : locationMaps(row);
-    add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+db.DQMArticleSections(row,escape,escape,2)+nicknameNote+stepsMarkup+walkChapters+requests+mapsAndFloors+
+    const calculatorLink=row.id==='field-damage-and-resistance' ? '<p>'+link('#combat-planner','Open the damage calculator →')+'</p>' : '';
+    add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+calculatorLink+db.DQMArticleSections(row,escape,escape,2,null,{
+      articleLink,compactContents:true,sectionHref:id=>articlePath(row)+'#article-section-'+id
+    })+nicknameNote+stepsMarkup+walkChapters+requests+mapsAndFloors+
       (gate?'':locationCharacters(row))+contextLinks('Locations',characterLocations)+
       list('Arena classes',(row.arena_classes || []).map(articleLink))+dialogue+
       list('Walkthrough',steps)+(gate?'':list('Wild encounters',[...new Set(encounterList(routeData.encounters))]).replace('<section>','<section id="location-encounters">'))+
@@ -362,6 +371,8 @@ function addEntryPages(assets) {
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><base href="'+depth+'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title>'+
       '<meta name="description" content="'+description+'"><link rel="canonical" href="'+url+'"><meta property="og:url" content="'+url+'"><meta property="og:type" content="article"><meta property="og:title" content="'+title+'"><meta property="og:description" content="'+description+'"><meta property="og:image" content="'+base+'icons/guide-card.png"><meta name="twitter:card" content="summary_large_image">'+
       spoilerPreference+'<link rel="stylesheet" href="'+versioned('css/entry-page.css')+'">'+
+      '<link rel="stylesheet" href="'+versioned('css/handbook.css')+'">'+
+      (p.kind==='walkthroughs' ? '<link rel="stylesheet" href="'+versioned('css/walkthrough.css')+'">' : '')+
       (p.path==='entries/' || item ? '<link rel="stylesheet" href="'+versioned('css/reference-tables.css')+'">' : '')+
       '</head><body><header>'+link('./','DQM1&2 PSX Player Guide')+
       (p.path==='entries/' ? '' : '<nav aria-label="Guide navigation">'+link('entries/','Guide index')+'</nav>')+
@@ -395,7 +406,7 @@ function addEntryPages(assets) {
     if (kind === 'item') return '<section id="items"><h2>Items</h2>'+db.DQMItemIndex.render(members,itemOptions)+'</section>';
     if (kind === 'mechanic') {
       const table = db.DQMMechanicsIndex.render(members,{games:adventures,titleFor:row=>row.title,linkTo:linkArticle,escape});
-      return '<section id="mechanics"><h2>Mechanics</h2>'+table+'</section>';
+      return '<section id="mechanics"><h2>Mechanics</h2>'+db.DQMMechanicsIndex.handbook(members,{escape,titleFor:row=>row.title,linkTo:linkArticle,tools:false})+'<details><summary>All articles</summary>'+table+'</details></section>';
     }
     return list(title,members.sort(alpha).map(row=>articleLink(row.id)));
   });

@@ -25,23 +25,23 @@
     const params=new URLSearchParams((window.DQMEntryHash?.()||location.hash).split('?')[1]||'');
     const get=id=>root.querySelector('#combat-'+id);
     const initialSpecies=Number(params.get('species')??11),initialSkill=Number(params.get('skill')??1);
-    root.innerHTML='<header class="training-heading"><div><h2 id="combat-planner-heading" tabindex="-1">Damage calculator</h2><p>Compare normal attacks and supported damage skills against a specific wild encounter.</p></div><a href="#field-guide?kind=skill">Browse skills →</a></header>'+
+    root.innerHTML='<header class="training-heading"><div><h2 id="combat-planner-heading" tabindex="-1">Damage calculator</h2><p>Compare normal attacks and supported damage skills against a specific wild encounter.</p></div><div><a href="#field-guide?entry=field-damage-and-resistance">Damage &amp; resistance</a> · <a href="#field-guide?kind=skill">Browse skills →</a></div></header>'+
       '<p id="combat-link-note" class="hint" hidden>Some values in this link were unavailable. Review the selected monster, encounter and skill. <button type="button" id="combat-accept-link">Use these selections</button></p>'+
-      '<div class="combat-inputs"><section class="training-block"><h3>Your monster</h3>'+field('species','Species',select('species',options([...species].sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(row=>[row.index,row.display_name]))))+
-      '<div class="training-stats">'+numeric('level','Level',params.get('level')??20,1,99)+numeric('attack','Attack',params.get('attack')??'',0,999)+numeric('defense','Defense',params.get('defense')??'',0,999)+'</div><p class="hint">Enter the current battle stats, including equipment. Leave unknown Attack or Defense blank.</p>'+field('skill','Skill to use',select('skill',options(supported.map(row=>[row.skillId,skillName(row.skillId)]))))+'</section>'+
+      '<div id="combat-owned"></div><div class="combat-inputs"><section class="training-block"><h3>Your monster</h3>'+field('species','Species',select('species',options([...species].sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(row=>[row.index,row.display_name]))))+
+      '<div class="training-stats">'+numeric('level','Level',params.get('level')??20,1,99)+numeric('attack','Attack',params.get('attack')??'',0,999)+numeric('defense','Defense',params.get('defense')??'',0,999)+'</div><p class="hint" id="combat-stat-source">Enter the current battle stats, including equipment. Leave unknown Attack or Defense blank.</p>'+field('skill','Skill to use',select('skill',options(supported.map(row=>[row.skillId,skillName(row.skillId)]))))+'<p id="combat-known-note" class="hint"></p></section>'+
       '<section class="training-block"><h3>Wild encounter</h3>'+field('game','Adventure',select('game',options([['terry','Terry'],['cobi','Cobi'],['tara','Tara']])))+
       field('search','Find an area or monster','<input id="combat-search" type="search" autocomplete="off" placeholder="Area or monster name">')+
       field('area','Area / floors',select('area',''))+field('enemy','Enemy',select('enemy',''))+'<p id="combat-empty" class="hint" hidden>No matching encounters. Change the search or adventure.</p></section></div>'+
       '<p id="combat-errors" role="alert" hidden></p><div id="combat-results" class="combat-results" aria-live="polite"></div>'+
       '<section class="training-block combat-defence"><h3>Enemy skill</h3><div class="training-pair">'+field('incoming','Move to compare',select('incoming',''))+
       field('resistance','Your resistance to this move',select('resistance',''), 'Species defaults are a starting point. Bred monsters can have different resistance; select the actual reduction when known.')+'</div><div id="combat-incoming-result" aria-live="polite"></div><p id="combat-other-moves" class="hint"></p></section>'+
-      '<p class="training-scope">Ranges cover ordinary wild-enemy stat rolls and successful, unguarded hits. Critical hits, evasion, reflection, charge, buffs, defense stances, multi-hit rules and other situational modifiers are not included. Damage is per target. A listed skill here is a calculation option, not proof that your monster has learned it.</p>'+
+      '<p class="training-scope">Ranges cover ordinary wild-enemy stat rolls and successful, unguarded hits. Critical hits, evasion, reflection, charge, buffs, defense stances, repeated-skill bonuses, multi-hit rules and other situational modifiers are not included. Damage is per target. A listed skill here is a calculation option, not proof that your monster has learned it.</p>'+
       '<div class="training-share"><button type="button" id="combat-copy">Copy calculation link</button><span id="combat-copy-status" role="status"></span><input id="combat-share-url" aria-label="Calculation link" readonly hidden></div>';
     get('species').value=String(species.some(row=>row.index===initialSpecies)?initialSpecies:11);
     get('skill').value=String(skills.has(initialSkill)?initialSkill:1);
     get('game').value=['terry','cobi','tara'].includes(params.get('game'))?params.get('game'):'terry';
     DQMMonsterPicker.attach(get('species'),{species,label:'Your monster species',includeFamily:true});
-    let area=null,enemy=null,invalidLink=false;
+    let area=null,enemy=null,invalidLink=false,owned=null,ownedSnapshot=null;
     function refillAreas(preferred){
       const q=get('search').value.trim().toLocaleLowerCase();
       const rows=ref.encounters.filter(row=>row.game===get('game').value&&(!q||[encounterName(row),...row.enemies.map(mon=>name(mon.speciesId))].join(' ').toLocaleLowerCase().includes(q)));
@@ -72,7 +72,7 @@
     function refillResistance(preferred=''){
       const skill=skills.get(Number(get('incoming').value));
       const scale=skill&&ref.scales[skill.scale]?.saved;
-      get('resistance').innerHTML=options([['','Species default'],...(scale||[]).map((percent,code)=>[code,percent===0?'Immune (0% damage)':percent+'% damage taken'])]);
+      get('resistance').innerHTML=options([['',ownedSnapshot?.resistances?'Individual resistance from save':'Species default'],...(scale||[]).map((percent,code)=>[code,percent===0?'Immune (0% damage)':percent+'% damage taken'])]);
       if(preferred!==''&&scale?.[Number(preferred)]!=null)get('resistance').value=String(preferred);
       get('resistance').disabled=!skill;
     }
@@ -92,7 +92,7 @@
       try{
         if(invalidLink)throw new Error('Review the replacement selections above before calculating this link.');
         if(!enemy)throw new Error('Choose a matching wild encounter to calculate damage.');
-        const speciesId=Number(get('species').value),player=monsters.get(speciesId),target=monsters.get(enemy.speciesId);
+        const speciesId=Number(get('species').value),basePlayer=monsters.get(speciesId),player=ownedSnapshot?.resistances?{...basePlayer,savedResistances:ownedSnapshot.resistances}:basePlayer,target=monsters.get(enemy.speciesId);
         const level=number('level',1,99),attack=number('attack',0,999,true),defense=number('defense',0,999,true),skillId=Number(get('skill').value);
         const enemyAttack=model.wildStatRange(enemy.stats.attack,'attack'),enemyDefense=model.wildStatRange(enemy.stats.defense,'defense');
         const outgoing=attack===null?'Enter your Attack':range(model.physicalEnvelope([attack,attack],enemyDefense))+' damage';
@@ -101,13 +101,15 @@
         get('results').innerHTML='<section class="training-block"><div class="training-monster">'+spriteMarkup(speciesId)+'<div><a href="#monster?id='+speciesId+'">'+safe(name(speciesId))+'</a><span>Attacking '+safe(name(enemy.speciesId))+'</span></div></div><h3>Your damage</h3><p class="combat-physical"><strong>Normal attack</strong><span>'+outgoing+'</span></p>'+outcomeMarkup(skill,skillId)+'</section>'+
           '<section class="training-block"><div class="training-monster">'+spriteMarkup(enemy.speciesId)+'<div><a href="#monster?id='+enemy.speciesId+'">'+safe(name(enemy.speciesId))+'</a><span>Lv '+enemy.level+' · '+safe(encounterName(area))+'</span></div></div><h3>Enemy damage</h3><p class="combat-physical"><strong>Normal attack</strong><span>'+incoming+'</span></p><p class="hint">Enemy rolls: HP '+range(model.wildStatRange(enemy.stats.hp,'hp'))+' · Attack '+range(enemyAttack)+' · Defense '+range(enemyDefense)+'.</p><a href="#atlas?tab=encounters&amp;area='+area.game+'-'+area.contextId+'">See this encounter →</a></section>';
         const incomingId=Number(get('incoming').value),incomingSkill=skills.get(incomingId),override=get('resistance').value;
-        get('incoming-result').innerHTML=incomingSkill?outcomeMarkup(model.skillOutcome(incomingSkill,{user:target,target:player,wildTarget:false,enemyUser:true,level:enemy.level,...(override!==''?{resistanceCode:Number(override)}:{})}),incomingId)+(override===''?'<p class="hint">Uses the species’ unbred resistance, not an imported monster’s individual resistance.</p>':''):'<p class="hint">No supported damage move is recorded for this enemy.</p>';
+        get('incoming-result').innerHTML=incomingSkill?outcomeMarkup(model.skillOutcome(incomingSkill,{user:target,target:player,wildTarget:false,enemyUser:true,level:enemy.level,...(override!==''?{resistanceCode:Number(override)}:{})}),incomingId)+(override===''?'<p class="hint">'+(ownedSnapshot?.resistances?'Uses this monster’s individual resistance from the save.':'Uses the species’ unbred resistance; an individual monster’s resistance can differ.')+'</p>':''):'<p class="hint">No supported damage move is recorded for this enemy.</p>';
+        get('known-note').textContent=ownedSnapshot?.knownSkills ? (ownedSnapshot.knownSkills.includes(skillId)?'This move is learned in your imported save.':'This move is not learned in your imported save. You can still compare its damage.') : '';
         const others=[...new Set(enemy.actionIds)].filter(id=>id!==0&&!skills.has(id)&&names[id]);
         get('other-moves').innerHTML=others.length?'Other recorded moves: '+others.map(skillLink).join(', ')+'. Their effects are not calculated here.':'';
         get('errors').hidden=true;get('copy').disabled=false;
         const p=new URLSearchParams({species:speciesId,level,skill:skillId,game:area.game,area:area.contextId,enemy:enemy.index});
         if(attack!==null)p.set('attack',attack);if(defense!==null)p.set('defense',defense);
         if(incomingSkill)p.set('incoming',incomingId);if(override!=='')p.set('resistance',override);
+        const selected=owned?.selected();if(selected){p.set('team',selected.teamId);p.set('owned',selected.entryId);}
         history.replaceState(history.state,'','#combat-planner?'+p);
       }catch(error){get('errors').textContent=error.message;get('errors').hidden=false;get('copy').disabled=true;get('results').replaceChildren();get('incoming-result').replaceChildren();get('other-moves').replaceChildren();}
     }
@@ -126,10 +128,25 @@
     get('game').addEventListener('change',()=>{refillAreas();update();});get('search').addEventListener('input',()=>{refillAreas(get('area').value);update();});
     get('area').addEventListener('change',()=>{refillEnemies();update();});get('enemy').addEventListener('change',()=>{refillMoves();update();});
     get('incoming').addEventListener('change',()=>{refillResistance();update();});
-    get('species').addEventListener('change',()=>{get('attack').value='';get('defense').value='';get('resistance').value='';update();});
+    function detachOwned(){owned?.detach();ownedSnapshot=null;get('stat-source').textContent='Custom battle stats, including equipment.';refillResistance();}
+    get('species').addEventListener('change',()=>{detachOwned();get('attack').value='';get('defense').value='';get('resistance').value='';update();});
     for(const id of ['skill','resistance'])get(id).addEventListener('change',update);
-    for(const id of ['level','attack','defense'])get(id).addEventListener('input',update);
-    get('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);get('copy-status').textContent='Calculation link copied.';}catch{get('share-url').hidden=false;get('share-url').value=location.href;get('share-url').focus();get('share-url').select();get('copy-status').textContent='Copy the selected link.';}});
+    for(const id of ['level','attack','defense'])get(id).addEventListener('input',()=>{detachOwned();update();});
+    get('copy').addEventListener('click',async()=>{const url=new URL(location.href),p=new URLSearchParams(url.hash.split('?')[1]);p.delete('team');p.delete('owned');const incomingSkill=skills.get(Number(get('incoming').value));if(get('resistance').value===''&&ownedSnapshot?.resistances&&incomingSkill?.resistanceChannelId)p.set('resistance',ownedSnapshot.resistances[incomingSkill.resistanceChannelId-1]);url.hash='combat-planner?'+p;try{await navigator.clipboard.writeText(url.href);get('copy-status').textContent='Calculation link copied.';}catch{get('share-url').hidden=false;get('share-url').value=url.href;get('share-url').focus();get('share-url').select();get('copy-status').textContent='Copy the selected link.';}});
+    let hydratingOwned=true;
+    owned=globalThis.DQMOwnedMonsters?.mount(get('owned'),{params,onSelect(monster){
+      const prior={game:get('game').value,area:get('area').value,enemy:get('enemy').value,incoming:get('incoming').value,resistance:get('resistance').value};
+      ownedSnapshot=monster;get('species').value=String(monster.speciesIndex);DQMMonsterPicker.get(get('species')).refresh();
+      get('level').value=monster.level??'';get('attack').value=monster.battleStats.attack??'';get('defense').value=monster.battleStats.defense??'';
+      if(hydratingOwned&&!params.has('game')&&monster.campaign)get('game').value=monster.campaign;
+      get('search').value='';refillAreas(prior.area);refillEnemies(prior.enemy);refillMoves(prior.incoming);refillResistance(hydratingOwned?prior.resistance:'');
+      const learned=monster.knownSkills?.find(id=>skills.has(id));if(hydratingOwned&&!params.has('skill')&&learned)get('skill').value=String(learned);
+      get('stat-source').textContent='Saved battle stats include the equipped accessory. Base Attack '+(monster.baseStats.attack??'unknown')+' · base Defense '+(monster.baseStats.defense??'unknown')+'.';
+      if(!hydratingOwned){invalidLink=false;get('link-note').hidden=true;}update();
+    },onInvalidate(){
+      ownedSnapshot=null;get('attack').value='';get('defense').value='';get('stat-source').textContent='Enter the current battle stats, including equipment.';refillResistance();update();
+    }});
+    hydratingOwned=false;
     update();
   }
   globalThis.DQMCombatPlanner={renderRoute};

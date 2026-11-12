@@ -75,7 +75,7 @@
     ...(DQMItemReference.items[row.id] ? DQMItemIndex.searchTerms(row,null,games) : []),
     ...(row.requested_species || []).map(id => GUIDE_REFERENCE.species[id].display_name),
     ...(row.nickname_rows || []).flatMap(name => name.aliases), ...(row.default_nicknames || []).flatMap(name => name.aliases),
-    ...(row.sections || []).flatMap(section=>[section.title,section.intro,...(section.rows || []).flat()]),
+    ...(row.sections || []).flatMap(DQMSectionText),
     ...(row.details || []), ...(row.aliases || []), ...(row.places || []), ...(row.prices || []).flatMap(price=>price.locations)].join(' '))]));
   const monsters = GUIDE_REFERENCE.species.filter(row => row.current_name && (row.system_entry_id || row.playable)).map(row => ({
     id: 'monster-' + row.index, index: row.index, kind: 'monster', game: 'both', title: row.display_name,
@@ -299,11 +299,11 @@
     for (const id of destinations) {
       const dest=byId.get(id);
       if (!dest || guarded(dest)) continue;
-      const chapter = row.kind === 'story' && dest.kind === 'quest' ? row.id : '';
+      const chapter = row.kind === 'story' ? row.id : '';
       for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id,chapter}),dest.id);
     }
     for (const map of window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(data?.maps || [])])) {
-      add(map.title,row.kind==='location' ? linked(p,{entry:row.id,map:map.id,variant:'',section:'maps'}) : '#atlas?map='+safe(map.id));
+      add(map.title,row.kind==='location' ? linked(p,{entry:row.id,map:map.id,variant:'',section:'maps'}) : '#atlas?map='+safe(map.id)+(row.kind==='story'?'&amp;chapter='+safe(row.id):''));
     }
     if (!terms.size) return safe(line);
     const pattern=[...terms.keys()].sort((a,b)=>b.length-a.length)
@@ -324,15 +324,19 @@
   }
   function renderWalkthrough(game,p) {
     const article = el('guide-article');
-    article.classList.remove('skill-profile','location-profile');
+    article.classList.remove('skill-profile','location-profile','mechanic-profile');
+    article.classList.add('walkthrough-profile');
     const heading = games[game]+' walkthrough';
     const sectionParams = new URLSearchParams({kind:'story',game});
     const entryLink = (id,label,stage) => {
       const dest = byId.get(id);
-      return dest ? '<a href="'+linked(p,{entry:id,chapter:dest.kind==='quest' ? stage?.id : ''})+'">'+safe(label || safeTitle(dest))+'</a>' : '';
+      return dest ? '<a href="'+linked(p,{entry:id,chapter:stage?.id || ''})+'">'+safe(label || safeTitle(dest))+'</a>' : '';
     };
     const walk = DQMWalkthrough.render(game,{
       byId, routes:FIELD_ROUTES.routes, escape:safe, title:safeTitle, hidden:guarded,
+      maps:PLAYER_ATLAS.maps,itemReferences:DQMItemReference.items,
+      mapHref:(map,stage)=>'#atlas?map='+map.id+'&chapter='+stage.id,
+      mapImage:map=>'maps/'+map.image,entryArt:(row,mapIds)=>artwork(row,true,mapIds),
       campaignLink:(key,current) => '<a href="'+linked(sectionParams,{game:key})+'"'+
         (current ? ' aria-current="page"' : '')+'>'+safe(games[key])+'</a>',
       questIndexLink:'<a href="'+linked(sectionParams,{kind:'quest'})+'">'+safe(games[game])+' quests</a>',
@@ -353,15 +357,24 @@
   }
   function renderArticle(row, p) {
     const article = el('guide-article');
+    article.classList.remove('walkthrough-profile');
     article.classList.toggle('skill-profile',row?.kind === 'skill');
     article.classList.toggle('location-profile',row?.kind === 'location');
+    article.classList.toggle('mechanic-profile',row?.kind === 'mechanic');
     if (row?.kind === 'skill') {
       article.innerHTML=skillProfile(row,p);
       return row.title;
     }
     const backKind = p.get('kind') || (!p.has('q') && row?.kind) || '';
     const questChapters = DQMWalkthrough.chaptersForQuest(row,byId);
-    const origin = questChapters.find(stage=>stage.id===p.get('chapter'));
+    const proposedOrigin=byId.get(p.get('chapter'));
+    const originContext=proposedOrigin?.kind==='story' ? DQMWalkthroughContext.create({byId,routes:FIELD_ROUTES.routes,
+      maps:PLAYER_ATLAS.maps,itemReferences:DQMItemReference.items,hidden:guarded}).forStage(proposedOrigin) : null;
+    const origin = questChapters.find(stage=>stage===proposedOrigin) || (row && originContext &&
+      [ ...(proposedOrigin.related || []),...originContext.people.map(ref=>ref.id),...originContext.bosses.map(ref=>ref.id),
+        ...originContext.places.map(ref=>ref.id),...originContext.items.map(ref=>ref.id),...originContext.finds.map(ref=>ref.item.id),
+        ...(FIELD_ROUTES.routes[proposedOrigin.id]?.stages || []).flatMap(stage=>[stage.arena,...stage.gates,...stage.gates.map(id=>FIELD_ROUTES.routes[id]?.boss)])
+      ].includes(row.id) ? proposedOrigin : null);
     const backLabel = origin ? safeTitle(origin) : p.has('q') ? 'Search results' : backKind==='location' ? 'Locations & maps' : categories[backKind] || 'Guide home';
     const backUrl = origin ? linked(new URLSearchParams({kind:'story',game:origin.game}),{entry:origin.id}) :
       linked(p, {entry:'',kind:backKind,chapter:''});
@@ -417,13 +430,18 @@
       body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + (!gate && lead ? '<p class="article-lead">' + linkedProse(lead,row,routeData,p) + '</p>' : '')) +
         DQMRecruitmentUI.markup(row) +
         (row.id==='field-skill-inheritance' || row.id==='field-growth' ? '<p><a class="guide-action training-open" href="#skill-planner">Open the skill &amp; growth planner →</a></p>' : '') +
+        (row.id==='field-damage-and-resistance' ? '<p><a class="guide-action training-open" href="#combat-planner">Open the damage calculator →</a></p>' : '') +
         (gate ? '<div class="gate-content">' : '')+
         (row.kind==='location' && mapLinks.length ? '<section class="location-maps" aria-label="Maps">'+(gate?'':'<h3 id="location-maps-heading">Maps</h3>')+
           '<div id="location-map-browser"></div></section>' : '')+
         (gate ? globalThis.DQMGateGeneration?.render(row.id,{escape:safe}) || '' : '')+
         (gate ? '</div>' : '')+
         (!gate ? locationCharacters(row,p) : '')+
-        DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game')) +
+        DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game'),{
+          compactContents:matchMedia('(max-width:600px)').matches,
+          sectionHref:id=>route(new URLSearchParams({...Object.fromEntries(p),section:id})),
+          articleLink:id=>byId.has(id) ? '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>' : ''
+        }) +
         DQMNicknameMarkup(row,safe,id => '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>') +
         (details.length ? '<'+stepsTag+' class="article-steps">' + details.map(line => '<li>' + linkedProse(line,row,routeData,p) + '</li>').join('') + '</'+stepsTag+'>' : '') +
         (stageLinks.length ? '<nav class="quest-chapters" aria-label="Walkthrough chapters"><strong>'+safe(games[row.game])+' walkthrough</strong> · '+
@@ -484,7 +502,7 @@
       summary:'Choose an Adventure Log to see what your monsters can breed.', aliases:['import a save','save file','memory card import']},
   ];
   const searchNames = new Map([...rows,...monsters,...actions,...mapRows].map(row => {
-    const labels=(row.sections || []).flatMap(section=>(section.rows || []).map(([label])=>label));
+    const labels=(row.sections || []).flatMap(section=>[section.title,...(section.rows || []).map(([label])=>label),...(section.table?.rows || []).map(([label])=>label)]);
     return [row.id,Array.from(new Set([row.title,...(row.aliases || []),...labels].filter(Boolean).map(normalized)))];
   }));
 
@@ -531,7 +549,11 @@
   function matchingSectionRow(row,query,game) {
     if (!query || !row.sections) return;
     const sections=row.sections.filter(section=>!game || !section.game || section.game===game);
-    const entries=sections.flatMap(section=>(section.rows || []).map(([label,detail])=>({section:section.title,label,detail})));
+    const entries=sections.flatMap(section=>[
+      ...(section.rows || []).map(([label,detail])=>({section:section.title,label,detail})),
+      ...(section.table?.rows || []).map(([label,...cells])=>({section:section.title,label,detail:cells.join(' · ')})),
+      ...[section.intro,...(section.paragraphs || []),...(section.bullets || [])].filter(Boolean).map(detail=>({section:section.title,label:'',detail}))
+    ]);
     const byLabel=entries.find(entry=>normalized(entry.label)===query);
     if (byLabel) return byLabel;
     if (normalized([row.title,row.summary].join(' ')).includes(query)) return;
@@ -645,6 +667,17 @@
   function mechanicsDirectory(p, matches, query, game) {
     const root = el('guide-directory');
     const title = categories.mechanic;
+    const showTable=Boolean(query || p.has('sort') || p.get('layout')==='articles');
+    const validTopic=DQMMechanicsIndex.topics.some(topic=>topic.id===p.get('topic')) ? p.get('topic') : '';
+    const mode='<nav class="mechanics-mode" aria-label="Mechanics view"><a href="'+linked(p,{layout:'',sort:'',topic:'',q:''})+'"'+(!showTable?' aria-current="page"':'')+'>By topic</a><a href="'+linked(p,{layout:'articles',topic:''})+'"'+(showTable?' aria-current="page"':'')+'>All articles</a></nav>';
+    if (!showTable) {
+      root.innerHTML=directoryHeading(title,'',mode)+DQMMechanicsIndex.handbook(matches,{
+        escape:safe,titleFor:safeTitle,activeTopic:validTopic,
+        topicHref:topic=>route(new URLSearchParams({...Object.fromEntries(p),topic})),
+        linkTo:(id,label)=>'<a href="'+linked(p,{entry:id,page:''})+'">'+safe(label)+'</a>'
+      });
+      return title;
+    }
     const table = DQMMechanicsIndex.render(matches, {
       games, escape:safe, titleFor:safeTitle,
       linkTo:(id,label) => '<a href="'+linked(p,{entry:id,page:''})+'">'+safe(label)+'</a>',
@@ -655,7 +688,7 @@
       }
     });
     const retry = '<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>';
-    root.innerHTML = directoryHeading(title,matches.length ? '' : 'No matching mechanics articles')+(matches.length ? table : retry);
+    root.innerHTML = directoryHeading(title,matches.length ? '' : 'No matching mechanics articles',mode)+(matches.length ? table : retry);
     if (matches.length) {
       const index = root.querySelector('.mechanics-index');
       DQMMechanicsIndex.enableSorting(index,p.get('sort'),order => rememberTableOrder(p,index,order,'section'));

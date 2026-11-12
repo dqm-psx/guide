@@ -78,6 +78,9 @@
       } else if (params.get('section')==='encounters') path+='#location-encounters';
     }
     if (view==='field-guide') path=window.DQMField?.walkthroughPath?.(params) || path;
+    const section=params.get('section');
+    if (view==='field-guide' && path && /^[\w-]+$/.test(section || '') &&
+        document.getElementById('article-section-'+section)) path+='#article-section-'+section;
     // The published edition has standalone entries. A local development server
     // serves the hash router, and a downloaded file needs a public URL to share.
     const published = document.querySelector('.footer-links a[href="entries/"]');

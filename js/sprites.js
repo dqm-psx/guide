@@ -3,18 +3,13 @@ const SPRITE_STYLE_KEY = "dqm-guide-sprite-style-v1";
 let spriteStyle = "portrait";
 try { if (localStorage.getItem(SPRITE_STYLE_KEY) === "overworld") spriteStyle = "overworld"; } catch {}
 function spriteKind(index) {
-  return spriteStyle === "overworld" && SPRITE_SHEETS.overworld.frames[index] ? "overworld" : "portrait";
+  return spriteStyle === "overworld" && SPRITE_IMAGES.overworld[index] ? "overworld" : "portrait";
 }
 function spriteGraphic(index, kind = spriteKind(index), className = "") {
-  const style = SPRITE_SHEETS[kind], frame = style.frames[index];
+  const frame = SPRITE_IMAGES[kind]?.[index];
   if (!frame) return "";
-  const [sheet, x, y, width, height] = frame;
-  const [src, sheetWidth, sheetHeight] = style.sheets[sheet];
-  // The inner viewport crops one frame even when the outer portrait area
-  // letterboxes a wide or tall monster. Neighboring sheet cells stay hidden.
-  return '<svg aria-hidden="true" class="'+className+'" data-monster-index="'+Number(index)+'" data-sprite-kind="'+kind+
-    '" width="'+width+'" height="'+height+'" viewBox="0 0 '+width+' '+height+'"><svg width="'+width+'" height="'+height+
-    '" viewBox="'+[x,y,width,height].join(" ")+'" overflow="hidden"><image href="'+src+'" width="'+sheetWidth+'" height="'+sheetHeight+'"/></svg></svg>';
+  return '<img alt="" class="'+className+'" data-monster-index="'+Number(index)+'" data-sprite-kind="'+kind+
+    '" src="'+frame.src+'" width="'+frame.width+'" height="'+frame.height+'" loading="lazy" decoding="async">';
 }
 function spriteMarkup(index) {
   const graphic = spriteGraphic(index);

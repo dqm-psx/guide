@@ -347,7 +347,7 @@
 .route-roster th:first-child{width:27%}.route-roster tbody th{font-weight:600}.route-roster td span{display:inline-block}
 .route-roster small,.battle-member small{font-size:12px;color:var(--muted);white-space:nowrap}
 .route-campaign,.item-names{padding:0;border:0;background:none}.route-campaign summary,.item-names summary{padding:8px 0;color:var(--guide-green);font-weight:650;cursor:pointer}
-.boss-art{width:clamp(60px,18vw,96px);height:clamp(60px,18vw,96px);float:right;margin:0 0 10px 12px;image-rendering:pixelated}.guide-row .boss-art{width:40px;height:40px;float:none;margin:0;flex:none}
+.boss-art{object-fit:contain;width:clamp(60px,18vw,96px);height:clamp(60px,18vw,96px);float:right;margin:0 0 10px 12px;image-rendering:pixelated}.guide-row .boss-art{object-fit:contain;width:40px;height:40px;float:none;margin:0;flex:none}
 .battle-adventure{margin:14px 0 0}.battle-member{padding:8px 0;border-bottom:1px solid var(--guide-rule)}.battle-member h4{display:flex;align-items:center;gap:8px}
 .battle-member p{margin:7px 0 0}.battle-stats{margin:7px 0;display:flex;flex-wrap:wrap;gap:7px 17px}.battle-stats dt{font-size:12px;color:var(--muted)}.battle-stats dd{margin:0;font-weight:700}
 @media(max-width:760px){

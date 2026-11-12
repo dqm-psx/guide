@@ -241,7 +241,12 @@
     const picker = layouts.length > 1 ? '<label class="atlas-layout-picker">'+(floorLabel(row)?'Floor':'Layout')+' <select id="'+prefix+'-layout-select" data-map-control="layout">'+
       layouts.map(l=>'<option value="'+safe(l.id)+'"'+(l.selected?' selected':'')+'>'+safe(l.label)+'</option>').join('')+'</select></label>' : '';
     const region=options.caption || subtitle(row, false);
-    detail.innerHTML='<div class="atlas-caption"><div>'+(region ? '<small>'+safe(region)+'</small>' : '')+'<h'+level+' id="'+prefix+'-location" data-map-control="title" tabindex="-1">'+safe(row.title)+'</h'+level+'></div><div class="map-controls">'+
+    const chapterId=new URLSearchParams(location.hash.split('?')[1] || '').get('chapter');
+    const chapter=[...WORLD_GUIDE.entries,...FIELD_GUIDE.entries].find(entry=>entry.id===chapterId && entry.kind==='story');
+    const chapterMaps=chapter ? [...(chapter.map_ids || []),...(FIELD_ROUTES.routes[chapter.id]?.maps || [])] : [];
+    const validChapter=chapter && !window.DQMField.guarded(chapter) && chapterMaps.some(id=>maps.has(id) && placeId(maps.get(id))===placeId(row));
+    const back=!options.inline && validChapter ? '<a class="atlas-chapter-back" href="'+safe(articleHref(chapter))+'">← '+safe(chapter.title)+'</a>' : '';
+    detail.innerHTML=back+'<div class="atlas-caption"><div>'+(region ? '<small>'+safe(region)+'</small>' : '')+'<h'+level+' id="'+prefix+'-location" data-map-control="title" tabindex="-1">'+safe(row.title)+'</h'+level+'></div><div class="map-controls">'+
       picker+(pins ? '<label><input type="checkbox" id="'+prefix+'-pins" data-map-control="pins" checked> Exit pins</label>' : '')+
       (portalPins ? '<label><input type="checkbox" id="'+prefix+'-gates" data-map-control="gates" checked> Gate portals</label>' : '')+
       '<button type="button" id="'+prefix+'-zoom" data-map-control="zoom" aria-pressed="false">Zoom in</button></div></div>'+

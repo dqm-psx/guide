@@ -168,6 +168,49 @@ function matcher(terms) {
   });
 }
 
+// Reviewed skill mentions in rich articles. Restrict ambiguous names such as
+// Heal and Defense to skill-label cells or an explicit recipe, not ordinary
+// stat prose. Historical handheld names remain authored comparison evidence.
+function sectionSkillNames(entryId, section, skills, skillBindings) {
+  const comparison = entryId === 'field-restored-content' && section.id === 'learning-changes';
+  const damage = entryId === 'field-damage-and-resistance';
+  const ranges = damage && section.id === 'spell-breath-ranges';
+  const resistance = damage && section.id === 'resistance';
+  const family = damage && section.id === 'level-and-family';
+  if (!comparison && !ranges && !resistance && !family) return section;
+  function term(id) {
+    const binding = skillBindings.find(row => row.id === id);
+    check(binding && skills[id], 'missing scoped skill ' + id + ' in ' + entryId + ':' + section.id);
+    return {spelling:binding.spelling, title:skills[id].title};
+  }
+  const update = ids => matcher(ids.map(term));
+  const result = {...section};
+  if (comparison || ranges) {
+    const names = (comparison ? [1,4,7,22,23,24] : [1,64]).map(term);
+    const labels = new Map(names.map(({spelling,title}) => [spelling,title]));
+    check(section.table && Array.isArray(section.table.rows), 'missing skill table in ' + entryId + ':' + section.id);
+    result.table = {...section.table, rows:section.table.rows.map(cells => {
+      // Exact label equality prevents replacing a word in a numeric or prose cell.
+      return [labels.get(cells[0]) || cells[0], ...cells.slice(1)];
+    })};
+  }
+  if (comparison && section.bullets) {
+    const recipeTerms = [133,40,105].map(term);
+    const recipe = recipeTerms[0].spelling + ', ' + recipeTerms[1].spelling + ' and ' + recipeTerms[2].spelling;
+    const currentRecipe = matcher(recipeTerms)(recipe);
+    const summon = matcher([...([15,42,104,105,130,133,134,135,136].map(term)),
+      {spelling:recipe, title:currentRecipe}]);
+    result.bullets = section.bullets.map(line => {
+      if (line.startsWith('On Game Boy Color,')) return line;
+      // Defense is the skill only in this identified three-skill recipe.
+      return summon(line);
+    });
+  }
+  if (resistance && section.paragraphs) result.paragraphs = section.paragraphs.map(update([1]));
+  if (family && section.rows) result.rows = section.rows.map(cells => cells.map(update([72,73,74,102,103])));
+  return result;
+}
+
 function buildGuideNames({comparison, revision, field, world, atlas, skillBindings, worldBindings, species, originalSpecies}) {
   const index = sourceIndex(comparison, revision);
   const nicknames = nicknameRecords(comparison, index, worldBindings.nickname_articles, world);
@@ -284,9 +327,17 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
       if (updated.some((value,i)=>value!==row[key][i])) patch[key]=updated;
     }
     if (row.sections) {
-      const sections = row.sections.map(section => ({
-        ...section, title:revise(section.title), intro:revise(section.intro), rows:section.rows.map(pair=>pair.map(revise))
-      }));
+      const sections = row.sections.map(authoredSection => {
+        const section = sectionSkillNames(row.id, authoredSection, skills, skillBindings);
+        const translated={...section,title:revise(section.title)};
+        if (section.intro) translated.intro=revise(section.intro);
+        if (section.rows) translated.rows=section.rows.map(pair=>pair.map(revise));
+        for (const key of ['paragraphs','bullets']) if (section[key]) translated[key]=section[key].map(revise);
+        if (section.table) translated.table={...section.table,
+          ...(section.table.caption ? {caption:revise(section.table.caption)} : {}),
+          columns:section.table.columns.map(revise),rows:section.table.rows.map(pair=>pair.map(revise))};
+        return translated;
+      });
       if (JSON.stringify(sections) !== JSON.stringify(row.sections)) patch.sections = sections;
     }
     if (row.prices) {

@@ -81,6 +81,80 @@ test('a current patch rename propagates to stable cards, search aliases, reviewe
   assert.ok(skill.aliases.includes('Sleep'));
 });
 
+test('wording refresh reaches rich article text and tables without changing section identities or sources',()=>{
+  const f=fixture();
+  f.world.entries[0].sections=[{id:'keep-this-id',title:'Mia and Sky Bell',paragraphs:['Mia uses Sleep.'],bullets:['Bring Medicinal Herb.'],
+    table:{caption:'Sky Bell',columns:['Mia','Item'],rows:[['Sleep','Sky Bell']]},links:['npc'],sources:[{label:'Original evidence',url:'https://example.com/Mia'}]}];
+  const section=buildGuideNames(f).entries.chapter.sections[0];
+  assert.equal(section.id,'keep-this-id');
+  assert.equal(section.title,'Mira and Crystal Bell');
+  assert.deepEqual(section.paragraphs,['Mira uses Slumber.']);
+  assert.deepEqual(section.bullets,['Bring Healing Herb.']);
+  assert.deepEqual(section.table,{caption:'Crystal Bell',columns:['Mira','Item'],rows:[['Slumber','Crystal Bell']]});
+  assert.deepEqual(section.links,['npc']);
+  assert.equal(section.sources[0].url,'https://example.com/Mia');
+});
+
+test('rich skill references refresh without rewriting Defense stats or historical handheld names', () => {
+  const f = fixture();
+  const context = vm.createContext({});
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../../data/field-guide.js'),'utf8'), context);
+  const ids = ['field-restored-content','field-damage-and-resistance'];
+  const articles = JSON.parse(JSON.stringify(context.FIELD_GUIDE.entries.filter(row => ids.includes(row.id))));
+  articles.find(row => row.id === ids[0]).sections.find(section => section.id === 'learning-changes')
+    .bullets[1] += ' Its Defense stat is a separate value.';
+  f.field.entries.push(...articles);
+  const relevantSkills = [1,4,7,15,22,23,24,40,42,64,72,73,74,102,103,104,105,130,133,134,135,136];
+  const authoredBindings = JSON.parse(fs.readFileSync(path.join(__dirname,'../../scripts/skill-name-bindings.json'),'utf8'));
+  f.skillBindings = authoredBindings.filter(row => relevantSkills.includes(row.id));
+  for (const binding of f.skillBindings) {
+    f.field.skill_requirements[binding.id] = {level:2};
+    const title = binding.id === 40 ? 'Ward Break' : 'Current ' + binding.spelling;
+    f.comparison.rows.push({catalog:'text/system.json',table:'system',id:binding.source_id,
+      current:title,labels:['Skills and spells'],indices:[473+binding.id],source_revision:f.revision,
+      raw:{id:binding.source_id,japanese:'テスト<END>',translations:{current:{english:title+'<END>'}}}});
+    f.comparison.rows.push({catalog:'menus/general.json',table:'menu_text.json',id:binding.description_source_id,
+      current:'Description.',labels:['Menus'],source_revision:f.revision,
+      raw:{id:binding.description_source_id,japanese:'テスト<END>',translations:{current:{english_lines:['Description.']}}}});
+  }
+  const before = structuredClone(articles);
+  const result = buildGuideNames(f);
+  apply({guide_names:result,species:[]},f.field,f.world,f.atlas);
+  const comparison = articles.find(row => row.id === ids[0]);
+  const learning = comparison.sections.find(section => section.id === 'learning-changes');
+  const previousLearning = before[0].sections.find(section => section.id === 'learning-changes');
+  assert.deepEqual(learning.table.rows.map(cells => cells[0]),
+    ['Current Blaze','Current Firebal','Current Bang','Current Heal','Current Healmore','Current Healall']);
+  assert.deepEqual(learning.table.rows.map(cells => cells.slice(1)), previousLearning.table.rows.map(cells => cells.slice(1)));
+  assert.equal(learning.bullets[0], previousLearning.bullets[0], 'Historical TatsuCall chain keeps the printed GBC labels');
+  assert.match(learning.bullets[1], /Current Summon Deago requires Current Summon Tattsu, Ward Break and Current Focus Spirit/);
+  assert.match(learning.bullets[1], /Its Defense stat is a separate value/);
+  assert.match(learning.bullets[2], /Current Summon Samshin.*Current Speedup.*Current Charge Power.*Current Summon Bazoo.*Current Thordain.*Current Wave of Darkness/);
+  assert.match(learning.bullets[3], /Current Summon Tattsu/);
+  assert.doesNotMatch(JSON.stringify(learning), /Current Current/);
+  const foreign = comparison.sections.find(section => section.id === 'foreign-master-differences');
+  assert.match(foreign.paragraphs[1], /HP, MP, Attack and Defense/);
+  assert.doesNotMatch(foreign.paragraphs[1], /Ward Break/);
+
+  const damage = articles.find(row => row.id === ids[1]);
+  assert.equal(damage.title, 'Damage, Defense and resistance');
+  assert.match(damage.summary, /Attack and Defense/);
+  const normal = damage.sections.find(section => section.id === 'normal-attacks');
+  assert.deepEqual(normal, before[1].sections.find(section => section.id === 'normal-attacks'));
+  const ranges = damage.sections.find(section => section.id === 'spell-breath-ranges');
+  assert.deepEqual(ranges.table.rows, [['Current Blaze','12–15','7–12'],['Current Fire Breath','14–22','10–16']]);
+  assert.match(damage.sections.find(section => section.id === 'resistance').paragraphs[0], /your Current Blaze.*enemy’s Current Blaze/);
+  const family = damage.sections.find(section => section.id === 'level-and-family');
+  assert.equal(family.rows[0][0], 'Current Wind Sickle, Current Vacuum Wave and Current Lightning');
+  assert.equal(family.rows[1][0], 'Current Grand Cross');
+  assert.match(family.rows[1][1], /monster’s Current Grand Cross/);
+  assert.equal(family.rows[2][0], 'Current Gigaslash');
+  for (const [index, article] of articles.entries()) {
+    assert.deepEqual(article.sections.map(section => [section.id,section.links,section.sources]),
+      before[index].sections.map(section => [section.id,section.links,section.sources]));
+  }
+});
+
 test('missing, stale, duplicated or ambiguous source data cannot replace the released wording', () => {
   const edits=[
     f=>{ f.comparison.rows=f.comparison.rows.filter(r=>r.id!=='herb'); },

@@ -254,7 +254,7 @@
     const id = safe(entry.id), name = safe(fullName(entry));
     const star = '<button type="button" class="planner-card-favorite" data-member-favorite="'+id+'" aria-pressed="'+entry.favorite+'" aria-label="Favorite '+safe(memberName(entry))+'">'+(entry.favorite?'★':'☆')+'</button>';
     return '<article class="planner-card" data-entry-id="'+id+'" data-sex="'+sex+'" data-location="'+entryLocation(entry)+'"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family))+'</p><div class="planner-card-stats"><span class="planner-card-sex">'+(sex==='male'?'♂ Male':'♀ Female')+'</span><span>'+level+'</span><span>+'+entry.plus+'</span></div></div>'+star+'</div><div class="planner-card-actions">'+
-      '<button type="button" class="planner-card-breed" data-member-breed="'+id+'" aria-label="See breeding options for '+name+'">Breed</button><button type="button" data-member-edit="'+id+'" aria-label="Edit '+name+'">Edit</button>'+
+      '<button type="button" class="planner-card-breed" data-member-breed="'+id+'" aria-label="See breeding options for '+name+'">Breed</button><a class="planner-card-tool" href="#skill-planner?team='+safe(activeTeam().id)+'&amp;owned='+id+'">Skills &amp; growth</a><a class="planner-card-tool" href="#combat-planner?team='+safe(activeTeam().id)+'&amp;owned='+id+'">Damage</a><button type="button" data-member-edit="'+id+'" aria-label="Edit '+name+'">Edit</button>'+
       '<details class="planner-card-more"><summary aria-label="More actions for '+name+'">More</summary><div><button type="button" data-member-move="'+id+'">Move to '+otherLocation(entryLocation(entry))+'</button><button type="button" data-member-switch="'+id+'">Switch to '+(sex==='male'?'female':'male')+'</button><button type="button" data-member-remove="'+id+'" aria-label="Remove '+name+'">Remove</button></div></details></div></article>';
   }
   function renderRoster() {
@@ -1126,7 +1126,7 @@
       if (!save || !save.entries.length) return;
       const name = save.campaign + (save.slot === null ? " · Save" : " · Slot " + save.slot);
       try {
-        const team = {id: app.makeId("t-"), name, game: save.game, targets: [], activeTargetId: null,
+        const team = {id: app.makeId("t-"), name, game: save.game, campaign:save.campaignKey, targets: [], activeTargetId: null,
           entries: save.entries.map(e => ({...e, id: app.makeId("m-"), favorite: false, nickname: useNames.checked ? e.nickname : ""}))};
         const next = app.insertTeam(state, team);
         commit(app.setActiveGame(app.setActiveTeam(next, team.id), save.game), "Imported " + team.entries.length + " monsters into " + name + ".");

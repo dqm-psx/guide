@@ -37,6 +37,39 @@ test.afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
 });
 
+test('published handbook subsection links work with enhancement, sharing and without JavaScript',async({browser,page})=>{
+  const path='articles/field-restored-content/#article-section-foreign-master-differences';
+  await page.goto(url+path);
+  await expect(page.locator('#article-title')).toContainText('Game Boy, PlayStation');
+  await expect(page.locator('#article-section-foreign-master-differences')).toBeInViewport();
+  await page.context().grantPermissions(['clipboard-read','clipboard-write']);
+  await page.locator('#entry-permalink').click();
+  expect(await page.evaluate(()=>navigator.clipboard.readText())).toBe(url+path);
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const reader=await context.newPage();
+    await reader.goto(url+path);
+    await expect(reader.locator('#article-section-foreign-master-differences')).toBeInViewport();
+    await reader.getByRole('navigation',{name:'In this article'}).locator('summary').click();
+    await reader.getByRole('navigation',{name:'In this article'}).getByRole('link',{name:'Which version are you playing?'}).click();
+    await expect(reader).toHaveURL(/articles\/field-restored-content\/#article-section-which-edition$/);
+    await expect(reader.locator('#article-section-which-edition')).toBeInViewport();
+  } finally {await context.close();}
+});
+
+test('damage article publishes real skill links without JavaScript',async({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const reader=await context.newPage();
+    await reader.goto(url+'articles/field-damage-and-resistance/');
+    await expect(reader.getByRole('table',{name:'Base damage in ordinary wild battles'})).toContainText('12–15');
+    await expect(reader.getByRole('link',{name:'Open the damage calculator →',exact:true})).toHaveAttribute('href','#combat-planner');
+    await reader.locator('.article-topic-links a[href="skills/e0c10/"]').click();
+    await expect(reader).toHaveURL(/skills\/e0c10\/$/);
+    await expect(reader.getByRole('heading',{level:1})).toHaveText('Blaze');
+  } finally {await context.close();}
+});
+
 function audit(page, context) {
   const errors = [];
   const failures = [];
@@ -367,8 +400,10 @@ test('published quests and characters can be followed with JavaScript disabled',
   try {
     const reader=await context.newPage();
     await reader.goto(url+'entries/');
+    await expect(reader.locator('#mechanics .handbook-chapter')).toHaveCount(5);
+    await reader.locator('#mechanics').getByText('All articles',{exact:true}).click();
     const articles = reader.getByRole('table',{name:'Mechanics articles'});
-    await expect(articles.getByRole('link')).toHaveCount(22);
+    await expect(articles.getByRole('link')).toHaveCount(23);
     await expect(articles.getByRole('button')).toHaveCount(0);
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');
     const items=reader.getByRole('table',{name:'Items',exact:true});
