@@ -3555,7 +3555,7 @@ globalThis.FIELD_GUIDE = {
       "summary": "An offspring’s maximum level is its species’ base level limit plus three times its + value, capped at level 99.",
       "details": [
         "For example, a species with a base limit of 40 can reach level 55 at +5, or level 70 at +10. The + value beside the offspring’s name matters; it is not simply the number of times you have bred a monster.",
-        "Check the base level limit and six stat growth tables on the monster’s profile when choosing a pedigree. Seeds and nuts raise the corresponding stat when used, rather than raising its level limit.",
+        "Ordinary recruits use a different cap table from bred offspring. The skill and growth planner distinguishes both, including the usual recruitment range. Seeds and nuts raise the corresponding stat when used, rather than raising its level limit.",
         "Learn any inherited skills you want to carry forward before breeding the monster again. Farm training can raise its stats, but skill learning is checked when it gains a level in your active party."
       ],
       "spoiler": "none",

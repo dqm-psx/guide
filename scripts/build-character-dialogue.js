@@ -14,7 +14,12 @@ for (const bundle of bundles) {
 // replies, narration or an impostor using the same "King:" prefix.
 function buildCharacterDialogue(comparison, revision) {
   const source = new Map();
-  for (const row of comparison.rows.filter(r => r.catalog.startsWith('dialogue/'))) {
+  const reviewedIds = new Set(Object.values(bindings.speakers).flatMap(character =>
+    Object.values(character.scenes).flat()));
+  // The opening/ending bedroom's conversations live in an EXE text pool,
+  // alongside object descriptions. Include only explicitly reviewed bindings.
+  for (const row of comparison.rows.filter(r => r.catalog.startsWith('dialogue/') ||
+      (r.catalog === 'text/static_pools.json' && reviewedIds.has(r.id)))) {
     if (source.has(row.id)) throw new Error('Duplicate dialogue identity ' + row.id);
     source.set(row.id, row);
   }

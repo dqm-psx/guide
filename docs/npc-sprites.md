@@ -3,7 +3,7 @@
 The portrait audit compares the original Japanese PSX disc with the Current
 v1.0.73 English patch. [The generated receipt](npc-sprite-evidence.json) records
 the disc hashes, native resource and sprite slot, exported PNG hash and dimensions
-for all 41 native portraits. Healie and Slib use their existing monster-species
+for all 41 primary native portraits and Milly's alternate home portrait. Healie and Slib use their existing monster-species
 sprites instead.
 
 ## Milly
@@ -32,6 +32,31 @@ and match passages and nine GreatLog arena passages. All spoken text is retained
 the standalone name-menu label is excluded from the dialogue. Reviewed name
 bindings keep the new GreatTree and Queen's Room mentions in the translation
 refresh.
+
+Milly also has her childhood appearance in **Your Room** (`map-103-0`): scene
+resource **5587**, actor **0**, graphics resource **5585, slot 0**. This is the
+blonde child in a white nightdress, rather than her Queen's Room outfit. Both
+native appearances are retained and labeled; the home image is safe to show in
+the opening location while the Queen's Room appearance retains its ending
+spoiler classification.
+
+The actor definition at `5587:0x6B2C` selects slot 0. The opening event positions
+that actor at `0xA3` and selects Milly's bedtime message at `0xE2`. Scene arrival
+records in resources 5578 (`0x106C`), 5377 (`0x3080`) and 5630 (`0x1D034`) select
+scene 103. Their graphics setup selector 177 resolves through the native
+20-entry directory prefix to group 6, entry 197: resource 5585. The full room
+scene, graphics pack, these arrival/setup records and the decoded 32×32 portrait
+match between the Japanese original and Current v1.0.73.
+
+This room's dialogue belongs to the executable's `e0affe4` text pool, rather
+than an ordinary dialogue catalog. The reviewed character bindings include
+seven opening and nine returning-home Milly passages, three opening Warubou
+passages, and three opening plus three returning-home Watabou passages. The
+importer admits only explicitly reviewed fixed-pool IDs; furniture descriptions
+and other object text do not become character dialogue. Milly now has 40
+passages across all her bound scenes. No spoken Terry lines or parent actors
+were identified in this room. The pack includes Terry's sleeping-under-a-blanket
+pose, but does not establish a separate standing outfit to replace his portrait.
 
 ## Laura
 

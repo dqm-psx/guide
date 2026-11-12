@@ -142,7 +142,7 @@
     const max = Math.max(1, ...values.map(value => value.total || 0));
     return '<div class="monster-level-controls"><label for="monster-growth-level">Gains from level 1 to</label><input id="monster-growth-level" type="range" min="1" max="99" value="' + level + '"><output for="monster-growth-level">' + level + '</output></div>' +
       '<div class="monster-growth-bars">' + values.map(value => '<div class="monster-growth-row"><span>' + value.label + '</span><div class="monster-growth-track" aria-hidden="true"><i style="width:' + ((value.total || 0) / max * 100).toFixed(2) + '%"></i></div><strong>' + (value.total === null ? '—' : '+' + value.total) + '</strong></div>').join('') + '</div>' +
-      '<p class="hint">Gains exclude starting stats, inheritance and accessories.' + (level > stats.base_level_limit ? ' Level ' + level + ' exceeds the base limit and requires a higher individual limit.' : '') + '</p>' +
+      '<p class="hint">'+(level>Math.min(99,stats.base_level_limit+2)?'This level exceeds the usual recruitment cap; a bred monster or a special individual cap may be needed. ':'')+'Gains exclude starting stats, inheritance and accessories. <a href="#skill-planner?species='+species.index+'">Check this monster’s level cap and growth →</a></p>' +
       '<details class="monster-growth-table"><summary>Exact growth by level</summary><div class="table-scroll"><table><caption class="sr-only">Base stat gains on reaching each level, excluding inherited or starting stats</caption><thead><tr><th scope="col">Level</th>' + STATS.map(([, label]) => '<th scope="col">' + label + '</th>').join('') + '</tr></thead><tbody>' +
       Array.from({ length: level - 1 }, (_, i) => i + 2).map(n => '<tr><th scope="row">' + n + '</th>' + growthAt(stats, n).map(value => '<td>' + (value.gain === null ? '—' : '+' + value.gain) + '</td>').join('') + '</tr>').join('') +
       (level === 1 ? '<tr><td colspan="7">No level-up gains at level 1.</td></tr>' : '') + '</tbody></table></div></details>';
@@ -168,7 +168,7 @@
     }).join('');
     return '<section class="monster-card monster-natural-skills"><div class="monster-card-heading"><h3>Natural skills</h3>' +
       '<label class="sr-only" for="monster-campaign">Adventure for skills and encounters</label><select id="monster-campaign">' + campaigns +
-      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div><p class="hint">Level and stats both matter. <a href="#field-guide?entry=field-skill-inheritance">Skill inheritance &amp; learning →</a></p></section>';
+      '</select></div><div id="monster-skills">' + skillsMarkup(species) + '</div><p class="hint">Level and stats both matter. <a id="monster-skill-planner" href="#skill-planner?species='+species.index+'&amp;campaign='+campaign+'">Plan growth &amp; skill learning →</a> · <a href="#field-guide?entry=field-skill-inheritance">Learning rules</a></p></section>';
   }
 
   function locationsMarkup(species) {
@@ -244,8 +244,9 @@
       naturalSkillsCard(species) +
       (species.playable === false ? '<p class="monster-internal">Extra table slot. Availability in normal play is unconfirmed.</p>' : '') +
       acquisitionMarkup(species) +
-      '<div class="monster-profile-grid monster-lower-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">Base level limit ' + safe(species.stats.base_level_limit) + '</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
+      '<div class="monster-profile-grid monster-lower-grid"><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">Usual recruitment cap '+Math.max(1,species.stats.base_level_limit-2)+'–'+Math.min(99,species.stats.base_level_limit+2)+'</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
       '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint"><a href="#offspring-finder?target=' + index + '">' + parents.toLocaleString() + ' base-table parent pairings</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section></div>' +
+      '<p class="hint"><a href="#combat-planner?species='+species.index+'">Compare damage against a wild encounter →</a></p>' +
       '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' + safe(species.resistances && species.resistances.text || 'PSX resistance values have not yet been verified for this reference.') + '</p>' +
       '<p>' + safe(species.location_coverage || 'Encounter coverage is incomplete.') + '</p>' +
       (root.DQMReference?.sourceSummaryMarkup ? root.DQMReference.sourceSummaryMarkup() : '') +
@@ -271,6 +272,7 @@
     campaign = event.target.value;
     P('monster-skills').innerHTML = skillsMarkup(model.get(activeIndex));
     P('monster-locations').innerHTML = locationsMarkup(model.get(activeIndex));
+    P('monster-skill-planner').href='#skill-planner?species='+activeIndex+'&campaign='+campaign;
   });
 
   document.addEventListener('click', event => {

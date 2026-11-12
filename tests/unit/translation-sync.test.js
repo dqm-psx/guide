@@ -38,6 +38,8 @@ function fixture() {
       if (!lines.some(line => line.startsWith(prefix))) lines.push(prefix + location.name + (location.floors ? ' ' + location.floors.replace('–', '~') : ''));
     }
   }
+  for(const skill of JSON.parse(fs.readFileSync(path.join(ROOT,'scripts/skill-name-bindings.json'),'utf8')))
+    add('text/system.json',skill.source_id,{translations:{current:{english:skill.spelling}}});
   const comparison = {schema_version: 2, builder_revision: revision, rows: [...rows.values()]};
   const bytes = Buffer.from(JSON.stringify(comparison));
   const manifest = {schema_version: 2, translation_revision: revision, updated_from_builder_at: '2026-11-05T12:00:00Z', row_count: comparison.rows.length, published_sha256: {'comparison-data.json': digest(bytes)}};
@@ -216,6 +218,17 @@ test('native inventory and all standard stat profiles remain complete', () => {
   assert.equal(baseline.species[313].stats.base_level_limit, 7);
   assert.deepEqual(baseline.species[0].stats.growth.hp.slice(1, 11), [5, 3, 3, 3, 4, 5, 4, 5, 4, 3]);
   for (const index of [312, 313, 314]) assert.equal(baseline.species[index].library.status, 'not_in_library');
+});
+
+test('translation regeneration preserves native campaign skill sets and slot order for extra species', () => {
+  const {comparison,manifest}=fixture();
+  const reference=buildReference(baseline,breeding,comparison,manifest,publicRevision);
+  assert.deepEqual(reference.species[312].skills.terry.map(skill=>skill.id),[25,30,27]);
+  assert.deepEqual(reference.species[313].skills.terry.map(skill=>skill.id),[65,61,63]);
+  assert.deepEqual(reference.species[313].skills.cobi.map(skill=>skill.id),[61,63,64]);
+  assert.deepEqual(reference.species[313].skills.tara.map(skill=>skill.id),[61,63,64]);
+  assert.equal(reference.species[313].skills_source.reference,'data/skill-learning-reference.js');
+  assert.equal(reference.species[313].skills.terry[0].system_entry_id,'e0d52');
 });
 
 test('shipped bundle covers current names without embedding local paths or private export fields', () => {

@@ -22,6 +22,8 @@ const VIEWS = [
   { hash: '#pair-finder', id: 'pair-finder' },
   { hash: '#offspring-finder', id: 'offspring-finder' },
   { hash: '#breeding-tree', id: 'breeding-tree' },
+  { hash: '#skill-planner', id: 'skill-planner' },
+  { hash: '#combat-planner', id: 'combat-planner' },
   { hash: '#breeding-table', id: 'breeding-table' },
   { hash: '#species-index', id: 'species-index' },
   { hash: '#team-planner', id: 'team-planner' },
@@ -87,6 +89,8 @@ test.describe('served', () => {
       '#pair-finder': 'Find offspring',
       '#offspring-finder': 'Find parents',
       '#breeding-tree': 'Breeding tree',
+      '#skill-planner': 'Skill planner',
+      '#combat-planner': 'Damage calculator',
       '#breeding-table': 'Breeding table',
       '#species-index': 'Monster library',
       '#team-planner': 'My game',
@@ -98,7 +102,7 @@ test.describe('served', () => {
         await expect(link).toBeVisible();
         await link.click();
         await expectSingleView(page, view.id);
-        await expect(page).toHaveURL(new RegExp(view.hash + '$'));
+        await expect(page).toHaveURL(new RegExp(view.hash + (['skill-planner','combat-planner'].includes(view.id) ? '(?:\\?.*)?$' : '$')));
         await expect(page).toHaveTitle(new RegExp('^' + expected[view.hash] + ' · '));
         await page.mouse.move(0,0);
         const marks = await page.evaluate(() =>

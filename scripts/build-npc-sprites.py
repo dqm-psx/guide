@@ -195,6 +195,41 @@ def milly_portrait(disc, original, descriptors, wiki):
     return output.getvalue(), source
 
 
+def milly_home_portrait(disc, original):
+    """Opening-room actor 0 is Milly in her nightdress, not the later outfit."""
+    scene = disc.resource(5587)
+    require(scene == original.resource(5587) and hashlib.sha256(scene).hexdigest() ==
+            "69a5fc274f7204545e014a23f9fde392cd535971f5ab5b70222dbe1ff8c0a351",
+            "Opening-room actors or event script changed")
+    require(source_bytes(scene, 0x6B2C, "00000000080000000000000000000000"),
+            "Opening Milly no longer selects actor sprite slot 0")
+    require(source_bytes(scene, 0xA3, "390070800b13") and source_bytes(scene, 0xE2, "290100"),
+            "Opening Milly initialization/message changed")
+    # Intro, ending and postgame return all load this room with NPC selector
+    # 177. The native directory reserves its first 20 entries, so this selects
+    # group 6 entry 197, graphics resource 5585.
+    arrivals = [(5578, 0x106C, "0f0026006700000074c00e8000000000", 0x1064),
+                (5377, 0x3080, "0f0026006700000080e00e8000000000", 0x3070),
+                (5630, 0x1D034, "0f00260067000000ec7f108018000000", 0x1CFDC)]
+    for native_disc in (disc, original):
+        for archive, offset, arrival, setup in arrivals:
+            raw = native_disc.resource(archive)
+            require(source_bytes(raw, offset, arrival) and source_bytes(raw, setup, "c08ff802b1000000"),
+                    "Opening-room sprite assignment changed")
+    # Group 1 starts at slot 93. The original offset identifies the public
+    # e0affe4_019b record; the patched resident contains its translated text.
+    require(struct.unpack_from("<H", original.exe, 0xAF72C + 93 * 2)[0] == 0x19B,
+            "Opening Milly message identity changed")
+    text = world.table_message(disc.resident_memory(), 0xBF7EC, 93, 0)
+    require(text.startswith("Milly:") and "It's bedtime!" in text,
+            "Opening-room message no longer identifies Milly")
+    source = {"archiveIndex": 5585, "actorSpriteSlot": 0, "resourceEntry": 197,
+              "resourceSha256": "42049380b50e2e2044fd50d3bc01f4b879cc1f02d51961657e2bfcb814dcb895"}
+    output = io.BytesIO()
+    native_frame(disc.resource(5585), 0).save(output, format="PNG")
+    return output.getvalue(), source
+
+
 def build(wiki, image, original_image):
     release = json.loads((ROOT / "data/gameplay-verification.json").read_bytes())
     require(hashlib.sha256(image).hexdigest() == release["patched_bin_sha256"], "Wrong disc")
@@ -227,6 +262,16 @@ def build(wiki, image, original_image):
                          talkOffset=0x3430, messageSlot=1371, identity="Milly's Queen's Room conversation")
             art[entry["id"]] = {"image": "data:image/png;base64," + base64.b64encode(pixels).decode("ascii"),
                                 "role": "actor"}
+            home_pixels, home_source = milly_home_portrait(disc, original)
+            home_proof = verify_source(disc, original, home_source, home_pixels)
+            home_proof.update(actorSlot=0, sceneResource=5587, mapId="map-103-0", actorIndex=0,
+                              messageSlot=93, sourceId="e0affe4_019b", identity="Milly's opening-room conversation")
+            art[entry["id"]]["variants"] = [
+                {"id": "home", "label": "At home", "mapIds": ["map-103-0"], "role": "actor", "spoiler": "none",
+                 "image": "data:image/png;base64," + base64.b64encode(home_pixels).decode("ascii")},
+                {"id": "queens-room", "label": "Queen's Room", "mapIds": ["map-11-6"],
+                 "image": art[entry["id"]]["image"], "role": "actor", "spoiler": "ending"}]
+            proof["variants"] = {"home": home_proof, "queens-room": dict(proof)}
             evidence[entry["id"]] = proof
             continue
         named_id = ACTORS.get(key, key)
@@ -274,4 +319,4 @@ if __name__ == "__main__":
                 require(path.read_text(encoding="utf8") == content, f"Stale {path.name}")
             else:
                 path.write_bytes(content.encode())
-        print("Verified 41 native NPC/hero portraits against the Current patch and Japanese original.")
+        print("Verified 41 native NPC/hero portraits and Milly's home variant against both discs.")

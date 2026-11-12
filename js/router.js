@@ -26,6 +26,8 @@
     { id: "pair-finder", heading: "pair-heading" },
     { id: "offspring-finder", heading: "offspring-heading" },
     { id: "breeding-tree", heading: "tree-heading" },
+    { id: "combat-planner", heading: "combat-planner-heading" },
+    { id: "skill-planner", heading: "skill-planner-heading" },
     { id: "monster", heading: "monster-heading" },
     { id: "breeding-table", heading: "breeding-table-heading" },
     { id: "species-index", heading: "species-heading" },
@@ -212,6 +214,8 @@
     }
     if (viewId === "monster" && window.DQMMonsters) { window.DQMMonsters.renderRoute(); document.title = window.DQMMonsters.title() + " · " + TITLE_SUFFIX; }
     if (viewId === "breeding-tree" && window.DQMBreedingTree) window.DQMBreedingTree.viewShown();
+    if (viewId === "combat-planner" && window.DQMCombatPlanner) window.DQMCombatPlanner.renderRoute();
+    if (viewId === "skill-planner" && window.DQMSkillPlanner) window.DQMSkillPlanner.renderRoute();
     if (viewId === "team-planner" && new URLSearchParams(parse(location.hash).params).get("import") === "save") {
       P("planner-tab-roster").click();
       if (settings.focus) settings.focusId = "save-import-file";

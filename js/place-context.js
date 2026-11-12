@@ -14,6 +14,7 @@
 (() => {
   'use strict';
   const regionLocations = {
+    'terry-home':'location-terry-home',
     greatlog:'location-greatlog',
     desert:'location-desert-world',
     water:'location-water-world',

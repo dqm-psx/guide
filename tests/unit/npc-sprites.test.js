@@ -39,6 +39,30 @@ test('Milly uses her Queen’s Room actor instead of the shared arena conversati
   assert.deepEqual(proof.frameSize, [32, 32]);
 });
 
+test('Milly’s home and Queen’s Room portraits keep distinct native outfits and map identities', () => {
+  const milly = NPC_SPRITES['npc-milly'];
+  const variants = Object.fromEntries(milly.variants.map(variant => [variant.id, variant]));
+  assert.deepEqual(variants.home.mapIds, ['map-103-0']);
+  assert.equal(variants.home.spoiler, 'none');
+  assert.equal(variants['queens-room'].spoiler, 'ending');
+  assert.deepEqual(variants['queens-room'].mapIds, ['map-11-6']);
+  assert.notEqual(variants.home.image, variants['queens-room'].image);
+  assert.equal(milly.image, variants['queens-room'].image, 'Existing directory portrait stays the later outfit');
+  for (const variant of milly.variants) {
+    const proof = evidence.portraits['npc-milly'].variants[variant.id];
+    const png = Buffer.from(variant.image.split(',')[1], 'base64');
+    assert.equal(createHash('sha256').update(png).digest('hex'), proof.portraitSha256);
+    assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [32, 32]);
+    assert.ok(variant.mapIds.includes(proof.mapId));
+  }
+  const home = evidence.portraits['npc-milly'].variants.home;
+  assert.equal(home.archiveIndex, 5585);
+  assert.equal(home.resourceEntry, 197);
+  assert.equal(home.actorSlot, 0);
+  assert.equal(home.sceneResource, 5587);
+  assert.equal(home.sourceId, 'e0affe4_019b');
+});
+
 test('native royal-sprite reuse and Terry’s Tife portrait retain their verified identities', () => {
   assert.equal(NPC_SPRITES['npc-laura'].image, NPC_SPRITES['npc-queen-of-greattree'].image);
   const laura = evidence.portraits['npc-laura'];

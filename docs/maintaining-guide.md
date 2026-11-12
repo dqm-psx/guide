@@ -41,7 +41,7 @@ v1.0.73 discs.
 
 All 43 character pages show PSX artwork. The portraits include 38 field actors,
 the three playable heroes, and species sprites for Healie and Terry’s starter, Slib.
-The [native sprite audit](npc-sprites.md) verifies all 41 native portrait images
+The [native sprite audit](npc-sprites.md) verifies all 41 primary native portrait images and Milly’s home appearance
 against the Japanese and v1.0.73 discs and records their character identities. Milly uses her Queen’s Room actor;
 Laura’s royal sprite and Tife’s dancer sprite are native DQM1 assignments.
 
@@ -51,7 +51,7 @@ Japanese name and English variants. The starter’s walkthrough name comes from
 its recruitment record. Healie’s speaker name and recruit nickname come from
 separate records and appear together when they differ.
 
-The atlas groups 407 fixed layouts into 184 named places. Each layout keeps
+The atlas groups 408 fixed layouts into 185 named places. Each layout keeps
 its own link and doors. The v1.0.73 disc check verified the static background
 art, native map titles and 829 linked doorway destinations, including a
 different Small Cave background when returning from the cave interior.

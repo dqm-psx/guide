@@ -47,7 +47,7 @@
     // search result without duplicating an identically named overview.
     if (owner && normalized(owner.title)===normalized(map.title)) return [];
     const region=sceneRegions.get(map.scene);
-    const game=owner?.game || (['greattree','gate-ends'].includes(region) ? 'dqm1' : region ? 'dqm2' : 'both');
+    const game=owner?.game || (['greattree','gate-ends','terry-home'].includes(region) ? 'dqm1' : region ? 'dqm2' : 'both');
     const aliases=[...new Set(records.flatMap(record=>record.aliases || []))];
     return [{id:'place-'+id,mapId:id,locationId:owner?.id,kind:'location',game,title:map.title,
       summary:owner ? owner.title+' · Map' : 'Map and connected places',aliases,spoiler:owner?.spoiler,
@@ -148,7 +148,8 @@
       (row.names?.japanese ? '<p class="monster-japanese" lang="ja">'+safe(row.names.japanese)+'</p>' : '')+otherNames(row)+'</div>'+
       '<dl class="skill-facts skill-combat-facts">'+facts.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+safe(value)+'</dd></div>').join('')+'</dl></header>'+
       '<div class="monster-library-quote"><p class="article-lead">'+safe(row.summary)+'</p></div>'+
-      '<p><strong>Effect</strong> · '+safe(skill.effect)+'</p>';
+      '<p><strong>Effect</strong> · '+safe(skill.effect)+'</p><p class="hint"><a href="#skill-planner?skill='+row.nativeId+'">Check when your monster can learn this →</a>'+
+      ((row.nativeId>=1&&row.nativeId<=18)||(row.nativeId>=62&&row.nativeId<=77)||[102,103].includes(row.nativeId)?' · <a href="#combat-planner?skill='+row.nativeId+'">Compare damage and resistance →</a>':'')+'</p>';
     const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const stats=Object.entries(FIELD_GUIDE.skill_requirements?.[row.nativeId] || {}).filter(([,value])=>value>0);
     const requirements=stats.length ? '<section class="monster-card learning skill-thresholds"><div class="monster-card-heading"><h3>Minimum learning stats</h3></div><dl>'+
@@ -165,15 +166,19 @@
     return trail+header+'<div class="monster-profile-grid skill-profile-grid"><div class="skill-learning-column">'+requirements+related+'</div>'+
       '<section class="monster-card skill-learners"><div class="monster-card-heading"><h3>Natural learners</h3></div>'+learnerLists(row)+'</section></div>';
   }
-  function artwork(row, thumbnail) {
+  function artwork(row, thumbnail, mapIds=[]) {
     if (row.kind === 'boss') {
       const party = Object.values(FIELD_ROUTES.routes[row.id]?.fights || {}).flat();
       const species = new Set(row.species_ids?.length ? row.species_ids : party.map(enemy=>enemy.species));
       if (species.size === 1) return spriteGraphic([...species][0],'portrait','boss-art');
     }
     const npc = NPC_SPRITES[row.id];
+    const variants=(npc?.variants || []).filter(variant=>/^data:image\/png;base64,/.test(variant.image));
+    if (!thumbnail && variants.length) return '<div class="npc-appearances" aria-label="Character appearances">'+variants.map(variant=>
+      '<figure><img class="npc-art" alt="'+safe(row.title+' · '+variant.label)+'" src="'+safe(variant.image)+'"><figcaption>'+safe(variant.label)+'</figcaption></figure>').join('')+'</div>';
+    const contextual=variants.find(variant=>variant.mapIds.some(id=>mapIds.includes(id)));
     if (npc?.species != null) return spriteGraphic(npc.species,'overworld','npc-art');
-    const image = npc?.image || (DQMItemReference.items[row.id] ? DQMItemArt.imageFor(row) : row.image);
+    const image = contextual?.image || npc?.image || (DQMItemReference.items[row.id] ? DQMItemArt.imageFor(row) : row.image);
     if (!image || !/^data:image\/png;base64,/.test(image)) return '';
     const role = npc?.role === 'hero' ? 'Playable hero sprite' : npc?.species != null ? 'Monster species sprite' : 'Character sprite';
     return '<img class="' + (npc ? 'npc-art' : 'item-art') + '" alt="' +
@@ -232,21 +237,25 @@
     if (data.gates) notes.push(['Gates',data.gates.map(id=>article(id)).join(' · ')]);
     if (data.supplies) notes.push(['Items',data.supplies.map(id=>article(id)).join(' · ')]);
     if (data.skills) notes.push(['Skills mentioned',data.skills.map(id=>article('skill-'+FIELD_GUIDE.skill_names[id].id)).join(' · ')]);
-    return notes.length ? '<dl class="skill-facts'+(row.kind==='location' && row.game==='dqm1'?' gate-facts':'')+'">'+
+    return notes.length ? '<dl class="skill-facts'+(DQMLocations.isGate(row)?' gate-facts':'')+'">'+
       notes.map(([title,value])=>'<div><dt>'+safe(title)+'</dt><dd>'+value+'</dd></div>').join('')+'</dl>' : '';
   }
   function locationCharacters(row,p) {
     if (row.kind!=='location') return '';
     const groups=placeContext.charactersForLocation(row.id);
+    const mapIds=placeContext.mapsForLocation(row.id).map(map=>map.id);
     const generation=globalThis.GATE_GENERATION?.entries[row.id];
     const bosses=new Set([FIELD_ROUTES.routes[row.id]?.boss,generation?.boss?.entry,...(generation?.bosses || []).map(record=>record.entry)]);
     return Object.entries(groups).map(([key,members])=>{
-      const characters=members.filter(character=>!guarded(character) && !bosses.has(character.id));
+      const characters=members.filter(character=>appearanceVisible(character,mapIds) && !bosses.has(character.id));
       if (!characters.length) return '';
       return '<section class="location-characters"><h3>'+(key==='here'?'Characters here':'Related characters')+'</h3><ul>'+
         characters.map(character=>'<li><a href="'+linked(p,{entry:character.id,kind:'npc'})+'">'+
-          artwork(character,true)+'<span>'+safe(character.title)+'</span></a></li>').join('')+'</ul></section>';
+          artwork(character,true,mapIds)+'<span>'+safe(character.title)+'</span></a></li>').join('')+'</ul></section>';
     }).join('');
+  }
+  function appearanceVisible(row,mapIds=[]) {
+    return !guarded(row) || NPC_SPRITES[row.id]?.variants?.some(variant=>variant.spoiler==='none' && variant.mapIds.some(id=>mapIds.includes(id)));
   }
   function routeMarkup(row, data, p) {
     if (!data) return '';
@@ -276,7 +285,7 @@
     }).join('');
     return (stageLinks ? '<section class="route-section"><h3>Arena and gate order</h3><ol>'+stageLinks+'</ol></section>' : '')+
       (chapters ? '<section class="route-section"><h3>Walkthrough</h3><ol>'+chapters+'</ol></section>' : '')+
-      (row.kind==='location' && row.game==='dqm1' ? '' : routeFacts(row,data,p))+
+      (DQMLocations.isGate(row) ? '' : routeFacts(row,data,p))+
       battleMarkup(data.fights,p)+(tables ? '<section class="route-section"'+(row.kind==='location'?' id="location-encounters" tabindex="-1"':'')+'><h3>'+(row.availability==='unused'?'Unused encounter records':'Wild encounters')+'</h3>'+tables+'</section>' : '');
   }
   function linkedProse(line, row, data, p, used) {
@@ -362,7 +371,7 @@
       return 'Entry unavailable';
     }
     const title = safeTitle(row);
-    const gate = row.kind==='location' && row.game==='dqm1';
+    const gate = DQMLocations.isGate(row);
     let heading = '<h2 id="article-title" tabindex="-1">' + safe(title) + '</h2>';
     let body = '';
     if (guarded(row)) {
@@ -407,6 +416,7 @@
         routeFacts(row,routeData,p)+locationCharacters(row,p)+relatedMarkup+'</header>'+routeMarkup(row,routeData,p)+'</div>';
       body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + (!gate && lead ? '<p class="article-lead">' + linkedProse(lead,row,routeData,p) + '</p>' : '')) +
         DQMRecruitmentUI.markup(row) +
+        (row.id==='field-skill-inheritance' || row.id==='field-growth' ? '<p><a class="guide-action training-open" href="#skill-planner">Open the skill &amp; growth planner →</a></p>' : '') +
         (gate ? '<div class="gate-content">' : '')+
         (row.kind==='location' && mapLinks.length ? '<section class="location-maps" aria-label="Maps">'+(gate?'':'<h3 id="location-maps-heading">Maps</h3>')+
           '<div id="location-map-browser"></div></section>' : '')+
@@ -459,6 +469,9 @@
     return title;
   }
   const actions = [
+    {id:'action-combat-planner',kind:'tool',game:'both',title:'Damage calculator',href:'#combat-planner',summary:'Compare attacks, damage skills and resistance in a wild encounter.',aliases:['combat calculator','damage planner','resistance calculator']},
+    {id:'action-skill-planner',kind:'tool',game:'both',title:'Skill & growth planner',href:'#skill-planner',
+      summary:'Check learning requirements, inherited skills, level-up gains and EXP.', aliases:['skill learning calculator','training calculator','skill planner','growth calculator','learn a move','inherit skills']},
     {id:'action-pair',kind:'tool',game:'both',title:'Find offspring',href:'#pair-finder',
       summary:'Choose two parents to see their offspring.', aliases:['find a pairing','breeding lookup','how to breed','breed monsters','pair monsters','breeding calculator']},
     {id:'action-parents',kind:'tool',game:'both',title:'Find parents',href:'#offspring-finder',
@@ -600,7 +613,7 @@
     }));
     const linkTo = (id,name) => '<a href="'+linked(p,{entry:id,page:''})+'">'+safe(name)+'</a>';
     const count = matches.length === 1 ? '1 skill' : matches.length+' skills';
-    root.innerHTML = directoryHeading('Skills',count,'<a href="#field-guide?entry=field-skill-inheritance">Inheritance &amp; learning</a>')+DQMSkillIndex.render(items,{escape:safe,linkTo});
+    root.innerHTML = directoryHeading('Skills',count,'<a href="#combat-planner">Damage calculator</a> · <a href="#skill-planner">Skill planner</a> · <a href="#field-guide?entry=field-skill-inheritance">Inheritance &amp; learning</a>')+DQMSkillIndex.render(items,{escape:safe,linkTo});
     const table = root.querySelector('.skill-index');
     DQMSkillIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
     return 'Skills';
@@ -747,6 +760,6 @@
     if (!el('field-guide').hidden) document.title = show() + ' · DQM1&2 PSX Player Guide';
     if (!el('atlas').hidden) window.DQMAtlas?.show();
   }
-  window.DQMField = {show, guarded, campaigns, setSpoilers, walkthroughPath, entryForNav: id => byId.get(id),
-    characterLink:row => '<a href="#field-guide?kind=npc&amp;entry='+safe(row.id)+'">'+artwork(row,true)+'<span>'+safe(row.title)+'</span></a>'};
+  window.DQMField = {show, guarded, appearanceVisible, campaigns, setSpoilers, walkthroughPath, entryForNav: id => byId.get(id),
+    characterLink:(row,mapIds=[]) => '<a href="#field-guide?kind=npc&amp;entry='+safe(row.id)+'">'+artwork(row,true,mapIds)+'<span>'+safe(row.title)+'</span></a>'};
 })();

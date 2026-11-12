@@ -139,3 +139,7 @@ a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:p
 .mechanics-index thead th:last-child { width:28%; }
 .mechanics-index button { border:0; padding:.4rem 0; color:inherit; background:transparent; font:inherit; cursor:pointer; }
 .mechanics-index button:is(:hover,:focus-visible) { text-decoration:underline; }
+
+.entry-npc-appearances{display:flex;flex-wrap:wrap;gap:1.25rem;margin:1rem 0}
+.entry-npc-appearances figure{margin:0;text-align:center;font-size:.875rem}
+.entry-npc-appearances img{display:block;object-fit:contain;width:84px;height:84px;margin:0 auto .3rem}

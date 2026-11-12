@@ -322,9 +322,9 @@ test('the Skills directory sorts the whole list and keeps the chosen order throu
   await page.getByLabel('Search the guide').fill('');
   await page.getByRole('button',{name:'Search filters'}).click();
   await page.locator('#guide-game').selectOption('dqm1');
-  await expect(rows).toHaveCount(124);
+  await expect(rows).toHaveCount(125); // Includes the verified Terry-only Dimension Dragon skill.
   await page.reload();
-  await expect(rows).toHaveCount(124);
+  await expect(rows).toHaveCount(125); // Includes the verified Terry-only Dimension Dragon skill.
   await expect(table.getByRole('columnheader',{name:'MP cost'})).toHaveAttribute('aria-sort','ascending');
 });
 

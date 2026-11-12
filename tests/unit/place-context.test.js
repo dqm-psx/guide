@@ -138,6 +138,26 @@ test('shipped world, gate and map references connect without assigning world enc
   }
 });
 
+test('the siblings’ home joins its native map, opening chapter and four observed characters without becoming a gate', () => {
+  const data=vm.createContext({});
+  for (const file of ['data/handbook-reference.js','data/world-guide.js','data/field-routes.js',
+    'data/player-atlas.js','data/gate-generation.js','js/locations.js']) {
+    vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),data,{filename:file});
+  }
+  const places=create({entries:data.WORLD_GUIDE.entries,routes:data.FIELD_ROUTES.routes,
+    scenes:data.FIELD_ROUTES.scenes,maps:data.PLAYER_ATLAS.maps,generation:data.GATE_GENERATION});
+  const home=data.WORLD_GUIDE.entries.find(row=>row.id==='location-terry-home');
+  assert.equal(places.locationForMap('map-103-0').id,home.id);
+  assert.deepEqual(ids(places.mapsForLocation(home.id)),['map-103-0']);
+  assert.deepEqual(ids(places.contextForMap('map-103-0').chapters),['story-terry-opening']);
+  assert.deepEqual(ids(places.charactersForLocation(home.id).here).sort(),
+    ['npc-milly','npc-terry','npc-warubou','npc-watabou']);
+  assert.equal(data.DQMLocations.isGate(home),false);
+  assert.equal(data.DQMLocations.isGate(data.WORLD_GUIDE.entries.find(row=>row.id==='location-townsperson-s-gate')),true);
+  assert.deepEqual(Array.from(data.FIELD_ROUTES.scenes['terry-home']),[103]);
+  assert.equal(data.DQMLocations.leadFor(home),home.summary);
+});
+
 test('native entrance evidence covers 31 gates on their exact floors and map coordinates', () => {
   const data=vm.createContext({});
   for (const file of ['data/handbook-reference.js','data/world-guide.js','data/field-routes.js',

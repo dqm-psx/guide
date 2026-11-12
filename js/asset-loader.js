@@ -22,7 +22,7 @@
     const route = new URLSearchParams(String(hash || '').split('?')[1] || '');
     const home = view === 'field-guide' && !['entry','game','q','kind'].some(key => route.get(key));
     if (home) return null;
-    const group = view === 'field-guide' || view === 'atlas' ? [...groups.field] : [...groups.tools];
+    const group = view === 'combat-planner' ? [...groups.combat] : view === 'skill-planner' ? [...groups.learning] : view === 'field-guide' || view === 'atlas' ? [...groups.field] : [...groups.tools];
     if (view === 'field-guide' && /^(npc|boss)-/.test(route.get('entry') || '')) group.push(...groups.dialogue);
     if (view === 'monster' || view === 'sources') group.unshift(groups.profile[0]);
     if (view === 'monster') group.push(groups.profile[1]);

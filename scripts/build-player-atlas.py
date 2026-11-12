@@ -47,6 +47,7 @@ class Disc:
     def __init__(self, image, expected):
         require(sha(image) == expected, "Disc does not match its expected SHA-256")
         self.image = image
+        self.digest = expected
         self.exe = native.extent(image, 93985, 899072)
         require(self.exe[:8] == b"PS-X EXE", "Missing native executable")
         self.groups = struct.unpack_from("<24I", self.exe, 0x8008E1AC - BIAS)
@@ -70,6 +71,18 @@ class Disc:
         require(BASE <= address < BASE + len(data), "Map asset outside its scene")
         return native.decompress(data[address - BASE:])
 
+    @cache
+    def resident_memory(self):
+        spec = importlib.util.spec_from_file_location("world", ROOT / "scripts/verify-world-guide.py")
+        world = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(world)
+        # Both layouts are authenticated by Disc before reaching this reader.
+        # The native loader's table references and count are checked as well.
+        if self.digest == BASELINE:
+            return world.Disc(self.image).resident_memory(0x37540, 728)
+        require(self.digest == world.V73_HASH, "Unreviewed resident text layout")
+        return world.Disc(self.image).resident_memory()
+
 
 GLYPHS = {i: c for i, c in enumerate("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")}
 GLYPHS.update({64 + i: c for i, c in enumerate("abcdefghijklmnopqrstuvwxyz")})
@@ -79,12 +92,12 @@ GLYPHS.update({0x24: " ", 0x27: "-", 0x28: ".", 0x29: ",", 0x2a: "?", 0x2b: "!",
                0x60: "=", 0x61: "[", 0x62: "]", 0x63: "#", 0x64: "@", 0x65: "_"})
 
 
-def title(raw, descriptor, area):
+def title(raw, descriptor, area, base=BASE):
     group, offsets, pool = struct.unpack("<3I", span(raw, descriptor, 12))
-    ordinal = struct.unpack("<H", span(raw, group - BASE + 2 * area, 2))[0]
+    ordinal = struct.unpack("<H", span(raw, group - base + 2 * area, 2))[0]
     width = 4 if pool & 0x20000000 else 2
-    offset = int.from_bytes(span(raw, offsets - BASE + ordinal * width, width), "little")
-    at = (pool & ~0x20000000) - BASE + offset
+    offset = int.from_bytes(span(raw, offsets - base + ordinal * width, width), "little")
+    at = (pool & ~0x20000000) - base + offset
     require(0 <= at < len(raw), "Title pointer outside scene")
     end = raw.find(b"\xff", at, at + 160)
     require(at < end and all(v in GLYPHS for v in raw[at:end]), "Unknown map title encoding")
@@ -129,7 +142,13 @@ def native_map(disc, scene, item):
     version, x, y, w, h = struct.unpack_from("<5H", graphic)
     require((version, x, y) == (1, 0, 0) and 0 < w <= 128 and 0 < h <= 128 and
             len(graphic) == 10 + 8 * w * h, "Unexpected static map dimensions")
-    ordinal, label, _, _ = title(raw, text_descriptor, area)
+    if isinstance(text_descriptor, dict):
+        require(text_descriptor.get("source") == "executable", "Unknown map title source")
+        ordinal, label, _, _ = title(disc.resident_memory(),
+                                    text_descriptor["offset"] + BIAS - 0x80000000,
+                                    area, base=0x80000000)
+    else:
+        ordinal, label, _, _ = title(raw, text_descriptor, area)
     require(ordinal == expected_ordinal, "Native title ordinal changed; review its public dialogue binding")
     return dict(tiles=tiles, graphic=graphic, events=events, doors=doorways(raw, desc, events, w, h),
                 title=label, size=(w, h), arrival=arrival)
@@ -256,7 +275,8 @@ def inspect(args, old, new, manifest, index):
     old_ship = json.loads((ROOT / "data/player-atlas.js").read_text(encoding="utf8").removeprefix(PREFIX).rstrip(";\n"))
     shipped = {r["id"]: r for r in old_ship["maps"]}
     ids = {f"map-{r[0]}-{r[1]}" for r in index["maps"]}
-    require(ids == shipped.keys() and len(ids) == len(index["maps"]), "Atlas identity inventory differs")
+    require(len(ids) == len(index["maps"]), "Duplicate atlas identity")
+    require((args.write and shipped.keys() <= ids) or ids == shipped.keys(), "Atlas identity inventory differs")
     native_supplement = set(index.get("nativeSupplementMaps", []))
     require(native_supplement <= ids, "Unknown supplemental native map")
     for guard in index["consumers"]:
@@ -287,7 +307,7 @@ def inspect(args, old, new, manifest, index):
             if changed:
                 deltas[field].append(key)
         image_id = (sha(b["graphic"]), sha(current))
-        old_name = shipped[key]["image"]
+        old_name = shipped.get(key, {}).get("image")
         if image_id not in images:
             if b["tiles"] not in banks:
                 banks[b["tiles"]] = TileBank(current)
@@ -303,7 +323,7 @@ def inspect(args, old, new, manifest, index):
                 baseline_pixels[baseline_key] = full_digest
         row = dict(id=key, title=b["title"], nativeTitle=b["title"], titleRow=title_row, placeId=place_id,
                    scene=scene, area=area, image=name, exits=[])
-        if shipped[key].get("titleRow") == title_row and shipped[key].get("aliases"):
+        if shipped.get(key, {}).get("titleRow") == title_row and shipped[key].get("aliases"):
             row["title"] = shipped[key]["title"]
             row["aliases"] = shipped[key]["aliases"]
         output[key] = row

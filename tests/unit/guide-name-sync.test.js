@@ -101,6 +101,24 @@ test('missing, stale, duplicated or ambiguous source data cannot replace the rel
   }
 });
 
+test('the verified home title follows static-pool translations without accepting arbitrary static text as a map', () => {
+  const f=fixture();
+  const row={catalog:'text/static_pools.json',table:'static_extra_pools.json',id:'e0affe4_0000',
+    source_revision:f.revision,current:'Our Room',labels:['Fixed text pools'],
+    raw:{id:'e0affe4_0000',japanese:'じぶんのへや<END>',translations:{current:{english:'Our Room<END>'}}}};
+  f.comparison.rows.push(row);
+  const home={id:'map-103-0',title:'Your Room',titleRow:'static_extra_pools.json:e0affe4_0000',exits:[]};
+  f.atlas.maps.push(home);
+  const names=buildGuideNames(f);
+  assert.equal(names.maps[home.id].title,'Our Room');
+  apply({guide_names:names,species:[]},f.field,f.world,f.atlas);
+  assert.equal(home.title,'Our Room');
+  assert.equal(home.id,'map-103-0');
+  assert.deepEqual(home.exits,[]);
+  home.id='map-104-0';
+  assert.throws(()=>buildGuideNames(f),/Guide name sync/);
+});
+
 test('a gate rename keeps old and edition names searchable and preserves its portal and final-map relationships', () => {
   const f=fixture(), id='location-townsperson-s-gate', sourceId='e169f';
   f.comparison.rows.push({catalog:'text/system.json',table:'system',id:sourceId,source_revision:f.revision,

@@ -13,6 +13,19 @@ const proof = require('../../scripts/atlas-verification.json');
 const index = require('../../scripts/atlas-native-index.json');
 const maps = new Map(atlas.maps.map(map => [map.id, map]));
 
+test('the opening home retains its executable title and scripted arrival instead of invented door pins', () => {
+  const home = maps.get('map-103-0');
+  assert.equal(home.titleRow, 'static_extra_pools.json:e0affe4_0000');
+  assert.equal(home.nativeTitle, 'Your Room');
+  assert.equal(home.placeId, home.id);
+  assert.deepEqual(home.exits, []);
+  assert.deepEqual(index.scenes['103'], [5587, 29944, {source:'executable', offset:720876}]);
+  assert.deepEqual(index.maps.find(row=>row[0]===103),
+    [103, 0, 5578, 4204, 0, home.titleRow, home.id]);
+  assert.ok(index.nativeSupplementMaps.includes(home.id));
+  assert.ok(fs.existsSync(path.join(root, 'maps', home.image)));
+});
+
 test('every verified layout retains its native title identity, place and exact doorway targets', () => {
   assert.equal(maps.size, proof.maps);
   assert.equal(index.maps.length, maps.size);

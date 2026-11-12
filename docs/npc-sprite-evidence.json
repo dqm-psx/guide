@@ -385,7 +385,43 @@
       "actorIndex": 4,
       "talkOffset": 13360,
       "messageSlot": 1371,
-      "identity": "Milly's Queen's Room conversation"
+      "identity": "Milly's Queen's Room conversation",
+      "variants": {
+        "home": {
+          "archiveIndex": 5585,
+          "resourceEntry": 197,
+          "resourceSha256": "42049380b50e2e2044fd50d3bc01f4b879cc1f02d51961657e2bfcb814dcb895",
+          "portraitSha256": "f1ed512828eeb353184c99a4fa7b1afcfe84156f6f1a92bfcee0461a86f7dc48",
+          "frameSize": [
+            32,
+            32
+          ],
+          "actorSlot": 0,
+          "sceneResource": 5587,
+          "mapId": "map-103-0",
+          "actorIndex": 0,
+          "messageSlot": 93,
+          "sourceId": "e0affe4_019b",
+          "identity": "Milly's opening-room conversation"
+        },
+        "queens-room": {
+          "archiveIndex": 5659,
+          "resourceEntry": 35,
+          "resourceSha256": "4dbc8de4ce31f2ac842a151b51fd98985cd89443ae2c399f22afab9b68479906",
+          "portraitSha256": "383c6aa6188175347ef7b5bf092e9114f8eea39ca2ee7bdc35b61f540e28c96c",
+          "frameSize": [
+            32,
+            32
+          ],
+          "actorSlot": 4,
+          "sceneResource": 5661,
+          "mapId": "map-11-6",
+          "actorIndex": 4,
+          "talkOffset": 13360,
+          "messageSlot": 1371,
+          "identity": "Milly's Queen's Room conversation"
+        }
+      }
     },
     "npc-terry": {
       "archiveIndex": 5543,
