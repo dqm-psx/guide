@@ -3490,10 +3490,10 @@ globalThis.FIELD_GUIDE = {
           "table": {
             "columns": [
               "Skill",
-              "Minimum level",
-              "Minimum max MP",
-              "GBC DWM2 Intelligence",
-              "PSX Intelligence"
+              "Level",
+              "Max MP",
+              "GBC Int.",
+              "PSX Int."
             ],
             "rows": [
               [

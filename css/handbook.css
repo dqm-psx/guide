@@ -61,6 +61,7 @@
   .article-comparison td+td{border-top:1px solid var(--guide-rule)!important}
   .article-comparison td::before{content:attr(data-label);display:block;color:var(--muted);font-size:.8rem;font-weight:700;margin-bottom:.2rem}
   .article-numeric table{table-layout:fixed}
+  .article-numeric tr>:first-child{width:26%}
   .article-table.article-numeric :is(th,td){min-width:0;max-width:none;padding:.4rem;font-size:.8rem;overflow-wrap:anywhere}
 }
 @media(max-width:560px){.mechanics-mode{margin-left:0;width:100%}.handbook-chapter>ul,.handbook-tools{margin-left:0}.article-contents ol{display:block}.article-contents li{margin:.4rem 0}.article-table :is(th,td){min-width:10rem}.owned-monster-picker{grid-template-columns:minmax(0,1fr)}.owned-monster-picker>a{grid-row:4}}
