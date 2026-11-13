@@ -26,6 +26,8 @@ The saved candidate pool is authoritative, including a verified empty pool. Remo
 
 The monster's campaign seeds a fresh damage comparison. An explicit encounter adventure in an existing plan takes priority, and changing the owned comparand preserves the selected encounter.
 
+Editing Level, Attack or Defense detaches the plan from the roster without changing its copied resistance profile or an explicit resistance override. The plan URL retains all 27 individual resistance channels, so changing the enemy's move or reopening a shared plan still uses that monster's resistance. Choosing another species or roster entry replaces the profile. An already-learned skill, including one replaced by a later upgrade, is identified as such instead of displaying a missing learning route.
+
 ## Independent verification
 
 `scripts/verify-save-planner-native.py` executes the original MIPS `UnpackSaveFile` (`0x8002667c`), `GetSpeciesIndex` and `RestoreEquipment` in Unicorn. It compares their reconstructed monster records with the shipped JavaScript reader. Only heap allocation, the environmental reset and movement of ranch records into active-party slots are stubbed. Checksum verification and the unpacking/calculation routines execute from each disc.

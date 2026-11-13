@@ -58,6 +58,7 @@
   let reveal = true;
   try { reveal = localStorage.getItem(spoilerKey) !== 'hide'; } catch {}
   const individuallyRevealed = new Set();
+  const revealedSections = new Set();
   function params() { return new URLSearchParams((window.DQMEntryHash?.() || location.hash).split('?')[1] || ''); }
   function route(p) { const query = p.toString(); return '#field-guide' + (query ? '?' + query : ''); }
   function change(p, key, value) { if (value) p.set(key, value); else p.delete(key); }
@@ -75,7 +76,6 @@
     ...(DQMItemReference.items[row.id] ? DQMItemIndex.searchTerms(row,null,games) : []),
     ...(row.requested_species || []).map(id => GUIDE_REFERENCE.species[id].display_name),
     ...(row.nickname_rows || []).flatMap(name => name.aliases), ...(row.default_nicknames || []).flatMap(name => name.aliases),
-    ...(row.sections || []).flatMap(DQMSectionText),
     ...(row.details || []), ...(row.aliases || []), ...(row.places || []), ...(row.prices || []).flatMap(price=>price.locations)].join(' '))]));
   const monsters = GUIDE_REFERENCE.species.filter(row => row.current_name && (row.system_entry_id || row.playable)).map(row => ({
     id: 'monster-' + row.index, index: row.index, kind: 'monster', game: 'both', title: row.display_name,
@@ -86,6 +86,10 @@
   for (const game of ['dqm1', 'dqm2']) rows.filter(r => r.kind === 'story' && r.game === game)
     .forEach((r, index) => chapterNumbers.set(r.id, index + 1));
   function guarded(row) { return !reveal && !individuallyRevealed.has(row.id) && !individuallyRevealed.has(row.locationId) && (row.spoiler === 'ending' || row.spoiler === 'story'); }
+  function sectionGuarded(row,section) {
+    return !reveal && !individuallyRevealed.has(row.id) && !revealedSections.has(row.id+'/'+section.id) && ['story','ending'].includes(section.spoiler);
+  }
+  function visibleSections(row) { return (row.sections || []).filter(section=>!sectionGuarded(row,section)); }
   function safeTitle(row) {
     if (!guarded(row)) return row.title;
     if (chapterNumbers.has(row.id)) return 'Chapter ' + (row.order || chapterNumbers.get(row.id));
@@ -439,6 +443,7 @@
         (!gate ? locationCharacters(row,p) : '')+
         DQMArticleSections(row,safe,line=>linkedProse(line,row,routeData,p),3,p.get('game'),{
           compactContents:matchMedia('(max-width:600px)').matches,
+          hiddenSection:section=>sectionGuarded(row,section),
           sectionHref:id=>route(new URLSearchParams({...Object.fromEntries(p),section:id})),
           articleLink:id=>byId.has(id) ? '<a href="'+linked(p,{entry:id})+'">'+safe(safeTitle(byId.get(id)))+'</a>' : ''
         }) +
@@ -484,6 +489,10 @@
       });
     }
     el('guide-reveal')?.addEventListener('click', () => { individuallyRevealed.add(row.id); renderArticle(row,p); el('article-title').focus(); });
+    for(const button of article.querySelectorAll('[data-reveal-section]')) button.addEventListener('click',()=>{
+      const id=button.dataset.revealSection;
+      revealedSections.add(row.id+'/'+id);renderArticle(row,p);el('article-section-'+id)?.focus();
+    });
     return title;
   }
   const actions = [
@@ -501,10 +510,12 @@
     {id:'action-import',kind:'tool',game:'both',title:'Import a memory card',href:'#team-planner?import=save',
       summary:'Choose an Adventure Log to see what your monsters can breed.', aliases:['import a save','save file','memory card import']},
   ];
-  const searchNames = new Map([...rows,...monsters,...actions,...mapRows].map(row => {
-    const labels=(row.sections || []).flatMap(section=>[section.title,...(section.rows || []).map(([label])=>label),...(section.table?.rows || []).map(([label])=>label)]);
-    return [row.id,Array.from(new Set([row.title,...(row.aliases || []),...labels].filter(Boolean).map(normalized)))];
-  }));
+  const searchNames = new Map([...rows,...monsters,...actions,...mapRows].map(row =>
+    [row.id,Array.from(new Set([row.title,...(row.aliases || [])].filter(Boolean).map(normalized)))]));
+  function searchForms(row) {
+    const labels=visibleSections(row).flatMap(section=>[section.title,...(section.rows || []).map(([label])=>label),...(section.table?.rows || []).map(([label])=>label)]);
+    return [...(searchNames.get(row.id) || []),...labels.map(normalized)];
+  }
 
   // A one-letter difference in a short name can change the subject (bard/bird).
   function closeWord(a,b) {
@@ -522,9 +533,10 @@
     const candidates=buying ? pool.filter(r=>r.prices?.some(price=>!game || price.game===game)) : pool;
     const scored=[];
     for (const r of candidates) {
-      const forms=searchNames.get(r.id) || [];
-      const text=game && DQMItemReference.items[r.id] ? normalized(DQMItemIndex.searchTerms(r,game,games).join(' ')) :
+      const forms=searchForms(r);
+      const baseText=game && DQMItemReference.items[r.id] ? normalized(DQMItemIndex.searchTerms(r,game,games).join(' ')) :
         r.text || searchIndex.get(r.id) || normalized([r.title,r.summary,...forms].join(' '));
+      const text=baseText+' '+normalized(visibleSections(r).flatMap(DQMSectionText).join(' '));
       let score;
       if (!words.length || forms.includes(query)) score=0;
       else if (forms.some(name=>name.startsWith(query))) score=1;
@@ -537,7 +549,7 @@
     if (!words.some(word=>word.length>=5)) return [];
     const corrections=[], related=[];
     for (const row of candidates) {
-      const forms=searchNames.get(row.id);
+      const forms=searchForms(row);
       if (forms.some(name=>closeWord(query,name))) corrections.push(row);
       else if (forms.some(name=>{
         const tokens=name.split(/[^\p{L}\p{N}]+/u);
@@ -548,7 +560,7 @@
   }
   function matchingSectionRow(row,query,game) {
     if (!query || !row.sections) return;
-    const sections=row.sections.filter(section=>!game || !section.game || section.game===game);
+    const sections=visibleSections(row).filter(section=>!game || !section.game || section.game===game);
     const entries=sections.flatMap(section=>[
       ...(section.rows || []).map(([label,detail])=>({section:section.title,label,detail})),
       ...(section.table?.rows || []).map(([label,...cells])=>({section:section.title,label,detail:cells.join(' · ')})),
@@ -790,6 +802,7 @@
   function setSpoilers(checked) {
     reveal = checked;
     individuallyRevealed.clear();
+    revealedSections.clear();
     if (!el('field-guide').hidden) document.title = show() + ' · DQM1&2 PSX Player Guide';
     if (!el('atlas').hidden) window.DQMAtlas?.show();
   }

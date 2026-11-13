@@ -73,11 +73,15 @@
     const toc = ordered.length > 2 && options.sectionHref ? '<nav class="article-contents" aria-label="In this article"><details'+(options.compactContents?'':' open')+'><summary>In this article</summary><ol>'+ordered.map(section=>
       '<li><a href="'+escape(options.sectionHref(sectionId(section)))+'">'+escape(section.title)+'</a></li>').join('')+'</ol></details></nav>' : '';
     return toc+ordered.map(section => {
+      const id=sectionId(section);
+      const headingMarkup='<'+heading+' id="article-section-'+escape(id)+'" tabindex="-1">'+escape(section.title)+'</'+heading+'>';
+      const opening='<section class="route-section article-topic" aria-labelledby="article-section-'+escape(id)+'">'+headingMarkup;
+      if(options.hiddenSection?.(section)) return opening+'<p>This section includes '+(section.spoiler==='ending'?'ending':'story')+
+        ' spoilers.</p><button class="guide-action" type="button" data-reveal-section="'+escape(id)+'">Reveal this section</button></section>';
       const table=section.table;
       const sources=(section.sources || []).filter(source=>/^https?:\/\//.test(source.url)).map(source=>
         '<a href="'+escape(source.url)+'" rel="noopener noreferrer">'+escape(source.label)+'</a>');
-      return '<section class="route-section article-topic" aria-labelledby="article-section-'+escape(sectionId(section))+'"><'+heading+' id="article-section-'+escape(sectionId(section))+'" tabindex="-1">'+
-        escape(section.title)+'</'+heading+'>'+
+      const content=
         (section.intro ? '<p>'+prose(section.intro)+'</p>' : '')+
         (section.paragraphs || []).map(text=>'<p>'+prose(text)+'</p>').join('')+
         (section.bullets?.length ? '<ul>'+section.bullets.map(text=>'<li>'+prose(text)+'</li>').join('')+'</ul>' : '')+
@@ -86,7 +90,11 @@
           (table.caption ? '<caption>'+escape(table.caption)+'</caption>' : '')+'<thead><tr>'+table.columns.map(title=>'<th scope="col">'+escape(title)+'</th>').join('')+'</tr></thead><tbody>'+
           table.rows.map(cells=>'<tr>'+cells.map((cell,i)=>i ? '<td>'+prose(cell)+'</td>' : '<th scope="row">'+prose(cell)+'</th>').join('')+'</tr>').join('')+'</tbody></table></div>' : '')+
         (section.links?.length && options.articleLink ? '<p class="article-topic-links">'+section.links.map(options.articleLink).filter(Boolean).join(' · ')+'</p>' : '')+
-        (sources.length ? '<p class="article-sources"><span>Sources</span> · '+sources.join(' · ')+'</p>' : '')+'</section>';
+        (sources.length ? '<p class="article-sources"><span>Sources</span> · '+sources.join(' · ')+'</p>' : '');
+      // Static pages remain useful without JavaScript, including spoiler controls.
+      const guarded=options.collapseSpoilers && ['story','ending'].includes(section.spoiler);
+      return opening+(guarded ? '<details class="article-spoilers"><summary>Reveal this section · '+
+        (section.spoiler==='ending'?'ending':'story')+' spoilers</summary>'+content+'</details>' : content)+'</section>';
     }).join('');
   }
   function nicknameMarkup(row, escape, articleLink) {

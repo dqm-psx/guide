@@ -3177,7 +3177,6 @@ globalThis.FIELD_GUIDE = {
         "GBC PSX differences",
         "DWM1 DWM2 comparison",
         "original Japanese PlayStation",
-        "Game Boy translation edition",
         "restored content",
         "cut content",
         "PS1 remake"
@@ -3189,7 +3188,7 @@ globalThis.FIELD_GUIDE = {
           "id": "which-edition",
           "title": "Which version are you playing?",
           "paragraphs": [
-            "The Japanese PlayStation release remakes the two handheld games. The English patch translates that remake and adds further features. Its alternative English wording editions change names and phrasing, not which game’s mechanics you are playing."
+            "The Japanese PlayStation release remakes the two handheld games. This comparison separates changes made for that remake from additions in the released English v1.0.73 patch, the guide’s verified gameplay baseline."
           ],
           "table": {
             "columns": [
@@ -3212,10 +3211,6 @@ globalThis.FIELD_GUIDE = {
               [
                 "English patch, v1.0.73",
                 "The guide’s verified gameplay baseline. It includes the translated PlayStation game, restored activities, movement settings and bug repairs."
-              ],
-              [
-                "Current / Game Boy / Delocalized wording",
-                "Alternative English names and phrasing. A Game Boy-named patch still runs the PlayStation game, including its breeding and encounter rules."
               ]
             ]
           },
@@ -3235,34 +3230,29 @@ globalThis.FIELD_GUIDE = {
           "title": "Redrawn presentation, sound and controls",
           "paragraphs": [
             "The remake redraws the towns, dungeons and monsters for PlayStation. Larger scenery and layered environments give places more depth; the atlas shows the actual PSX floor plans. The battle monsters are detailed 2D artwork with movement, scaling and visual effects rather than the handheld’s small battle images.",
-            "Sound was reworked for PlayStation, with new castle and boss music as well as arrangements of familiar themes. These audiovisual changes belong to the Japanese remake and are retained by the English patch."
+            "Sound was reworked for PlayStation, with new castle and boss music as well as arrangements of familiar themes. These audiovisual changes belong to the Japanese remake and are retained by the English patch.",
+            "English v1.0.73 adds configurable walking and R1 running speeds, with Hold or Toggle controls. These settings are additions to the Japanese PSX game."
           ],
           "table": {
             "columns": [
               "Part of play",
-              "What changes on PlayStation"
+              "Game Boy / Game Boy Color",
+              "Japanese PlayStation"
             ],
             "rows": [
               [
-                "World traversal",
-                "Cobi and Tara use Triangle for the story-granted water crossing, rock breaking and flight actions. Terrain and paths are redrawn, so an old handheld map is not a pixel-for-pixel route."
-              ],
-              [
-                "Movement feel",
-                "The four main Cobi/Tara outdoor worlds use a slower native movement cadence than Terry’s gate floors. GreatLog itself uses the faster cadence."
+                "World traversal in Cobi & Tara",
+                "Story items already grant water crossing, rock breaking and flight; use the A button for these actions.",
+                "Retains those abilities, activated with Triangle. Maps are redrawn, so routes can differ from the handheld maps."
               ],
               [
                 "Local battles",
-                "PlayStation uses one shared screen and timed, alternating command entry. Opposing team selection is visible; action order still follows the battle rules."
-              ],
-              [
-                "Running in English v1.0.73",
-                "The patch adds configurable walking/R1 speeds and Hold/Toggle. This is separate from the original remake’s movement differences."
+                "Connect two handheld systems with a Game Link Cable; each player uses their own screen.",
+                "Load saved Adventure Logs on one console and share one screen. Players enter commands in timed, alternating turns, with the opponent’s team selection visible."
               ]
             ]
           },
           "links": [
-            "field-triangle",
             "field-movement-settings"
           ],
           "sources": [
@@ -3277,6 +3267,22 @@ globalThis.FIELD_GUIDE = {
             {
               "label": "Publisher’s original battle presentation",
               "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/taisen_gokui.html"
+            },
+            {
+              "label": "DWM1 instruction manual, p. 34",
+              "url": "https://www.videogamemanual.com/gbc/Dragon%20Warrior%20Monsters%20%28USA%29.pdf"
+            },
+            {
+              "label": "DWM2 instruction manual: Game Link Cable mode",
+              "url": "https://www.woodus.com/den/gallery/graphics/dwm2gbc/manual/dwm2gbc_cobi_manual.pdf"
+            },
+            {
+              "label": "Handheld Cobi traversal controls",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/14383"
+            },
+            {
+              "label": "English v1.0.73 release",
+              "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
             }
           ]
         },
@@ -3341,7 +3347,6 @@ globalThis.FIELD_GUIDE = {
             "The restoration is an English-patch feature. Its encounter rates and some mechanics are reconstruction choices, so a Game Boy floor probability is not a confirmed PSX probability. Gate pages show the entrance, final area, generated terrain and wild encounters separately."
           ],
           "bullets": [
-            "For the optional farm egg, clear Class F, hear Pulio’s hint and inspect the “Watch overhead!” sign before defeating Battle Rex. Use the PSX quest window rather than assuming that walking past the farm is enough.",
             "Arena requirements on gate pages describe the class you must already have won. They are not rewards for defeating the gate boss.",
             "A retained map need not be a reachable gate. The unused Hidden Gate’s encounter tables and final map are documented as unused content, not an ordinary exploration destination."
           ],
@@ -3420,7 +3425,8 @@ globalThis.FIELD_GUIDE = {
               "label": "Handheld guide pages and PSX comparison evidence",
               "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
             }
-          ]
+          ],
+          "spoiler": "story"
         },
         {
           "id": "foreign-master-differences",

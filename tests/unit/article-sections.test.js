@@ -19,3 +19,18 @@ test('handbook sections preserve legacy text, searchable comparisons and safe st
   assert.ok(!html.includes('undefined'));
   assert.ok(sectionText(row.sections[1]).includes('<native>'));
 });
+
+test('story sections can be shielded independently or revealed without JavaScript',()=>{
+  const row={sections:[
+    {id:'presentation',title:'Presentation',paragraphs:['Redrawn maps.']},
+    {id:'story',title:'Story differences',spoiler:'story',paragraphs:['The secret key location.'],table:{columns:['Game Boy','PSX'],rows:[['Old secret','New secret']]},links:['quest-key']}
+  ]};
+  const hidden=articleSections(row,escape,escape,3,null,{hiddenSection:section=>section.spoiler==='story',articleLink:()=>'<a>Secret quest</a>'});
+  assert.match(hidden,/Redrawn maps/);
+  assert.match(hidden,/id="article-section-story"/);
+  assert.match(hidden,/data-reveal-section="story"/);
+  assert.doesNotMatch(hidden,/secret|Secret quest|Old secret|New secret/);
+  const staticPage=articleSections(row,escape,escape,2,null,{collapseSpoilers:true});
+  assert.match(staticPage,/<details class="article-spoilers"><summary>Reveal this section · story spoilers<\/summary><p>The secret key location\.<\/p>/);
+  assert.doesNotMatch(staticPage,/<details[^>]* open/);
+});

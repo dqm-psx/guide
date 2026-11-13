@@ -266,7 +266,7 @@ function addEntryPages(assets) {
     const mapsAndFloors=gate ? '<div class="entry-gate-content">'+locationMaps(row)+db.DQMGateGeneration.render(row.id,{escape,headingLevel:2})+'</div>' : locationMaps(row);
     const calculatorLink=row.id==='field-damage-and-resistance' ? '<p>'+link('#combat-planner','Open the damage calculator →')+'</p>' : '';
     add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+calculatorLink+db.DQMArticleSections(row,escape,escape,2,null,{
-      articleLink,compactContents:true,sectionHref:id=>articlePath(row)+'#article-section-'+id
+      articleLink,compactContents:true,collapseSpoilers:true,sectionHref:id=>articlePath(row)+'#article-section-'+id
     })+nicknameNote+stepsMarkup+walkChapters+requests+mapsAndFloors+
       (gate?'':locationCharacters(row))+contextLinks('Locations',characterLocations)+
       list('Arena classes',(row.arena_classes || []).map(articleLink))+dialogue+

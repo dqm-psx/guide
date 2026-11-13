@@ -1,8 +1,8 @@
 # Edition comparison evidence
 
 The public comparison keeps the existing `field-restored-content` link, but now
-covers both campaigns and distinguishes three axes: handheld versus original
-Japanese PSX, original PSX versus the English patch, and English naming choices.
+covers both campaigns and distinguishes two comparisons: handheld versus original
+Japanese PSX, and original PSX versus the released English patch.
 It is a reference with linked topics, rather than a list of restoration notes.
 
 ## Evidence boundaries
@@ -123,6 +123,28 @@ layered depth, redrawn floor plans and animated/scaled 2D monster art. Community
 music documentation supplies the narrower new castle/boss-music detail; the
 article does not reproduce a track list or claim a full soundtrack audit.
 
+## Controls and local-battle comparison
+
+The controls table puts the handheld and PSX behavior in separate columns.
+Water crossing, rock breaking and flight already exist in handheld DWM2; they
+are retained abilities, with A on Game Boy Color and Triangle on PSX. Jimeous’s
+[handheld Cobi walkthrough](https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/14383)
+records those A-button actions in sections 2.4 (water), 3.6.05 (rocks) and
+5.3 (cloud). PSX controls are bound to the native dialogue records in
+`field-triangle`.
+The comparison no longer treats the difference between Terry’s and Cobi/Tara’s
+PSX walking cadence as a change from Game Boy. That campaign distinction remains
+in the movement article. English v1.0.73 running settings are explicitly labeled
+as additions to the Japanese PSX release.
+
+The [DWM1 instruction manual, p. 34](https://www.videogamemanual.com/gbc/Dragon%20Warrior%20Monsters%20%28USA%29.pdf)
+and [DWM2 Cobi instruction manual, Game Link Cable mode](https://www.woodus.com/den/gallery/graphics/dwm2gbc/manual/dwm2gbc_cobi_manual.pdf)
+establish the handheld link-cable setup. The PSX publisher’s Colosseum setup and
+command pages document the replacement: Adventure Logs on one console, shared
+team selection, and timed alternating command input. The table does not claim
+that input order determines action order or that all handheld multiplayer modes
+survive on PSX.
+
 ## Foreign masters
 
 The edition article summarizes the guide's existing audited foreign-master
@@ -170,7 +192,7 @@ and its bundled README separate:
 - Fresh boot plus in-game memory-card saves after changing patch versions.
 
 The comparison does not describe every fix in the changelog as a Japanese-game
-bug, nor describe the naming editions as alternate mechanics versions.
+bug. Unreleased wording editions are excluded from the public comparison.
 
 ## Additional handheld-book context
 

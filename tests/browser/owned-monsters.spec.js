@@ -32,7 +32,7 @@ test('one imported save supplies both tools, with correct stats, skills, campaig
   expect(await page.evaluate(()=>JSON.stringify(DQMApp.state()))).toBe(before);
   await page.locator('#combat-attack').fill('240');
   await expect(page.locator('#combat-owned-select')).toHaveValue('');
-  await expect(page.locator('#combat-resistance option').first()).toHaveText('Species default');
+  await expect(page.locator('#combat-resistance option').first()).toHaveText('Individual resistance in this plan');
   expect(await page.evaluate(()=>JSON.stringify(DQMApp.state()))).toBe(before);
   await page.goto(skillUrl);await expect(page.locator('#training-attack')).toHaveValue('180');
   await page.locator('#training-stats-inputs>summary').click();await page.locator('#training-attack').fill('190');
@@ -66,7 +66,7 @@ test('shared calculation links omit local roster IDs and retain the selected ind
   await expect(page.locator('#combat-incoming-result')).toContainText('individual resistance');
   const result=await page.locator('#combat-incoming-result .combat-damage').innerText();
   await page.locator('#combat-copy').click();const shared=await page.evaluate(()=>navigator.clipboard.readText());
-  expect(shared).not.toContain('owned=');expect(shared).not.toContain('team=');expect(shared).toContain('resistance=');expect(shared).not.toContain('Bob');
+  expect(shared).not.toContain('owned=');expect(shared).not.toContain('team=');expect(shared).toContain('resistances=');expect(shared).not.toContain('Bob');
   await page.evaluate(()=>localStorage.clear());await page.goto(shared);await page.reload();
   await expect(page.locator('#combat-incoming-result .combat-damage')).toHaveText(result);
 });
@@ -156,4 +156,84 @@ test('owned damage comparison preserves explicit encounter adventure on reload a
   await expect(page.locator('#combat-game')).toHaveValue('terry');await expect(page.locator('#combat-area')).toHaveValue(changed);await expect(page.locator('#combat-enemy')).toHaveValue(enemy);
   await page.goto(page.url().replace('game=terry','game=unsupported'));
   await expect(page.locator('#combat-link-note')).toBeVisible();await expect(page.locator('#combat-copy')).toBeDisabled();
+});
+
+test('combat stat edits retain a manual resistance override through reload and sharing',async({page,context})=>{
+  await context.grantPermissions(['clipboard-read','clipboard-write']);
+  await page.goto(url+'#combat-planner?species=11&level=27&attack=100&defense=100&skill=4&game=terry&area=3&enemy=2&incoming=4&resistance=7');
+  await expect(page.locator('#combat-incoming-result .combat-damage')).toHaveText('0 damage');
+  for(const [stat,value] of [['attack','101'],['defense','110'],['level','28']]){
+    await page.locator('#combat-'+stat).fill(value);
+    await expect(page.locator('#combat-resistance')).toHaveValue('7');
+    await expect(page.locator('#combat-incoming-result .combat-damage')).toHaveText('0 damage');
+  }
+  await page.reload();await expect(page.locator('#combat-resistance')).toHaveValue('7');
+  await page.locator('#combat-copy').click();const shared=await page.evaluate(()=>navigator.clipboard.readText());
+  await page.goto(url);await page.goto(shared);
+  await expect(page.locator('#combat-incoming-result .combat-damage')).toHaveText('0 damage');
+  await page.selectOption('#combat-species','0');
+  await expect(page.locator('#combat-resistance')).toHaveValue('');
+  await expect(page.locator('#combat-resistance option').first()).toHaveText('Species default');
+});
+
+test('edited imported stats retain all resistance channels across moves, reload and sharing',async({page,context})=>{
+  await context.grantPermissions(['clipboard-read','clipboard-write']);
+  await importSave(page);await page.locator('#planner-party').getByRole('link',{name:'Damage',exact:true}).click();
+  const originalRoster=await page.evaluate(()=>JSON.stringify(DQMApp.state()));
+  const encounter=await page.evaluate(()=>{
+    const skills=new Map(COMBAT_REFERENCE.skills.map(row=>[row.skillId,row]));
+    for(const area of COMBAT_REFERENCE.encounters.filter(row=>row.game==='tara'))for(const enemy of area.enemies){
+      const moves=[...new Set(enemy.actionIds)].filter(id=>skills.get(id)?.resistanceChannelId);
+      if(new Set(moves.map(id=>skills.get(id).resistanceChannelId)).size>1)return {area:area.contextId,enemy:enemy.index,moves};
+    }
+  });
+  expect(encounter).toBeTruthy();
+  await page.locator('#combat-area').selectOption(String(encounter.area));
+  await page.locator('#combat-enemy').selectOption(String(encounter.enemy));
+  const damage=[];
+  for(const id of encounter.moves){
+    await page.locator('#combat-incoming').selectOption(String(id));
+    damage.push(await page.locator('#combat-incoming-result .combat-damage').innerText());
+  }
+  for(const [stat,value] of [['attack','240'],['defense','160'],['level','40']])await page.locator('#combat-'+stat).fill(value);
+  await expect(page.locator('#combat-owned-select')).toHaveValue('');
+  await expect(page.locator('#combat-resistance option').first()).toHaveText('Individual resistance in this plan');
+  expect(await page.evaluate(()=>JSON.stringify(DQMApp.state()))).toBe(originalRoster);
+  async function checkMoves(){
+    for(let i=0;i<encounter.moves.length;i++){
+      await page.locator('#combat-incoming').selectOption(String(encounter.moves[i]));
+      await expect(page.locator('#combat-incoming-result .combat-damage')).toHaveText(damage[i]);
+    }
+  }
+  await checkMoves();await page.reload();await checkMoves();
+  await expect(page.locator('#combat-attack')).toHaveValue('240');
+  await page.locator('#combat-copy').click();const shared=await page.evaluate(()=>navigator.clipboard.readText());
+  const sharedParams=new URLSearchParams(new URL(shared).hash.split('?')[1]);
+  expect(sharedParams.get('resistances')).toBe(Array.from({length:27},(_,i)=>i%8).join(''));
+  expect(sharedParams.has('owned')).toBe(false);expect(sharedParams.has('team')).toBe(false);
+  await page.evaluate(()=>localStorage.clear());await page.goto(shared);await page.reload();await checkMoves();
+  await page.selectOption('#combat-species','11');
+  await expect(page.locator('#combat-resistance option').first()).toHaveText('Species default');
+  expect(new URLSearchParams(new URL(page.url()).hash.split('?')[1]).has('resistances')).toBe(false);
+});
+
+test('malformed copied resistance profiles cannot silently calculate species defaults',async({page})=>{
+  for(const profile of ['','0'.repeat(26),'0'.repeat(28),'0'.repeat(26)+'8','0'.repeat(26)+'x']){
+    await page.goto(url+'#combat-planner?species=11&resistances='+profile);
+    await expect(page.locator('#combat-link-note')).toBeVisible();
+    await expect(page.locator('#combat-copy')).toBeDisabled();
+    await expect(page.locator('#combat-incoming-result')).toBeEmpty();
+  }
+  await page.locator('#combat-accept-link').click();await expect(page.locator('#combat-errors')).toBeHidden();
+});
+
+for(const checkedSkill of [4,5])test(`already learned skill ${checkedSkill} does not show missing routes or requirements`,async({page})=>{
+  await page.goto(url+'#skill-planner?species=11&campaign=terry&skill='+checkedSkill+'&level=27&target=27&origin=recruited&cap=40&hp=167&mp=74&attack=114&defense=110&agility=79&intelligence=83&known=5%2C127&inherited=5%2C61%2C127&pool=current');
+  await expect(page.locator('.training-status').first()).toHaveAttribute('data-status','already-known');
+  await expect(page.locator('#training-routes')).toContainText('Already learned Firebane');
+  if(checkedSkill===4)await expect(page.locator('#training-routes')).toContainText('which replaces Firebal');
+  await expect(page.locator('#training-routes')).not.toContainText('no route');
+  await expect(page.locator('#training-routes table')).toHaveCount(0);
+  await expect(page.locator('#training-routes')).not.toContainText('Missing:');
+  await page.reload();await expect(page.locator('#training-routes')).toContainText('No further learning requirements apply.');
 });

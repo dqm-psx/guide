@@ -13,10 +13,10 @@
       entries:['field-damage-and-resistance','field-equipment','field-arena-items','field-battle-text-speed','field-colosseum-prizes'],
       tools:[['#combat-planner','Damage calculator'],['#field-guide?kind=skill','Skills']]},
     {id:'exploration',title:'Exploration & recruitment',description:'Find monsters, recruit them and prepare for the journey.',
-      entries:['field-wandering-masters','field-recruitment','field-packing','field-generated-keys','field-medals','field-default-nicknames'],
+      entries:['field-wandering-masters','field-recruitment','field-packing','field-generated-keys','field-triangle','field-medals','field-default-nicknames'],
       tools:[['#field-guide?kind=location','Locations & maps'],['#field-guide?kind=item','Items']]},
     {id:'saves',title:'Two-player & saves',description:'Manage monsters, share breeding partners and use your saved team across the guide.',
-      entries:['field-two-save-breeding','field-storage','field-triangle'],
+      entries:['field-two-save-breeding','field-storage'],
       tools:[['#team-planner','My game']]}
   ];
   function topicFor(article) {
