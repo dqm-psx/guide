@@ -73,6 +73,11 @@ function addEntryPages(assets) {
     return '<dl class="entry-facts">'+entries.map(([label,markup])=>'<div><dt>'+escape(label)+'</dt><dd>'+markup+'</dd></div>').join('')+'</dl>';
   }
   function articlePath(article) {
+    if (article.redirect_to) {
+      const target=articles.get(article.redirect_to);
+      if (!target || target.redirect_to) throw Error('Invalid article redirect '+article.id);
+      return articlePath(target)+(article.redirect_section?'#article-section-'+article.redirect_section:'');
+    }
     return article.kind === 'story' ? db.DQMWalkthrough.paths[article.game]+'#'+article.id : 'articles/'+article.id+'/';
   }
   function linkArticle(id,label) {
@@ -225,6 +230,7 @@ function addEntryPages(assets) {
     }));
   }
   for (const row of articles.values()) {
+    if (row.redirect_to) continue;
     const routeData = db.FIELD_ROUTES?.routes?.[row.id] || {};
     const gate=db.DQMLocations.isGate(row);
     const contacts=new Set(Object.values(placeContext.charactersForLocation(row.id)).flat().map(character=>character.id));
@@ -383,6 +389,11 @@ function addEntryPages(assets) {
       contextPreference+(p.route ? '<script defer src="'+versioned(script)+'" data-route="'+escape(p.route)+'"></script>' : '')+'</body></html>';
   }
   for (const p of pages) assets.set(p.path+'index.html',Buffer.from(documentFor(p)));
+  for (const article of articles.values()) {
+    if (!article.redirect_to) continue;
+    const target=articles.get(article.redirect_to),url=base+articlePath(article);
+    assets.set('articles/'+article.id+'/index.html',Buffer.from('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+escape(target.title)+'</title><meta name="robots" content="noindex"><link rel="canonical" href="'+escape(url)+'"><meta http-equiv="refresh" content="0;url=../../'+escape(articlePath(article))+'"></head><body><p>'+link('../../'+articlePath(article),target.title)+'</p></body></html>'));
+  }
   const alpha = (a,b)=>a.title.localeCompare(b.title,'en');
   const entriesByKind = (kind,title)=>list(title,pages.filter(p=>p.kind===kind).sort(alpha).map(p=>link(p.path,p.title)));
   const directoryQuests = [];
@@ -402,7 +413,7 @@ function addEntryPages(assets) {
       ()=>'<section class="campaign-places" id="locations-'+['dqm1','dqm2'][locationCampaign++]+'">');
   const topics = {npc:'Characters', boss:'Bosses', mechanic:'Mechanics', item:'Items'};
   const topicLists = Object.entries(topics).map(([kind,title]) => {
-    const members = [...articles.values()].filter(row=>row.kind===kind || (kind==='item' && row.kind==='tool'));
+    const members = [...articles.values()].filter(row=>!row.redirect_to && (row.kind===kind || (kind==='item' && row.kind==='tool')));
     if (kind === 'item') return '<section id="items"><h2>Items</h2>'+db.DQMItemIndex.render(members,itemOptions)+'</section>';
     if (kind === 'mechanic') {
       const table = db.DQMMechanicsIndex.render(members,{games:adventures,titleFor:row=>row.title,linkTo:linkArticle,escape});

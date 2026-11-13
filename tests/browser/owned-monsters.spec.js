@@ -10,6 +10,60 @@ async function importSave(page,bytes=fixture.planningBlock(2)){
   await expect(page.locator('#save-import-dialog')).not.toBeVisible();
 }
 
+test('the roster shows imported stats and learned skills without opening a calculator',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await importSave(page);
+  const card=page.locator('#planner-party .planner-card').first();
+  await expect(card.locator('.planner-card-attributes')).toBeVisible();
+  await expect(card.locator('.planner-card-attributes>div')).toHaveCount(6);
+  await expect(card.locator('.planner-card-attributes>div').filter({has:page.locator('dt',{hasText:/^Attack$/})})).toContainText('230');
+  await expect(card.locator('.planner-card-equipment')).toContainText('included in stats');
+  await expect(card.locator('.planner-card-skills a')).toHaveCount(2);
+  await expect(card.locator('.planner-card-skills').getByRole('link',{name:'Firebal',exact:true})).toBeVisible();
+  await expect(card.locator('.planner-card-stats')).toContainText('Cap 55');
+  await expect(page.locator('#planner-farm')).toContainText('Hibernating');
+  for(const width of [320,617,900,1280]){
+    await page.setViewportSize({width,height:900});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+  await card.locator('.planner-card-skills').getByRole('link',{name:'Firebal',exact:true}).click();
+  await expect(page.locator('#guide-article')).toContainText('Firebal');
+  await page.goto(url+'#team-planner');
+  await card.locator('.planner-card-equipment a').click();
+  await expect(page.locator('#guide-article')).toContainText('Steel Fang');
+  await expect(page.locator('#guide-article')).toContainText('Attack increased by 50');
+});
+
+test('changed monsters do not show stale imported stats or learned skills on their roster card',async({page})=>{
+  await importSave(page);
+  await page.evaluate(()=>{
+    const key='dqm-guide-state-v61-v1',state=JSON.parse(localStorage.getItem(key));
+    state.teams.find(row=>row.id===state.activeTeamId).entries[0].level=31;
+    localStorage.setItem(key,JSON.stringify(state));
+  });
+  await page.reload();
+  const card=page.locator('#planner-party .planner-card').first();
+  await expect(card).toContainText('refresh its saved stats and skills');
+  await expect(card.locator('.planner-card-attributes')).toHaveCount(0);
+  await expect(card.locator('.planner-card-skills')).toHaveCount(0);
+});
+
+test('same-level plans show one learning result and avoid zero-growth tables',async({page})=>{
+  await importSave(page);
+  await page.locator('#planner-party').getByRole('link',{name:'Skills & growth'}).click();
+  await expect(page.locator('#training-target')).toHaveValue('31');
+  await expect(page.locator('#training-attack')).toBeVisible();
+  await page.locator('#training-target').fill('30');
+  await expect(page.locator('#training-readiness .training-status')).toHaveCount(1);
+  await expect(page.locator('#training-growth table')).toHaveCount(0);
+  await expect(page.locator('#training-growth')).toContainText('Choose a higher');
+  await expect(page.locator('#training-growth')).not.toContainText('0 EXP');
+  await page.reload();await expect(page.locator('#training-target')).toHaveValue('30');
+  await expect(page.locator('#training-readiness .training-status')).toHaveCount(1);
+  await page.locator('#training-skill').selectOption('64');
+  await expect(page.locator('#training-routes th').filter({hasText:'At target'})).toHaveCount(0);
+});
+
 test('one imported save supplies both tools, with correct stats, skills, campaign and resistance',async({page})=>{
   await importSave(page);
   const before=await page.evaluate(()=>JSON.stringify(DQMApp.state()));
@@ -19,7 +73,8 @@ test('one imported save supplies both tools, with correct stats, skills, campaig
   await expect(page.locator('#training-attack')).toHaveValue('180');await expect(page.locator('#training-cap')).toHaveValue('55');
   await expect(page.locator('#training-known-list li')).toHaveCount(2);
   await expect(page.locator('#training-monster-inputs')).not.toHaveAttribute('open','');
-  await expect(page.locator('#training-stats-inputs')).not.toHaveAttribute('open','');
+  await expect(page.locator('#training-stats-inputs')).toHaveAttribute('open','');
+  await expect(page.locator('#training-target')).toHaveValue('31');
   await page.locator('#training-target').fill('40');
   const skillUrl=page.url();await page.reload();await expect(page.locator('#training-target')).toHaveValue('40');
   await expect(page.locator('#training-attack')).toHaveValue('180');
@@ -35,7 +90,7 @@ test('one imported save supplies both tools, with correct stats, skills, campaig
   await expect(page.locator('#combat-resistance option').first()).toHaveText('Individual resistance in this plan');
   expect(await page.evaluate(()=>JSON.stringify(DQMApp.state()))).toBe(before);
   await page.goto(skillUrl);await expect(page.locator('#training-attack')).toHaveValue('180');
-  await page.locator('#training-stats-inputs>summary').click();await page.locator('#training-attack').fill('190');
+  await page.locator('#training-attack').fill('190');
   await expect(page.locator('#training-owned-select')).toHaveValue('');await expect(page.locator('#training-stats-inputs')).toHaveAttribute('open','');
   await expect(page.locator('#training-state-note')).toContainText('Custom plan');
 });
@@ -107,7 +162,7 @@ test('current candidate context survives numeric planning but resets for another
   await importSave(page,fixture.candidateBlock());await page.locator('#planner-party').getByRole('link',{name:'Skills & growth'}).click();
   await expect(page.locator('#training-cap')).toHaveValue('55');
   const imported=page.url();
-  await page.locator('#training-stats-inputs>summary').click();await page.locator('#training-hp').fill('451');
+  await page.locator('#training-hp').fill('451');
   expect(page.url()).toContain('pool=current');await expect(page.locator('#training-owned-select')).toHaveValue('');
   await page.locator('#training-monster-inputs>summary').click();await page.selectOption('#training-species','11');
   expect(page.url()).not.toContain('pool=current');

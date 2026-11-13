@@ -59,8 +59,20 @@
 #team-planner .planner-card-sex{display:inline-flex;align-items:center;justify-content:center;min-width:24px;font-size:11px;line-height:1.5;padding:1px 5px;border:1px solid var(--line);border-radius:4px;color:var(--muted);background:var(--game-soft);font-weight:650}
 #team-planner .planner-card-stats{display:flex;align-items:center;flex-wrap:wrap;gap:4px 9px;font-size:12px;white-space:nowrap}
 #team-planner .planner-card-stats small{font-size:10px;color:var(--muted)}
+#team-planner .planner-card-saved,#team-planner .planner-card-save-note{flex:1 1 100%;min-width:0}
+#team-planner .planner-card-saved{padding-top:9px;border-top:1px solid var(--line)}
+#team-planner .planner-card-attributes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px 14px;margin:0;font-variant-numeric:tabular-nums}
+#team-planner .planner-card-attributes>div{display:flex;justify-content:space-between;align-items:baseline;gap:5px;min-width:0}
+#team-planner .planner-card-attributes dt{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+#team-planner .planner-card-attributes dd{margin:0;font-size:13px;font-weight:700}
+#team-planner .planner-card-equipment,#team-planner .planner-card-save-note{font-size:11px;line-height:1.5;color:var(--muted);margin:7px 0 0}
+#team-planner .planner-card-skills{margin-top:10px;font-size:12px;line-height:1.5}
+#team-planner .planner-card-skills-label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px}
+#team-planner .planner-card-skills>div{display:flex;flex-wrap:wrap;gap:3px 12px}
 #team-planner .planner-card-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:6px;flex:1 1 100%;padding-top:9px;border-top:1px solid var(--line)}
 #team-planner .planner-card-actions button{min-height:30px;font-size:11px;padding:5px 9px}
+#team-planner .planner-card-tool{display:inline-flex;align-items:center;min-height:30px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;font-size:11px;line-height:18px;text-decoration:none}
+#team-planner .planner-card-tool:hover{background:var(--game-soft);border-color:var(--guide-accent)}
 #team-planner .planner-card-actions button[data-member-breed]{color:var(--guide-accent);border-color:var(--guide-accent);font-weight:750}
 #team-planner .planner-card-actions button[data-member-favorite]{margin-right:auto;font-size:16px;min-width:30px;padding:3px 7px;background:transparent;border-color:transparent}
 #team-planner .planner-card-actions button[data-member-favorite][aria-pressed=true]{color:var(--gold)}
@@ -172,6 +184,8 @@
 @media(min-width:1400px){#team-planner .my-game-roster-toolbar{grid-template-columns:minmax(180px,1fr) auto auto}#team-planner .my-game-roster-search{grid-column:1;grid-row:1}#team-planner .my-game-roster-filters{grid-column:2;grid-row:1;gap:8px}#team-planner .my-game-roster-filters>.field{flex-basis:auto;width:130px}#team-planner #planner-open-add{grid-column:3;grid-row:1}#team-planner .my-game-roster-filters .planner-toggle{white-space:nowrap;margin-left:4px}}
 @media(min-width:1400px){#team-planner .my-game-monsters>.planner-card-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:1000px){#team-planner .my-game-monsters>.planner-card-list{grid-template-columns:minmax(0,1fr)}#team-planner .planner-card{flex-wrap:nowrap}#team-planner .planner-card-actions{flex:0 1 auto;padding:0;border:0}#team-planner .planner-card-actions button[data-member-favorite]{margin:0}#team-planner .team-results-grid{grid-template-columns:minmax(0,1fr)}#team-planner #planner-breeding .planner-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:651px) and (max-width:1000px){#team-planner .planner-card-imported{flex-wrap:wrap}#team-planner .planner-card-imported .planner-card-actions{flex:1 1 100%;padding-top:9px;border-top:1px solid var(--line)}}
+@media(max-width:400px){#team-planner .planner-card-attributes{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){
   #team-planner .my-game-heading h2{font-size:25px}
   #team-planner .my-game-context{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px}

@@ -3,7 +3,29 @@
 The public comparison keeps the existing `field-restored-content` link, but now
 covers both campaigns and distinguishes two comparisons: handheld versus original
 Japanese PSX, and original PSX versus the released English patch.
-It is a reference with linked topics, rather than a list of restoration notes.
+It compares the relevant handheld game with Japanese PSX in adjacent columns,
+then separately identifies released English-patch changes. DWM1-only claims are
+explicitly labeled Terry; DWM2 comparisons are not generalized to both games.
+
+## Editorial scope
+
+The comparison has six sections: presentation and
+roster changes, Terry's removed/restored activities, Cobi/Tara story changes,
+foreign masters, skill-learning changes, and released-patch additions. A PSX
+feature without a verified handheld counterpart is not evidence of a platform
+difference. Breeding instructions, recruitment calculations, growth caps and
+memory-card saving instructions therefore remain in their dedicated guides.
+The old mobile service gets one historical note, not acquisition instructions.
+
+The temporary-effect and repeated-command evidence below establishes Japanese
+PSX versus the English patch, not GBC versus PSX. That advice now belongs in
+`field-damage-and-resistance`, under “Effects and repeated skills during a longer
+battle,” rather than the edition comparison.
+
+The prior “pause before Sky World” row was removed: its handheld cell did not
+establish a comparable event, and the evidence recorded here does not establish
+the claimed Sky Key deadline for the separate buried-egg quest. The quest's
+existing clue sequence remains intact; no new deadline is inferred from it.
 
 ## Evidence boundaries
 
@@ -18,7 +40,7 @@ to that conversation. Private conversation histories are not public sources.
 
 This is not an exhaustive byte-level inventory of everything changed between
 platforms. It covers concrete changes to presentation, story routes, learning,
-foreign masters and battle systems, while keeping original PSX behavior separate
+and foreign masters, while keeping original PSX behavior separate
 from English-patch additions. A complete comparison of AI/personality, every
 stat-growth curve and every arena reward remains outside this audit.
 
@@ -27,8 +49,8 @@ stat-growth curve and every arena reward remains outside this audit.
 | Topic | Primary evidence used | Scope |
 | --- | --- | --- |
 | Expanded PSX roster | Publisher's PSX breeding introduction; `monster-baseline.json`, synchronized monster reference and validation in `sync-monster-reference.js` | Publisher says over 300 species / 11 families. There are 312 verified library entries and 325 native species records; these counts do not establish ordinary acquisition for all 325. |
-| Ordered breeding, + condition, two-save context | Native shrine rule `8004AB80`, title-room override `8004B05C`, existing breeding reference | The Killing Machine example compares two PSX contexts. It does not label either result a generic Game Boy rule. |
-| Learning / offspring cap / farm growth | [Learning mechanics audit](learning-mechanics-evidence.md) | Nine native spans compared between original Japanese PSX and English v1.0.73. The comparison article identifies retained PSX behavior; it does not invent a handheld difference for every row. |
+| Ordered breeding, + condition, two-save context | Native shrine rule `8004AB80`, title-room override `8004B05C`, existing breeding reference | Kept in breeding guidance: the Killing Machine example compares two PSX contexts, not Game Boy versus PSX. |
+| Learning / offspring cap / farm growth | [Learning mechanics audit](learning-mechanics-evidence.md) | Nine native spans compared between original Japanese PSX and English v1.0.73. The edition article uses the separately documented GBC learning thresholds below; retained growth and farm rules stay in their mechanics articles. |
 | Recruitment / collection history | [Recruitment audit](recruitment-evidence.md) | Both discs independently execute the verified native harness cases. Ordinary eligible wild-candidate probabilities are not generalized to bosses or all master battles. |
 | Damage | [Combat audit](combat-evidence.md) | Ordinary wild attacks and 36 supported skills, separate enemy/player ranges and resistance. No claim that the planner models every battle situation. |
 | Terry's farm egg and GreatLog shrine access | `scripts/world-disc-index.json` progression guards; `data/world-verification.json` | Class F / pre-Battle Rex egg window; Kids' Class permission plus Water World queue clearance. |
@@ -47,7 +69,6 @@ route comparisons, not reproduced guidebook text or illustrations.
 | Opening volunteer search | 2 / 4 | `story-cobi-tara-opening`: the sibling accompanies the player to collect Father's pot; `s003d6000_3008`, `s003d6000_3057` and Warubou's GreatLog scene establish its use as a temporary plug. |
 | Ice Key monster gifts | 14 / 16 | `quest-find-the-ice-key` and `story-pirate-mirror`: the PSX farm search follows the Mirror of Destruction; `s003d6000_206b`, `s003b7800_1258`, `_12da`, `_1329`. |
 | Northern mountain and queen's story | 14 / 16, steps 13–15 | `story-ice-eastoria`, `story-ice-shield` and their native progression guards separate optional Birdsong Herb/Eastoria events from the peace, Spirit's Spring and Sky Key route. |
-| Temporary repair and buried egg | The printed route continues from the Ice World treasure toward Sky-world access | `quest-greatlog-buried-egg` binds the PSX temporary-repair interval and the Sky Key deadline. The comparison does not invent a handheld egg source. |
 | Six Hidden Key adventures | 27 / 29 | The handheld three-per-cartridge structure is distinct from PSX generated Magic Key worlds. `story-greatlog-postgame` documents the verified PSX activities and rewards. |
 
 The book's **Pirate World** is the guide's **Water World**. Its shrine timing on
@@ -104,10 +125,10 @@ the hashes and exact comparison ranges. All six spans are identical.
 | `80115964–8011597A` | Twenty-two duration limits. |
 | `80114DA4–80114DC4` | Eight-by-four resistance adjustment table. |
 
-The article's interpretation follows the corresponding native routine analysis:
+The damage article's interpretation follows the corresponding native routine analysis:
 eligible matching commands advance through a four-use cycle; a changed command
 starts a new sequence, while unavailable actors and ineligible contexts clear
-the state. This is not a permanent resistance debuff. The public article omits an
+the state. This is not a permanent resistance debuff. The damage article omits an
 exact turn-count promise because effect-specific application timing was not
 exhaustively checked here. The check is a **byte comparison**, not a new execution
 test of every effect or a direct comparison with the GBC battle engine. Baseline
@@ -175,7 +196,7 @@ verified handheld comparator to every campaign.
 - [Original Colosseum commands](https://www.jp.square-enix.com/dragonquest/psdqm12/taisen_gokui.html): alternating timed input versus action order, timeout behavior.
 - [Historical mobile-transfer FAQ](https://www.jp.square-enix.com/dragonquest/psdqm12/psdqmisub/dqmi_tensou_others.html): paired receiver key / transfer password, level-10 arrival and level-20 growth limit for phone-born monsters, conversion of skills.
 
-The mobile section describes the historical PSX service. It does not assert that
+The short mobile-service note describes the historical PSX service. It does not assert that
 the old service is operating or that an externally decoded password establishes
 a normal receive-and-save route today.
 

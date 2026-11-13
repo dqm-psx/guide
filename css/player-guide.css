@@ -23,6 +23,7 @@
 #manage-teams{margin-top:1rem}
 @media(max-width:700px){.masthead .project-links{display:none}.masthead #guide-settings{margin-left:auto}.masthead .title-line .version{font-size:12px!important}}
 .masthead .brand{gap:11px}.masthead .brand img{width:43px;height:43px}.title-line .eyebrow{color:#e6c987}
+.masthead .title-line h1{text-wrap:balance}
 /* A visible contents column on wide screens, one disclosure on smaller ones. */
 .guide-frame{max-width:1680px;margin:auto;display:grid;grid-template-columns:clamp(175px,15vw,220px) minmax(0,1fr);min-height:72vh}
 .guide-frame:has(.wide-view){max-width:none}

@@ -248,12 +248,29 @@
     fileGame.hidden = !unassigned;
     fileGame.textContent = "File under " + gameLabel(state.activeGame);
   }
+  function savedMonsterMarkup(monster) {
+    if (!monster || monster.sourceStatus === 'manual') return '';
+    if (monster.sourceStatus === 'changed') return '<p class="planner-card-save-note">Re-import this monster to refresh its saved stats and skills.</p>';
+    const statLabels = {hp:'Max HP',mp:'Max MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
+    const names = GUIDE_REFERENCE.guide_names;
+    const equipment = names.items['item-'+monster.equipmentId];
+    const equipped = monster.equipmentId !== null;
+    const stats = equipped ? monster.battleStats : monster.baseStats;
+    const skills = monster.knownSkills === null ? '<span class="hint">Not available in this import</span>' : monster.knownSkills.length ? monster.knownSkills.map(id => {
+      const skill = names.skills[id];
+      return skill ? '<a href="#field-guide?kind=skill&amp;entry=skill-'+safe(skill.id)+'">'+safe(skill.title)+'</a>' : '<span>Unlisted skill</span>';
+    }).join('') : '<span class="hint">None learned yet</span>';
+    return '<div class="planner-card-saved"><dl class="planner-card-attributes" aria-label="'+(equipped?'Stats including equipment':'Base stats')+'">'+Object.entries(statLabels).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+(stats[key] ?? '—')+'</dd></div>').join('')+'</dl>'+
+      (equipped ? '<p class="planner-card-equipment">'+(equipment?'<a href="#field-guide?kind=item&amp;entry=item-'+monster.equipmentId+'">'+safe(equipment.title)+'</a>':'Equipped accessory')+' <span>· included in stats</span></p>' : '')+
+      '<div class="planner-card-skills"><span class="planner-card-skills-label">Learned skills</span><div>'+skills+'</div></div></div>';
+  }
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
+    const monster = DQMOwnedMonsters.adapt(entry, activeTeam());
     const level = Number.isInteger(entry.level) && entry.level > 0 && entry.level <= 127 ? "Lv " + entry.level : "Level unknown";
     const id = safe(entry.id), name = safe(fullName(entry));
     const star = '<button type="button" class="planner-card-favorite" data-member-favorite="'+id+'" aria-pressed="'+entry.favorite+'" aria-label="Favorite '+safe(memberName(entry))+'">'+(entry.favorite?'★':'☆')+'</button>';
-    return '<article class="planner-card" data-entry-id="'+id+'" data-sex="'+sex+'" data-location="'+entryLocation(entry)+'"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family))+'</p><div class="planner-card-stats"><span class="planner-card-sex">'+(sex==='male'?'♂ Male':'♀ Female')+'</span><span>'+level+'</span><span>+'+entry.plus+'</span></div></div>'+star+'</div><div class="planner-card-actions">'+
+    return '<article class="planner-card'+(monster.sourceStatus==='save'?' planner-card-imported':'')+'" data-entry-id="'+id+'" data-sex="'+sex+'" data-location="'+entryLocation(entry)+'"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe((entry.nickname ? named(entry.speciesIndex)+" · " : "")+(species.family_display||species.family))+'</p><div class="planner-card-stats"><span class="planner-card-sex">'+(sex==='male'?'♂ Male':'♀ Female')+'</span><span>'+level+'</span><span>+'+entry.plus+'</span>'+(monster.levelCap!==null?'<span>Cap '+monster.levelCap+'</span>':'')+(monster.location==='hibernation'?'<span>Hibernating</span>':'')+'</div></div>'+star+'</div>'+savedMonsterMarkup(monster)+'<div class="planner-card-actions">'+
       '<button type="button" class="planner-card-breed" data-member-breed="'+id+'" aria-label="See breeding options for '+name+'">Breed</button><a class="planner-card-tool" href="#skill-planner?team='+safe(activeTeam().id)+'&amp;owned='+id+'">Skills &amp; growth</a><a class="planner-card-tool" href="#combat-planner?team='+safe(activeTeam().id)+'&amp;owned='+id+'">Damage</a><button type="button" data-member-edit="'+id+'" aria-label="Edit '+name+'">Edit</button>'+
       '<details class="planner-card-more"><summary aria-label="More actions for '+name+'">More</summary><div><button type="button" data-member-move="'+id+'">Move to '+otherLocation(entryLocation(entry))+'</button><button type="button" data-member-switch="'+id+'">Switch to '+(sex==='male'?'female':'male')+'</button><button type="button" data-member-remove="'+id+'" aria-label="Remove '+name+'">Remove</button></div></details></div></article>';
   }
@@ -1132,7 +1149,10 @@
         commit(app.setActiveGame(app.setActiveTeam(next, team.id), save.game), "Imported " + team.entries.length + " monsters into " + name + ".");
         clear();
         P("save-import-dialog").close();
-        DQMViews.go("team-planner",{params:new URLSearchParams({tab:"roster"}),focusId:"planner-heading"});
+        // Complete the import at the collection itself, with the first monster
+        // in view, instead of returning to the setup controls above it.
+        const rosterHeading = team.entries.some(entry => entryLocation(entry) === "party") ? "planner-party-heading" : "planner-farm-heading";
+        DQMViews.go("team-planner",{params:new URLSearchParams({tab:"roster"}),focusId:rosterHeading});
       } catch (error) { status.textContent = error.message; }
     });
   }

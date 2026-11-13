@@ -21,7 +21,6 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Restores 30–40 HP to one ally.",
       "details": [
-        "Cobi / Tara: Mom gives you one at the farm. Terry can receive one at GreatTree Castle; leave space in your bag for the gift.",
         "Single use.",
         "Terry shops sell it for 10 G (9 G with a Gold Pass). GreatTree / Bazaar · Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 10 G (9 G with a Gold Pass). GreatLog / Main Street · Port Ritz Town · Assia."
@@ -3118,22 +3117,22 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "field-movement-settings",
       "game": "both",
-      "title": "Walking speed, running and encounters",
-      "summary": "Terry walks faster on ordinary gate floors than Cobi or Tara do on the Desert, Water, Ice and Sky overworlds. Walk around GreatLog and the siblings use the same faster pace as Terry’s gate floors.",
-      "details": [
-        "The Japanese PS1 game sets walking pace by map. A normal step takes four movement updates on Terry’s ordinary gate floors and eight on those four overworlds. The same timing difference applies to diagonal steps.",
-        "In English patch v1.0.73, Tactics → Movement changes the speed for each adventure. Walk defaults to 1× the map’s usual pace. Hold R1 for 2×, or choose Toggle to switch speeds with each press. Walk and R1 can each be set to 1×, 2× or 4×.",
-        "Choose Time for roughly the same number of encounters per minute as you speed up. Choose Distance to keep the usual rate per step. You’ll cover ground faster between fights with Time.",
-        "Use Up and Down to choose a setting and Left and Right to change it. Circle or Triangle applies it. Save your adventure to keep the settings. When you reload, you start at walking speed.",
-        "Cobi and Tara also gain Triangle actions from Warubou as the story advances. Those actions let them cross water, break rocks and fly across gaps."
-      ],
+      "title": "Movement, running and field abilities",
+      "summary": "Use R1 to run in the English patch. Cobi and Tara use Triangle for the field abilities they unlock during the story.",
+      "details": [],
       "source_ids": [
         "Japanese PS1 map movement selector 0x8005EA1C and step tables 0x800BC118–0x800BC14E · v55 walking-speed investigation",
         "v1.0.73 release README · Movement Settings",
-        "s004d6000_065a"
+        "s004d6000_065a",
+        "s003b7800_0dab",
+        "s003b7800_1201",
+        "s003b7800_1955",
+        "s003b7800_1a2d"
       ],
       "related": [
-        "field-triangle"
+        "item-54",
+        "item-55",
+        "item-56"
       ],
       "aliases": [
         "run",
@@ -3144,24 +3143,96 @@ globalThis.FIELD_GUIDE = {
         "movement differences",
         "why does Cobi walk slowly",
         "Terry gate speed",
-        "diagonal walking"
+        "diagonal walking",
+        "Triangle",
+        "cross water",
+        "break rocks",
+        "fly",
+        "field abilities"
       ],
       "kind": "mechanic",
-      "spoiler": "none"
+      "spoiler": "none",
+      "sections": [
+        {
+          "id": "running",
+          "title": "Set your walking and running speeds",
+          "paragraphs": [
+            "In English patch v1.0.73, open Tactics → Movement. Walking defaults to 1× the map’s usual pace; hold R1 for 2×. Choose Toggle if you prefer to press R1 once to start running and again to stop. Walk and R1 can each use 1×, 2× or 4×.",
+            "Use Up/Down to choose a setting and Left/Right to change it. Circle or Triangle applies your choices. Save the adventure to keep them; loading a save starts you at walking speed."
+          ]
+        },
+        {
+          "id": "encounter-pacing",
+          "title": "Choose what running does to encounters",
+          "table": {
+            "columns": [
+              "Setting",
+              "While moving faster"
+            ],
+            "rows": [
+              [
+                "Time",
+                "Keeps roughly the usual number of encounters per minute. You cover more ground between battles."
+              ],
+              [
+                "Distance",
+                "Keeps the usual encounter rate per step. You reach battles sooner in real time."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "field-abilities",
+          "title": "Cobi & Tara: water, rocks and gaps",
+          "paragraphs": [
+            "Bring each recovered treasure to Warubou to unlock its field action. Face the obstacle and press Triangle."
+          ],
+          "table": {
+            "columns": [
+              "Treasure",
+              "Action"
+            ],
+            "rows": [
+              [
+                "Sea Bell",
+                "Cross water."
+              ],
+              [
+                "Mirror of Destruction",
+                "Break suitable rocks."
+              ],
+              [
+                "Sky Shield",
+                "Fly across gaps."
+              ]
+            ]
+          },
+          "links": [
+            "item-54",
+            "item-55",
+            "item-56"
+          ]
+        },
+        {
+          "id": "map-pace",
+          "title": "Why the adventures feel different",
+          "paragraphs": [
+            "In the original Japanese PSX game, Terry walks faster on ordinary gate floors than Cobi or Tara do on the Desert, Water, Ice and Sky overworlds. GreatLog uses the same faster pace as Terry’s gate floors. The difference also applies to diagonal steps.",
+            "The patch’s speed multipliers act on each map’s normal pace, so equal settings do not make every map feel identical."
+          ]
+        }
+      ]
     },
     {
       "id": "field-restored-content",
       "game": "both",
       "title": "Game Boy, PlayStation and English patch differences",
-      "summary": "PlayStation combines Terry, Cobi and Tara in a remake with redrawn presentation, a shared expanded monster roster, revised story routes and different battle and learning rules. The English patch adds restorations, settings and fixes on top of that remake.",
+      "summary": "PlayStation combines all three adventures, expands Terry’s roster and revises story routes; the English patch adds restorations, settings and fixes.",
       "details": [],
       "source_ids": [
         "v1.0.73 release README · Restored Content in Terry’s Adventure",
         "v1.0.70 traveling colosseum exit",
-        "PSX breeding conditional 8004AB80 and two-save override 8004B05C",
-        "PSX/GB foreign-master comparison; see docs/edition-comparison-evidence.md",
-        "Native original/v73 learning, growth, recruitment and combat comparisons",
-        "Publisher PSX Colosseum and mobile-transfer pages"
+        "PSX/GB foreign-master comparison; see docs/edition-comparison-evidence.md"
       ],
       "related": [
         "field-wandering-masters",
@@ -3185,54 +3256,8 @@ globalThis.FIELD_GUIDE = {
       "spoiler": "none",
       "sections": [
         {
-          "id": "which-edition",
-          "title": "Which version are you playing?",
-          "paragraphs": [
-            "The Japanese PlayStation release remakes the two handheld games. This comparison separates changes made for that remake from additions in the released English v1.0.73 patch, the guide’s verified gameplay baseline."
-          ],
-          "table": {
-            "columns": [
-              "Version",
-              "What it means for this guide"
-            ],
-            "rows": [
-              [
-                "Dragon Warrior Monsters / DQM1 on Game Boy",
-                "Terry’s original adventure, with its own encounter, special-floor and breeding rules."
-              ],
-              [
-                "Dragon Warrior Monsters 2 on Game Boy Color",
-                "Cobi’s Journey and Tara’s Adventure are separate cartridge releases, with campaign-specific wild encounters and hidden keys."
-              ],
-              [
-                "DQM 1 & 2 on PlayStation, original Japanese release",
-                "One remake contains Terry, Cobi and Tara adventures, plus title-screen activities using saved Adventure Logs."
-              ],
-              [
-                "English patch, v1.0.73",
-                "The guide’s verified gameplay baseline. It includes the translated PlayStation game, restored activities, movement settings and bug repairs."
-              ]
-            ]
-          },
-          "sources": [
-            {
-              "label": "Japanese PlayStation release overview",
-              "url": "https://wikiwiki.jp/dqdic3rd/%E3%80%90%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA%EF%BC%91%E3%83%BB%EF%BC%92%20%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1%E3%80%91"
-            },
-            {
-              "label": "English v1.0.73 release",
-              "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
-            }
-          ]
-        },
-        {
           "id": "presentation-controls",
-          "title": "Redrawn presentation, sound and controls",
-          "paragraphs": [
-            "The remake redraws the towns, dungeons and monsters for PlayStation. Larger scenery and layered environments give places more depth; the atlas shows the actual PSX floor plans. The battle monsters are detailed 2D artwork with movement, scaling and visual effects rather than the handheld’s small battle images.",
-            "Sound was reworked for PlayStation, with new castle and boss music as well as arrangements of familiar themes. These audiovisual changes belong to the Japanese remake and are retained by the English patch.",
-            "English v1.0.73 adds configurable walking and R1 running speeds, with Hold or Toggle controls. These settings are additions to the Japanese PSX game."
-          ],
+          "title": "What changes in the PlayStation remake",
           "table": {
             "columns": [
               "Part of play",
@@ -3241,28 +3266,49 @@ globalThis.FIELD_GUIDE = {
             ],
             "rows": [
               [
+                "Adventures",
+                "Terry’s DWM1 is one game; DWM2 has separate Cobi’s Journey and Tara’s Adventure cartridges.",
+                "All three adventures are included on one disc."
+              ],
+              [
+                "Presentation",
+                "Handheld towns, dungeon maps and small battle portraits.",
+                "Redrawn maps and more detailed 2D monsters with animation, scaling and battle effects. The larger maps can change the route through a familiar place."
+              ],
+              [
+                "Sound",
+                "The original handheld soundtracks.",
+                "New arrangements, with additional castle and boss music."
+              ],
+              [
+                "Terry’s monster roster",
+                "DWM1 has its original monster and skill pool.",
+                "Terry can use the later monster and skill pool, including the Aquatic family from DWM2. These monsters are not all ordinary wild encounters in his gates."
+              ],
+              [
                 "World traversal in Cobi & Tara",
                 "Story items already grant water crossing, rock breaking and flight; use the A button for these actions.",
-                "Retains those abilities, activated with Triangle. Maps are redrawn, so routes can differ from the handheld maps."
+                "Retains those abilities, activated with Triangle. They are not new abilities added by the remake."
               ],
               [
                 "Local battles",
                 "Connect two handheld systems with a Game Link Cable; each player uses their own screen.",
-                "Load saved Adventure Logs on one console and share one screen. Players enter commands in timed, alternating turns, with the opponent’s team selection visible."
+                "Load Adventure Logs on one console and share one screen. Players enter commands in timed, alternating turns, with the opponent’s team selection visible."
+              ],
+              [
+                "New items",
+                "No Miracle Mark or Spellblade Ring.",
+                "Miracle Mark changes a hatched monster’s sex. Cobi and Tara can also obtain Spellblade Ring for HP/MP growth."
               ]
             ]
           },
-          "links": [
-            "field-movement-settings"
+          "bullets": [
+            "The Japanese PSX release also supported a historical mobile-phone monster-transfer service. That service is not a current acquisition route in this guide."
           ],
           "sources": [
             {
               "label": "Contemporary report of Enix’s PSX announcement",
               "url": "https://game.watch.impress.co.jp/docs/20020326/dqm.htm"
-            },
-            {
-              "label": "Japanese PlayStation release overview",
-              "url": "https://wikiwiki.jp/dqdic3rd/%E3%80%90%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA%EF%BC%91%E3%83%BB%EF%BC%92%20%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1%E3%80%91"
             },
             {
               "label": "Publisher’s original battle presentation",
@@ -3281,79 +3327,46 @@ globalThis.FIELD_GUIDE = {
               "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/14383"
             },
             {
-              "label": "English v1.0.73 release",
-              "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
-            }
-          ]
-        },
-        {
-          "id": "monsters-and-breeding",
-          "title": "The expanded monster roster and breeding",
-          "paragraphs": [
-            "Terry gains access to the later monster and skill pool on PlayStation, including the Aquatic family. These additions broaden breeding and foreign-master teams; they do not all become ordinary wild encounters in Terry’s gates.",
-            "The publisher described more than 300 species across 11 families. The PSX library has 312 entries, while the guide preserves 325 native species records including special and unused records outside that library.",
-            "Breeding uses the PSX ordered-pair and conditional tables. The same pair can behave differently at the adventure’s shrine and in the title-screen room for two saves."
-          ],
-          "table": {
-            "columns": [
-              "Decision",
-              "PlayStation rule to check"
-            ],
-            "rows": [
-              [
-                "Which parent is the pedigree?",
-                "The ordered pair matters. Reversing pedigree and mate can change the offspring. Use the breeding lookup with the intended order."
-              ],
-              [
-                "Does this recipe need a + value?",
-                "Some results have additional conditions. Two Killing Machines at +5 and +6 produce another Killing Machine at the adventure’s shrine; at least one parent needs +8 for Killing Machine 2."
-              ],
-              [
-                "Am I breeding in the adventure or from the title screen?",
-                "The title-screen Breeding room has a separate two-save rule. The same Killing Machine pair can produce Killing Machine 2 there at lower + values."
-              ],
-              [
-                "Will a natural or inherited skill pass on?",
-                "Both parents’ species skills can become offspring candidates even if unlearned. Other inherited skills must be retained in a parent’s learned list to pass through that route."
-              ],
-              [
-                "Can the child learn it immediately?",
-                "Candidate status is only eligibility. The child still needs the skill’s level and base-stat requirements, and has eight learned-skill slots."
-              ]
-            ]
-          },
-          "links": [
-            "field-breed",
-            "field-skill-inheritance",
-            "field-growth",
-            "field-two-save-breeding"
-          ],
-          "sources": [
-            {
               "label": "Publisher’s PlayStation breeding guide",
               "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/slash/haigou.html"
             },
             {
-              "label": "Verified PSX breeding and learning rules",
-              "url": "https://github.com/dqm-psx/guide/blob/main/docs/learning-mechanics-evidence.md"
+              "label": "Japanese PlayStation release overview",
+              "url": "https://wikiwiki.jp/dqdic3rd/%E3%80%90%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA%EF%BC%91%E3%83%BB%EF%BC%92%20%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1%E3%80%91"
+            },
+            {
+              "label": "Publisher’s historical mobile-transfer FAQ",
+              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/psdqmisub/dqmi_tensou_others.html"
             }
           ]
         },
         {
           "id": "terry-gates",
-          "title": "Terry: gates, special floors and optional routes",
+          "title": "Terry: activities removed and restored",
+          "table": {
+            "columns": [
+              "Activity",
+              "Game Boy DWM1",
+              "Japanese PlayStation",
+              "English patch v1.0.73"
+            ],
+            "rows": [
+              [
+                "Special gate floors",
+                "Includes treasure and Mimic rooms, Lost Forest, the traveling colosseum, mazes and sliding floors.",
+                "Most of these special rooms are not selected during normal gate exploration.",
+                "Restores these rooms using retained PSX assets and reconstructed behavior."
+              ],
+              [
+                "Conversations with your party at the arena table",
+                "You can sit with your monsters and talk to them.",
+                "The dialogue remains in the game, but the table interaction is unavailable.",
+                "Restores sitting with your party and talking to them."
+              ]
+            ]
+          },
           "paragraphs": [
-            "Terry still progresses through arena classes and Travelers’ Gates, but a handheld walkthrough cannot supply the complete PlayStation floor rules. The original Japanese PSX release does not normally select most of the Game Boy special rooms. The English patch restores treasure and Mimic rooms, Lost Forest, the traveling colosseum, mazes and sliding floors using retained PSX assets and reconstructed behavior.",
-            "The restoration is an English-patch feature. Its encounter rates and some mechanics are reconstruction choices, so a Game Boy floor probability is not a confirmed PSX probability. Gate pages show the entrance, final area, generated terrain and wild encounters separately."
-          ],
-          "bullets": [
-            "Arena requirements on gate pages describe the class you must already have won. They are not rewards for defeating the gate boss.",
-            "A retained map need not be a reachable gate. The unused Hidden Gate’s encounter tables and final map are documented as unused content, not an ordinary exploration destination."
-          ],
-          "links": [
-            "quest-sky-dragon-egg",
-            "field-packing",
-            "story-terry-optional-gates"
+            "The patched special floors are reconstructions, so Game Boy encounter rates and room rules should not be treated as exact PSX values. These restorations belong to the English patch, not the original Japanese remake."
           ],
           "sources": [
             {
@@ -3361,17 +3374,16 @@ globalThis.FIELD_GUIDE = {
               "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
             },
             {
-              "label": "Verified campaign and progression evidence",
-              "url": "https://github.com/dqm-psx/guide/blob/main/data/world-verification.json"
+              "label": "Handheld special floors and restoration evidence",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
             }
           ]
         },
         {
           "id": "cobi-tara-worlds",
-          "title": "Cobi & Tara: rewritten story routes",
+          "title": "Cobi & Tara: story and postgame changes",
           "paragraphs": [
-            "Several steps were rewritten for PlayStation, especially the opening, the Ice Key and the route through Ice World. Cobi and Tara still have their own encounters within the shared main-world sequence.",
-            "On PSX, Kids’ Class grants shrine permission and the queue clears after Water World. The handheld book calls that same story world Pirate World; those two labels alone are not evidence of a changed unlock."
+            "These are route changes from DWM2 on Game Boy Color to the Japanese PSX remake. The English patch retains them. “Pirate World” in an old guide and “Water World” here refer to the same story world."
           ],
           "table": {
             "columns": [
@@ -3396,11 +3408,6 @@ globalThis.FIELD_GUIDE = {
                 "The Birdsong Herb and Eastoria’s lost-voices investigation are optional for reaching the Sky Key. Finish the Northden/Westernia peace route, return to the Spirit’s Spring for the Sky Shield, then visit GreatLog Castle."
               ],
               [
-                "A pause before Sky World",
-                "The handheld walkthrough moves from the Ice World treasure toward its Sky-world access steps.",
-                "GreatLog temporarily believes Kameha has solved its problem. A Sky Dragon egg search belongs to this interval; collecting the Sky Key ends its availability."
-              ],
-              [
                 "After the ending",
                 "Six named Hidden Keys form additional adventures, three per cartridge, with trading to obtain the other set.",
                 "Those handheld Hidden Key adventures are cut. Continue with generated Magic Key worlds, arena rewards, breeding, library completion and spirit rewards."
@@ -3408,13 +3415,9 @@ globalThis.FIELD_GUIDE = {
             ]
           },
           "links": [
-            "story-cobi-tara-opening",
             "quest-find-the-ice-key",
             "story-ice-eastoria",
-            "story-ice-shield",
-            "quest-greatlog-buried-egg",
-            "story-greatlog-postgame",
-            "field-generated-keys"
+            "story-greatlog-postgame"
           ],
           "sources": [
             {
@@ -3432,17 +3435,20 @@ globalThis.FIELD_GUIDE = {
           "id": "foreign-master-differences",
           "title": "Foreign masters: changed conditions and strength",
           "paragraphs": [
-            "The most consequential difference is how opponents scale. Terry’s Game Boy opponent pool uses party levels; PlayStation calculates its rank from party statistics. Raising stats while keeping levels low therefore does not keep PSX foreign-master teams weak.",
-            "On PSX, average each party stat, add HP, MP, Attack and Defense, then add half the combined Agility and Intelligence averages. Each 100 points advances the rank, up to rank 19. Some charts double the score and number ranks from 1; convert both conventions before comparing them.",
-            "These are selection rules, not a promise that a visitor will appear at your next visible step. The full foreign-master page gives role priority, recruitment restrictions and the distinction between a qualifying check and a reachable destination."
+            "On PSX, breeding to keep levels low does not keep Terry’s foreign-master teams weak: opponent strength follows party stats instead. The other changes below also affect how you find a particular visitor."
           ],
           "table": {
             "columns": [
               "Situation",
-              "Game Boy reference",
-              "PlayStation"
+              "Game Boy / Game Boy Color",
+              "Japanese PlayStation"
             ],
             "rows": [
+              [
+                "Terry: opponent strength",
+                "Based on the party’s total levels.",
+                "Based on party statistics: HP, MP, Attack and Defense, plus a smaller contribution from Agility and Intelligence."
+              ],
               [
                 "Terry: basic availability",
                 "The original uses a separate 50% master roll on an otherwise qualifying floor.",
@@ -3454,11 +3460,6 @@ globalThis.FIELD_GUIDE = {
                 "Reveal every reachable room; leave an item on the floor to avoid the higher-priority Priest. The teleport descends up to 10 floors."
               ],
               [
-                "Terry: Bard",
-                "The handheld two-screen floor rule does not describe PSX room counting.",
-                "Reveal both rooms of a two-room floor and leave at least one item."
-              ],
-              [
                 "Cobi / Tara: Bard versus Merchant",
                 "The handheld Merchant is checked before Bard; carried meat blocks Merchant.",
                 "Bard is checked first. Merchant needs at most 10 carried items and no meat."
@@ -3467,11 +3468,6 @@ globalThis.FIELD_GUIDE = {
                 "Cobi / Tara: travel Wizard",
                 "A handheld visitor can offer map help for 200 G.",
                 "This Wizard visitor is absent from the PSX selection described here."
-              ],
-              [
-                "Cobi / Tara: searching random key worlds",
-                "Do not reuse Terry’s floor-exit method.",
-                "Search outdoors in a generated Magic Key world with at least 1,000 G. The selection check requires at least 100 counted steps."
               ]
             ]
           },
@@ -3487,9 +3483,9 @@ globalThis.FIELD_GUIDE = {
         },
         {
           "id": "learning-changes",
-          "title": "Lower learning thresholds and a different Summon chain",
+          "title": "Skill learning: lower requirements and new Summon recipes",
           "paragraphs": [
-            "Many DWM2 Game Boy Color skill-learning Intelligence requirements are lower on PSX. The table compares the printed handheld requirements with the native PSX table. These are minimum stats for learning, not the MP spent casting the spell; level and maximum-MP requirements are unchanged in these examples."
+            "Compared with DWM2 on Game Boy Color, these spells require less Intelligence to learn on PSX. Their level and maximum-MP requirements stay the same. The English patch retains the PSX requirements; these are learning thresholds, not casting costs."
           ],
           "table": {
             "columns": [
@@ -3548,7 +3544,7 @@ globalThis.FIELD_GUIDE = {
             "On Game Boy Color, the TatsuCall → DiagoCall → SamsiCall → BazooCall chain advances through level and stat thresholds. The printed Intelligence thresholds are 100, 250, 400 and 550.",
             "On PSX, the stronger summons are combination skills. Summon Deago requires Summon Tattsu, Defense and Focus Spirit, plus level 25, 100 max MP and 120 Intelligence.",
             "Summon Samshin combines Summon Tattsu, Speedup and Charge Power at level 30, 130 max MP and 150 Intelligence. Summon Bazoo combines Summon Tattsu, Thordain and Wave of Darkness at level 35, 160 max MP and 180 Intelligence.",
-            "Simply leveling a monster with Summon Tattsu therefore does not supply the missing combination skills. Use the skill planner to check natural skills, inherited candidates and the exact prerequisites."
+            "A monster that knows Summon Tattsu therefore needs the other combination skills, not just more levels, to learn the stronger PSX summons."
           ],
           "links": [
             "field-skill-inheritance"
@@ -3565,271 +3561,53 @@ globalThis.FIELD_GUIDE = {
           ]
         },
         {
-          "id": "battle-system-changes",
-          "title": "Timed effects and repeated-skill bonuses",
-          "paragraphs": [
-            "PSX changes more than spell names and animation. Temporary effects can expire during a long fight, and repeating the same eligible attacking skill can improve its performance against resistance. These rules are present in the original Japanese game and the checked English release."
-          ],
-          "table": {
-            "columns": [
-              "System",
-              "PSX behavior",
-              "Practical consequence"
-            ],
-            "rows": [
-              [
-                "Temporary stat changes and protections",
-                "The battle engine maintains duration counters and restores the underlying stats or effect flags when they expire. Defense and Agility changes are among these timed effects.",
-                "Reapply protection when it wears off in a long fight. A turn-one setup is not permanent for the whole battle."
-              ],
-              [
-                "Repeated use of a skill",
-                "The native routine tracks consecutive use of the same eligible command. Its resistance check uses the streak, and the fourth use can gain an additional damage multiplier.",
-                "Repeated spell/breath damage can differ from its first-use range even when the attacker’s stats have not changed."
-              ],
-              [
-                "What breaks or resets the sequence",
-                "Changing the command restarts the counter. The four-use cycle also restarts after its fourth entry; unavailable actors and ineligible contexts clear it.",
-                "It is not a permanent resistance reduction that every later attack inherits."
-              ],
-              [
-                "Damage calculator scope",
-                "The calculator displays supported baseline hits and resistance settings, without the repeated-command sequence or expiring battle buffs.",
-                "Use the result as the unmodified hit range. A live battle with these effects needs the relevant adjustment."
-              ]
-            ]
-          },
-          "sources": [
-            {
-              "label": "Native repeated-action and duration audit",
-              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
-            }
-          ]
-        },
-        {
-          "id": "training-and-combat",
-          "title": "Training and combat on PlayStation",
-          "paragraphs": [
-            "The English patch retains the audited PSX learning, growth, recruitment and baseline damage rules. Farm training and a monster’s permanent collection record explain several behaviors that are easy to mistake for a translation-patch change."
-          ],
-          "table": {
-            "columns": [
-              "Mechanic",
-              "What matters on PSX"
-            ],
-            "rows": [
-              [
-                "Skill learning",
-                "Checks use level and the six base stats, including maximum HP and MP. Accessory bonuses are not a shortcut to the learning thresholds. Upgrades and combination skills have separate checks."
-              ],
-              [
-                "Training on the farm",
-                "Farm growth does not run the party’s skill-learning routine. Bring a monster back to the active party and gain a level to check eligible skills."
-              ],
-              [
-                "Maximum level after breeding",
-                "The cap is the species base limit plus three times the offspring’s + value, capped at 99. It is not simply the number of times a lineage has bred."
-              ],
-              [
-                "Repeated recruitment",
-                "The persistent collected-species flag matters. Releasing or breeding away your last copy does not make the next one a first recruit again."
-              ],
-              [
-                "Feeding meat",
-                "Meats stack in a shared battle appeal value. Higher appeal can stop helping one species while still helping another. Feeding does not override an ineligible battle or species."
-              ],
-              [
-                "Damage",
-                "Ordinary wild enemies and companions can use different spell and breath ranges. Resistance, species family and rounding matter; an Attack-versus-Defense estimate does not describe every skill."
-              ],
-              [
-                "Battle messages",
-                "Text Speed 8 selects manual pacing for applicable message waits. That behavior already exists in the Japanese PSX release."
-              ]
-            ]
-          },
-          "links": [
-            "field-skill-inheritance",
-            "field-growth",
-            "field-recruitment",
-            "field-battle-text-speed"
-          ],
-          "sources": [
-            {
-              "label": "Learning and growth evidence",
-              "url": "https://github.com/dqm-psx/guide/blob/main/docs/learning-mechanics-evidence.md"
-            },
-            {
-              "label": "Recruitment evidence",
-              "url": "https://github.com/dqm-psx/guide/blob/main/docs/recruitment-evidence.md"
-            },
-            {
-              "label": "Combat evidence",
-              "url": "https://github.com/dqm-psx/guide/blob/main/docs/combat-evidence.md"
-            }
-          ]
-        },
-        {
-          "id": "items-and-medals",
-          "title": "Items and medal rewards",
-          "paragraphs": [
-            "PSX adds the Miracle Mark for changing a hatched monster’s sex and, in Cobi and Tara’s adventure, the Spellblade Ring for HP/MP growth. The mark is consumed when used; Terry’s final queen request is one confirmed source.",
-            "The old Rotten Meat/BadMeat record survives in PSX data, but the guide has not established an ordinary acquisition source. Warubou’s leftover-meat conversation does not actually put one in Terry’s bag. This differs from treating it as a normal handheld supply item.",
-            "Both PSX medal collectors first award prizes against a cumulative total, then open an exchange menu after that reward track. GreatLog also has a separate talking-pot offer: one Tiny Medal for one magic key."
-          ],
-          "links": [
-            "item-96",
-            "item-92",
-            "item-29",
-            "field-medals",
-            "quest-the-queen-s-monster-collection-requests",
-            "quest-talking-pot-key"
-          ],
-          "sources": [
-            {
-              "label": "Japanese PlayStation release overview",
-              "url": "https://wikiwiki.jp/dqdic3rd/%E3%80%90%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA%EF%BC%91%E3%83%BB%EF%BC%92%20%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1%E3%80%91"
-            },
-            {
-              "label": "Native PSX item and source evidence",
-              "url": "https://github.com/dqm-psx/guide/blob/main/data/gameplay-verification.json"
-            }
-          ]
-        },
-        {
-          "id": "multiplayer-and-saves",
-          "title": "Memory cards, breeding between saves and Colosseum",
-          "paragraphs": [
-            "PlayStation’s title-screen activities read saved Adventure Logs. The original Colosseum can even select the same log for both sides, making a practice match possible with your own collection. Players reveal their choices as they select monsters; the publisher’s original rules allow up to 20 turns and prohibit Dragon Form and Transform.",
-            "The original Colosseum uses timed command entry. Players alternate entering orders, but input order is not the monsters’ action order. If a command times out, the monster falls back to its aggressive tactic."
-          ],
-          "table": {
-            "columns": [
-              "Activity",
-              "Original Japanese PSX",
-              "English v1.0.73"
-            ],
-            "rows": [
-              [
-                "Breed monsters from different saves",
-                "A separate title-screen room pairs two masters’ monsters. Crossing Terry with Cobi or Tara requires game completion. Both parents leave and each save receives an egg.",
-                "Retains this system. This is distinct from the shrine’s ordinary breeding context."
-              ],
-              [
-                "Battle saved teams",
-                "The title-screen Colosseum loads selected Adventure Logs for a local match.",
-                "Adds Free Battle, Enix Rules and configurable Local Rules."
-              ],
-              [
-                "Wager a monster",
-                "Do not assume the handheld monster-transfer wager is available in the original PSX Colosseum.",
-                "Enable prizes in Local Rules. Each player offers an awake farm monster outside the active party; a winner receives the other offer and keeps their own."
-              ],
-              [
-                "Save a prize result",
-                "A practice match is not a transfer route.",
-                "A transfer writes both Adventure Logs. Leave receiving farm space, let both writes finish, and use Retry if a card error occurs. Draws transfer nothing."
-              ]
-            ]
-          },
-          "links": [
-            "field-two-save-breeding",
-            "field-colosseum-prizes"
-          ],
-          "sources": [
-            {
-              "label": "Publisher: original Colosseum setup and rules",
-              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/taisen_top.html"
-            },
-            {
-              "label": "Publisher: command timing",
-              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/taisen_gokui.html"
-            },
-            {
-              "label": "English patch rules and prizes",
-              "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
-            }
-          ]
-        },
-        {
-          "id": "mobile-link",
-          "title": "The old mobile-phone connection is a separate system",
-          "paragraphs": [
-            "The Japanese PSX game was also designed to exchange monsters with a contemporary mobile-phone game. This is neither Game Boy link breeding nor ordinary PSX memory-card breeding. The publisher describes a receiving-side key and a sending-side transfer password that must match.",
-            "The historical service had its own conversion rules: a phone-born monster arrived on PSX at level 10 with a level-20 growth limit, and its skills were converted for the PSX species rather than copied directly from the phone battle. Treat old transfer advice as a description of that service, not as a currently verified way to obtain every retained rare species."
-          ],
-          "sources": [
-            {
-              "label": "Publisher’s historical mobile-transfer FAQ",
-              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/psdqmisub/dqmi_tensou_others.html"
-            }
-          ]
-        },
-        {
-          "id": "english-restorations",
-          "title": "Restored table conversations and special floors",
-          "paragraphs": [
-            "The Japanese PSX release retained 112 monster table conversations, but its table interaction was unavailable. The English patch reconnects those conversations with reconstructed seating and personality matching. This is why a Game Boy guide may mention a conversation that an unpatched PlayStation player cannot start."
-          ],
-          "bullets": [
-            "At the arena dining room’s right table, step onto the east stool with one to three living, visible party monsters.",
-            "Up, Left and Down select the north, west and south seats. Confirm/Talk starts the selected monster’s conversation. Cancel or Right stands up. Leave the stool before sitting again.",
-            "In the restored traveling colosseum, win the first three matches, then decide whether to accept the second set. Decline when finished and leave through the north door.",
-            "Travel Bookmark cannot be used inside the traveling colosseum. If your bag is full when claiming a prize, make room and return."
-          ],
-          "links": [
-            "field-packing"
-          ],
-          "sources": [
-            {
-              "label": "Restoration controls and floor notes",
-              "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
-            }
-          ]
-        },
-        {
           "id": "english-settings-fixes",
-          "title": "English-patch settings, fixes and saved games",
+          "title": "What the released English patch changes",
           "paragraphs": [
-            "Tactics → Movement adds separate walking and R1 speeds, Hold or Toggle, and Time or Distance encounter behavior. Each adventure stores its own choices. The defaults are Walk 1×, R1 2×, Hold and Time; loading an adventure begins at the walking speed.",
-            "Time keeps encounters at roughly the same frequency while running. Distance uses the usual rate per step. These choices are new patch settings; they are separate from the original map-dependent walking differences."
+            "These changes are relative to the original Japanese PSX game. The restored Terry activities are compared above."
           ],
           "table": {
             "columns": [
-              "Problem or change",
-              "How to interpret it"
+              "Feature",
+              "Japanese PlayStation",
+              "English patch v1.0.73"
             ],
             "rows": [
               [
-                "Truth Gate cannot be retried after losing to Dungeon Shrimp",
-                "An original Japanese progression bug, repaired in English v1.0.34. On an updated game, return and answer the questions again."
+                "Running and encounters",
+                "Uses the map’s normal walking pace, without the patch’s movement settings.",
+                "Adds 1×, 2× and 4× walking/R1 speeds, Hold or Toggle running, and Time or Distance encounter settings. Time lets you cover more ground between battles while running."
               ],
               [
-                "Scene/NPC graphics memory leaks and walking-sprite loading fault",
-                "Original-game problems identified and fixed by v1.0.73. They are not changes to breeding or recruitment balance."
+                "Title-screen Colosseum",
+                "Uses the original fixed battle rules.",
+                "Adds Free Battle, Enix Rules and configurable Local Rules, including optional monster prizes."
               ],
               [
-                "Historical English menu, text or battle-loading regressions",
-                "Check the release that introduced and fixed the problem. A patch changelog entry does not prove the Japanese game had the same bug."
+                "Losing to Dungeon Shrimp in Truth Gate",
+                "A progression bug can prevent another challenge and block gate completion credit.",
+                "Fixed since v1.0.34. Return to the boss room and answer the questions again to retry."
               ],
               [
-                "Continue after updating",
-                "Apply the patch to a clean Japanese disc, boot the updated game and load the in-game memory-card save. A state from another patch version can restore old code."
-              ],
-              [
-                "A familiar monster or gate has a new name",
-                "The identity is unchanged when a translation label changes. Search aliases and linked names help connect old walkthrough wording to the current guide."
+                "Graphics faults",
+                "Scene/NPC graphics can remain allocated after use; walking-sprite loading also has a fault.",
+                "v1.0.73 fixes these original-game faults."
               ]
             ]
           },
           "links": [
             "field-movement-settings",
+            "field-colosseum-prizes",
             "field-retail-bugs"
           ],
           "sources": [
             {
               "label": "Release history and update instructions",
               "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
+            },
+            {
+              "label": "Publisher: original Colosseum setup and rules",
+              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/taisen_top.html"
             }
           ]
         }
@@ -3894,13 +3672,13 @@ globalThis.FIELD_GUIDE = {
       "kind": "mechanic",
       "game": "both",
       "title": "Recruit a wild monster",
-      "summary": "Compare how much meat helps for a particular monster and encounter. Previous collection matters, even if you no longer own that species.",
+      "summary": "Give meat to enemy monsters during battle to improve their chance of joining. More than one piece can help, and a species you have collected before is harder to recruit again.",
       "details": [
-        "Meat used on enemies adds to a shared food score for that battle. More than one piece can help, but the same species can have different recruitment settings in different encounters. Choose its area and floor band in the calculator before comparing food.",
-        "The game remembers whether a species has ever entered your collection, including through gifts or breeding. Releasing or breeding away your last copy does not restore its first-collection chance. Your current party or farm alone cannot establish this history.",
-        "In the calculator’s Terry examples, a previously collected Metal Slime gets an 8.47% joining check from one Sirloin and 23.87% from two. The Slime example already reaches 70.07% with one Sirloin. These native calculations match the Japanese release and English patch v1.0.73. They assume the monster is the eligible recruitment candidate and no Starry Orb was used.",
-        "The percentages describe the joining check, not the chance per battle: they do not determine which defeated monster becomes the candidate. A Starry Orb guarantees an otherwise eligible joining check, but neither it nor meat bypasses battle or encounter restrictions. Feeding your own monsters changes wildness instead.",
-        "In a DQM2 world reached by a generated magic key, defeat its resident boss before trying to recruit the local monsters."
+        "Meat adds to a shared food score for that battle. Feeding your own monsters instead reduces wildness; it does not help recruit the enemy.",
+        "In a generated Magic Key world, defeat the resident boss before trying to recruit local monsters. Meat and even a Starry Orb cannot bypass battle or encounter restrictions.",
+        "Collection history is permanent: gifts and breeding count too. Releasing or breeding away your last copy does not restore its first-collection chance.",
+        "For a particular target, choose its adventure, area and floor band in the recruitment calculator. The same species can have different recruitment settings in different encounters. Compare one piece of meat with two before spending a valuable supply.",
+        "The calculator gives the joining check for an eligible candidate, not the chance per battle. It does not choose which defeated monster gets that check. A Starry Orb guarantees the check only when the monster is otherwise eligible."
       ],
       "aliases": [
         "recruitment calculator",
@@ -4104,7 +3882,7 @@ globalThis.FIELD_GUIDE = {
       "kind": "mechanic",
       "game": "both",
       "title": "Breed monsters between Adventure Logs",
-      "summary": "Yes. Choose Breeding on the game’s title screen to pair monsters from two different masters’ saved Adventure Logs.",
+      "summary": "Choose Breeding on the game’s title screen to pair monsters from two different masters’ saved Adventure Logs.",
       "details": [
         "The original PlayStation game already supports this separate breeding room. It is different from the Starry Shrine in an adventure and from wagering monsters in Colosseum battles.",
         "Breeding between Terry’s adventure and Cobi or Tara’s adventure requires game completion. The game checks the selected Adventure Logs before allowing the session.",
@@ -4138,11 +3916,11 @@ globalThis.FIELD_GUIDE = {
       "kind": "mechanic",
       "game": "both",
       "title": "How can I slow down battle messages?",
-      "summary": "Choose Tactics → Text Speed → 8 to make paced battle messages wait for confirmation under normal input conditions.",
+      "summary": "Choose Tactics → Text Speed → 8 to make paced battle messages wait for a button press.",
       "details": [
-        "Settings 1–7 use fixed waits. Setting 8 selects a button wait for the pacing control used by messages such as meat-feeding results. The menu labels the range Fast to Slow without explaining this difference.",
-        "Avoid holding the confirm button or fast-forwarding while reading. This setting controls the tested message-pacing path; it does not promise that every animation or message waits for a button.",
-        "This manual mode exists in the Japanese PlayStation game too. The English patch retains the native pacing settings. Text wrapping and page layout are separate from how long a battle message remains visible."
+        "Settings 1–7 advance after a fixed delay. Setting 8 is useful when you want time to read results such as meat-feeding messages; the menu labels it Slow without explaining the button wait.",
+        "Release the confirm button and stop fast-forwarding while reading. Some messages and animations still advance automatically.",
+        "This option is already present in the Japanese PSX game."
       ],
       "aliases": [
         "text speed 8",
@@ -4351,7 +4129,9 @@ globalThis.FIELD_GUIDE = {
         "item-54",
         "item-55",
         "item-56"
-      ]
+      ],
+      "redirect_to": "field-movement-settings",
+      "redirect_section": "field-abilities"
     },
     {
       "id": "field-damage-and-resistance",
@@ -4479,6 +4259,21 @@ globalThis.FIELD_GUIDE = {
             "skill-e0d84",
             "skill-e0e51",
             "skill-e0e59"
+          ]
+        },
+        {
+          "id": "long-battles",
+          "title": "Effects and repeated skills during a longer battle",
+          "paragraphs": [
+            "Temporary Defense and Agility changes and other protections can wear off. Reapply them when needed; your opening setup does not necessarily last for the whole fight.",
+            "Repeating the same eligible attacking skill can improve its effect against resistance, with an additional damage bonus possible on the fourth use. Changing the command restarts the sequence; the four-use cycle also restarts after its fourth entry.",
+            "The damage calculator shows the baseline hit. It does not include this repeated-skill sequence or temporary battle effects."
+          ],
+          "sources": [
+            {
+              "label": "Native repeated-action and duration audit",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
+            }
           ]
         },
         {

@@ -79,6 +79,7 @@
       if(options.hiddenSection?.(section)) return opening+'<p>This section includes '+(section.spoiler==='ending'?'ending':'story')+
         ' spoilers.</p><button class="guide-action" type="button" data-reveal-section="'+escape(id)+'">Reveal this section</button></section>';
       const table=section.table;
+      const comparison=table && row.id==='field-restored-content' && table.columns.length>2;
       const sources=(section.sources || []).filter(source=>/^https?:\/\//.test(source.url)).map(source=>
         '<a href="'+escape(source.url)+'" rel="noopener noreferrer">'+escape(source.label)+'</a>');
       const content=
@@ -86,9 +87,9 @@
         (section.paragraphs || []).map(text=>'<p>'+prose(text)+'</p>').join('')+
         (section.bullets?.length ? '<ul>'+section.bullets.map(text=>'<li>'+prose(text)+'</li>').join('')+'</ul>' : '')+
         (section.rows?.length ? '<dl>'+section.rows.map(([label,text])=>'<dt>'+escape(label)+'</dt><dd>'+prose(text)+'</dd>').join('')+'</dl>' : '')+
-        (table ? '<div class="article-table" role="region" tabindex="0" aria-label="'+escape(table.caption || section.title)+'"><table>'+
-          (table.caption ? '<caption>'+escape(table.caption)+'</caption>' : '')+'<thead><tr>'+table.columns.map(title=>'<th scope="col">'+escape(title)+'</th>').join('')+'</tr></thead><tbody>'+
-          table.rows.map(cells=>'<tr>'+cells.map((cell,i)=>i ? '<td>'+prose(cell)+'</td>' : '<th scope="row">'+prose(cell)+'</th>').join('')+'</tr>').join('')+'</tbody></table></div>' : '')+
+        (table ? '<div class="article-table'+(comparison?' article-comparison':'')+'" role="region" tabindex="0" aria-label="'+escape(table.caption || section.title)+'"><table role="table">'+
+          (table.caption ? '<caption>'+escape(table.caption)+'</caption>' : '')+'<thead role="rowgroup"><tr role="row">'+table.columns.map(title=>'<th scope="col" role="columnheader">'+escape(title)+'</th>').join('')+'</tr></thead><tbody role="rowgroup">'+
+          table.rows.map(cells=>'<tr role="row">'+cells.map((cell,i)=>i ? '<td role="cell" data-label="'+escape(table.columns[i])+'">'+prose(cell)+'</td>' : '<th scope="row" role="rowheader">'+prose(cell)+'</th>').join('')+'</tr>').join('')+'</tbody></table></div>' : '')+
         (section.links?.length && options.articleLink ? '<p class="article-topic-links">'+section.links.map(options.articleLink).filter(Boolean).join(' · ')+'</p>' : '')+
         (sources.length ? '<p class="article-sources"><span>Sources</span> · '+sources.join(' · ')+'</p>' : '');
       // Static pages remain useful without JavaScript, including spoiler controls.

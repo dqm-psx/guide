@@ -75,8 +75,8 @@
       '<div class="training-pair">'+field('origin','Level-cap basis','<select id="training-origin"><option value="recruited">Ordinary wild recruit</option><option value="bred">Bred and hatched</option><option value="saved" hidden>Actual cap from save</option></select>')+
       number('plus','Breeding +',params.get('plus')??0,0,99)+'</div>'+number('cap','Known level cap (optional)',params.get('cap')??'',1,99,'<small>Overrides the usual cap. Gifts and special recruits can differ.</small>')+
       field('location','Training location','<select id="training-location"><option value="party">Active party</option><option value="farm">Awake on the farm</option><option value="hibernation">Hibernating</option></select>')+'</details>'+
-      '<details id="training-stats-inputs" class="training-block" open><summary>Current base stats<span id="training-stats-summary" class="training-input-summary"></span></summary><p class="hint">Use maximum HP and MP before accessories. Imported saves provide these base values directly. Leave unknown values blank.</p><div class="training-stats">'+stats.map(stat=>number(stat,labels[stat],params.get(stat)??'',0,999)).join('')+'</div><button type="button" id="training-clear-stats">Clear stats</button></details>'+
-      '<details class="training-block training-inheritance"'+(chosen.known.length||chosen.inherited.length?' open':'')+'><summary>Known &amp; inherited skills</summary><p class="hint">Retained skills unlock upgrades and combinations. Candidate skills come from breeding or this monster’s saved learning pool.</p><p id="training-pool-note" class="hint"></p><button type="button" id="training-use-natural" hidden>Start from species’ natural skills</button>'+skillSetMarkup('known','Known skills · up to 8')+skillSetMarkup('inherited','Candidate skills')+
+      '<details id="training-stats-inputs" class="training-block" open><summary>Current base stats<span id="training-stats-summary" class="training-input-summary"></span></summary><p class="hint">Maximum HP/MP and stats before equipment. Leave unknown values blank.</p><div class="training-stats">'+stats.map(stat=>number(stat,labels[stat],params.get(stat)??'',0,999)).join('')+'</div><button type="button" id="training-clear-stats">Clear stats</button></details>'+
+      '<details class="training-block training-inheritance"'+(chosen.known.length||chosen.inherited.length?' open':'')+'><summary>Edit skills &amp; inheritance</summary><p class="hint">Learned skills are moves it can use now. Learning candidates are moves it may learn at a future level-up.</p><p id="training-pool-note" class="hint"></p><button type="button" id="training-use-natural" hidden>Start from species’ natural skills</button>'+skillSetMarkup('known','Learned skills · up to 8')+skillSetMarkup('inherited','Learning candidates')+
       '<details class="training-parent-builder"><summary>Build the inherited pool from two parents</summary><p class="hint">Uses the selected adventure’s natural-skill table for both parents and the child. This does not choose the offspring species; <a href="#pair-finder">check the pairing first</a>.</p>'+['a','b'].map(id=>field('parent-'+id,'Parent '+id.toUpperCase(),speciesSelect('parent-'+id))+skillSetMarkup('parent-'+id+'-skills','Parent '+id.toUpperCase()+' retained skills')).join('')+'<button type="button" id="training-use-parents">Use these parents’ skill pool</button><p id="training-parent-status" role="status" class="hint"></p></details></details></div>'+
       '<div class="training-output"><section class="training-block"><div id="training-monster" class="training-monster"></div>'+field('skill','Skill to check','<select id="training-skill">'+skillOptions()+'</select>')+
       '<p id="training-errors" role="alert" hidden></p><div id="training-readiness" aria-live="polite"></div><div id="training-routes"></div></section>'+
@@ -103,7 +103,7 @@
     function settings() {
       if(invalidLinkFields.size)throw new Error('This plan link contains unsupported values. Correct or reset them before calculating.');
       if(parentPoolStale)throw new Error('The parents or adventure changed. Rebuild the inherited skill pool before calculating.');
-      if(candidatePoolUnknown)throw new Error('This import has no verified learning-candidate pool. Re-import the save, or start from species’ natural skills under Known & inherited skills.');
+      if(candidatePoolUnknown)throw new Error('This import has no verified learning-candidate pool. Re-import the save, or start from species’ natural skills under Edit skills & inheritance.');
       if(knownSkillsUnknown)throw new Error('This import has no verified learned-skill list. Re-import the save, enter its known skills, or start from species’ natural skills.');
       if(!['terry','cobi','tara'].includes(get('campaign').value))throw new Error('Choose this monster’s adventure: Terry, Cobi or Tara.');
       const basis=get('origin').value,origin=basis==='bred'?'bred':'recruited';get('plus').disabled=origin!=='bred';
@@ -129,11 +129,11 @@
       for(const id of ['a','b']) {p.set('p'+id,get('parent-'+id).value);if(chosen['parent-'+id+'-skills'].length)p.set('p'+id+'_skills',chosen['parent-'+id+'-skills'].join(','));}
       history.replaceState(history.state,'','#skill-planner?'+p);
     }
-    function renderRequirements(route,later) {
-      return '<div class="table-scroll"><table><caption class="sr-only">'+safe(routeLabels[route.kind])+' requirements</caption><thead><tr><th scope="col">Requirement</th><th scope="col">Needed</th><th scope="col">Now</th><th scope="col">At target</th></tr></thead><tbody>'+route.requirements.map(row=>{
+    function renderRequirements(route,later,compare) {
+      return '<div class="table-scroll"><table><caption class="sr-only">'+safe(routeLabels[route.kind])+' requirements</caption><thead><tr><th scope="col">Requirement</th><th scope="col">Needed</th><th scope="col">Now</th>'+(compare?'<th scope="col">At target</th>':'')+'</tr></thead><tbody>'+route.requirements.map(row=>{
         const next=later?.requirements.find(r=>r.stat===row.stat);
         const cell=r=>!r||r.status==='unknown'?'Not entered':safe(r.value)+(r.status==='met'?' · Met':' · Need '+r.shortfall+' more');
-        return '<tr><th scope="row">'+safe(labels[row.stat])+'</th><td>'+row.minimum+'</td><td>'+cell(row)+'</td><td>'+cell(next)+'</td></tr>';
+        return '<tr><th scope="row">'+safe(labels[row.stat])+'</th><td>'+row.minimum+'</td><td>'+cell(row)+'</td>'+(compare?'<td>'+cell(next)+'</td>':'')+'</tr>';
       }).join('')+'</tbody></table></div>';
     }
     function update() {
@@ -148,19 +148,19 @@
         const future=model.check({...state,level:state.targetLevel,stats:projection.projectedStats,atLevelCap:state.targetLevel===state.level&&state.level>=projection.cap.max});
         get('errors').hidden=true;get('copy').disabled=false;
         get('monster').innerHTML=spriteMarkup(state.speciesIndex)+'<div><a href="#monster?id='+state.speciesIndex+'">'+safe(name(state.speciesIndex))+'</a><span>'+skillLink(state.skillId)+'</span></div>';
-        const capBlocked=projection.cap.status==='above',uncertain=projection.cap.status==='uncertain';
+        const capBlocked=projection.cap.status==='above',uncertain=projection.cap.status==='uncertain',compare=state.targetLevel!==state.level;
         get('readiness').innerHTML='<p class="training-status" data-status="'+current.status+'"><strong>Now · Lv '+state.level+'</strong><span>'+safe(statusText[current.status])+'</span></p>'+
-          '<p class="training-status" data-status="'+(capBlocked?'level-cap':future.status)+'"><strong>Target · Lv '+state.targetLevel+'</strong><span>'+safe(capBlocked?'This target exceeds the level cap. Lower the target or plan a bred offspring.':statusText[future.status])+(uncertain?' The actual recruitment level cap may prevent reaching this level.':'')+'</span></p>'+
+          (compare&&!current.alreadyKnown?'<p class="training-status" data-status="'+(capBlocked?'level-cap':future.status)+'"><strong>Target · Lv '+state.targetLevel+'</strong><span>'+safe(capBlocked?'This target exceeds the level cap. Lower the target or plan a bred offspring.':statusText[future.status])+(uncertain?' The actual recruitment level cap may prevent reaching this level.':'')+'</span></p>':'')+
           [...new Set([...(current.warnings||[]),...(future.warnings||[])])].map(warning=>'<p class="training-warning">'+safe(warning)+'</p>').join('')+
           (current.replacementRequired||future.replacementRequired?'<p class="hint">All eight learned-skill slots are occupied. Learning a new skill requires choosing a skill to replace.</p>':'')+earliestLevel(state,projection,current);
         get('routes').innerHTML=current.alreadyKnown ? '<p class="hint">'+(current.supersededBy!==null ? 'Already learned '+skillLink(current.supersededBy)+', which replaces '+skillLink(state.skillId)+'.' : 'Already learned '+skillLink(state.skillId)+'.')+' No further learning requirements apply.</p>' : current.routes.map((route,i)=>'<section class="training-route"><h4>'+safe(routeLabels[route.kind]||route.kind)+'</h4>'+
           (route.requiredSkillIds.length?'<p class="hint">Requires retained skills: '+route.requiredSkillIds.map(skillLink).join(' + ')+'.'+(route.missingSkillIds.length?' Missing: '+route.missingSkillIds.map(skillLink).join(', ')+'.':'')+'</p>':'')+
           (route.prerequisiteUpgrades?.length?'<p class="training-warning">A retained prerequisite upgrades before combination checks: '+route.prerequisiteUpgrades.map(change=>skillLink(change.from)+' → '+skillLink(change.to)).join(', ')+'.</p>':'')+
-          renderRequirements(route,future.routes[i])+'</section>').join('')+
-          (!current.routes.length?'<p class="hint">'+(currentPoolSource?'This skill is absent from the current candidate pool and has no route from the retained skills.':'This is not a natural skill for this species. Add its inherited candidates or retained skills to check another route.')+'</p>'+renderRequirements({kind:'natural',requirements:current.numericalRequirements},{requirements:future.numericalRequirements}):'');
+          renderRequirements(route,future.routes[i],compare)+'</section>').join('')+
+          (!current.routes.length?'<p class="hint">'+(currentPoolSource?'This skill is absent from the current candidate pool and has no route from the retained skills.':'This is not a natural skill for this species. Add its inherited candidates or retained skills to check another route.')+'</p>'+renderRequirements({kind:'natural',requirements:current.numericalRequirements},{requirements:future.numericalRequirements},compare):'');
         const cap=projection.cap.min===projection.cap.max?'Level '+projection.cap.max:'Level '+projection.cap.min+'–'+projection.cap.max;
         const growth=stats.map(stat=>'<tr><th scope="row">'+labels[stat]+'</th><td>'+(state.stats[stat]??'Unknown')+'</td><td>+'+(state.stats[stat]===null?projection.gains[stat]:projection.projectedStats[stat]-state.stats[stat])+'</td><td>'+(projection.projectedStats[stat]??'Unknown')+'</td></tr>').join('');
-        get('growth').innerHTML='<p class="training-growth-summary"><strong>'+Number(projection.experience).toLocaleString('en-US')+' EXP</strong> between these level thresholds · '+safe(cap)+(state.levelCap==null&&state.origin==='recruited'?' expected recruitment cap':' cap')+'</p>'+
+        get('growth').innerHTML=!compare?'<p class="hint">'+(state.level>=projection.cap.max?'This monster has reached its level cap. It cannot gain further levels.':'Choose a higher “Plan to level” to see stat gains and EXP between levels.')+'</p>':'<p class="training-growth-summary"><strong>'+Number(projection.experience).toLocaleString('en-US')+' EXP</strong> between these level thresholds · '+safe(cap)+(state.levelCap==null&&state.origin==='recruited'?' expected recruitment cap':' cap')+'</p>'+
           '<div class="table-scroll"><table><caption class="sr-only">Natural growth projection</caption><thead><tr><th scope="col">Stat</th><th scope="col">Current</th><th scope="col">Gain</th><th scope="col">Target</th></tr></thead><tbody>'+growth+'</tbody></table></div>'+
           '<p class="hint">Known stats stop at 999; their displayed gain is the amount actually added. Unknown stats show the natural curve gain. EXP is the difference between level thresholds, not remaining EXP from your current progress. '+(capBlocked?'Gains shown above the cap are hypothetical. ':'')+(state.location==='hibernation'?'These gains require taking the monster out of hibernation.':'')+'</p>';
         saveLink(state);
@@ -254,7 +254,7 @@
       get('species').value=String(monster.speciesIndex);DQMMonsterPicker.get(get('species')).refresh();
       get('campaign').value=monster.campaign||'';get('level').value=monster.level??'';
       const savedTarget=params.get('owned')===monster.entryId&&params.has('target')?Number(params.get('target')):null;
-      get('target').value=monster.level===null?'':Number.isInteger(savedTarget)&&savedTarget>=monster.level&&savedTarget<=99?savedTarget:Math.max(monster.level,Math.min(monster.levelCap??99,20));
+      get('target').value=monster.level===null?'':Number.isInteger(savedTarget)&&savedTarget>=monster.level&&savedTarget<=99?savedTarget:Math.min(monster.levelCap??99,monster.level+1);
       get('plus').value=monster.plus??'';get('cap').value=monster.levelCap??'';
       get('origin').value=monster.levelCap!==null?'saved':'recruited';get('location').value=monster.location;
       for(const stat of stats)get(stat).value=monster.baseStats[stat]??'';
@@ -263,7 +263,7 @@
       invalidLinkFields.clear();showLinkErrors();get('parent-status').textContent='';
       get('state-note').textContent='Uses base stats before accessories. '+(monster.knownSkills===null||monster.inheritedSkills===null?'Skills are unavailable in this import; enter known and inherited skills before judging learning routes.':'Known skills and the saved learning-candidate pool are loaded.');
       get('monster-inputs').open=monster.sourceStatus!=='save';
-      get('stats-inputs').open=stats.some(stat=>monster.baseStats[stat]===null);
+      get('stats-inputs').open=true;
       if(candidatePoolUnknown||knownSkillsUnknown)root.querySelector('.training-inheritance').open=true;
       update();
     },onInvalidate(){

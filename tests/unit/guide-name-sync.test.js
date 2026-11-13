@@ -133,8 +133,9 @@ test('rich skill references refresh without rewriting Defense stats or historica
   assert.match(learning.bullets[3], /Current Summon Tattsu/);
   assert.doesNotMatch(JSON.stringify(learning), /Current Current/);
   const foreign = comparison.sections.find(section => section.id === 'foreign-master-differences');
-  assert.match(foreign.paragraphs[1], /HP, MP, Attack and Defense/);
-  assert.doesNotMatch(foreign.paragraphs[1], /Ward Break/);
+  const strength=foreign.table.rows.find(row=>row[0]==='Terry: opponent strength')[2];
+  assert.match(strength, /HP, MP, Attack and Defense/);
+  assert.doesNotMatch(strength, /Ward Break/);
 
   const damage = articles.find(row => row.id === ids[1]);
   assert.equal(damage.title, 'Damage, Defense and resistance');

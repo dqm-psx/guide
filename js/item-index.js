@@ -62,12 +62,16 @@
     return sources.map(line).join('');
   }
   function sourcePreview(row, sources, options) {
-    if (sources.length <= 2) return sourceMarkup(sources,options);
+    const preferred = [...sources].sort((a,b)=>Number(Boolean(b.shop))-Number(Boolean(a.shop)));
+    if (sources.length <= 2) return sourceMarkup(preferred,options);
     // Give each adventure a useful first stop when the player is comparing both.
-    const first = sources[0];
-    const otherAdventure = options.game ? [] : sources.filter(source=>source.game !== first.game);
+    // Lead with somewhere the player can reliably buy another copy. One-off
+    // chest and quest rewards remain available in the full source list.
+    const first = preferred[0];
+    const remaining = preferred.filter(source=>source!==first);
+    const otherAdventure = options.game ? [] : remaining.filter(source=>source.game !== first.game);
     const second = otherAdventure.find(source=>source.shop) || otherAdventure[0] ||
-      sources.find(source=>source.shop && !first.shop) || sources[1];
+      remaining[0];
     return sourceMarkup(first.text.length > 75 ? [first] : [first,second],options)+
       '<div class="item-all-sources">'+options.entryLink(row.id,'All '+sources.length+' sources')+'</div>';
   }

@@ -20,10 +20,10 @@ for(const mode of ['no JavaScript','enhancement unavailable'])test('story compar
     const section=page.locator('#article-section-cobi-tara-worlds').locator('..');
     await expect(section.locator('details')).not.toHaveAttribute('open','');
     await expect(section.getByRole('table')).not.toBeVisible();
-    await expect(page.locator('#article-section-which-edition').locator('..').getByRole('table')).toBeVisible();
+    await expect(page.locator('#article-section-presentation-controls').locator('..').getByRole('table')).toBeVisible();
     await section.locator('summary').click();
     await expect(section.getByRole('table')).toBeVisible();
-    await expect(section.getByRole('table')).toContainText('Kameha');
+    await expect(section.getByRole('table')).toContainText('MadGopher');
   }finally{await context.close();}
 });
 
@@ -32,7 +32,7 @@ test('published subsection enhancement respects the saved spoiler preference',as
   await page.goto(url+article);
   await expect(page.locator('#article-title')).toBeVisible();
   const section=page.locator('#article-section-cobi-tara-worlds').locator('..');
-  await expect(section).not.toContainText('Kameha');
+  await expect(section).not.toContainText('MadGopher');
   await section.getByRole('button',{name:'Reveal this section'}).click();
-  await expect(section).toContainText('Kameha');
+  await expect(section).toContainText('MadGopher');
 });

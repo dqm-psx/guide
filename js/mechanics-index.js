@@ -5,7 +5,7 @@
   const alphabetical = new Intl.Collator('en', {sensitivity:'base', numeric:true});
   const topics = [
     {id:'editions',title:'PSX & the English patch',description:'What changes between the Game Boy games, the Japanese PlayStation remake and this patch.',
-      entries:['field-restored-content','field-retail-bugs','field-movement-settings']},
+      entries:['field-restored-content','field-retail-bugs']},
     {id:'raising',title:'Raising & breeding',description:'Learn skills, plan growth and understand what carries over to the next generation.',
       entries:['field-growth','field-skill-inheritance','field-breed','field-two-save-breeding','field-eggs','field-personality','field-farm'],
       tools:[['#skill-planner','Skill & growth planner'],['#pair-finder','Find offspring'],['#offspring-finder','Find parents']]},
@@ -13,13 +13,14 @@
       entries:['field-damage-and-resistance','field-equipment','field-arena-items','field-battle-text-speed','field-colosseum-prizes'],
       tools:[['#combat-planner','Damage calculator'],['#field-guide?kind=skill','Skills']]},
     {id:'exploration',title:'Exploration & recruitment',description:'Find monsters, recruit them and prepare for the journey.',
-      entries:['field-wandering-masters','field-recruitment','field-packing','field-storage','field-generated-keys','field-triangle','field-medals','field-default-nicknames'],
+      entries:['field-wandering-masters','field-recruitment','field-packing','field-storage','field-generated-keys','field-movement-settings','field-medals','field-default-nicknames'],
       tools:[['#field-guide?kind=location','Locations & maps'],['#field-guide?kind=item','Items']]}
   ];
   function topicFor(article) {
     return topics.find(topic=>topic.id===article.topic) || topics.find(topic=>topic.entries.includes(article.id)) || topics[3];
   }
   function handbook(articles,{escape,titleFor,linkTo,topicHref,activeTopic='',tools=true}) {
+    articles=articles.filter(article=>!article.redirect_to);
     const available=topics.filter(topic=>articles.some(article=>topicFor(article)===topic));
     const nav=topicHref ? '<nav class="handbook-topics" aria-label="Mechanics topics">'+
       [['','All topics'],...available.map(topic=>[topic.id,topic.title])].map(([id,title])=>
@@ -44,7 +45,7 @@
     });
   }
   function render(articles, {games, titleFor, linkTo, escape, excerptFor}) {
-    const rows = articles.map(article => ({
+    const rows = articles.filter(article=>!article.redirect_to).map(article => ({
       article, title:titleFor(article), section:sections.indexOf(article.game)
     }));
     const body = sorted(rows, 'section').map(({article, title, section}) => {

@@ -51,9 +51,9 @@ test('published handbook subsection links work with enhancement, sharing and wit
     await reader.goto(url+path);
     await expect(reader.locator('#article-section-foreign-master-differences')).toBeInViewport();
     await reader.getByRole('navigation',{name:'In this article'}).locator('summary').click();
-    await reader.getByRole('navigation',{name:'In this article'}).getByRole('link',{name:'Which version are you playing?'}).click();
-    await expect(reader).toHaveURL(/articles\/field-restored-content\/#article-section-which-edition$/);
-    await expect(reader.locator('#article-section-which-edition')).toBeInViewport();
+    await reader.getByRole('navigation',{name:'In this article'}).getByRole('link',{name:'What changes in the PlayStation remake'}).click();
+    await expect(reader).toHaveURL(/articles\/field-restored-content\/#article-section-presentation-controls$/);
+    await expect(reader.locator('#article-section-presentation-controls')).toBeInViewport();
   } finally {await context.close();}
 });
 
@@ -403,7 +403,8 @@ test('published quests and characters can be followed with JavaScript disabled',
     await expect(reader.locator('#mechanics .handbook-chapter')).toHaveCount(4);
     await reader.locator('#mechanics').getByText('All articles',{exact:true}).click();
     const articles = reader.getByRole('table',{name:'Mechanics articles'});
-    await expect(articles.getByRole('link')).toHaveCount(23);
+    await expect(articles.getByRole('link')).toHaveCount(22);
+    await expect(articles.locator('a[href="articles/field-triangle/"]')).toHaveCount(0);
     await expect(articles.getByRole('button')).toHaveCount(0);
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');
     const items=reader.getByRole('table',{name:'Items',exact:true});
@@ -430,6 +431,17 @@ test('published quests and characters can be followed with JavaScript disabled',
     await reader.locator('a[href="entries/#quests-dqm2"]').click();
     await expect(reader.locator('#quests-dqm2 h2')).toBeInViewport();
   } finally {await context.close();}
+});
+
+test('retired field abilities URL opens the consolidated instructions without JavaScript',async({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try{
+    const reader=await context.newPage();
+    await reader.goto(url+'articles/field-triangle/');
+    await expect(reader).toHaveURL(/articles\/field-movement-settings\/#article-section-field-abilities$/);
+    await expect(reader.locator('#article-section-field-abilities')).toBeInViewport();
+    await expect(reader.getByRole('heading',{name:'Movement, running and field abilities',exact:true})).toHaveCount(1);
+  }finally{await context.close();}
 });
 
 test('a direct entry respects saved spoilers and keeps its static reference when a tool fails', async({page})=>{

@@ -18,7 +18,7 @@ test('mechanics topics, comparison sections and search keep their context',async
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(375);
   await page.locator('.guide-back').click();
   await expect(page.locator('.handbook-chapter')).toHaveCount(1);
-  await page.getByLabel('Search the guide').fill('transfer password');
+  await page.getByLabel('Search the guide').fill('mobile-phone');
   await expect(page.getByRole('table',{name:'Mechanics articles'})).toContainText('Game Boy, PlayStation');
 });
 

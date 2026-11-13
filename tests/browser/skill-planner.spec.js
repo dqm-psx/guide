@@ -36,7 +36,9 @@ test('individual and bred caps differ from ordinary recruitment and reaching a c
   await expect(page.locator('.training-status').nth(1)).toContainText('Requirements met');
   await page.locator('#training-level').fill('3');
   await expect(page.locator('.training-status').first()).toContainText('At its level cap');
-  await expect(page.locator('.training-status').nth(1)).toContainText('At its level cap');
+  await expect(page.locator('.training-status')).toHaveCount(1);
+  await expect(page.locator('#training-growth')).toContainText('reached its level cap');
+  await expect(page.locator('#training-growth table')).toHaveCount(0);
 });
 
 test('native combination-order warning cannot turn into an ordinary ready result',async({page})=>{

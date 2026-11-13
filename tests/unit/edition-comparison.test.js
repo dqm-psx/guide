@@ -12,9 +12,9 @@ const guide=context.FIELD_GUIDE;
 const comparison=guide.entries.find(row=>row.id==='field-restored-content');
 
 test('public comparison describes released games and patch versions only',()=>{
-  const version=comparison.sections.find(section=>section.id==='which-edition');
-  assert.doesNotMatch(JSON.stringify([version,comparison.aliases]),/Delocalized|Game Boy translation edition|wording editions|Game Boy-named patch/i);
-  assert.ok(version.table.rows.some(row=>row[0]==='English patch, v1.0.73'));
+  const patch=comparison.sections.find(section=>section.id==='english-settings-fixes');
+  assert.doesNotMatch(JSON.stringify(comparison),/Delocalized|Game Boy translation edition|wording editions|Game Boy-named patch/i);
+  assert.ok(patch.table.columns.includes('English patch v1.0.73'));
 });
 
 test('controls compare handheld and PSX behavior instead of PSX campaign cadence',()=>{
@@ -37,7 +37,8 @@ test('travel, storage and breeding guidance belong to their mechanics topics',()
     escape:String,titleFor:row=>row.title,linkTo:id=>'<a href="#'+id+'">'+id+'</a>',
     activeTopic:topic,tools:false
   });
-  assert.match(render('exploration'),/href="#field-triangle"/);
+  assert.match(render('exploration'),/href="#field-movement-settings"/);
+  assert.doesNotMatch(render('exploration'),/href="#field-triangle"/);
   assert.match(render('exploration'),/href="#field-storage"/);
   assert.doesNotMatch(render('exploration'),/href="#field-two-save-breeding"/);
   assert.match(render('raising'),/href="#field-two-save-breeding"/);

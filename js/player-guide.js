@@ -30,8 +30,13 @@
     row.game = row.learners.terry.length ? (dqm2 ? 'both' : 'dqm1') : (dqm2 ? 'dqm2' : 'system');
   }
   const sortedSkills = Array.from(skills.values()).sort((a,b)=>a.title.localeCompare(b.title));
-  const rows = [...world, ...field, ...sortedSkills];
-  const byId = new Map(rows.map(row => [row.id, row]));
+  const allRows = [...world, ...field, ...sortedSkills];
+  const rows = allRows.filter(row=>!row.redirect_to);
+  const byId = new Map(allRows.map(row => [row.id, row]));
+  const proseNames = [...new Set([
+    ...rows.flatMap(row => [row.title,...(row.aliases || [])]),
+    ...GUIDE_REFERENCE.species.flatMap(monster => [monster.display_name,monster.short_name,...(monster.aliases || [])])
+  ].filter(Boolean).map(name => name.toLowerCase().replace(/[’‘]/g,"'")))];
   const placeContext = DQMPlaceContext.create({entries:rows,routes:FIELD_ROUTES.routes,scenes:FIELD_ROUTES.scenes,maps:PLAYER_ATLAS.maps,entrances:globalThis.GATE_ENTRANCES,generation:globalThis.GATE_GENERATION});
   const mapGroups = new Map();
   for (const map of PLAYER_ATLAS.maps) {
@@ -59,6 +64,8 @@
   try { reveal = localStorage.getItem(spoilerKey) !== 'hide'; } catch {}
   const individuallyRevealed = new Set();
   const revealedSections = new Set();
+  const referencePositions = new Map();
+  let activeReference = null;
   function params() { return new URLSearchParams((window.DQMEntryHash?.() || location.hash).split('?')[1] || ''); }
   function route(p) { const query = p.toString(); return '#field-guide' + (query ? '?' + query : ''); }
   function change(p, key, value) { if (value) p.set(key, value); else p.delete(key); }
@@ -310,6 +317,13 @@
       add(map.title,row.kind==='location' ? linked(p,{entry:row.id,map:map.id,variant:'',section:'maps'}) : '#atlas?map='+safe(map.id)+(row.kind==='story'?'&amp;chapter='+safe(row.id):''));
     }
     if (!terms.size) return safe(line);
+    // A related Dragon boss must not turn the Dragon part of "Sky Dragon"
+    // into a misleading link. Recognize complete known names first, even
+    // when that species or article is not a contextual link destination.
+    const linkedNames = [...terms.keys()];
+    for (const name of proseNames) {
+      if (linkedNames.some(term => name.length > term.length && name.includes(term))) add(name,null);
+    }
     const pattern=[...terms.keys()].sort((a,b)=>b.length-a.length)
       .map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replaceAll("'","['’‘]")).join('|');
     const rx=new RegExp('(?<![\\p{L}\\p{N}])(?:'+pattern+')(?![\\p{L}\\p{N}])','giu');
@@ -317,7 +331,7 @@
     for (const m of line.matchAll(rx)) {
       const {href,id}=terms.get(fold(m[0]));
       if (id && used) used.add(id);
-      text+=safe(line.slice(start,m.index))+'<a href="'+href+'">'+safe(m[0])+'</a>';
+      text+=safe(line.slice(start,m.index))+(href ? '<a href="'+href+'">'+safe(m[0])+'</a>' : safe(m[0]));
       start=m.index+m[0].length;
     }
     return text+safe(line.slice(start));
@@ -634,6 +648,38 @@
       destination.delete('page');
       link.setAttribute('href',route(destination));
     }
+    activeReference?.save();
+  }
+  function restoreReferencePosition(p, table) {
+    const scroll = table.parentElement;
+    // A filtered or differently sorted list is a separate browsing context.
+    // Keep its position in memory, without adding offsets to shared URLs.
+    const key = () => JSON.stringify(['kind','game','q','sort'].map(name => p.get(name) || ''));
+    const position = referencePositions.get(key());
+    scroll.scrollTop = position?.top || 0;
+    scroll.scrollLeft = position?.left || 0;
+    const snapshot = () => ({top:scroll.scrollTop,left:scroll.scrollLeft});
+    let pointerPosition = null;
+    let openingEntry = false;
+    const save = () => {
+      if (!openingEntry && scroll.isConnected && !scroll.closest('[hidden]')) {
+        referencePositions.set(key(),snapshot());
+      }
+    };
+    activeReference = {save};
+    scroll.addEventListener('scroll',save,{passive:true});
+    // Focusing a link in the sticky name column can itself scroll the table.
+    // Remember the player's position before that native focus adjustment.
+    table.addEventListener('pointerdown',event=>{
+      pointerPosition = event.target.closest('a[href]') ? snapshot() : null;
+    },true);
+    table.addEventListener('click',event=>{
+      if (event.target.closest('a[href]') && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+        referencePositions.set(key(),pointerPosition || snapshot());
+        openingEntry = true;
+      } else save();
+      pointerPosition = null;
+    },true);
   }
   function skillsDirectory(p, matches) {
     const root = el('guide-directory');
@@ -650,6 +696,7 @@
     root.innerHTML = directoryHeading('Skills',count,'<a href="#combat-planner">Damage calculator</a> · <a href="#skill-planner">Skill planner</a> · <a href="#field-guide?entry=field-skill-inheritance">Inheritance &amp; learning</a>')+DQMSkillIndex.render(items,{escape:safe,linkTo});
     const table = root.querySelector('.skill-index');
     DQMSkillIndex.enableSorting(table,p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
+    restoreReferencePosition(p,table);
     return 'Skills';
   }
   function itemLinks(p) {
@@ -671,6 +718,7 @@
       root.insertAdjacentHTML('beforeend',DQMItemIndex.render(matches,{...itemLinks(p),title}));
       const table = root.querySelector('.item-index');
       DQMItemIndex.enableTable(table,root.querySelector('.directory-head'),p.get('sort'),order => rememberTableOrder(p,table,order,'name'));
+      restoreReferencePosition(p,table);
     } else if (p.get('q')) {
       root.insertAdjacentHTML('beforeend','<a href="'+linked(p,{kind:'',game:'',sort:'',page:''})+'">Search all topics for “'+safe(p.get('q'))+'”</a>');
     }
@@ -778,7 +826,17 @@
     return heading;
   }
   function show() {
+    activeReference?.save();
+    activeReference = null;
     const p=params(), entry=p.get('entry'), browsing=Boolean(p.get('game') || p.get('kind') || p.get('q'));
+    const redirect = byId.get(entry);
+    if (redirect?.redirect_to && byId.has(redirect.redirect_to)) {
+      p.set('entry',redirect.redirect_to);
+      if (redirect.redirect_section) p.set('section',redirect.redirect_section);
+      else p.delete('section');
+      history.replaceState(history.state,'',route(p));
+      return show();
+    }
     if (!entry && p.get('kind')==='monster') {
       location.replace('#species-index'+(p.get('q') ? '?q='+encodeURIComponent(p.get('q')) : ''));
       return 'Monster library';

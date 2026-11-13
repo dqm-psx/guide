@@ -14,6 +14,17 @@
   const areaNames=new Map();
   for(const row of GUIDE_REFERENCE.species)for(const area of row.locations||[])if(area.kind==='wild'&&Number.isInteger(area.context_id))areaNames.set(area.game+'-'+area.context_id,area.name+(area.floors?' · '+area.floors:''));
   const encounterName=row=>areaNames.get(row.game+'-'+row.contextId)||'Wild encounter '+row.contextId;
+  const encounterLabels=new Map();
+  for(const row of ref.encounters){
+    const sameArea=ref.encounters.filter(other=>other.game===row.game&&encounterName(other)===encounterName(row));
+    let label=encounterName(row);
+    if(sameArea.length>1){
+      const levels=row.enemies.map(enemy=>enemy.level);
+      const roster=[...new Set(row.enemies.map(enemy=>name(enemy.speciesId)))];
+      label+=' · Group '+(sameArea.indexOf(row)+1)+' · Lv '+range([Math.min(...levels),Math.max(...levels)])+' · '+roster.slice(0,2).join(', ')+(roster.length>2?'…':'');
+    }
+    encounterLabels.set(row.game+'-'+row.contextId,label);
+  }
   const supported=[...skills.values()].filter(row=>names[row.skillId]).sort((a,b)=>skillName(a.skillId).localeCompare(skillName(b.skillId)));
   const field=(id,label,input,help='')=>'<label class="training-field" for="combat-'+id+'"><span>'+label+'</span>'+input+(help?'<small>'+help+'</small>':'')+'</label>';
   const select=(id,options)=>'<select id="combat-'+id+'">'+options+'</select>';
@@ -33,9 +44,9 @@
       field('search','Find an area or monster','<input id="combat-search" type="search" autocomplete="off" placeholder="Area or monster name">')+
       field('area','Area / floors',select('area',''))+field('enemy','Enemy',select('enemy',''))+'<p id="combat-empty" class="hint" hidden>No matching encounters. Change the search or adventure.</p></section></div>'+
       '<p id="combat-errors" role="alert" hidden></p><div id="combat-results" class="combat-results" aria-live="polite"></div>'+
-      '<section class="training-block combat-defence"><h3>Enemy skill</h3><div class="training-pair">'+field('incoming','Move to compare',select('incoming',''))+
+      '<section class="training-block combat-defence"><h3>Enemy skills</h3><div id="combat-incoming-controls" class="training-pair">'+field('incoming','Move to compare',select('incoming',''))+
       field('resistance','Your resistance to this move',select('resistance',''), 'Species defaults are a starting point. Bred monsters can have different resistance; select the actual reduction when known.')+'</div><div id="combat-incoming-result" aria-live="polite"></div><p id="combat-other-moves" class="hint"></p></section>'+
-      '<p class="training-scope">Ranges cover ordinary wild-enemy stat rolls and successful, unguarded hits. Critical hits, evasion, reflection, charge, buffs, defense stances, repeated-skill bonuses, multi-hit rules and other situational modifiers are not included. Damage is per target. A listed skill here is a calculation option, not proof that your monster has learned it.</p>'+
+      '<p class="training-scope">Damage is per target, assuming a successful, unguarded hit against a wild monster. Critical hits, buffs and other situational bonuses are excluded. You can compare a skill even if your monster has not learned it.</p>'+
       '<div class="training-share"><button type="button" id="combat-copy">Copy calculation link</button><span id="combat-copy-status" role="status"></span><input id="combat-share-url" aria-label="Calculation link" readonly hidden></div>';
     get('species').value=String(species.some(row=>row.index===initialSpecies)?initialSpecies:11);
     get('skill').value=String(skills.has(initialSkill)?initialSkill:1);
@@ -47,7 +58,7 @@
     function refillAreas(preferred){
       const q=get('search').value.trim().toLocaleLowerCase();
       const rows=ref.encounters.filter(row=>row.game===get('game').value&&(!q||[encounterName(row),...row.enemies.map(mon=>name(mon.speciesId))].join(' ').toLocaleLowerCase().includes(q)));
-      get('area').innerHTML=options(rows.map(row=>[row.contextId,encounterName(row)]));
+      get('area').innerHTML=options(rows.map(row=>[row.contextId,encounterLabels.get(row.game+'-'+row.contextId)]));
       if(rows.some(row=>String(row.contextId)===String(preferred)))get('area').value=String(preferred);
       get('empty').hidden=!!rows.length;get('area').disabled=!rows.length;
       refillEnemies();
@@ -69,6 +80,7 @@
       get('incoming').innerHTML=options(moves.map(id=>[id,skillName(id)]));
       if(moves.includes(Number(preferred)))get('incoming').value=String(preferred);
       get('incoming').disabled=!moves.length;
+      get('incoming-controls').hidden=!moves.length;
       refillResistance();
     }
     function refillResistance(preferred=''){

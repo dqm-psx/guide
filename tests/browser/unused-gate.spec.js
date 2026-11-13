@@ -33,6 +33,17 @@ test('atlas labels retained maps and encounter pools as unused',async ({page})=>
   await expect(page.locator('#atlas-index a[aria-current="true"]')).toContainText('Unused content');
 });
 
+test('Terry’s postgame route never sends players to the unused boss room',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('dqm-guide-story-spoilers','show'));
+  await page.goto(url+'#field-guide?kind=story&game=dqm1&entry=story-terry-postgame');
+  const chapter=page.locator('.walk-part').filter({has:page.locator('#story-terry-postgame')});
+  await expect(chapter).toContainText('Watabou');
+  await expect(chapter).not.toContainText('Nameless Place');
+  await expect(chapter).not.toContainText('Darkdrium');
+  await expect(chapter.locator('a[href*="map-101-0"]')).toHaveCount(0);
+  await expect(chapter.locator('a[href*="location-sleep-gate"]').first()).toBeVisible();
+});
+
 test('monster profiles and hunting results never recommend the unused gate',async ({page})=>{
   await page.goto(url+'#monster?id=21');
   await expect(page.locator('#monster-locations')).toBeVisible();

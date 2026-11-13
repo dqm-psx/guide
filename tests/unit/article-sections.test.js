@@ -13,7 +13,7 @@ test('handbook sections preserve legacy text, searchable comparisons and safe st
   assert.match(html,/<dt>Role<\/dt><dd>Existing rules\.<\/dd>/);
   assert.match(html,/href="articles\/test\/#article-section-editions"/);
   assert.match(html,/id="article-section-editions" tabindex="-1"/);
-  assert.match(html,/<th scope="row">PSX<\/th><td>&lt;native>/);
+  assert.match(html,/<th scope="row" role="rowheader">PSX<\/th><td role="cell" data-label="Result">&lt;native>/);
   assert.match(html,/href="articles\/field-breed\/"/);
   assert.ok(!html.includes('javascript:'));
   assert.ok(!html.includes('undefined'));
