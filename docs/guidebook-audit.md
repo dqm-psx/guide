@@ -70,10 +70,11 @@ Keep the familiar compact navigation and one guide search. Within a long campaig
 Recommended mechanics topics:
 
 - **PSX and English patch:** edition comparison, campaign differences, restored features, patch-only changes and known original-game bugs.
-- **Raising and breeding:** eligibility, parent order, offspring species, inherited stats and skills, level limits, eggs, personality, farm and equipment.
-- **Battle:** turn order, damage and resistance, status effects, AI and tactics, arena rules and team preparation.
-- **Exploration and recruitment:** walking and encounters, meat and recruitment, foreign masters, random floors, Magic Keys, treasure and travel tools.
-- **Two-player and saves:** Adventure Logs, cross-save breeding, Colosseum rules, wagers, save format and importing a card into the guide.
+- **Raising and breeding:** eligibility, parent order, offspring species, breeding between Adventure Logs, inherited stats and skills, level limits, eggs, personality, farm and equipment.
+- **Battle:** turn order, damage and resistance, status effects, AI and tactics, arena and Colosseum rules, wagers and team preparation.
+- **Exploration and recruitment:** walking and encounters, meat and recruitment, foreign masters, random floors, Magic Keys, treasure, gold storage and travel tools.
+
+Memory-card import and saved-team tools belong in My game.
 
 “Player questions” are useful search phrases and article aliases. They should not be the only organizing principle of the mechanics section.
 

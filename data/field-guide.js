@@ -3931,7 +3931,7 @@ globalThis.FIELD_GUIDE = {
       "id": "field-storage",
       "kind": "mechanic",
       "game": "both",
-      "title": "Keep gold safe in storage",
+      "title": "Gold storage",
       "summary": "A party wipe costs half the gold you are carrying. Deposited gold stays safe.",
       "details": [
         "Deposit gold in GreatTree or GreatLog before a risky expedition. A GreatLog resident gives the storage limit as 999,900 G."
@@ -4103,7 +4103,7 @@ globalThis.FIELD_GUIDE = {
       "id": "field-two-save-breeding",
       "kind": "mechanic",
       "game": "both",
-      "title": "Can monsters breed between Adventure Logs?",
+      "title": "Breed monsters between Adventure Logs",
       "summary": "Yes. Choose Breeding on the game’s title screen to pair monsters from two different masters’ saved Adventure Logs.",
       "details": [
         "The original PlayStation game already supports this separate breeding room. It is different from the Starry Shrine in an adventure and from wagering monsters in Colosseum battles.",

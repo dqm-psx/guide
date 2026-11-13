@@ -30,7 +30,7 @@ test('controls compare handheld and PSX behavior instead of PSX campaign cadence
   assert.match(battles[2],/one console.*one screen/);
 });
 
-test('exploration topic includes traversal guidance and the saves topic excludes it',()=>{
+test('travel, storage and breeding guidance belong to their mechanics topics',()=>{
   const index=context.DQMMechanicsIndex;
   const articles=guide.entries.filter(row=>row.kind==='mechanic');
   const render=topic=>index.handbook(articles,{
@@ -38,6 +38,9 @@ test('exploration topic includes traversal guidance and the saves topic excludes
     activeTopic:topic,tools:false
   });
   assert.match(render('exploration'),/href="#field-triangle"/);
-  assert.doesNotMatch(render('saves'),/href="#field-triangle"/);
-  assert.match(render('saves'),/href="#field-two-save-breeding"/);
+  assert.match(render('exploration'),/href="#field-storage"/);
+  assert.doesNotMatch(render('exploration'),/href="#field-two-save-breeding"/);
+  assert.match(render('raising'),/href="#field-two-save-breeding"/);
+  assert.doesNotMatch(render('raising'),/href="#field-storage"/);
+  assert.ok(!index.topics.some(topic=>topic.id==='saves'));
 });

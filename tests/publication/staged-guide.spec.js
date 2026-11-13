@@ -400,7 +400,7 @@ test('published quests and characters can be followed with JavaScript disabled',
   try {
     const reader=await context.newPage();
     await reader.goto(url+'entries/');
-    await expect(reader.locator('#mechanics .handbook-chapter')).toHaveCount(5);
+    await expect(reader.locator('#mechanics .handbook-chapter')).toHaveCount(4);
     await reader.locator('#mechanics').getByText('All articles',{exact:true}).click();
     const articles = reader.getByRole('table',{name:'Mechanics articles'});
     await expect(articles.getByRole('link')).toHaveCount(23);

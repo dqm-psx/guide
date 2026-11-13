@@ -7,17 +7,14 @@
     {id:'editions',title:'PSX & the English patch',description:'What changes between the Game Boy games, the Japanese PlayStation remake and this patch.',
       entries:['field-restored-content','field-retail-bugs','field-movement-settings']},
     {id:'raising',title:'Raising & breeding',description:'Learn skills, plan growth and understand what carries over to the next generation.',
-      entries:['field-growth','field-skill-inheritance','field-breed','field-eggs','field-personality','field-farm'],
+      entries:['field-growth','field-skill-inheritance','field-breed','field-two-save-breeding','field-eggs','field-personality','field-farm'],
       tools:[['#skill-planner','Skill & growth planner'],['#pair-finder','Find offspring'],['#offspring-finder','Find parents']]},
     {id:'battle',title:'Battle & the arena',description:'Damage, equipment, battle commands and arena rewards.',
       entries:['field-damage-and-resistance','field-equipment','field-arena-items','field-battle-text-speed','field-colosseum-prizes'],
       tools:[['#combat-planner','Damage calculator'],['#field-guide?kind=skill','Skills']]},
     {id:'exploration',title:'Exploration & recruitment',description:'Find monsters, recruit them and prepare for the journey.',
-      entries:['field-wandering-masters','field-recruitment','field-packing','field-generated-keys','field-triangle','field-medals','field-default-nicknames'],
-      tools:[['#field-guide?kind=location','Locations & maps'],['#field-guide?kind=item','Items']]},
-    {id:'saves',title:'Two-player & saves',description:'Manage monsters, share breeding partners and use your saved team across the guide.',
-      entries:['field-two-save-breeding','field-storage'],
-      tools:[['#team-planner','My game']]}
+      entries:['field-wandering-masters','field-recruitment','field-packing','field-storage','field-generated-keys','field-triangle','field-medals','field-default-nicknames'],
+      tools:[['#field-guide?kind=location','Locations & maps'],['#field-guide?kind=item','Items']]}
   ];
   function topicFor(article) {
     return topics.find(topic=>topic.id===article.topic) || topics.find(topic=>topic.entries.includes(article.id)) || topics[3];
