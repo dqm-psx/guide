@@ -194,7 +194,7 @@ test('Mechanics sorts by adventure or article and preserves the reader’s place
   await page.getByRole('navigation',{name:'Mechanics view'}).getByRole('link',{name:'All articles'}).click();
   const index = page.getByRole('table',{name:'Mechanics articles'});
   const sections = index.locator('tbody td');
-  await expect(index.getByRole('link')).toHaveCount(23);
+  await expect(index.getByRole('link')).toHaveCount(24);
   expect([...new Set(await sections.allTextContents())]).toEqual(['General','Terry','Cobi & Tara']);
   await expect(index.getByRole('columnheader',{name:'Section'})).toHaveAttribute('aria-sort','ascending');
   const articleSort = index.getByRole('button',{name:'Article'});
@@ -383,7 +383,8 @@ test('the offline skill profile fits a narrow screen and connects combination in
   await expect(page.locator('#article-title')).toHaveText('MegaMagic');
   await expect(page.locator('.skill-combat-facts')).toContainText('All remaining MP');
   const related=page.locator('.skill-progression');
-  await expect(related.getByRole('link')).toHaveCount(5);
+  await expect(related.getByRole('link')).toHaveCount(6);
+  await expect(related.getByRole('link',{name:'GigaMagic',exact:true})).toBeVisible();
   await expect(page.getByRole('navigation',{name:'Adjacent skills'})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await related.getByRole('link',{name:'Blazemost',exact:true}).click();

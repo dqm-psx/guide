@@ -3247,7 +3247,8 @@ globalThis.FIELD_GUIDE = {
         "field-colosseum-prizes",
         "field-greattree-arena",
         "quest-aibou-egg",
-        "field-personality"
+        "field-personality",
+        "field-battle-combos"
       ],
       "aliases": [
         "version differences",
@@ -3491,6 +3492,50 @@ globalThis.FIELD_GUIDE = {
           ]
         },
         {
+          "id": "resistance-breeding-changes",
+          "title": "Breeding resistance: more grades, but no inherited immunity",
+          "table": {
+            "columns": [
+              "Rule",
+              "Game Boy Color DWM2",
+              "PlayStation: all three adventures"
+            ],
+            "rows": [
+              [
+                "Resistance grades",
+                "Four grades, 0–3.",
+                "Eight grades, 0–7, allowing finer improvements."
+              ],
+              [
+                "Inheritance result",
+                "Includes a random roll; the child’s base grade, the parents’ current grades and the child’s + value affect the possible result.",
+                "Deterministic: the same child species, parent grades and child + produce the same resistance."
+              ],
+              [
+                "Breeding for immunity",
+                "A species with base grade 1 or 2 can inherit immunity. A base-0 channel cannot.",
+                "Only a naturally immune child species keeps grade 7. Every nonimmune channel is capped at grade 6, even with two immune parents."
+              ]
+            ]
+          },
+          "paragraphs": [
+            "The English patch retains these PSX rules. A Game Boy recipe for an immune monster therefore does not establish the same result on PlayStation."
+          ],
+          "links": [
+            "field-breed"
+          ],
+          "sources": [
+            {
+              "label": "Original PSX and v74 inheritance verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/resistance-inheritance-evidence.md"
+            },
+            {
+              "label": "DwM2_DD’s GBC resistance research",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/62849"
+            }
+          ]
+        },
+        {
           "id": "learning-changes",
           "title": "Skill learning: lower requirements and new Summon recipes",
           "paragraphs": [
@@ -3566,6 +3611,52 @@ globalThis.FIELD_GUIDE = {
             {
               "label": "Native skill-learning evidence",
               "url": "https://github.com/dqm-psx/guide/blob/main/docs/skill-learning-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "battle-combo-changes",
+          "title": "Battle combinations: both handheld sets in every adventure",
+          "table": {
+            "columns": [
+              "Rule",
+              "Game Boy Color DWM2",
+              "PlayStation"
+            ],
+            "rows": [
+              [
+                "Available combinations",
+                "Ten combinations in Cobi’s cartridge and ten in Tara’s.",
+                "All 20 in Terry, Cobi and Tara’s adventures. The English patch retains this shared system."
+              ],
+              [
+                "GigaMagic damage",
+                "The linked handheld guide describes four times the users’ combined MP.",
+                "Includes both users’ levels as well as MP spent: twice their combined levels and spent MP, with a ±10% roll before further modifiers."
+              ],
+              [
+                "Elemental slash bonuses",
+                "The handheld guide lists a single family bonus for each of its three slash combinations.",
+                "Wave Slash favors Slime, Zombie and Aquatic targets; Air Slash favors Dragon, Bird and Devil; Earth Slash favors Beast, Plant and Bug."
+              ],
+              [
+                "Spirit Festival",
+                "The linked handheld guide describes full-party revival and recovery.",
+                "Restores living allies’ HP and MP and clears multiple ailments. Does not revive fallen allies."
+              ]
+            ]
+          },
+          "links": [
+            "field-battle-combos"
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            },
+            {
+              "label": "McBick’s GBC co-op skill guide",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/77570/list-of-co-op-skills"
             }
           ]
         },
@@ -3818,18 +3909,146 @@ globalThis.FIELD_GUIDE = {
       "id": "field-breed",
       "kind": "mechanic",
       "game": "both",
-      "title": "Prepare a pair for breeding",
-      "summary": "Bring a male and a female, each at level 10 or higher, to the Starry Shrine.",
-      "details": [
-        "In GreatLog, win the Kids’ Class for permission to use the shrine. Finish Water World and return when the line has cleared.",
-        "Breeding leaves an egg. Both parents leave, so keep another monster ready to travel with you.",
-        "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents.",
-        "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. In the title-screen Breeding room, the same pair from two different Adventure Logs produces Killing Machine 2 at lower + values."
+      "title": "Breeding: parents, offspring and resistance",
+      "summary": "Both parents pass on skills and resistance, but the child’s species sets its natural strengths. On PlayStation, breeding improves resistance predictably; it cannot give a nonimmune species full immunity.",
+      "details": [],
+      "sections": [
+        {
+          "id": "prepare-parents",
+          "title": "Before breeding",
+          "paragraphs": [
+            "Bring a male and a female, each at level 10 or higher, to the Starry Shrine. In GreatLog, win the Kids’ Class for permission, then finish Water World and return when the line has cleared.",
+            "Breeding leaves an egg and both parents leave. Keep another monster ready to travel with you. Choose the pedigree deliberately: reversing the parents can change the offspring species. Check the ordered pair in Find offspring.",
+            "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. The title-screen Breeding room has a different rule for this pair from two Adventure Logs."
+          ],
+          "links": [
+            "field-eggs",
+            "field-skill-inheritance",
+            "field-two-save-breeding"
+          ]
+        },
+        {
+          "id": "resistance-inheritance",
+          "title": "What resistance the child inherits",
+          "intro": "Yes, PlayStation has resistance inheritance in Terry, Cobi and Tara’s adventures. It uses a different calculation from Game Boy Color DWM2. These are original PSX rules, retained in the English patch.",
+          "rows": [
+            [
+              "Each resistance is separate",
+              "The game calculates all 27 resistance channels individually. Strong fire resistance does not imply strong ice or sleep resistance."
+            ],
+            [
+              "Both parents matter",
+              "The calculation uses both parents’ individual resistance grades, including improvements inherited in earlier generations, and the child’s resulting + value. It starts from the child species’ natural grade, not either parent species’ baseline. A later generation can lose earlier gains, but never falls below its own species’ base grade."
+            ],
+            [
+              "No random inheritance roll",
+              "With the same child species, parent resistance grades and child + value, the resistance result is the same. Swapping parents does not change this arithmetic once those inputs are fixed."
+            ],
+            [
+              "Immunity must be natural to the child species",
+              "A naturally immune channel stays immune. Any other channel can improve only to the grade below immunity—even if both parents are immune. Choose a species naturally immune to an effect when complete protection matters."
+            ]
+          ],
+          "paragraphs": [
+            "An imported monster’s individual resistance is more useful than an unbred species baseline. My game passes those saved values to the Damage calculator. Equipment and temporary battle protection are separate from this inheritance calculation."
+          ],
+          "links": [
+            "field-damage-and-resistance",
+            "field-growth"
+          ],
+          "sources": [
+            {
+              "label": "Original PSX and v74 inheritance verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/resistance-inheritance-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "resistance-example",
+          "title": "Example: two immune parents cannot give this child immunity",
+          "intro": "Suppose both parents are immune to a damage spell, but the child species has no natural resistance to it. The following results use the child’s + value, not the sum of the parents’ + values.",
+          "table": {
+            "columns": [
+              "Child’s + value",
+              "Inherited grade",
+              "Spell damage taken"
+            ],
+            "rows": [
+              [
+                "+20",
+                "3",
+                "65%"
+              ],
+              [
+                "+50",
+                "4",
+                "50%"
+              ],
+              [
+                "+74",
+                "6",
+                "15%"
+              ]
+            ]
+          },
+          "paragraphs": [
+            "Further breeding while keeping this species cannot raise that channel to grade 7, which is immunity. The percentages above are for the standard damage-spell scale; breaths and status effects use their own scales."
+          ]
+        },
+        {
+          "id": "resistance-formula",
+          "title": "The exact PSX calculation",
+          "intro": "Resistance grades run from 0 to 7: higher is stronger, and 7 is immune. For each channel, let B be the child species’ base grade, P be the sum of both parents’ individual grades, and C be the child’s resulting + value.",
+          "paragraphs": [
+            "If B is 7, the result is 7. Otherwise, divide (10 × P + 3 × C) by the divisor below, round down, and add B. Cap the result at 6.",
+            "For the +20 example above: P = 7 + 7 = 14 and B = 0. (10 × 14 + 3 × 20) ÷ 60 = 3⅓, rounded down to grade 3."
+          ],
+          "table": {
+            "columns": [
+              "Child’s base grade B",
+              "Divisor"
+            ],
+            "rows": [
+              [
+                "0",
+                "60"
+              ],
+              [
+                "1",
+                "75"
+              ],
+              [
+                "2",
+                "90"
+              ],
+              [
+                "3",
+                "105"
+              ],
+              [
+                "4",
+                "120"
+              ],
+              [
+                "5",
+                "150"
+              ],
+              [
+                "6",
+                "180"
+              ]
+            ]
+          }
+        }
       ],
       "aliases": [
         "Roboster2 recipe",
         "Killing Machine 2 breeding",
-        "Game Boy breeding differences"
+        "Game Boy breeding differences",
+        "resistance inheritance",
+        "breed immunity",
+        "resistance breeding",
+        "Prepare a pair for breeding"
       ],
       "species_ids": [
         252,
@@ -3845,12 +4064,16 @@ globalThis.FIELD_GUIDE = {
         "PSX shrine rule 8004AB80 and two-save override 8004B05C",
         "s003f6800_1bac",
         "s003f6800_1c4c",
-        "m_exe_090738"
+        "m_exe_090738",
+        "PSX offspring resistance 80049C90–80049D7C; coefficients 80010A14; retail and v1.0.74"
       ],
       "related": [
         "field-eggs",
         "field-skill-inheritance",
         "field-two-save-breeding",
+        "field-damage-and-resistance",
+        "field-growth",
+        "field-restored-content",
         "npc-monster-professor"
       ]
     },
@@ -3894,12 +4117,15 @@ globalThis.FIELD_GUIDE = {
             ],
             [
               "Upgrades and combinations",
-              "Some skills evolve from a move the monster already knows. Others require a combination of learned skills as well as their own learning requirements."
+              "Some skills evolve from a move the monster already knows. Others require a combination of learned skills as well as their own learning requirements. These are learning requirements for one monster. Two monsters combining their commands during battle is a separate feature; see Battle combinations."
             ],
             [
               "After farm training",
               "Awake farm monsters can gain levels and stats without running the party’s skill-learning checks. Bring the monster into the active party and gain a level in battle. The check considers all eligible candidates against its current stats and level, so several learning prompts can appear together."
             ]
+          ],
+          "links": [
+            "field-battle-combos"
           ]
         }
       ],
@@ -3924,7 +4150,8 @@ globalThis.FIELD_GUIDE = {
         "field-breed",
         "field-farm",
         "field-growth",
-        "field-equipment"
+        "field-equipment",
+        "field-battle-combos"
       ]
     },
     {
@@ -4115,7 +4342,8 @@ globalThis.FIELD_GUIDE = {
         "item-21",
         "item-22",
         "item-23",
-        "item-24"
+        "item-24",
+        "field-battle-combos"
       ],
       "sections": [
         {
@@ -4401,7 +4629,9 @@ globalThis.FIELD_GUIDE = {
       ],
       "related": [
         "field-equipment",
-        "field-skill-inheritance"
+        "field-skill-inheritance",
+        "field-breed",
+        "field-battle-combos"
       ],
       "sections": [
         {
@@ -4478,7 +4708,11 @@ globalThis.FIELD_GUIDE = {
           },
           "paragraphs": [
             "For example, your Blaze against a wild target taking 75% spell damage deals 9–11. A wild enemy’s Blaze against your monster taking 85% deals 5–10. The attacker’s version of the move and the defender’s scale both matter.",
-            "Check the resistance to the selected move, rather than treating resistance as one overall stat. A bred monster can differ from its species baseline. An imported save supplies its current individual values; without one, select a known reduction in the calculator."
+            "Check the resistance to the selected move, rather than treating resistance as one overall stat. A bred monster can differ from its species baseline. An imported save supplies its current individual values; without one, select a known reduction in the calculator.",
+            "Breeding can improve each resistance using both parents’ individual grades and the child’s + value. It cannot make a nonimmune child species immune. The breeding guide explains the calculation and gives worked examples."
+          ],
+          "links": [
+            "field-breed"
           ]
         },
         {
@@ -4537,6 +4771,276 @@ globalThis.FIELD_GUIDE = {
             {
               "label": "Imported stats, equipment and resistance",
               "url": "https://github.com/dqm-psx/guide/blob/main/docs/save-planner-evidence.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "field-battle-combos",
+      "kind": "mechanic",
+      "game": "both",
+      "topic": "battle",
+      "title": "Battle combinations: two monsters, one stronger move",
+      "summary": "All 20 party combinations work in Terry, Cobi and Tara’s PlayStation adventures. Have two monsters choose a matching pair of skills in the same turn for a chance to combine their actions.",
+      "details": [],
+      "spoiler": "none",
+      "aliases": [
+        "co-op skills",
+        "coop skills",
+        "cooperative skills",
+        "combo skills",
+        "battle combos",
+        "party combos",
+        "Kazap",
+        "IceBlaze",
+        "Wave Slash",
+        "Air Slash",
+        "Earth Slash",
+        "Giga Cross Break",
+        "Gigante",
+        "Twin Attack",
+        "Quick Draw",
+        "GigaMagic",
+        "Spirit Festival",
+        "Reaper's Feast",
+        "Demon Lord Form",
+        "Twilight Wave",
+        "Mist of Forgetting",
+        "Mega Magic Drain",
+        "Counter",
+        "Enchanting Dance",
+        "Iron Wall Shield",
+        "Enlightenment"
+      ],
+      "source_ids": [
+        "PSX battle overlay 5502 · selector 8013F7E0 · paired action conversion 8013FE38",
+        "e1109",
+        "e110f",
+        "e1115",
+        "e111b",
+        "e1122",
+        "e1128",
+        "e1132",
+        "e1137",
+        "e113e",
+        "e1144",
+        "e114a",
+        "e1153",
+        "e115c",
+        "e1163",
+        "e116c",
+        "e1175",
+        "e117b",
+        "e1181",
+        "e1189",
+        "e1191"
+      ],
+      "skill_ids": [
+        15,
+        3,
+        18,
+        77,
+        103,
+        73,
+        75,
+        21,
+        112,
+        106,
+        145,
+        42,
+        98,
+        29,
+        61,
+        124,
+        160,
+        117,
+        121,
+        58,
+        60,
+        129,
+        130,
+        146,
+        156,
+        50,
+        119,
+        149,
+        150,
+        52,
+        120,
+        148,
+        152,
+        138,
+        159
+      ],
+      "related": [
+        "field-damage-and-resistance",
+        "field-personality",
+        "field-skill-inheritance",
+        "field-restored-content"
+      ],
+      "sections": [
+        {
+          "id": "using-combos",
+          "title": "How to use a battle combination",
+          "paragraphs": [
+            "Choose one listed skill for one monster and the matching skill for a different monster in the same turn. For Kazap, both monsters choose Thordain. Each must be able to act and have enough MP for its selected skill.",
+            "Each monster pays the MP cost of its own chosen skill. Gigante is the exception: it consumes all remaining MP from both users.",
+            "The combination is a chance outcome, not a separate command you can select. Personality compatibility and a hidden motivation value affect the chance; the right moves alone do not guarantee it. Time using AI tactics can raise motivation, while repeated direct orders lower it. At most one pair combines on each side in a turn.",
+            "These moves are not learned permanently and do not take up an extra skill slot. A single monster knowing both component skills is not enough. Learning a new skill from prerequisites is a different system."
+          ],
+          "links": [
+            "field-skill-inheritance",
+            "field-personality"
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "combo-recipes",
+          "title": "All 20 PlayStation combinations",
+          "intro": "Use the current English patch names below. Each pair needs two different monsters, including recipes that repeat the same skill. Damage ranges are before resistance and other battle modifiers unless noted.",
+          "table": {
+            "columns": [
+              "Combination",
+              "Skills chosen by the two monsters",
+              "PSX effect"
+            ],
+            "rows": [
+              [
+                "Kazap",
+                "Thordain + Thordain",
+                "500–700 base lightning damage to all enemies before resistance and guarding."
+              ],
+              [
+                "IceBlaze",
+                "Blazemost + Blizzard",
+                "700–900 base damage to one enemy before guarding."
+              ],
+              [
+                "Wave Slash",
+                "Tidal Wave + Gigaslash",
+                "500–600 base damage to one enemy; 1.5× damage against Slime, Zombie and Aquatic families, after resistance and guarding."
+              ],
+              [
+                "Air Slash",
+                "Vacuum Wave + Gigaslash",
+                "500–600 base damage to one enemy; 1.5× damage against Dragon, Bird and Devil families, after resistance and guarding."
+              ],
+              [
+                "Earth Slash",
+                "Rock Throw + Gigaslash",
+                "500–600 base damage to one enemy; 1.5× damage against Beast, Plant and Bug families, after resistance and guarding."
+              ],
+              [
+                "Giga Cross Break",
+                "Gigaslash + Gigaslash",
+                "500–700 base damage to all enemies before resistance and guarding."
+              ],
+              [
+                "Gigante",
+                "Sacrifice + Suicide Charge",
+                "Attempts near-fatal damage to every enemy. Uses all MP from both participants; each then has a 50% chance of being knocked out, otherwise losing 99% of current HP (rounded down). A participant already at 1 HP is knocked out."
+              ],
+              [
+                "Twin Attack",
+                "High Jump + Geyser",
+                "A physical attack using the High Jump user’s Attack while ignoring the target’s Defense."
+              ],
+              [
+                "Quick Draw",
+                "Speedup + Gale Thrust",
+                "A fast physical attack with doubled noncritical damage and an additional action-priority bonus."
+              ],
+              [
+                "GigaMagic",
+                "Magic Healus + MegaMagic",
+                "Damage to all enemies starts from twice the combined levels plus twice the MP spent by both users, with a ±10% roll before resistance and guarding."
+              ],
+              [
+                "Spirit Festival",
+                "Hustle Dance + Spirit Song",
+                "Fully restores living allies’ HP and MP and clears multiple ailments. Does not revive fallen allies."
+              ],
+              [
+                "Reaper's Feast",
+                "Curse Words + Death Dance",
+                "Randomly applies one of five ailments to each enemy: curse, poison, sleep, paralysis or confusion."
+              ],
+              [
+                "Demon Lord Form",
+                "Transform + Chance",
+                "Transforms both users, raising their maximum HP, maximum MP, Attack, Defense and Agility by 25% (up to 999), and replacing their skills and resistances for the transformation."
+              ],
+              [
+                "Twilight Wave",
+                "Wave of Light + Wave of Darkness",
+                "Buffs the party’s Attack, Defense, Agility and evasion."
+              ],
+              [
+                "Mist of Forgetting",
+                "Stop Dance + Sealing Prayer",
+                "Seals enemy spells, dances and breaths regardless of resistance."
+              ],
+              [
+                "Mega Magic Drain",
+                "RobMagic + Magic Drain Dance",
+                "Drains all of one enemy’s MP and restores half to each user, limited by each user’s maximum MP."
+              ],
+              [
+                "Counter",
+                "Parry + Blade Defense",
+                "Both participants take a counter stance for the turn; eligible incoming physical attacks are redirected with doubled damage. Does not protect the third party member."
+              ],
+              [
+                "Enchanting Dance",
+                "Confuse + Confusion Dance",
+                "Confuses all enemies regardless of resistance."
+              ],
+              [
+                "Iron Wall Shield",
+                "Strong Defense + Defend All",
+                "The leading participant protects allies with strong defense."
+              ],
+              [
+                "Enlightenment",
+                "Concentrate + Meditate",
+                "Lets allies repeat eligible actions and makes their critical-capable attacks critical hits."
+              ]
+            ]
+          },
+          "paragraphs": [
+            "In the English patch’s local Colosseum, turn Combos on to allow battle combinations. Demon Lord Form still cannot form there. These local rules do not limit combinations in Terry, Cobi or Tara’s adventure."
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "game-boy-comparison",
+          "title": "What changes from Game Boy Color?",
+          "paragraphs": [
+            "The Game Boy versions normally divide these combinations into ten for Cobi and ten for Tara. Their recipe tables and version check confirm that split. PSX uses the same 20 skill pairs without the campaign restriction: all 20 are available to Terry as well as Cobi and Tara.",
+            "The handheld guide describes Spirit Festival as reviving allies and Mega Magic Drain as draining all enemies. On PSX, Spirit Festival only restores living allies, and Mega Magic Drain targets one enemy. The three elemental slashes also cover different families, while GigaMagic includes both users’ levels as well as their spent MP."
+          ],
+          "links": [
+            "field-restored-content"
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            },
+            {
+              "label": "McBick’s GBC co-op skill guide",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/77570/list-of-co-op-skills"
             }
           ]
         }

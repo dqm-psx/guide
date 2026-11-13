@@ -282,3 +282,9 @@ button.species-star[aria-pressed=true]{color:var(--gold)}
 #plan-suggestions-clear[hidden]{display:none}
 @media(max-width:950px){.plan-layout{grid-template-columns:1fr}}
 @media(max-width:650px){.plan-toolbar{padding:6px 18px 13px}.plan-inline-error{margin:4px 18px 0}#plan-clear{margin:10px 18px 0}.plan-undo-row{padding:10px 18px 0}.plan-layout{padding:14px 18px 0}.plan-node-actions button{flex:1 1 auto}}
+
+/* Native family symbols stay at an exact 2x scale beside readable labels. */
+:root{--family-text:#466044}
+:root[data-theme=dark]{--family-text:#c7dabc}
+.family-label{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;white-space:nowrap}
+.family-label>.family-icon{width:20px;height:20px;max-width:none;flex:0 0 20px;object-fit:contain;image-rendering:pixelated}

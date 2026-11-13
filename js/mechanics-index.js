@@ -10,7 +10,7 @@
       entries:['field-growth','field-skill-inheritance','field-breed','field-two-save-breeding','field-eggs','field-personality','field-farm'],
       tools:[['#skill-planner','Skill & growth planner'],['#pair-finder','Find offspring'],['#offspring-finder','Find parents']]},
     {id:'battle',title:'Battle & the arena',description:'Damage, equipment, battle commands and arena rewards.',
-      entries:['field-damage-and-resistance','field-equipment','field-arena-items','field-greattree-arena','field-battle-text-speed','field-colosseum-prizes'],
+      entries:['field-damage-and-resistance','field-battle-combos','field-equipment','field-arena-items','field-greattree-arena','field-battle-text-speed','field-colosseum-prizes'],
       tools:[['#combat-planner','Damage calculator'],['#field-guide?kind=skill','Skills']]},
     {id:'exploration',title:'Exploration & recruitment',description:'Find monsters, recruit them and prepare for the journey.',
       entries:['field-wandering-masters','field-recruitment','field-packing','field-storage','field-generated-keys','field-movement-settings','field-medals','field-default-nicknames'],

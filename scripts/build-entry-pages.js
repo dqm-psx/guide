@@ -10,7 +10,7 @@ const paragraph = text => text ? '<p>'+escape(text)+'</p>' : '';
 
 function addEntryPages(assets) {
   const db=vm.createContext({});
-  for (const file of ['breeding-data','monster-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-images','patch-rewards']) {
+  for (const file of ['breeding-data','monster-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-images','family-icons','patch-rewards']) {
     vm.runInContext(assets.get('data/'+file+'.js').toString(),db,{timeout:5000});
   }
   vm.runInContext(assets.get('js/current-names.js').toString(),db,{timeout:5000});
@@ -86,6 +86,19 @@ function addEntryPages(assets) {
     return article ? link(articlePath(article),label || article.title) : skill ? link('skills/'+skill.id+'/',label || skill.title) : '';
   }
   const articleLink = id => linkArticle(id);
+  function articleProse(row,text) {
+    const skills=(row.skill_ids || []).map(id=>names[id]).filter(Boolean);
+    if (!skills.length) return escape(text);
+    const byName=new Map(skills.map(skill=>[skill.title,skill]));
+    const pattern=[...byName.keys()].sort((a,b)=>b.length-a.length).map(name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+    const rx=new RegExp('(?<![\\p{L}\\p{N}])(?:'+pattern+')(?![\\p{L}\\p{N}])','gu');
+    let result='',start=0;
+    for (const match of text.matchAll(rx)) {
+      result+=escape(text.slice(start,match.index))+skillLink(byName.get(match[0]));
+      start=match.index+match[0].length;
+    }
+    return result+escape(text.slice(start));
+  }
   const storyContext = row => ['story','ending'].includes(row.spoiler) ? ' data-story-context' : '';
   function contextLinks(title,rows,mapIds=[]) {
     if (!rows.length) return '';
@@ -271,7 +284,7 @@ function addEntryPages(assets) {
       '</div>'+gateEncounterTable(routeData.encounters,row.availability==='unused')+'</div>' : '';
     const mapsAndFloors=gate ? '<div class="entry-gate-content">'+locationMaps(row)+db.DQMGateGeneration.render(row.id,{escape,headingLevel:2})+'</div>' : locationMaps(row);
     const calculatorLink=row.id==='field-damage-and-resistance' ? '<p>'+link('#combat-planner','Open the damage calculator →')+'</p>' : '';
-    add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+calculatorLink+db.DQMArticleSections(row,escape,escape,2,null,{
+    add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+calculatorLink+db.DQMArticleSections(row,escape,text=>articleProse(row,text),2,null,{
       articleLink,compactContents:true,collapseSpoilers:true,sectionHref:id=>articlePath(row)+'#article-section-'+id
     })+nicknameNote+stepsMarkup+walkChapters+requests+mapsAndFloors+
       (gate?'':locationCharacters(row))+contextLinks('Locations',characterLocations)+
@@ -292,6 +305,9 @@ function addEntryPages(assets) {
     if (names[skill.upgradesFrom]) skillFacts.push(['Upgrades from',skillLink(names[skill.upgradesFrom])]);
     const prereqs=(skill.combination || []).map(k=>names[k]).filter(Boolean);
     if (prereqs.length) skillFacts.push(['Requires skills',prereqs.map(skillLink).join(' + ')]);
+    const battleCombos=(db.MONSTER_REFERENCE.guide_names.battle_combos || []).filter(combo=>combo.skills.includes(Number(id)));
+    if (battleCombos.length) skillFacts.push(['Battle combinations',battleCombos.map(combo=>
+      link('articles/field-battle-combos/#article-section-combo-recipes',combo.title)).join(' · ')]);
     const stats=db.FIELD_GUIDE.skill_requirements[id] || {};
     const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const minimums=Object.entries(stats).filter(([,value])=>value>0).map(([key,value])=>[labels[key] || key,escape(value)]);
@@ -371,8 +387,11 @@ function addEntryPages(assets) {
       link('entries/#locations-dqm2',adventures.dqm2+'’s worlds')+'</nav>' : '';
     let introduction=item || gate ? '' : '<h1>'+escape(p.title)+'</h1>'+paragraph(p.description);
     if (monster) {
-      const identity=[db.DATA.species[monster.index]?.family_display,monster.short_name!==monster.display_name && monster.short_name,monster.japanese].filter(Boolean);
-      introduction='<div class="entry-identity">'+portrait(monster.index)+'<div><h1>'+escape(p.title)+'</h1>'+paragraph(identity.join(' · '))+'</div></div>'+
+      const species = db.DATA.species[monster.index];
+      const icon = db.FAMILY_ICONS[species.family_id];
+      const family = '<span class="family-label">'+(icon ? '<img class="family-icon" alt="" src="'+versioned(icon.src)+'" width="10" height="10">' : '')+escape(species.family_display || species.family)+' Family</span>';
+      const identity=[monster.short_name!==monster.display_name && monster.short_name,monster.japanese].filter(Boolean);
+      introduction='<div class="entry-identity">'+portrait(monster.index)+'<div><p>'+family+'</p><h1>'+escape(p.title)+'</h1>'+paragraph(identity.join(' · '))+'</div></div>'+
         '<div class="entry-library"><h2>In-game library</h2>'+paragraph(monster.library?.text || 'No in-game library entry.')+'</div>';
     }
     const spoilerPreference = p.guarded ? '<script>try{if(localStorage.getItem("dqm-guide-story-spoilers")==="hide"){document.documentElement.classList.add("hide-story");document.title="Story entry · DQM1&2 PSX Player Guide"}}catch{}</script>' : '';

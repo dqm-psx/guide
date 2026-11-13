@@ -211,7 +211,49 @@ function sectionSkillNames(entryId, section, skills, skillBindings) {
   return result;
 }
 
-function buildGuideNames({comparison, revision, field, world, atlas, skillBindings, worldBindings, species, originalSpecies}) {
+// Battle combinations are execution-only results, not learnable skill records.
+// Update their identified recipe cells and prose without turning stat words
+// such as Defense into a skill name or rewriting the historical GBC column.
+function sectionComboNames(entryId, section, combos, comboBindings, skills, skillBindings) {
+  const article = entryId === 'field-battle-combos';
+  const comparison = entryId === 'field-restored-content' && section.id === 'battle-combo-changes';
+  if (!comboBindings.length || (!article && !comparison)) return section;
+  const revise = matcher(comboBindings.map((bind,i) => ({spelling:bind.spelling,title:combos[i].title})));
+  const result = {...section};
+  for (const key of ['title','intro']) if (section[key]) result[key] = revise(section[key]);
+  for (const key of ['paragraphs','bullets']) if (section[key]) result[key] = section[key].map(revise);
+  if (article && section.id === 'using-combos' && result.paragraphs) {
+    // The introductory Kazap example explicitly names its Thordain components.
+    const bind = skillBindings.find(skill => skill.id === 15);
+    const component = matcher([{spelling:bind.spelling,title:skills[15].title}]);
+    result.paragraphs = result.paragraphs.map(component);
+  }
+  if (article && section.id === 'combo-recipes') {
+    check(section.table?.rows?.length === comboBindings.length && section.table.columns?.length === 3,
+      'missing or incomplete battle combo recipe table');
+    result.table = {...section.table, rows:section.table.rows.map((cells,i) => {
+      const bind = comboBindings[i];
+      const components = bind.skills.map(id => skillBindings.find(skill => skill.id === id));
+      check(cells.length === 3 && canon(cells[0]) === canon(bind.spelling) &&
+        canon(cells[1]) === canon(components.map(skill => skill.spelling).join(' + ')),
+        'wrong authored battle combo recipe for ' + bind.id);
+      const effectTerms = (bind.effect_skill_mentions || []).map(id => {
+        const component = components.find(skill => skill.id === id);
+        check(component, 'unbound skill mention in battle combo effect ' + bind.id);
+        return {spelling:component.spelling,title:skills[id].title};
+      });
+      return [combos[i].title, bind.skills.map(id => skills[id].title).join(' + '), matcher(effectTerms)(cells[2])];
+    })};
+  } else if (comparison && section.table) {
+    result.table = {...section.table, rows:section.table.rows.map(cells => {
+      check(cells.length === 3, 'unexpected battle combo comparison columns');
+      return [revise(cells[0]),cells[1],revise(cells[2])];
+    })};
+  }
+  return result;
+}
+
+function buildGuideNames({comparison, revision, field, world, atlas, skillBindings, comboBindings=[], worldBindings, species, originalSpecies}) {
   const index = sourceIndex(comparison, revision);
   const nicknames = nicknameRecords(comparison, index, worldBindings.nickname_articles, world);
   const items = {}, skills = {}, maps = {}, entries = {};
@@ -252,6 +294,19 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
     skills[bind.id]=name;
     add(bind.spelling,name.title,bind.affected_entries || []);
   }
+  check(!comboBindings.length || (comboBindings.length === 20 &&
+    new Set(comboBindings.map(bind => bind.source_id)).size === 20), 'incomplete battle combo identities');
+  const battleCombos = comboBindings.map((bind,i) => {
+    check(bind.id === 208+i && Array.isArray(bind.skills) && bind.skills.length === 2 &&
+      bind.skills.every(id => Number.isInteger(id) && id >= 1 && id <= 169 && skills[id]),
+      'invalid battle combo identity or components at ' + bind.id);
+    label(bind.spelling, 'authored battle combo ' + bind.id);
+    const name = systemRecord(index,bind.source_id,473+bind.id,bind.spelling,'Skills and spells');
+    return {id:bind.id,title:name.title,source_id:bind.source_id,skills:[...bind.skills]};
+  });
+  if (battleCombos.length) check(field.entries.filter(row => row.id === 'field-battle-combos' &&
+    row.sections?.filter(section => section.id === 'combo-recipes').length === 1).length === 1,
+    'missing battle combo article or recipe section');
   for (const map of atlas.maps) {
     const record=atlasRecord(index,map);
     maps[map.id]=record;
@@ -328,7 +383,9 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
     }
     if (row.sections) {
       const sections = row.sections.map(authoredSection => {
-        const section = sectionSkillNames(row.id, authoredSection, skills, skillBindings);
+        const section = sectionComboNames(row.id,
+          sectionSkillNames(row.id, authoredSection, skills, skillBindings),
+          battleCombos, comboBindings, skills, skillBindings);
         const translated={...section,title:revise(section.title)};
         if (section.intro) translated.intro=revise(section.intro);
         if (section.rows) translated.rows=section.rows.map(pair=>pair.map(revise));
@@ -363,7 +420,7 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
   }
   check(Object.keys(items).length===itemIds.size, 'incomplete item identity coverage');
   for (const id of Object.keys(field.skill_requirements || {})) check(skills[id], 'missing native skill ' + id);
-  return {schema_version:1,items,skills,maps,entries,default_nicknames:[...nicknames.values()],coverage:{items:Object.keys(items).length,skills:Object.keys(skills).length,
+  return {schema_version:1,items,skills,battle_combos:battleCombos,maps,entries,default_nicknames:[...nicknames.values()],coverage:{items:Object.keys(items).length,skills:Object.keys(skills).length,
     maps:Object.keys(maps).length,world_name_bindings:worldBindings.terms.length}};
 }
 
@@ -375,7 +432,7 @@ function guideInputs(root) {
   }
   const read = filename => JSON.parse(fs.readFileSync(path.join(root,'scripts',filename),'utf8'));
   return {field:data.FIELD_GUIDE, world:data.WORLD_GUIDE, atlas:data.PLAYER_ATLAS,
-    skillBindings:read('skill-name-bindings.json'),worldBindings:read('world-name-bindings.json')};
+    skillBindings:read('skill-name-bindings.json'),comboBindings:read('battle-combo-name-bindings.json'),worldBindings:read('world-name-bindings.json')};
 }
 
 module.exports={buildGuideNames,guideInputs};

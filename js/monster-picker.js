@@ -89,6 +89,10 @@
         name.textContent = nameOf(species);
         const detail = document.createElement('small');
         detail.textContent = [species.family_display || species.family, species.japanese].filter(Boolean).join(' · ');
+        if (typeof familyLabelMarkup === 'function') {
+          detail.innerHTML = familyLabelMarkup(species.family_id, species.family_display || species.family);
+          if (species.japanese) detail.append(document.createTextNode(' · '+species.japanese));
+        }
         option.append(name, detail);
         fragment.append(option);
       }

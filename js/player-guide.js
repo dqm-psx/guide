@@ -171,7 +171,10 @@
     if (next.length) progression.push(['Upgrades to',next.map(skill=>skillLink(skill.nativeId)).join(' · ')]);
     if (skill.combination?.length) progression.push(['Requires skills',skill.combination.map(skillLink).join(' + ')]);
     const combinations=sortedSkills.filter(skill=>skill.effect.combination?.includes(row.nativeId));
-    if (combinations.length) progression.push(['Used in combinations',combinations.map(skill=>skillLink(skill.nativeId)).join(' · ')]);
+    if (combinations.length) progression.push(['Used to learn',combinations.map(skill=>skillLink(skill.nativeId)).join(' · ')]);
+    const battleCombos=(GUIDE_REFERENCE.guide_names.battle_combos || []).filter(combo=>combo.skills.includes(row.nativeId));
+    if (battleCombos.length) progression.push(['Battle combinations',battleCombos.map(combo=>
+      '<a href="'+linked(p,{entry:'field-battle-combos',section:'combo-recipes'})+'">'+safe(combo.title)+'</a>').join(' · ')]);
     const related=progression.length ? '<section class="monster-card skill-progression"><div class="monster-card-heading"><h3>Related skills</h3></div><dl class="skill-facts">'+
       progression.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl></section>' : '';
     return trail+header+'<div class="monster-profile-grid skill-profile-grid"><div class="skill-learning-column">'+requirements+related+'</div>'+
@@ -303,16 +306,17 @@
   function linkedProse(line, row, data, p, used) {
     const terms=new Map();
     const fold=label=>label.toLowerCase().replace(/[’‘]/g,"'");
-    function add(label,href,id) {
-      if (label?.length>=3 && !terms.has(fold(label))) terms.set(fold(label),{href,id});
+    function add(label,href,id,exactCase=false) {
+      if (label?.length>=3 && !terms.has(fold(label))) terms.set(fold(label),{href,id,exactLabel:exactCase ? label : null});
     }
+    const articleSkills=new Set((row.skill_ids || []).map(id=>'skill-'+FIELD_GUIDE.skill_names[id].id));
     const destinations=[...(row.related || []),...(data?.supplies || []),data?.gate,data?.boss,
-      ...(data?.skills || []).map(id=>'skill-'+FIELD_GUIDE.skill_names[id].id)];
+      ...[...(data?.skills || []),...(row.skill_ids || [])].map(id=>'skill-'+FIELD_GUIDE.skill_names[id].id)];
     for (const id of destinations) {
       const dest=byId.get(id);
       if (!dest || guarded(dest)) continue;
       const chapter = row.kind === 'story' ? row.id : '';
-      for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id,chapter}),dest.id);
+      for (const name of [dest.title,...(dest.aliases || [])]) add(name,linked(p,{entry:dest.id,chapter}),dest.id,articleSkills.has(dest.id));
     }
     for (const map of window.DQMAtlas.placesForMaps([...(row.map_ids || []),...(data?.maps || [])])) {
       add(map.title,row.kind==='location' ? linked(p,{entry:row.id,map:map.id,variant:'',section:'maps'}) : '#atlas?map='+safe(map.id)+(row.kind==='story'?'&amp;chapter='+safe(row.id):''));
@@ -330,8 +334,10 @@
     const rx=new RegExp('(?<![\\p{L}\\p{N}])(?:'+pattern+')(?![\\p{L}\\p{N}])','giu');
     let text='',start=0;
     for (const m of line.matchAll(rx)) {
-      const {href,id}=terms.get(fold(m[0]));
-      if (id && used) used.add(id);
+      const term=terms.get(fold(m[0])), id=term.id;
+      // A skill named Chance must not turn ordinary prose about chance into a link.
+      const href=term.exactLabel && m[0].replace(/[’‘]/g,"'")!==term.exactLabel.replace(/[’‘]/g,"'") ? null : term.href;
+      if (href && id && used) used.add(id);
       text+=safe(line.slice(start,m.index))+(href ? '<a href="'+href+'">'+safe(m[0])+'</a>' : safe(m[0]));
       start=m.index+m[0].length;
     }

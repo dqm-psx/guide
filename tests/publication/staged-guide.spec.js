@@ -403,7 +403,7 @@ test('published quests and characters can be followed with JavaScript disabled',
     await expect(reader.locator('#mechanics .handbook-chapter')).toHaveCount(4);
     await reader.locator('#mechanics').getByText('All articles',{exact:true}).click();
     const articles = reader.getByRole('table',{name:'Mechanics articles'});
-    await expect(articles.getByRole('link')).toHaveCount(23);
+    await expect(articles.getByRole('link')).toHaveCount(24);
     await expect(articles.locator('a[href="articles/field-triangle/"]')).toHaveCount(0);
     await expect(articles.getByRole('button')).toHaveCount(0);
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');

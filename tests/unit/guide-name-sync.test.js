@@ -273,3 +273,80 @@ test('default nicknames track creation records independently of speakers, specie
   f.comparison.rows.pop();
   assert.throws(generate,/missing nickname/);
 });
+
+function battleComboFixture() {
+  const f = fixture(), root = path.join(__dirname,'../..');
+  const context = vm.createContext({});
+  vm.runInContext(fs.readFileSync(path.join(root,'data/field-guide.js'),'utf8'),context);
+  const article = JSON.parse(JSON.stringify(context.FIELD_GUIDE.entries.find(row => row.id === 'field-battle-combos')));
+  const comparison = JSON.parse(JSON.stringify(context.FIELD_GUIDE.entries.find(row => row.id === 'field-restored-content')));
+  f.field.entries.push(article,comparison);
+  f.skillBindings = JSON.parse(fs.readFileSync(path.join(root,'scripts/skill-name-bindings.json'),'utf8'));
+  f.comboBindings = JSON.parse(fs.readFileSync(path.join(root,'scripts/battle-combo-name-bindings.json'),'utf8'));
+  const renamedSkills = {15:'Thunderstorm',40:'Ward Break',106:'Sky Leap'};
+  const renamedCombos = {208:'Thunder Chorus',215:'Twin Assault',217:'Great Magic',220:'Demon King Form'};
+  function system(id,sourceId,title) {
+    f.comparison.rows.push({catalog:'text/system.json',table:'system',id:sourceId,
+      current:title,labels:['Skills and spells'],indices:[473+id],source_revision:f.revision,
+      raw:{id:sourceId,japanese:'テスト<END>',translations:{current:{english:title+'<END>'}}}});
+  }
+  for (const bind of f.skillBindings) {
+    f.field.skill_requirements[bind.id] = {level:2};
+    system(bind.id,bind.source_id,renamedSkills[bind.id] || bind.spelling);
+    f.comparison.rows.push({catalog:'menus/general.json',table:'menu_text.json',id:bind.description_source_id,
+      current:'Description.',labels:['Menus'],source_revision:f.revision,
+      raw:{id:bind.description_source_id,japanese:'テスト<END>',translations:{current:{english_lines:['Description.']}}}});
+  }
+  for (const bind of f.comboBindings) system(bind.id,bind.source_id,renamedCombos[bind.id] || bind.spelling);
+  return {f,article,comparison};
+}
+
+test('battle combo renames update recipes and PSX prose without becoming learnable skills or changing stats and GBC evidence',()=>{
+  const {f,article,comparison} = battleComboFixture();
+  const priorRecipes = structuredClone(article.sections.find(section => section.id === 'combo-recipes').table.rows);
+  const priorComparison = structuredClone(comparison.sections.find(section => section.id === 'battle-combo-changes'));
+  const priorSourceIds = structuredClone(article.source_ids);
+  const generated = buildGuideNames(f);
+  assert.equal(Object.keys(generated.skills).length,169);
+  assert.equal(generated.coverage.skills,169);
+  assert.equal(generated.skills[208],undefined);
+  assert.equal(generated.battle_combos.length,20);
+  assert.deepEqual(generated.battle_combos[0],{id:208,title:'Thunder Chorus',source_id:'e1109',skills:[15,15]});
+  assert.deepEqual(generated.battle_combos[7],{id:215,title:'Twin Assault',source_id:'e1137',skills:[106,145]});
+  const requirements = structuredClone(f.field.skill_requirements);
+  apply({guide_names:generated,species:[]},f.field,f.world,f.atlas);
+  assert.deepEqual(f.field.skill_requirements,requirements);
+  const recipes = article.sections.find(section => section.id === 'combo-recipes').table.rows;
+  assert.deepEqual(recipes[0],['Thunder Chorus','Thunderstorm + Thunderstorm',priorRecipes[0][2]]);
+  assert.equal(recipes[7][0],'Twin Assault');
+  assert.equal(recipes[7][1],'Sky Leap + Geyser');
+  assert.match(recipes[7][2],/Sky Leap user’s Attack.*target’s Defense/);
+  assert.doesNotMatch(recipes[7][2],/Ward Break/);
+  assert.equal(recipes[12][0],'Demon King Form');
+  assert.equal(recipes[12][2],priorRecipes[12][2], 'Transformation stats are not the Defense skill');
+  assert.equal(recipes[13][2],priorRecipes[13][2], 'Buffed Defense remains a stat');
+  assert.equal(recipes[18][2],priorRecipes[18][2], 'Ordinary defense wording is unchanged');
+  const introduction = article.sections.find(section => section.id === 'using-combos').paragraphs[0];
+  assert.match(introduction,/For Thunder Chorus, both monsters choose Thunderstorm/);
+  const compare = comparison.sections.find(section => section.id === 'battle-combo-changes');
+  assert.equal(compare.table.rows[1][0],'Great Magic damage');
+  assert.deepEqual(compare.table.rows.map(cells=>cells[1]),priorComparison.table.rows.map(cells=>cells[1]));
+  assert.deepEqual(article.source_ids,priorSourceIds);
+});
+
+test('battle combo sync rejects changed identities, incomplete recipes and unreviewed component labels',()=>{
+  const edits = [
+    ({f})=>{ f.comboBindings.pop(); },
+    ({f})=>{ f.comboBindings[0].id=207; },
+    ({f})=>{ f.comboBindings[0].skills=[15,208]; },
+    ({f})=>{ f.comparison.rows.find(row=>row.id==='e1109').indices=[680]; },
+    ({article})=>{ article.sections.find(section=>section.id==='combo-recipes').table.rows.pop(); },
+    ({article})=>{ article.sections.find(section=>section.id==='combo-recipes').table.rows[0][0]='Wrong combo'; },
+    ({article})=>{ article.sections.find(section=>section.id==='combo-recipes').table.rows[0][1]='Bolt + Bolt'; },
+  ];
+  for (const edit of edits) {
+    const state = battleComboFixture();
+    edit(state);
+    assert.throws(()=>buildGuideNames(state.f),/Guide name sync/);
+  }
+});

@@ -15,6 +15,11 @@ function spriteMarkup(index) {
   const graphic = spriteGraphic(index);
   return graphic ? '<span class="monster-sprite" aria-hidden="true">'+graphic+'</span>' : '';
 }
+function familyLabelMarkup(familyId, label) {
+  const frame = FAMILY_ICONS[familyId];
+  const safeLabel = String(label ?? '').replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  return '<span class="family-label">' + (frame ? '<img class="family-icon" src="'+frame.src+'" width="10" height="10" alt="" loading="lazy" decoding="async">' : '') + safeLabel + '</span>';
+}
 function spriteLabel(index, text) {
   const id = Number(index);
   const safeText = String(text).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

@@ -14,8 +14,9 @@ a.monster-label:hover span:last-child{text-decoration:underline}
 #monster .monster-profile-header{grid-template-columns:180px minmax(0,1fr) auto}
 #monster .monster-profile-art{min-height:176px}
 #monster .monster-profile-art .monster-sprite{width:160px;height:160px;flex-basis:160px;max-width:160px}
-.monster-eyebrow{color:var(--teal);font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin:0 0 4px}
-.monster-eyebrow span{color:var(--muted)}
+.monster-eyebrow{color:var(--family-text);font-size:12px;line-height:1.5;letter-spacing:.025em;font-weight:650;margin:0 0 5px}
+.monster-profile-identity .monster-eyebrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px}
+.monster-eyebrow .monster-number{color:var(--muted);font-size:11px;font-weight:500}
 .monster-profile-identity h2{margin:0;font:600 32px/1.15 Georgia,serif;letter-spacing:-.025em;overflow-wrap:anywhere}
 .monster-profile-actions{display:flex;flex-direction:column;gap:6px;max-width:250px}
 .monster-profile-actions button,.monster-profile-actions a{font-size:12px;min-height:34px;padding:7px 12px;text-align:center;line-height:1.4}

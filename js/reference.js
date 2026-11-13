@@ -305,7 +305,7 @@ function offspring(a, b) {
   const value = DATA.matrix[a.index]?.[b.index];
   return value == null ? undefined : byId.get(Number(value));
 }
-function resultDetail(s) { return s ? (s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · In game: " + s.short_name : "") + (!isPlayable(s) ? " · Extra / internal slot" : "") : "No named species mapping is available for this entry."; }
+function resultDetail(s) { return s ? familyLabelMarkup(s.family_id, s.family_display || s.family) + escapeHTML((s.short_name && s.short_name !== s.name ? " · In game: " + s.short_name : "") + (!isPlayable(s) ? " · Extra / internal slot" : "")) : "No named species mapping is available for this entry."; }
 function renderPair() {
   const a = current("pedigree"), b = current("mate");
   let settings, error = '', outcome, reverseOutcome;
@@ -333,8 +333,8 @@ function renderPair() {
     link.textContent = displayName(species);
     $(id).replaceChildren(link);
   }
-  $("result-detail").textContent = error || (ready ? resultDetail(forward) : "Select two species to see their offspring.");
-  $("reverse-detail").textContent = ready ? resultDetail(reverse) : "";
+  $("result-detail").innerHTML = error ? escapeHTML(error) : (ready ? resultDetail(forward) : "Select two species to see their offspring.");
+  $("reverse-detail").innerHTML = ready ? resultDetail(reverse) : "";
   $("pair-description").textContent = ready ? displayName(a)+' +'+settings.ap+' × '+displayName(b)+' +'+settings.bp+(outcome?.internal?' · Internal slot · base table only':'') : '';
   $("pair-finder").querySelector("[data-parent-mode]").href = forward ? "#offspring-finder?target=" + forward.index : "#offspring-finder";
   $("reverse-comparison").textContent = ready ? (forward && reverse && forward.index === reverse.index ? "Same offspring in both orders." : displayName(b)+' +'+settings.bp+' × '+displayName(a)+' +'+settings.ap) : "";
@@ -369,7 +369,7 @@ function choosePair(a, b, settings = {}) {
   setPairSettings(settings);
   updateParent("pedigree", a); updateParent("mate", b); renderPair();
 }
-function renderMonster(s, marker = "") { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon"><a class="monster-link" href="#monster?id=' + s.index + '">' + escapeHTML(displayName(s)) + '</a>' + marker + '</span><span class="detail">' + escapeHTML(s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
+function renderMonster(s, marker = "") { return '<span class="monster-label">'+spriteMarkup(s.index)+'<span><span class="mon"><a class="monster-link" href="#monster?id=' + s.index + '">' + escapeHTML(displayName(s)) + '</a>' + marker + '</span><span class="detail">' + familyLabelMarkup(s.family_id, s.family_display || s.family) + (s.short_name && s.short_name !== s.name ? " · " + escapeHTML(s.short_name) : "") + (!isPlayable(s) ? " · extra / internal" : "") + "</span></span></span>"; }
 function plusRuleFor(a, b) {
   return RULES.find(rule => rule.kind === "plus_threshold" && rule.pedigree_index === a.index && rule.mate_index === b.index);
 }
@@ -512,7 +512,7 @@ function renderSpeciesPage() {
       '<button type="button" data-species-mate="' + s.index + '">Use as mate</button>' +
       '<button type="button" data-species-parents="' + s.index + '"' + (isPlayable(s) ? "" : " disabled") + ">Find parents</button>") +
       "</div></td>";
-    return "<tr>" + star + "<td>" + spriteLabel(s.index,displayName(s)) + (gift ? '<span class="tag">Enhanced reward</span>' : !isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + escapeHTML(s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td>" + actions + "</tr>";
+    return "<tr>" + star + "<td>" + spriteLabel(s.index,displayName(s)) + (gift ? '<span class="tag">Enhanced reward</span>' : !isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + familyLabelMarkup(s.family_id, s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td>" + actions + "</tr>";
   }).join("") || '<tr><td colspan="6" class="empty">' + filterEmptyMarkup("No species match these filters.", speciesChips(), "species") + "</td></tr>";
   pageControls("species", speciesPage, speciesMatches.length);
 }
