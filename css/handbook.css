@@ -53,13 +53,15 @@
 .home-topics .question-links a{padding:.5rem 0;line-height:1.4}
 @media(max-width:640px){
   .article-comparison{overflow:visible}
-  .article-comparison :is(table,tbody,tr,th,td){display:block;min-width:0;max-width:none;width:auto}
+  .article-table.article-comparison :is(table,tbody,tr,th,td){display:block;min-width:0;max-width:none;width:auto}
   .article-comparison thead{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   .article-comparison tr{margin-bottom:1rem;border:1px solid var(--guide-rule)}
   .article-table.article-comparison :is(th,td){border:0;padding:.65rem .8rem}
   .article-comparison tbody th{background:var(--guide-soft);font-weight:700}
   .article-comparison td+td{border-top:1px solid var(--guide-rule)!important}
   .article-comparison td::before{content:attr(data-label);display:block;color:var(--muted);font-size:.8rem;font-weight:700;margin-bottom:.2rem}
+  .article-numeric table{table-layout:fixed}
+  .article-table.article-numeric :is(th,td){min-width:0;max-width:none;padding:.4rem;font-size:.8rem;overflow-wrap:anywhere}
 }
 @media(max-width:560px){.mechanics-mode{margin-left:0;width:100%}.handbook-chapter>ul,.handbook-tools{margin-left:0}.article-contents ol{display:block}.article-contents li{margin:.4rem 0}.article-table :is(th,td){min-width:10rem}.owned-monster-picker{grid-template-columns:minmax(0,1fr)}.owned-monster-picker>a{grid-row:4}}
 @media print{.article-table{overflow:visible}.article-table :is(th,td){min-width:0}.handbook-topics,.mechanics-mode,.owned-monster-picker{display:none}.article-topic{break-inside:auto}.article-table tr{break-inside:avoid}}
