@@ -33,14 +33,16 @@ test('atlas labels retained maps and encounter pools as unused',async ({page})=>
   await expect(page.locator('#atlas-index a[aria-current="true"]')).toContainText('Unused content');
 });
 
-test('Terry’s postgame route never sends players to the unused boss room',async({page})=>{
+test('Terry’s postgame chapter includes the unused area with its status explained',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('dqm-guide-story-spoilers','show'));
   await page.goto(url+'#field-guide?kind=story&game=dqm1&entry=story-terry-postgame');
   const chapter=page.locator('.walk-part').filter({has:page.locator('#story-terry-postgame')});
   await expect(chapter).toContainText('Watabou');
-  await expect(chapter).not.toContainText('Nameless Place');
-  await expect(chapter).not.toContainText('Darkdrium');
-  await expect(chapter.locator('a[href*="map-101-0"]')).toHaveCount(0);
+  await expect(chapter).toContainText('Unused content: the Hidden Gate / Nameless Place');
+  await expect(chapter).toContainText('no normal entrance or working boss event');
+  await expect(chapter.locator('a[href*="map-101-0"]').first()).toBeVisible();
+  await expect(chapter.locator('a[href*="entry=boss-darkdrium"]').first()).toBeVisible();
+  await expect(chapter.locator('a[href*="entry=location-hidden-gate"]').first()).toBeVisible();
   await expect(chapter.locator('a[href*="location-sleep-gate"]').first()).toBeVisible();
 });
 
