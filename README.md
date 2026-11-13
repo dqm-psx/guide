@@ -2,7 +2,7 @@
 
 Walkthroughs, maps, monster profiles and breeding tools for the English PlayStation patch. Follow Terry through GreatTree or Cobi and Tara through GreatLog.
 
-**[Open the Player Guide](https://dqm-psx.github.io/guide/)** · [English patch release](https://anonymous.4open.science/r/DQM-1-2-PSX-translation-D1FC/README.txt) · [Translation editions](https://dqm-psx.github.io/translations/)
+**[Open the Player Guide](https://dqm-psx.github.io/guide/)** · [English patch release](https://github.com/dqm-psx/patch/releases/latest) · [Translation editions](https://dqm-psx.github.io/translations/)
 
 | I want to… | Open |
 | --- | --- |
@@ -24,7 +24,7 @@ Choose a 128 KiB PlayStation memory card, an 8 KiB Adventure Log or a single-sav
 
 ## Names and offline use
 
-Search accepts English names, abbreviated menu names, Japanese and alternate names. **Settings** contains the story spoiler switch, extra monster slots (including Aibou), sprite style, theme, and **Download guide for offline use**. Once downloaded, the atlas and breeding tools work without a connection. You can also download this repository and open `index.html` directly.
+Search accepts English names, abbreviated menu names, Japanese and alternate names. Aibou appears in the library with its Enhanced egg exchange. **Settings** contains the story spoiler switch, extra monster slots, sprite style, theme, and **Download guide for offline use**. Once downloaded, the atlas and breeding tools work without a connection. You can also download this repository and open `index.html` directly.
 
 Names and library text follow the public translation export, checked every four hours. The [Sources & coverage page](https://dqm-psx.github.io/guide/#sources) distinguishes current wording from gameplay verified against a specific disc release.
 

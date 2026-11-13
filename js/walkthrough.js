@@ -42,8 +42,9 @@
   // from the quest back to the stage. Keep the links in walkthrough order.
   function chaptersForQuest(row, byId) {
     if (row?.kind !== 'quest') return [];
-    return chapters[row.game].flatMap(([, ids]) => ids.map(id => byId.get('story-'+id)))
-      .filter(stage => row.related?.includes(stage.id) || stage.related?.includes(row.id));
+    const groups = row.game === 'both' ? Object.values(chapters).flat() : (chapters[row.game] || []);
+    return groups.flatMap(([, ids]) => ids.map(id => byId.get('story-'+id)))
+      .filter(stage => stage && (row.related?.includes(stage.id) || stage.related?.includes(row.id)));
   }
 
   function render(game, {byId, routes, escape, campaignLink, sectionLink, entryLink, questIndexLink, prose, title, hidden, places,

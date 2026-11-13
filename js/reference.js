@@ -12,6 +12,10 @@ let lastForwardIndex = null, lastReverseIndex = null;
 const normalize = value => String(value ?? "").toLocaleLowerCase().normalize("NFKC").replace(/[\s’'·-]+/g, "");
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const isPlayable = s => s.playable !== false;
+// Released acquisition routes can expose a species without treating its raw
+// breeding-table slot as part of the independently verified standard roster.
+const patchRewards = s => globalThis.DQM_PATCH_REWARDS?.species?.[s.index] || [];
+const isLibrarySpecies = s => isPlayable(s) || patchRewards(s).length > 0;
 const allSpecies = () => DATA.species.filter(s => $("show-internal").checked || isPlayable(s));
 const hasApp = () => typeof DQMApp !== "undefined";
 const isFavorite = index => hasApp() && DQMApp.isSpeciesFavorite(index);
@@ -499,19 +503,22 @@ function refresh() {
 function renderSpeciesPage() {
   $("species-rows").innerHTML = speciesMatches.slice(speciesPage * PAGE_SIZE, (speciesPage + 1) * PAGE_SIZE).map(s => {
     const favorite = isFavorite(s.index);
-    const star = '<td class="species-favorite-cell"><button type="button" class="species-star" data-species-favorite="' + s.index + '" aria-pressed="' + favorite + '" aria-label="' + (favorite ? "Unfavorite " : "Favorite ") + escapeHTML(displayName(s)) + '"' + (isPlayable(s) && hasApp() ? "" : " disabled") + '>' + (favorite ? "★" : "☆") + "</button></td>";
-    const actions = '<td class="species-actions-cell"><div class="species-actions">' +
+    const gift = !isPlayable(s) && patchRewards(s)[0];
+    const star = '<td class="species-favorite-cell">' + (gift ? '' : '<button type="button" class="species-star" data-species-favorite="' + s.index + '" aria-pressed="' + favorite + '" aria-label="' + (favorite ? "Unfavorite " : "Favorite ") + escapeHTML(displayName(s)) + '"' + (isPlayable(s) && hasApp() ? "" : " disabled") + '>' + (favorite ? "★" : "☆") + '</button>') + '</td>';
+    const actions = '<td class="species-actions-cell"><div class="species-actions">' + (gift
+      ? '<a href="#field-guide?entry=' + escapeHTML(gift.entry) + '">' + escapeHTML(gift.title || 'How to get it') + '</a>'
+      :
       '<button type="button" data-species-pedigree="' + s.index + '">Use as pedigree</button>' +
       '<button type="button" data-species-mate="' + s.index + '">Use as mate</button>' +
-      '<button type="button" data-species-parents="' + s.index + '"' + (isPlayable(s) ? "" : " disabled") + ">Find parents</button>" +
+      '<button type="button" data-species-parents="' + s.index + '"' + (isPlayable(s) ? "" : " disabled") + ">Find parents</button>") +
       "</div></td>";
-    return "<tr>" + star + "<td>" + spriteLabel(s.index,displayName(s)) + (!isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + escapeHTML(s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td>" + actions + "</tr>";
+    return "<tr>" + star + "<td>" + spriteLabel(s.index,displayName(s)) + (gift ? '<span class="tag">Enhanced reward</span>' : !isPlayable(s) ? '<span class="tag internal">Extra / internal slot</span>' : "") + "</td><td>" + escapeHTML(s.short_name || s.name) + '</td><td><span class="tag">' + escapeHTML(s.family_display || s.family) + '</span></td><td lang="ja">' + escapeHTML(s.japanese || "—") + "</td>" + actions + "</tr>";
   }).join("") || '<tr><td colspan="6" class="empty">' + filterEmptyMarkup("No species match these filters.", speciesChips(), "species") + "</td></tr>";
   pageControls("species", speciesPage, speciesMatches.length);
 }
 function renderSpecies() {
   $("library-extra-slots").checked = $("show-internal").checked;
-  speciesMatches = allSpecies().filter(s => familyMatches(s, $("species-family").value) && matchesName(s, $("species-search").value) && (!favoritesOnly() || isFavorite(s.index)));
+  speciesMatches = DATA.species.filter(s => ($("show-internal").checked || isLibrarySpecies(s)) && familyMatches(s, $("species-family").value) && matchesName(s, $("species-search").value) && (!favoritesOnly() || isFavorite(s.index)));
   const sort = $("species-sort")?.value || "id";
   if (sort !== "id") speciesMatches.sort((a,b) => (sort === "family" ? Number(a.family_id)-Number(b.family_id) : 0) || displayName(a).localeCompare(displayName(b)) || a.index-b.index);
   speciesPage = 0; $("species-count").textContent = speciesMatches.length + " matching species"; renderSpeciesPage();
@@ -687,7 +694,8 @@ function sourceSummaryMarkup() {
   const snapshot = metadata.updated_at ? String(metadata.updated_at).slice(0, 10) : 'Not recorded';
   const sourceLink = /^[a-f0-9]{40}$/.test(revision || '')
     ? ' <a href="https://github.com/dqm-psx/translations/tree/' + revision + '">View published source ↗</a>' : '';
-  return '<dl class="source-versions"><div><dt>Latest English patch</dt><dd>' + escapeHTML(patch?.version || 'Not supplied by this snapshot') + '</dd></div>' +
+  const patchLabel = patch ? '<a href="https://github.com/dqm-psx/patch/releases/tag/' + encodeURIComponent(patch.version) + '">' + escapeHTML(patch.version) + '</a>' : 'Not supplied by this snapshot';
+  return '<dl class="source-versions"><div><dt>Latest English patch</dt><dd>' + patchLabel + '</dd></div>' +
     '<div><dt>Names &amp; text snapshot</dt><dd>' + escapeHTML(snapshot) + sourceLink + '</dd></div>' +
     '<div><dt>Breeding &amp; stats last verified</dt><dd>' + escapeHTML(proof?.version || metadata.gameplay_version || DATA.metadata.version) + '</dd></div></dl>' +
     (proof ? '<p class="hint">' + escapeHTML(proof.scope) + '</p>' : '<p class="hint">Gameplay retains its original extraction. A current wording snapshot is not a new gameplay verification.</p>') +

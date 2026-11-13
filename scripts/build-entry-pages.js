@@ -10,7 +10,7 @@ const paragraph = text => text ? '<p>'+escape(text)+'</p>' : '';
 
 function addEntryPages(assets) {
   const db=vm.createContext({});
-  for (const file of ['breeding-data','monster-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-images']) {
+  for (const file of ['breeding-data','monster-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-images','patch-rewards']) {
     vm.runInContext(assets.get('data/'+file+'.js').toString(),db,{timeout:5000});
   }
   vm.runInContext(assets.get('js/current-names.js').toString(),db,{timeout:5000});
@@ -303,6 +303,10 @@ function addEntryPages(assets) {
       learners,'#field-guide?kind=skill&entry=skill-'+name.id);
   }
   for (const m of species.filter(m=>m.current_name && (m.system_entry_id || db.DATA.species[m.index]?.playable))) {
+    const rewards = db.DQM_PATCH_REWARDS?.species?.[m.index] || [];
+    const rewardOnly = db.DATA.species[m.index]?.playable === false && rewards.length > 0;
+    const rewardMarkup = list('Enhanced '+db.DQM_PATCH_REWARDS?.version+' rewards',rewards.map(reward=>
+      linkArticle(reward.entry,reward.title || 'Reward details')+' — '+escape(reward.text)));
     const skills=campaignLists('Natural skills',campaign=>(m.skills[campaign] || []).map(s=>s.id),id=>{
       const level=db.FIELD_GUIDE.skill_requirements[id]?.level;
       const skill=names[id];
@@ -319,11 +323,11 @@ function addEntryPages(assets) {
         (recipe.condition ? '<small>'+escape(recipe.condition)+'</small>' : '')+'</li>';
     });
     const desc=m.library?.text || [m.display_name, db.DATA.species[m.index]?.family_display, 'PlayStation monster profile'].filter(Boolean).join(' · ');
-    add('monsters',m.index,m.display_name,desc,skills+'<p>'+link('#skill-planner?species='+m.index,'Plan skills and growth')+' · '+link('#combat-planner?species='+m.index,'Compare damage')+'</p>'+
-      '<section><h2>First-copy breeding</h2>'+(pairs.length ? '<p class="entry-note">Pedigree + mate</p><ul class="entry-recipes">'+pairs.join('')+'</ul>' : paragraph('No recorded pairing produces a first copy.'))+'</section>'+
+    add('monsters',m.index,m.display_name,desc,skills+rewardMarkup+(rewardOnly ? '' : '<p>'+link('#skill-planner?species='+m.index,'Plan skills and growth')+' · '+link('#combat-planner?species='+m.index,'Compare damage')+'</p>'+
+      '<section><h2>First-copy breeding</h2>'+(pairs.length ? '<p class="entry-note">Pedigree + mate</p><ul class="entry-recipes">'+pairs.join('')+'</ul>' : paragraph('No recorded pairing produces a first copy.'))+'</section>')+
       list('Wild encounters',[...new Set(locations)])+
       (masters.length ? list('Wandering master teams',masters)+'<p>'+articleLink('field-wandering-masters')+'</p>' : '')+
-      paragraph(m.stats?.base_level_limit ? 'Usual recruitment level cap: '+Math.max(1,m.stats.base_level_limit-2)+'–'+Math.min(99,m.stats.base_level_limit+2)+'. Bred offspring use a separate base limit plus three times their + value.' : ''),'#monster?id='+m.index);
+      paragraph(m.stats?.base_level_limit ? (rewardOnly ? 'Base level cap: '+m.stats.base_level_limit+'.' : 'Usual recruitment level cap: '+Math.max(1,m.stats.base_level_limit-2)+'–'+Math.min(99,m.stats.base_level_limit+2)+'. Bred offspring use a separate base limit plus three times their + value.') : ''),'#monster?id='+m.index);
   }
   const places=new Map();
   for (const row of maps.values()) {
@@ -398,7 +402,7 @@ function addEntryPages(assets) {
   const entriesByKind = (kind,title)=>list(title,pages.filter(p=>p.kind===kind).sort(alpha).map(p=>link(p.path,p.title)));
   const directoryQuests = [];
   for (const [game,adventure] of Object.entries(adventures)) {
-    const quests = [...articles.values()].filter(row=>row.game===game && row.quest_group);
+    const quests = [...articles.values()].filter(row=>(row.game===game || row.game==='both') && row.quest_group);
     const groups = db.DQMWalkthrough.questPurposes.map(purpose=>{
       const ordered = quests.filter(row=>purpose.groups.includes(row.quest_group)).sort((a,b)=>a.quest_order-b.quest_order);
       if (!ordered.length) return '';

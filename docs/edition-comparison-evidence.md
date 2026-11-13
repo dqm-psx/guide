@@ -15,7 +15,9 @@ foreign masters, skill-learning changes, and released-patch additions. A PSX
 feature without a verified handheld counterpart is not evidence of a platform
 difference. Breeding instructions, recruitment calculations, growth caps and
 memory-card saving instructions therefore remain in their dedicated guides.
-The old mobile service gets one historical note, not acquisition instructions.
+The old mobile service gets one historical note, not instructions for using the
+closed service. The v74 Enhanced Aibou exchange is linked as its separate,
+currently available acquisition route.
 
 The temporary-effect and repeated-command evidence below establishes Japanese
 PSX versus the English patch, not GBC versus PSX. That advice now belongs in
@@ -202,8 +204,16 @@ a normal receive-and-save route today.
 
 ## English patch changes
 
-The [v1.0.73 release](https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73)
-and its bundled README separate:
+The [published v1.0.74 release](https://github.com/dqm-psx/patch/releases/tag/v1.0.74)
+and its bundled README distinguish **Enhanced** from **Translation only**. Both
+use the same English wording, fonts, restored library rarity-star display and
+bug fixes, including the Truth Gate repair. Only Enhanced includes optional
+gameplay and interface additions. The comparison states this per feature;
+the Terry restoration table is explicitly Enhanced-only.
+
+The v74 additions are GreatTree's postgame Arena modes, party-table conversations
+for Cobi and Tara, and the Aibou egg exchange. GreatLog's interaction is an
+**addition**, not restored original Cobi/Tara content. Existing additions remain:
 
 - Retained table dialogue restored with reconstructed seating/personality matching.
 - Restored Terry special floors, including reconstruction choices in behavior and rates.
@@ -212,8 +222,26 @@ and its bundled README separate:
 - Explicitly identified original-game defects versus fixes for historical English builds.
 - Fresh boot plus in-game memory-card saves after changing patch versions.
 
+The published Enhanced ZIP is authenticated by SHA-256
+`8ff3ec16f0eb78281c6718aaf96fd0dc59035a40f0cfe0a3a501a46df9ba1017`.
+Its `BUILD.json` identifies source commit
+`11d6abacc1ce217b8f1e5521a180c3135628b296`; the bundled README and public
+`release.json` supply unlock instructions, edition coverage and player controls.
+This is the published package, not the earlier locally named v74 playtest ZIP.
+No new disc-level claim is inferred from its version: the v73 native audit
+receipts above retain their original verification version and scope.
+
+`field-greattree-arena` combines unlock instructions, Replay/Pro/Survival/Elder
+modes and reward planning. Its Pro class fees and item pools were checked against
+`greattree_arena_pro_rewards.py` at the released source commit. The Survival
+choices come from the public FAQ, with the three-egg offer and three carried-medal
+slots also checked in `greattree_arena_rewards.py`. No private paths, save files
+or source implementation are published. `field-personality` keeps the controls
+for both towns' party tables together; `quest-aibou-egg` contains the new exchange.
+
 The comparison does not describe every fix in the changelog as a Japanese-game
 bug. Unreleased wording editions are excluded from the public comparison.
+The guide’s Hidden Gate entry retains its unused-content status for v74.
 
 ## Additional handheld-book context
 

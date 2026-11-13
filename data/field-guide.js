@@ -3118,7 +3118,7 @@ globalThis.FIELD_GUIDE = {
       "id": "field-movement-settings",
       "game": "both",
       "title": "Movement, running and field abilities",
-      "summary": "Use R1 to run in the English patch. Cobi and Tara use Triangle for the field abilities they unlock during the story.",
+      "summary": "Enhanced lets you run with R1 and choose your movement speed. In both downloads, Cobi and Tara use Triangle for the field abilities they unlock during the story.",
       "details": [],
       "source_ids": [
         "Japanese PS1 map movement selector 0x8005EA1C and step tables 0x800BC118–0x800BC14E · v55 walking-speed investigation",
@@ -3127,7 +3127,8 @@ globalThis.FIELD_GUIDE = {
         "s003b7800_0dab",
         "s003b7800_1201",
         "s003b7800_1955",
-        "s003b7800_1a2d"
+        "s003b7800_1a2d",
+        "v1.0.74 release README · Enhanced: Movement and Other Features"
       ],
       "related": [
         "item-54",
@@ -3157,8 +3158,9 @@ globalThis.FIELD_GUIDE = {
           "id": "running",
           "title": "Set your walking and running speeds",
           "paragraphs": [
-            "In English patch v1.0.73, open Tactics → Movement. Walking defaults to 1× the map’s usual pace; hold R1 for 2×. Choose Toggle if you prefer to press R1 once to start running and again to stop. Walk and R1 can each use 1×, 2× or 4×.",
-            "Use Up/Down to choose a setting and Left/Right to change it. Circle or Triangle applies your choices. Save the adventure to keep them; loading a save starts you at walking speed."
+            "In Enhanced, open Tactics → Movement. Walking defaults to 1× the map’s usual pace; hold R1 for 2×. Choose Toggle if you prefer to press R1 once to start running and again to stop. Walk and R1 can each use 1×, 2× or 4×.",
+            "Use Up/Down to choose a setting and Left/Right to change it. Circle or Triangle applies your choices. Save the adventure to keep them; loading a save starts you at walking speed.",
+            "Translation only keeps the original movement controls and does not include this menu or R1 running."
           ]
         },
         {
@@ -3218,7 +3220,7 @@ globalThis.FIELD_GUIDE = {
           "title": "Why the adventures feel different",
           "paragraphs": [
             "In the original Japanese PSX game, Terry walks faster on ordinary gate floors than Cobi or Tara do on the Desert, Water, Ice and Sky overworlds. GreatLog uses the same faster pace as Terry’s gate floors. The difference also applies to diagonal steps.",
-            "The patch’s speed multipliers act on each map’s normal pace, so equal settings do not make every map feel identical."
+            "Enhanced’s speed multipliers act on each map’s normal pace, so equal settings do not make every map feel identical."
           ]
         }
       ]
@@ -3227,12 +3229,13 @@ globalThis.FIELD_GUIDE = {
       "id": "field-restored-content",
       "game": "both",
       "title": "Game Boy, PlayStation and English patch differences",
-      "summary": "PlayStation combines all three adventures, expands Terry’s roster and revises story routes; the English patch adds restorations, settings and fixes.",
+      "summary": "PlayStation combines all three adventures, expands Terry’s roster and revises story routes. The English patch offers Enhanced additions or Translation only with bug fixes.",
       "details": [],
       "source_ids": [
         "v1.0.73 release README · Restored Content in Terry’s Adventure",
         "v1.0.70 traveling colosseum exit",
-        "PSX/GB foreign-master comparison; see docs/edition-comparison-evidence.md"
+        "PSX/GB foreign-master comparison; see docs/edition-comparison-evidence.md",
+        "v1.0.74 published release README and release.json · download choices and added features"
       ],
       "related": [
         "field-wandering-masters",
@@ -3241,7 +3244,10 @@ globalThis.FIELD_GUIDE = {
         "field-movement-settings",
         "field-retail-bugs",
         "field-two-save-breeding",
-        "field-colosseum-prizes"
+        "field-colosseum-prizes",
+        "field-greattree-arena",
+        "quest-aibou-egg",
+        "field-personality"
       ],
       "aliases": [
         "version differences",
@@ -3250,7 +3256,10 @@ globalThis.FIELD_GUIDE = {
         "original Japanese PlayStation",
         "restored content",
         "cut content",
-        "PS1 remake"
+        "PS1 remake",
+        "v74",
+        "Enhanced",
+        "Translation only"
       ],
       "kind": "mechanic",
       "spoiler": "none",
@@ -3348,7 +3357,7 @@ globalThis.FIELD_GUIDE = {
               "Activity",
               "Game Boy DWM1",
               "Japanese PlayStation",
-              "English patch v1.0.73"
+              "Enhanced v1.0.74"
             ],
             "rows": [
               [
@@ -3366,12 +3375,12 @@ globalThis.FIELD_GUIDE = {
             ]
           },
           "paragraphs": [
-            "The patched special floors are reconstructions, so Game Boy encounter rates and room rules should not be treated as exact PSX values. These restorations belong to the English patch, not the original Japanese remake."
+            "These restorations are included in Enhanced. Translation only keeps the Japanese release’s unavailable rooms and table interaction. The restored special floors use reconstructed behavior, so Game Boy encounter rates and room rules are not exact PSX values."
           ],
           "sources": [
             {
-              "label": "Patch restoration notes",
-              "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
             },
             {
               "label": "Handheld special floors and restoration evidence",
@@ -3562,48 +3571,86 @@ globalThis.FIELD_GUIDE = {
         },
         {
           "id": "english-settings-fixes",
-          "title": "What the released English patch changes",
+          "title": "What v1.0.74 changes: Enhanced and Translation only",
           "paragraphs": [
-            "These changes are relative to the original Japanese PSX game. The restored Terry activities are compared above."
+            "Both downloads use the same English wording, fonts and bug fixes. Enhanced also includes restored content and added features; Translation only keeps the original gameplay and interface except for English support and bug repairs. The table compares each with Japanese PSX."
           ],
           "table": {
             "columns": [
               "Feature",
               "Japanese PlayStation",
-              "English patch v1.0.73"
+              "Enhanced v1.0.74",
+              "Translation only v1.0.74"
             ],
             "rows": [
               [
                 "Running and encounters",
-                "Uses the map’s normal walking pace, without the patch’s movement settings.",
-                "Adds 1×, 2× and 4× walking/R1 speeds, Hold or Toggle running, and Time or Distance encounter settings. Time lets you cover more ground between battles while running."
+                "Normal map movement, without speed settings.",
+                "Choose 1×, 2× or 4× walking/R1 speeds, Hold or Toggle, and Time or Distance encounter pacing.",
+                "Original movement controls; no running settings."
+              ],
+              [
+                "Inventory and party display",
+                "Repeated carried items occupy separate menu rows; original party display.",
+                "Groups duplicate items with quantity counts and bulk selling; expanded HP/MP displays in the field and battle.",
+                "Original inventory and party display."
+              ],
+              [
+                "GreatTree postgame Arena",
+                "No Replay, Pro or Survival modes.",
+                "Adds class replays, varied Pro opponents and a Survival challenge with prizes. New in v74.",
+                "Original Arena."
+              ],
+              [
+                "GreatLog party conversations",
+                "No party-table interaction for Cobi or Tara.",
+                "Adds personality-based conversations at the Arena table. New in v74.",
+                "No added table interaction."
+              ],
+              [
+                "Aibou",
+                "Originally obtained through the now-closed mobile-phone service.",
+                "Adds an offline Medal Man egg exchange in all three adventures. New in v74.",
+                "No added egg exchange."
               ],
               [
                 "Title-screen Colosseum",
-                "Uses the original fixed battle rules.",
-                "Adds Free Battle, Enix Rules and configurable Local Rules, including optional monster prizes."
+                "Original two-player battles with fixed rules.",
+                "Adds selectable rules and optional monster wagers.",
+                "Original two-player battles remain available; no added rules or wagers."
               ],
               [
-                "Losing to Dungeon Shrimp in Truth Gate",
-                "A progression bug can prevent another challenge and block gate completion credit.",
-                "Fixed since v1.0.34. Return to the boss room and answer the questions again to retry."
+                "Truth Gate retry",
+                "Losing to Dungeon Shrimp can prevent another challenge and block gate completion credit.",
+                "Repaired: return and answer the questions again to retry.",
+                "Includes the same repair."
+              ],
+              [
+                "Monster library rarity stars",
+                "Shows stars in the monster detail display.",
+                "Restores stars displaced by the English text; corrected in v74.",
+                "Includes the same correction."
               ],
               [
                 "Graphics faults",
                 "Scene/NPC graphics can remain allocated after use; walking-sprite loading also has a fault.",
-                "v1.0.73 fixes these original-game faults."
+                "Includes the graphics fixes introduced in v73.",
+                "Includes the same fixes."
               ]
             ]
           },
           "links": [
+            "field-greattree-arena",
+            "quest-aibou-egg",
+            "field-personality",
             "field-movement-settings",
             "field-colosseum-prizes",
             "field-retail-bugs"
           ],
           "sources": [
             {
-              "label": "Release history and update instructions",
-              "url": "https://github.com/phakic/DQM-1-2-PSX-translation/releases/tag/v1.0.73"
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
             },
             {
               "label": "Publisher: original Colosseum setup and rules",
@@ -3617,14 +3664,15 @@ globalThis.FIELD_GUIDE = {
       "id": "field-retail-bugs",
       "game": "both",
       "title": "Which bugs came from the Japanese PlayStation game?",
-      "summary": "The patch release notes identify a Truth Gate progression bug in the original game and several faults in how it loaded and freed graphics.",
+      "summary": "Both v74 downloads repair the original Truth Gate progression bug and include fixes for how the game loaded and freed graphics.",
       "details": [
         "In Terry’s Truth Gate, losing to Dungeon Shrimp (Digster) could leave the boss unable to challenge you again. That also blocked credit for the gate toward recruiting Watabou. The English v1.0.34 release includes the repair. Return to the boss room on the updated game and answer the questions again to retry.",
         "The original game could leave scene and NPC graphics in memory after they were no longer needed. v1.0.73 fixes these leaks and a separate walking-sprite loading bug.",
         "For a stuck event on an older English build, patch a clean Japanese disc image, boot the updated game and load your in-game memory-card save. An emulator save state can resume the old game code."
       ],
       "source_ids": [
-        "v1.0.73 release README · v34, v73 and Install"
+        "v1.0.73 release README · v34, v73 and Install",
+        "v1.0.74 release README · Choosing a Download"
       ],
       "related": [
         "field-restored-content"
@@ -3644,14 +3692,16 @@ globalThis.FIELD_GUIDE = {
       "id": "field-colosseum-prizes",
       "game": "both",
       "title": "How do two players wager monsters?",
-      "summary": "In the title-screen Colosseum, choose Local Rules and enable prizes. Monster transfer is available from English patch v1.0.73.",
+      "summary": "In Enhanced, open the title-screen Colosseum, choose Local Rules and enable prizes. Monster wagers are off by default.",
       "details": [
-        "Each player offers an awake farm monster outside their saved adventure party. Make space on the receiving farm before starting.",
+        "Use saves from two different players. Each offers an awake farm monster outside their saved adventure party. Leave space on both farms before starting.",
         "The winner keeps their own offer and receives the opponent’s monster. A draw leaves both farms as they were.",
-        "The transfer writes both Adventure Logs. Wait until both saves finish. If a card write fails, choose Retry before resetting or turning off the game."
+        "The transfer writes both Adventure Logs. Wait until both saves finish. If a card write fails, choose Retry before resetting or turning off the game.",
+        "Translation only retains the original two-player battles, without the added rules or monster wagers. Wagering was introduced in v1.0.73 and is part of Enhanced in v74."
       ],
       "source_ids": [
-        "v1.0.73 release README · Colosseum Battles"
+        "v1.0.73 release README · Colosseum Battles",
+        "v1.0.74 release README · Enhanced: Two-Player Colosseum"
       ],
       "related": [
         "field-farm"
@@ -4020,7 +4070,8 @@ globalThis.FIELD_GUIDE = {
       "summary": "Bring Tiny Medals to the local collector. Early rewards use your cumulative medal total.",
       "details": [
         "The exchange menu becomes available after the cumulative reward track. Make room in your bag or on your farm before claiming a prize.",
-        "In GreatLog there is a separate offer from the talking pot on Main Street. It offers a single magic key in exchange for one Tiny Medal."
+        "In GreatLog there is a separate offer from the talking pot on Main Street. It offers a single magic key in exchange for one Tiny Medal.",
+        "In v74 Enhanced, the collector also offers an Aibou egg after all four milestone rewards, 312 registered species and a balance of 99 Tiny Medals. Leave a space on the farm; accepting spends those medals."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -4032,11 +4083,13 @@ globalThis.FIELD_GUIDE = {
         "medal_0aadc0_031e",
         "s00419800_0197",
         "s00419800_0345",
-        "s00419800_0372"
+        "s00419800_0372",
+        "v1.0.74 release README · Enhanced: Aibou at the Medal Man"
       ],
       "related": [
         "item-44",
-        "item-30"
+        "item-30",
+        "quest-aibou-egg"
       ]
     },
     {
@@ -4053,7 +4106,8 @@ globalThis.FIELD_GUIDE = {
       "source_ids": [
         "s003f6800_0221",
         "s0039f000_306a",
-        "s0afae000_1197"
+        "s0afae000_1197",
+        "v1.0.74 release README · Enhanced: Monster Table Conversations"
       ],
       "related": [
         "item-19",
@@ -4062,6 +4116,29 @@ globalThis.FIELD_GUIDE = {
         "item-22",
         "item-23",
         "item-24"
+      ],
+      "sections": [
+        {
+          "id": "party-table-conversations",
+          "title": "Talk with your party at the Arena table",
+          "paragraphs": [
+            "In Enhanced, bring one to three living, visible party monsters. Terry uses the right-hand table in the Arena dining room. Cobi and Tara use the lower table on the west side of GreatLog’s Arena lobby.",
+            "Walk onto the stool on the table’s east side. Up, Left or Down selects a monster; Confirm/Talk starts its personality-based conversation. After closing the dialogue, Cancel or Right makes you stand up. Step away before sitting again.",
+            "Terry’s interaction restores conversations retained in the Japanese disc. The GreatLog interaction is a new v74 addition for Cobi and Tara. Translation only includes neither table interaction."
+          ],
+          "sources": [
+            {
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
+            }
+          ]
+        }
+      ],
+      "aliases": [
+        "party conversations",
+        "monster table",
+        "GreatLog table",
+        "Arena table"
       ]
     },
     {
@@ -4099,7 +4176,7 @@ globalThis.FIELD_GUIDE = {
       "title": "Prepare for an arena class",
       "summary": "Prepare before entering. Both arenas forbid item use and count fleeing as a loss.",
       "details": [
-        "GreatTree requires three wins. Direct orders are unavailable, so take monsters whose behavior and skills fit the team.",
+        "GreatTree’s original classes require three wins. Direct orders are unavailable, so take monsters whose behavior and skills fit the team.",
         "GreatLog’s Kids’ Class also requires three wins. A full key ring can interfere with collecting the prize."
       ],
       "spoiler": "none",
@@ -4107,6 +4184,172 @@ globalThis.FIELD_GUIDE = {
         "s0adf7000_df8b",
         "s0039f000_23af",
         "s0039f000_2801"
+      ],
+      "related": [
+        "field-greattree-arena"
+      ]
+    },
+    {
+      "id": "field-greattree-arena",
+      "kind": "mechanic",
+      "game": "dqm1",
+      "topic": "battle",
+      "title": "GreatTree Arena: Replay, Pro Classes and Survival",
+      "summary": "In v74 Enhanced, win the Monster Elder’s revenge match, then return to GreatTree’s Arena registration desk to unlock the new modes.",
+      "details": [
+        "Save normally to keep the unlock. If you bring a save from an older patch or the Japanese game, win the revenge match again in Enhanced. Translation only does not include these modes."
+      ],
+      "spoiler": "ending",
+      "aliases": [
+        "postgame arena",
+        "replay a class",
+        "Pro Classes",
+        "Survival Arena",
+        "Elder rematch",
+        "v74 arena"
+      ],
+      "source_ids": [
+        "v1.0.74 release README · Enhanced: GreatTree Arena",
+        "v1.0.74 public release.json · GreatTree Arena, Pro Classes and Survival Arena FAQ",
+        "v1.0.74 source · greattree_arena_pro_rewards.py and greattree_arena_rewards.py"
+      ],
+      "related": [
+        "story-terry-postgame",
+        "field-arena-items",
+        "field-personality",
+        "field-medals"
+      ],
+      "sections": [
+        {
+          "id": "modes",
+          "title": "Choose your challenge",
+          "table": {
+            "columns": [
+              "Mode",
+              "What to expect"
+            ],
+            "rows": [
+              [
+                "Replay a Class",
+                "Revisit the original three battles from any class, including Starry Night, without changing story progress."
+              ],
+              [
+                "Pro Classes",
+                "Pay an entry fee and win three battles for a class prize. Each Master draws three monsters from six possible species; return visits can bring different teams."
+              ],
+              [
+                "Survival Arena",
+                "First lap: all nine original classes, 27 consecutive battles ending with Milly. Later laps bring different, stronger teams. Earn a prize after every lap."
+              ],
+              [
+                "Elder Rematch",
+                "Challenge the Monster Elder’s revenge team again."
+              ]
+            ]
+          },
+          "paragraphs": [
+            "HP, MP and knockouts carry between fights; Pro Classes also carries poison between bouts. Items and direct orders are unavailable. Heal and prepare your team before entering."
+          ]
+        },
+        {
+          "id": "pro-prizes",
+          "title": "Pro Classes: fees and prizes",
+          "paragraphs": [
+            "Win all three fights for a random prize from the row below. Fleeing forfeits your entry. Leave one free bag slot, or two for Starry Night’s possible two-medal reward."
+          ],
+          "table": {
+            "columns": [
+              "Class",
+              "Entry fee",
+              "Possible prize"
+            ],
+            "rows": [
+              [
+                "G",
+                "200 G",
+                "Amor Water, Magic Water, PorkChop or Stone Fang"
+              ],
+              [
+                "F",
+                "400 G",
+                "Rib, Magic Water, Kindness Book or Elfin Elixir"
+              ],
+              [
+                "E",
+                "600 G",
+                "Rib, Elfin Elixir, Strength Seed or Stone Fang"
+              ],
+              [
+                "D",
+                "800 G",
+                "Sirloin, Yggdrasil Leaf, Divine Staff or Defense Seed"
+              ],
+              [
+                "C",
+                "1,000 G",
+                "Medicinal Herb, Dragon Scale, Elfin Elixir, Yggdrasil Leaf, Divine Staff, Sage’s Stone, Sirloin or Stone Fang"
+              ],
+              [
+                "B",
+                "2,000 G",
+                "Amor Water, Humor Book, Agility Seed, Wisdom Seed, Adventure Book, Kindness Book or Steel Fang"
+              ],
+              [
+                "A",
+                "3,000 G",
+                "Yggdrasil Dew, Strength Seed, Life Nut, Mystic Nut, Clear Mind Book, a Tiny Medal or random equipment"
+              ],
+              [
+                "S",
+                "5,000 G",
+                "Friendship Staff, a Tiny Medal, Strength Seed, Defense Seed, Clear Mind Book, random equipment or Starry Orb"
+              ],
+              [
+                "Starry Night",
+                "7,500 G",
+                "Starry Orb, two Tiny Medals, Goddess Ring, Spellblade Ring or Miracle Mark"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "survival-prizes",
+          "title": "Survival: collect a prize or keep going",
+          "paragraphs": [
+            "After 27 wins, choose one reward. If the chosen reward will not fit, you can choose another.",
+            "Once you collect the prize, retire or continue. Later laps strengthen the enemy teams up to a cap. Losing, forfeiting or retiring ends the run; prizes already collected are kept, and your next run begins at Class G."
+          ],
+          "table": {
+            "columns": [
+              "Choice",
+              "What to make room for"
+            ],
+            "rows": [
+              [
+                "50,000 G",
+                "Enough space in your wallet."
+              ],
+              [
+                "One item",
+                "A free bag slot; choose from the item menu."
+              ],
+              [
+                "One rare monster egg",
+                "A free farm slot; choose one of the three eggs offered for that lap."
+              ],
+              [
+                "Three Tiny Medals",
+                "Three free bag slots."
+              ]
+            ]
+          },
+          "sources": [
+            {
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
+            }
+          ]
+        }
       ]
     },
     {

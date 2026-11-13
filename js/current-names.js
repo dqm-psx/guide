@@ -23,6 +23,9 @@
       if (item.descriptions) row.menuDescriptions = item.descriptions;
       row.names = item.names;
       row.aliases = [...new Set([...(row.aliases || []), ...item.aliases])];
+      // Enhanced Arena rewards also make these formerly GreatLog-only items
+      // obtainable by Terry. Native prices and descriptions stay unchanged.
+      if (row.game === 'dqm2' && globalThis.DQM_PATCH_REWARDS?.items?.[id]?.some(source => source.game === 'dqm1')) row.game = 'both';
     }
     field.skill_names = update.skills;
     field.default_nicknames = update.default_nicknames || [];

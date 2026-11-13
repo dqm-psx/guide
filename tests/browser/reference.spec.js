@@ -101,8 +101,8 @@ test.describe('served', () => {
 
   test('species index filters by name query and family', async ({ page }) => {
     await page.goto(url() + '#species-index');
-    const playable = await page.evaluate(() => DATA.species.filter(s => s.playable !== false).length);
-    await expect(page.locator('#species-count')).toHaveText(`${playable} matching species`);
+    const library = await page.evaluate(() => DATA.species.filter(s => s.playable !== false || DQM_PATCH_REWARDS.species[s.index]?.length).length);
+    await expect(page.locator('#species-count')).toHaveText(`${library} matching species`);
     await page.fill('#species-search', 'Spotted Slime');
     await expect(page.locator('#species-count')).toHaveText('1 matching species');
     await expect(page.locator('#species-rows tr')).toHaveCount(1);
@@ -120,9 +120,9 @@ test.describe('served', () => {
 
   test('include extra / internal toggles the species count', async ({ page }) => {
     await page.goto(url() + '#species-index');
-    const playable = await page.evaluate(() => DATA.species.filter(s => s.playable !== false).length);
+    const library = await page.evaluate(() => DATA.species.filter(s => s.playable !== false || DQM_PATCH_REWARDS.species[s.index]?.length).length);
     const total = await page.evaluate(() => DATA.species.length);
-    await expect(page.locator('#species-count')).toHaveText(`${playable} matching species`);
+    await expect(page.locator('#species-count')).toHaveText(`${library} matching species`);
     await page.check('#library-extra-slots');
     await expect(page.locator('#show-internal')).toBeChecked();
     await expect(page.locator('#species-count')).toHaveText(`${total} matching species`);
@@ -132,7 +132,7 @@ test.describe('served', () => {
     await page.locator('#guide-settings summary').click();
     await page.uncheck('#show-internal');
     await expect(page.locator('#library-extra-slots')).not.toBeChecked();
-    await expect(page.locator('#species-count')).toHaveText(`${playable} matching species`);
+    await expect(page.locator('#species-count')).toHaveText(`${library} matching species`);
   });
 
   test('keyboard: tabbing to the sprite style buttons switches sprites', async ({ page }) => {

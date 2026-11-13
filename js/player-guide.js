@@ -178,6 +178,7 @@
       '<section class="monster-card skill-learners"><div class="monster-card-heading"><h3>Natural learners</h3></div>'+learnerLists(row)+'</section></div>';
   }
   function artwork(row, thumbnail, mapIds=[]) {
+    if (row.kind === 'monster') return spriteMarkup(row.index);
     if (row.kind === 'boss') {
       const party = Object.values(FIELD_ROUTES.routes[row.id]?.fights || {}).flat();
       const species = new Set(row.species_ids?.length ? row.species_ids : party.map(enemy=>enemy.species));
@@ -601,7 +602,8 @@
   function questDirectory(p, quests, active) {
     const sections = [];
     for (const game of ['dqm1','dqm2']) {
-      const campaign = quests.filter(row => row.game === game && row.quest_group);
+      if (p.get('game') && p.get('game') !== game) continue;
+      const campaign = quests.filter(row => (row.game === game || row.game === 'both') && row.quest_group);
       if (!campaign.length) continue;
       const groups = [];
       for (const purpose of active ? [active] : DQMWalkthrough.questPurposes) {

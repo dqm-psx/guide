@@ -214,7 +214,7 @@ test('current-name search opens the matching library, growth, and provenance pro
   await expect(values.nth(0)).toHaveText(metadata.current_patch?.version || 'Not supplied by this snapshot');
   await expect(values.nth(1)).toContainText(metadata.updated_at.slice(0, 10));
   await expect(values.nth(2)).toHaveText(metadata.gameplay_verification?.version || metadata.gameplay_version || shipped.data.metadata.version);
-  await expect(page.locator('.monster-source .source-versions a')).toHaveAttribute('href',
+  await expect(page.locator('.monster-source .source-versions').getByRole('link', { name: 'View published source' })).toHaveAttribute('href',
     'https://github.com/dqm-psx/translations/tree/' + metadata.public_revision);
   if (metadata.current_patch && metadata.gameplay_verification && metadata.current_patch.version !== metadata.gameplay_verification.version) {
     await expect(page.locator('.monster-source')).toContainText('The latest release has not yet had a separate gameplay verification.');
@@ -403,7 +403,7 @@ test('published quests and characters can be followed with JavaScript disabled',
     await expect(reader.locator('#mechanics .handbook-chapter')).toHaveCount(4);
     await reader.locator('#mechanics').getByText('All articles',{exact:true}).click();
     const articles = reader.getByRole('table',{name:'Mechanics articles'});
-    await expect(articles.getByRole('link')).toHaveCount(22);
+    await expect(articles.getByRole('link')).toHaveCount(23);
     await expect(articles.locator('a[href="articles/field-triangle/"]')).toHaveCount(0);
     await expect(articles.getByRole('button')).toHaveCount(0);
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');

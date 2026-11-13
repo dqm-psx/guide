@@ -23,6 +23,8 @@
     shopMaps.set(place.title,shopMaps.has(place.title) ? null : place.id);
   }
   const inGame = (source, game) => !game || source.game === 'both' || source.game === game;
+  const itemSources = row => [...DQMItemReference.items[row.id].sources,
+    ...(globalThis.DQM_PATCH_REWARDS?.items?.[row.id] || [])];
   function shopLink(location, {mapLink,escape}) {
     const map = shopMaps.get(location.split(' / ').pop());
     return map ? mapLink(map,escape(location)) : escape(location);
@@ -44,7 +46,7 @@
   }
   function sourceList(row, game) {
     const reference = DQMItemReference.items[row.id];
-    const sources = reference.sources.filter(source => inGame(source,game));
+    const sources = itemSources(row).filter(source => inGame(source,game));
     const shops = (row.prices || []).filter(price => inGame(price,game)).flatMap(price =>
       price.locations.map(location => ({text:location, game:price.game, shop:true}))
     );
@@ -117,7 +119,7 @@
     const {escape, game} = options;
     const reference = DQMItemReference.items[row.id];
     const price = prices(row,game);
-    const sources = reference.sources.filter(source => inGame(source,game));
+    const sources = itemSources(row).filter(source => inGame(source,game));
     return '<dl class="item-facts"><dt>In-game description</dt><dd>'+descriptions(row,game,options)+'</dd>'+
       '<dt>Effect</dt><dd>'+escape(reference.effect)+'</dd><dt>Type</dt><dd>'+escape(reference.type)+'</dd>'+
       '<dt>Uses</dt><dd>'+escape(reference.uses.text)+'</dd><dt>Sell price</dt><dd>'+(price.sell?.text || 'Cannot sell')+

@@ -14,7 +14,33 @@ const comparison=guide.entries.find(row=>row.id==='field-restored-content');
 test('public comparison describes released games and patch versions only',()=>{
   const patch=comparison.sections.find(section=>section.id==='english-settings-fixes');
   assert.doesNotMatch(JSON.stringify(comparison),/Delocalized|Game Boy translation edition|wording editions|Game Boy-named patch/i);
-  assert.ok(patch.table.columns.includes('English patch v1.0.73'));
+  assert.ok(patch.table.columns.includes('Enhanced v1.0.74'));
+  assert.ok(patch.table.columns.includes('Translation only v1.0.74'));
+  const truth=patch.table.rows.find(row=>row[0]==='Truth Gate retry');
+  assert.match(truth[3],/same repair/);
+  const aibou=patch.table.rows.find(row=>row[0]==='Aibou');
+  assert.match(aibou[2],/offline Medal Man egg exchange/);
+  assert.match(aibou[3],/No added egg exchange/);
+  assert.doesNotMatch(JSON.stringify(patch),/Hidden Gate|Nameless Place/);
+  assert.equal(guide.provenance.patch_version,'v1.0.73');
+});
+
+test('v74 gameplay guidance makes unlock, reward capacity and download requirements explicit',()=>{
+  const arena=guide.entries.find(row=>row.id==='field-greattree-arena');
+  assert.equal(arena.topic,'battle');
+  assert.equal(arena.spoiler,'ending');
+  assert.match(arena.summary,/Enhanced.*revenge match/);
+  assert.match(arena.details.join(' '),/older patch.*revenge match again/);
+  const pro=arena.sections.find(section=>section.id==='pro-prizes');
+  assert.equal(pro.table.rows.length,9);
+  assert.match(pro.table.rows[8][2],/two Tiny Medals/);
+  const survival=arena.sections.find(section=>section.id==='survival-prizes');
+  assert.match(JSON.stringify(survival),/50,000 G/);
+  assert.match(JSON.stringify(survival),/Three free bag slots/);
+  const table=guide.entries.find(row=>row.id==='field-personality').sections[0];
+  assert.equal(table.id,'party-table-conversations');
+  assert.match(table.paragraphs.join(' '),/new v74 addition/);
+  assert.match(table.paragraphs.join(' '),/Translation only includes neither/);
 });
 
 test('controls compare handheld and PSX behavior instead of PSX campaign cadence',()=>{

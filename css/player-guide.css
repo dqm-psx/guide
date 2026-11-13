@@ -203,6 +203,7 @@
 .guide-row>span{min-width:0}.guide-row strong,.guide-row>span>span{display:block}.guide-row strong{color:var(--ink);font-size:16px}.guide-row>span>span{color:var(--muted);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .guide-row .guide-search-excerpt{display:block;-webkit-line-clamp:unset;overflow:visible}
 .guide-row small{font-size:9px}.guide-row img,.item-art{width:40px;height:40px;object-fit:contain;image-rendering:pixelated}
+.guide-row .monster-sprite{width:40px;height:40px;flex:0 0 40px}
 .quest-directory { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:1rem 2.5rem; margin:1.25rem 0; }
 .quest-directory h3 { margin:0; color:var(--guide-green); font:700 1.5rem/1.2 Georgia,serif; }
 .quest-directory h4 { margin:1.3rem 0 .3rem; }

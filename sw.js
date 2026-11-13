@@ -43,6 +43,7 @@ const PRECACHE = [
   "./data/player-atlas.js",
   "./data/world-guide.js",
   "./data/field-guide.js",
+  "./data/patch-rewards.js",
   "./data/recruitment-reference.js",
   "./js/recruitment.js",
   "./js/recruitment-ui.js",
