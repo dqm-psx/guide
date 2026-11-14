@@ -4,6 +4,90 @@
   "originalDiscSha256": "a1217657786430ac1c3ad71f16cdadb65d47b0df9a7e30278900651c1f1eec29",
   "scope": "Native resource assignments and exact portrait pixels match both discs. Shared conversation hosts are not person identities.",
   "portraits": {
+    "npc-greatlog-key-appraiser": {
+      "archiveIndex": 2858,
+      "resourceEntry": 72,
+      "resourceSha256": "b94df304891fbf6161aec40e82bc5e36feaec871215de62cd7ee91d6ca21041d",
+      "portraitSha256": "1f052f17919dfb517f53eb12198244a0d49a00edc3d927606c944f2991e19694",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 133,
+      "messageSlot": 987,
+      "identity": "Service or quest role identified by its own actor conversation"
+    },
+    "npc-bunny": {
+      "archiveIndex": 5663,
+      "resourceEntry": 47,
+      "resourceSha256": "0708b28a6c217fa98b7949c3af262cbbf1b72e3743061bee38b102fa0be2487a",
+      "portraitSha256": "c900851938b594a7aa6b37b5d33db397aeb51575789e96e75fa0af63c9a0e2dd",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 15,
+      "sceneResource": 5671,
+      "messageSlot": 169,
+      "identity": "Single named speaker in the actor conversation"
+    },
+    "npc-greattree-storage-apprentice": {
+      "archiveIndex": 5628,
+      "resourceEntry": 39,
+      "resourceSha256": "0db479f2d8ad54cbc325fdbabb7611e3b4fcc512d7c9410bed28f9b21b12501d",
+      "portraitSha256": "358b129d924fd4ef77db895ef90bcb19508c1841675b4f1e843366780d77f1ae",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 1,
+      "sceneResource": 5630,
+      "messageSlot": 1212,
+      "identity": "Service or quest role identified by its own actor conversation"
+    },
+    "npc-bazaar-cook": {
+      "archiveIndex": 5663,
+      "resourceEntry": 47,
+      "resourceSha256": "0708b28a6c217fa98b7949c3af262cbbf1b72e3743061bee38b102fa0be2487a",
+      "portraitSha256": "56dc7b3ed2ebe9bf996c24ad1b328dda40802035bdf86991fb7a39f835c5dfab",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 8,
+      "sceneResource": 5671,
+      "messageSlot": 104,
+      "identity": "Service or quest role identified by its own actor conversation"
+    },
+    "npc-bazaar-muscleman": {
+      "archiveIndex": 5663,
+      "resourceEntry": 47,
+      "resourceSha256": "0708b28a6c217fa98b7949c3af262cbbf1b72e3743061bee38b102fa0be2487a",
+      "portraitSha256": "56dc7b3ed2ebe9bf996c24ad1b328dda40802035bdf86991fb7a39f835c5dfab",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 9,
+      "sceneResource": 5671,
+      "messageSlot": 205,
+      "identity": "Service or quest role identified by its own actor conversation"
+    },
+    "npc-well-professor": {
+      "archiveIndex": 5607,
+      "resourceEntry": 40,
+      "resourceSha256": "6370587fdb1b28583d29aaca6c4b28bba7dabbd7060280c65cbf72582d07352a",
+      "portraitSha256": "054c5aa30e709cc1f8cf33cf935609876773fac4c0a77b83bfec340f1385c174",
+      "frameSize": [
+        32,
+        32
+      ],
+      "actorSlot": 0,
+      "sceneResource": 5630,
+      "messageSlot": 1380,
+      "identity": "Service or quest role identified by its own actor conversation"
+    },
     "npc-laura": {
       "archiveIndex": 4116,
       "resourceEntry": 207,

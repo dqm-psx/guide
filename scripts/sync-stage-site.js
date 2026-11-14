@@ -9,8 +9,7 @@ const digest = value => crypto.createHash('sha256').update(value).digest('hex').
 
 function versionAssets(input) {
   const assets = new Map(input);
-  // The lossless native PNG sources are build inputs. Only sprite sheets and
-  // their frame coordinates are used by the published application.
+  // The lossless native PNG sources are build inputs. The published application uses individual lossless WebP sprites.
   assets.delete('data/overworld-sprites.js');
   assets.delete('data/monster-sprites.js');
   function read(file) {
@@ -27,8 +26,10 @@ function versionAssets(input) {
   const manifest = JSON.parse(read('manifest.webmanifest'));
   manifest.icons = manifest.icons.map(icon => ({...icon, src: versionedURL(icon.src)}));
   assets.set('manifest.webmanifest', Buffer.from(JSON.stringify(manifest, null, 2) + '\n'));
-  const sheetScript = read('data/sprite-sheets.js');
-  assets.set('data/sprite-sheets.js', Buffer.from(sheetScript.replace(/"media\/sprites-[\w-]+\.webp"/g,
+  const spriteScript = read('data/sprite-images.js');
+  assets.set('data/sprite-images.js', Buffer.from(spriteScript.replace(/"media\/monster-(?:portrait|overworld)-\d+\.webp"/g,
+    value => JSON.stringify(versionedURL(JSON.parse(value))))));
+  assets.set('data/family-icons.js', Buffer.from(read('data/family-icons.js').replace(/"media\/family-\d+\.webp"/g,
     value => JSON.stringify(versionedURL(JSON.parse(value))))));
   const html = read('index.html').replace(/(<script type="application\/json" id="guide-assets">)([\s\S]*?)(<\/script>)/,
     (match,open,json,close) => {

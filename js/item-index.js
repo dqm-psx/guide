@@ -23,6 +23,8 @@
     shopMaps.set(place.title,shopMaps.has(place.title) ? null : place.id);
   }
   const inGame = (source, game) => !game || source.game === 'both' || source.game === game;
+  const itemSources = row => [...DQMItemReference.items[row.id].sources,
+    ...(globalThis.DQM_PATCH_REWARDS?.items?.[row.id] || [])];
   function shopLink(location, {mapLink,escape}) {
     const map = shopMaps.get(location.split(' / ').pop());
     return map ? mapLink(map,escape(location)) : escape(location);
@@ -44,7 +46,7 @@
   }
   function sourceList(row, game) {
     const reference = DQMItemReference.items[row.id];
-    const sources = reference.sources.filter(source => inGame(source,game));
+    const sources = itemSources(row).filter(source => inGame(source,game));
     const shops = (row.prices || []).filter(price => inGame(price,game)).flatMap(price =>
       price.locations.map(location => ({text:location, game:price.game, shop:true}))
     );
@@ -62,12 +64,16 @@
     return sources.map(line).join('');
   }
   function sourcePreview(row, sources, options) {
-    if (sources.length <= 2) return sourceMarkup(sources,options);
+    const preferred = [...sources].sort((a,b)=>Number(Boolean(b.shop))-Number(Boolean(a.shop)));
+    if (sources.length <= 2) return sourceMarkup(preferred,options);
     // Give each adventure a useful first stop when the player is comparing both.
-    const first = sources[0];
-    const otherAdventure = options.game ? [] : sources.filter(source=>source.game !== first.game);
+    // Lead with somewhere the player can reliably buy another copy. One-off
+    // chest and quest rewards remain available in the full source list.
+    const first = preferred[0];
+    const remaining = preferred.filter(source=>source!==first);
+    const otherAdventure = options.game ? [] : remaining.filter(source=>source.game !== first.game);
     const second = otherAdventure.find(source=>source.shop) || otherAdventure[0] ||
-      sources.find(source=>source.shop && !first.shop) || sources[1];
+      remaining[0];
     return sourceMarkup(first.text.length > 75 ? [first] : [first,second],options)+
       '<div class="item-all-sources">'+options.entryLink(row.id,'All '+sources.length+' sources')+'</div>';
   }
@@ -113,7 +119,7 @@
     const {escape, game} = options;
     const reference = DQMItemReference.items[row.id];
     const price = prices(row,game);
-    const sources = reference.sources.filter(source => inGame(source,game));
+    const sources = itemSources(row).filter(source => inGame(source,game));
     return '<dl class="item-facts"><dt>In-game description</dt><dd>'+descriptions(row,game,options)+'</dd>'+
       '<dt>Effect</dt><dd>'+escape(reference.effect)+'</dd><dt>Type</dt><dd>'+escape(reference.type)+'</dd>'+
       '<dt>Uses</dt><dd>'+escape(reference.uses.text)+'</dd><dt>Sell price</dt><dd>'+(price.sell?.text || 'Cannot sell')+

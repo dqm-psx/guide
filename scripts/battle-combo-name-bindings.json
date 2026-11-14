@@ -1,0 +1,22 @@
+[
+  {"id":208,"source_id":"e1109","spelling":"Kazap","skills":[15,15]},
+  {"id":209,"source_id":"e110f","spelling":"IceBlaze","skills":[3,18]},
+  {"id":210,"source_id":"e1115","spelling":"Wave Slash","skills":[77,103]},
+  {"id":211,"source_id":"e111b","spelling":"Air Slash","skills":[73,103]},
+  {"id":212,"source_id":"e1122","spelling":"Earth Slash","skills":[75,103]},
+  {"id":213,"source_id":"e1128","spelling":"Giga Cross Break","skills":[103,103]},
+  {"id":214,"source_id":"e1132","spelling":"Gigante","skills":[21,112]},
+  {"id":215,"source_id":"e1137","spelling":"Twin Attack","skills":[106,145],"effect_skill_mentions":[106]},
+  {"id":216,"source_id":"e113e","spelling":"Quick Draw","skills":[42,98]},
+  {"id":217,"source_id":"e1144","spelling":"GigaMagic","skills":[29,61]},
+  {"id":218,"source_id":"e114a","spelling":"Spirit Festival","skills":[124,160]},
+  {"id":219,"source_id":"e1153","spelling":"Reaper's Feast","skills":[117,121]},
+  {"id":220,"source_id":"e115c","spelling":"Demon Lord Form","skills":[58,60]},
+  {"id":221,"source_id":"e1163","spelling":"Twilight Wave","skills":[129,130]},
+  {"id":222,"source_id":"e116c","spelling":"Mist of Forgetting","skills":[146,156]},
+  {"id":223,"source_id":"e1175","spelling":"Mega Magic Drain","skills":[50,119]},
+  {"id":224,"source_id":"e117b","spelling":"Counter","skills":[149,150]},
+  {"id":225,"source_id":"e1181","spelling":"Enchanting Dance","skills":[52,120]},
+  {"id":226,"source_id":"e1189","spelling":"Iron Wall Shield","skills":[148,152]},
+  {"id":227,"source_id":"e1191","spelling":"Enlightenment","skills":[138,159]}
+]

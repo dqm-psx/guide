@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const {verifySnapshot, validateBaseline, validateCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest} = require('../../scripts/sync-monster-reference');
+const {verifySnapshot, validateBaseline, validateCurrentPatch, selectCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest} = require('../../scripts/sync-monster-reference');
 const ROOT = path.resolve(__dirname, '../..');
 const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/monster-baseline.json'), 'utf8'));
 const breeding = readBreeding();
@@ -166,6 +166,27 @@ test('a newer release never advances the independently verified gameplay version
   const changedBaseline = structuredClone(baseline);
   changedBaseline.species[0].stats.growth.hp[1] += 1;
   assert.throws(() => validateGameplayVerification(gameplayProof, changedBaseline, breeding), /does not match/);
+});
+
+test('reviewed release metadata survives stale exports and permits a newer public release', () => {
+  const reviewed = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/current-patch.json'), 'utf8'));
+  assert.deepEqual(selectCurrentPatch(currentPatch(), reviewed), reviewed);
+  assert.deepEqual(selectCurrentPatch(undefined, reviewed), reviewed);
+  assert.deepEqual(selectCurrentPatch(reviewed, reviewed), reviewed);
+  assert.equal(selectCurrentPatch(null, null), null);
+  const newer = {...reviewed, version: 'v1.0.100', source_revision: 'a'.repeat(40), package_sha256: 'b'.repeat(64)};
+  assert.deepEqual(selectCurrentPatch(newer, reviewed), newer);
+  for (const field of ['source_revision','package_sha256']) {
+    const conflicting = {...reviewed, [field]: currentPatch()[field]};
+    assert.throws(()=>selectCurrentPatch(conflicting, reviewed), /conflicts with the reviewed release/);
+  }
+  assert.throws(()=>selectCurrentPatch(currentPatch(), {...reviewed, author:'not public metadata'}), /fields differ/);
+  const f = fixture();
+  f.manifest.current_patch = selectCurrentPatch(currentPatch(), reviewed);
+  const reference = buildReference(baseline, breeding, f.comparison, f.manifest, publicRevision, gameplayProof);
+  assert.equal(reference.metadata.current_patch.version, reviewed.version);
+  assert.equal(reference.metadata.gameplay_verification.version, gameplayProof.version);
+  assert.equal(reference.metadata.translation_revision, revision);
 });
 
 test('reissuing a release version cannot reuse gameplay proof for a different package or source', () => {

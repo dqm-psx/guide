@@ -2,21 +2,47 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const {loadScripts} = require('../helpers/load-scripts');
-const {block, card, finishBlock} = require('../helpers/psx-save');
+const {block, card, finishBlock, planningBlock, putBits} = require('../helpers/psx-save');
 const {read} = require('../../js/save-import');
 const species = loadScripts([path.join(__dirname, '../../data/breeding-data.js')]).DATA.species;
+const reference = loadScripts([path.join(__dirname, '../../data/save-reference.js')]).SAVE_REFERENCE;
 
 test('reads the packed party indices, ranch and storage with native family/member IDs', () => {
   const save = read(block(2), species).saves[0];
   assert.equal(save.campaign, 'DQM2 · Tara');
   assert.equal(save.game, 'dqm2');
-  assert.deepEqual(save.entries, [
+  assert.deepEqual(save.entries.map(({saveDetails,...entry})=>entry), [
     {speciesIndex: 26, nickname: 'Bob', sex: 'male', plus: 12, level: 30, location: 'party'},
     {speciesIndex: 0, nickname: '', sex: 'female', plus: 9, level: 10, location: 'farm'},
     {speciesIndex: 1, nickname: 'G', sex: 'male', plus: 0, level: 5, location: 'farm'},
   ]);
   assert.deepEqual(save.skipped, {eggs: 2, unavailable: 1, unsupported: 1});
   assert.equal(save.unreadableNames, 1);
+});
+
+test('restores base stats, equipped stats, individual cap and all resistance channels without editing input',()=>{
+  const bytes=planningBlock(2),before=Buffer.from(bytes);
+  const save=read(bytes,species,reference).saves[0],entry=save.entries[0],details=entry.saveDetails;
+  assert.deepEqual(bytes,before);
+  assert.equal(save.campaignKey,'tara');
+  assert.equal(details.levelCap,55);assert.equal(details.campaign,'tara');assert.equal(details.equipmentId,69);
+  assert.deepEqual(details.baseStats,{hp:450,mp:220,attack:180,defense:155,agility:300,intelligence:277});
+  assert.deepEqual(details.battleStats,{...details.baseStats,attack:230});
+  assert.deepEqual(details.resistances,Array.from({length:27},(_,i)=>i%8));
+  assert.deepEqual(details.knownSkills,[4,reference.specialSkills[0]]);
+  assert.deepEqual(details.inheritedSkills,[...new Set([...reference.naturalSkills.dqm2[26].filter(Boolean),4,10,23])]);
+  assert.deepEqual(save.entries.map(row=>row.saveDetails.trainingLocation),['party','farm','hibernation']);
+  assert.ok(!JSON.stringify(save).includes('masterId'));
+});
+
+test('rejects unsupported skill selectors and unknown numeric fields instead of inventing values',()=>{
+  const bytes=planningBlock(),at=0x250+2*136;
+  putBits(bytes,at+0x20,0,5,30); // Normal selector outside 25-slot pool.
+  putBits(bytes,at+0x0c,0,10,1000);putBits(bytes,at+4,25,7,20);
+  const details=read(finishBlock(bytes),species,reference).saves[0].entries[0].saveDetails;
+  assert.equal(details.knownSkills,null);assert.equal(details.baseStats.hp,null);assert.equal(details.levelCap,null);
+  const old=read(planningBlock(),species).saves[0].entries[0].saveDetails;
+  assert.equal(old.knownSkills,null);assert.equal(old.inheritedSkills,null);assert.equal(old.battleStats.attack,null);
 });
 
 test('only offers live game directory entries, retaining good saves beside damaged ones', () => {

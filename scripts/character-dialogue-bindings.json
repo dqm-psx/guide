@@ -1,5 +1,11 @@
 {
   "speakers": {
+    "npc-greatlog-key-appraiser": {"labels": [], "scenes": {"Key Appraiser": ["s003f6800_2fa0", "s003f6800_3161", "s003f6800_31fe"]}},
+    "npc-bunny": {"labels": ["Bunny"], "scenes": {"Bazaar": ["s0afae000_1063", "s0afae000_107e", "s0afae000_10aa", "s0afae000_10c7", "s0afae000_10e4", "s0afae000_18d0", "s0afae000_18f1", "s0afae000_18fe"]}},
+    "npc-greattree-storage-apprentice": {"labels": [], "scenes": {"Storage": ["s0ab53000_158a", "s0ab53000_1602", "s0ab53000_162a", "s0ab53000_16c0", "s0ab53000_177e"]}},
+    "npc-bazaar-cook": {"labels": [], "scenes": {"Bazaar": ["s0afae000_036f", "s0afae000_03b6", "s0afae000_0568", "s0afae000_14d2", "s0afae000_14fc", "s0afae000_159c", "s0afae000_15ef", "s0afae000_1aa6", "s0afae000_1d88"]}},
+    "npc-bazaar-muscleman": {"labels": [], "scenes": {"Bazaar": ["s0afae000_0557", "s0afae000_0589", "s0afae000_160f", "s0afae000_1ae7", "s0afae000_1bb7", "s0afae000_1dc9"]}},
+    "npc-well-professor": {"labels": [], "scenes": {"Inside the Well": ["s0ab53000_4168", "s0ab53000_420e", "s0ab53000_42fa", "s0ab53000_43ca", "s0ab53000_43f4", "s0ab53000_44f5", "s0ab53000_45b8", "s0ab53000_461e", "s0ab53000_4645", "s0ab53000_46b8"]}},
     "npc-laura": {
       "labels": ["Laura"],
       "scenes": {

@@ -23,6 +23,9 @@
       if (item.descriptions) row.menuDescriptions = item.descriptions;
       row.names = item.names;
       row.aliases = [...new Set([...(row.aliases || []), ...item.aliases])];
+      // Enhanced Arena rewards also make these formerly GreatLog-only items
+      // obtainable by Terry. Native prices and descriptions stay unchanged.
+      if (row.game === 'dqm2' && globalThis.DQM_PATCH_REWARDS?.items?.[id]?.some(source => source.game === 'dqm1')) row.game = 'both';
     }
     field.skill_names = update.skills;
     field.default_nicknames = update.default_nicknames || [];
@@ -61,14 +64,43 @@
     }
   }
   // Both the interactive guide and its standalone HTML use these same rows.
-  function articleSections(row, escape, prose, level, campaign) {
+  function sectionText(section) {
+    return [section.title,section.intro,...(section.paragraphs || []),...(section.bullets || []),
+      ...(section.rows || []).flat(),section.table?.caption,...(section.table?.columns || []),...(section.table?.rows || []).flat()].filter(Boolean);
+  }
+  function articleSections(row, escape, prose, level, campaign, options = {}) {
     const heading = 'h' + level;
     const sections = row.sections || [];
     const ordered = campaign ? sections.filter(s => s.game === campaign).concat(sections.filter(s => s.game !== campaign)) : sections;
-    return ordered.map(section => '<section class="route-section article-topic"><'+heading+'>'+
-      escape(section.title)+'</'+heading+'><p>'+prose(section.intro)+'</p><dl>'+
-      section.rows.map(([label,text]) => '<dt>'+escape(label)+'</dt><dd>'+prose(text)+'</dd>').join('')+
-      '</dl></section>').join('');
+    const sectionId = section => section.id || String(sections.indexOf(section)+1);
+    const toc = ordered.length > 2 && options.sectionHref ? '<nav class="article-contents" aria-label="In this article"><details'+(options.compactContents?'':' open')+'><summary>In this article</summary><ol>'+ordered.map(section=>
+      '<li><a href="'+escape(options.sectionHref(sectionId(section)))+'">'+escape(section.title)+'</a></li>').join('')+'</ol></details></nav>' : '';
+    return toc+ordered.map(section => {
+      const id=sectionId(section);
+      const headingMarkup='<'+heading+' id="article-section-'+escape(id)+'" tabindex="-1">'+escape(section.title)+'</'+heading+'>';
+      const opening='<section class="route-section article-topic" aria-labelledby="article-section-'+escape(id)+'">'+headingMarkup;
+      if(options.hiddenSection?.(section)) return opening+'<p>This section includes '+(section.spoiler==='ending'?'ending':'story')+
+        ' spoilers.</p><button class="guide-action" type="button" data-reveal-section="'+escape(id)+'">Reveal this section</button></section>';
+      const table=section.table;
+      const numeric=table?.rows?.length && table.rows.every(cells=>cells.slice(1).every(cell=>/^\d+$/.test(String(cell))));
+      const comparison=table && !numeric && row.id==='field-restored-content' && table.columns.length>2;
+      const sources=(section.sources || []).filter(source=>/^https?:\/\//.test(source.url)).map(source=>
+        '<a href="'+escape(source.url)+'" rel="noopener noreferrer">'+escape(source.label)+'</a>');
+      const content=
+        (section.intro ? '<p>'+prose(section.intro)+'</p>' : '')+
+        (section.paragraphs || []).map(text=>'<p>'+prose(text)+'</p>').join('')+
+        (section.rows?.length ? '<dl>'+section.rows.map(([label,text])=>'<dt>'+escape(label)+'</dt><dd>'+prose(text)+'</dd>').join('')+'</dl>' : '')+
+        (table ? '<div class="article-table'+(comparison?' article-comparison':numeric?' article-numeric':'')+'" role="region" tabindex="0" aria-label="'+escape(table.caption || section.title)+'"><table role="table">'+
+          (table.caption ? '<caption>'+escape(table.caption)+'</caption>' : '')+'<thead role="rowgroup"><tr role="row">'+table.columns.map(title=>'<th scope="col" role="columnheader">'+escape(title)+'</th>').join('')+'</tr></thead><tbody role="rowgroup">'+
+          table.rows.map(cells=>'<tr role="row">'+cells.map((cell,i)=>i ? '<td role="cell" data-label="'+escape(table.columns[i])+'">'+prose(cell)+'</td>' : '<th scope="row" role="rowheader">'+prose(cell)+'</th>').join('')+'</tr>').join('')+'</tbody></table></div>' : '')+
+        (section.bullets?.length ? '<ul>'+section.bullets.map(text=>'<li>'+prose(text)+'</li>').join('')+'</ul>' : '')+
+        (section.links?.length && options.articleLink ? '<p class="article-topic-links">'+section.links.map(options.articleLink).filter(Boolean).join(' · ')+'</p>' : '')+
+        (sources.length ? '<p class="article-sources"><span>Sources</span> · '+sources.join(' · ')+'</p>' : '');
+      // Static pages remain useful without JavaScript, including spoiler controls.
+      const guarded=options.collapseSpoilers && ['story','ending'].includes(section.spoiler);
+      return opening+(guarded ? '<details class="article-spoilers"><summary>Reveal this section · '+
+        (section.spoiler==='ending'?'ending':'story')+' spoilers</summary>'+content+'</details>' : content)+'</section>';
+    }).join('');
   }
   function nicknameMarkup(row, escape, articleLink) {
     if (row.nickname_rows) {
@@ -82,9 +114,10 @@
     const label = row.id === 'npc-machiko' ? 'Gift nickname' : 'Default nickname';
     return '<p><strong>'+label+'</strong> · '+nicknames.map(name => escape(name.title)).join(', ')+'</p>';
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = {apply};
+  if (typeof module !== 'undefined' && module.exports) module.exports = {apply,articleSections,sectionText};
   else {
     root.DQMArticleSections = articleSections;
+    root.DQMSectionText = sectionText;
     root.DQMNicknameMarkup = nicknameMarkup;
     apply(root.GUIDE_REFERENCE, root.FIELD_GUIDE, root.WORLD_GUIDE, root.PLAYER_ATLAS);
   }

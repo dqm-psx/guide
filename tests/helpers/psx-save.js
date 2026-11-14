@@ -48,4 +48,36 @@ function card(slots) {
   }
   return bytes;
 }
-module.exports = {block, card, finishBlock};
+function putBits(bytes, at, first, count, value) {
+  for(let bit=0;bit<count;bit++) {
+    const offset=at+((first+bit)>>3),mask=1<<((first+bit)&7);
+    bytes[offset]=(bytes[offset]&~mask)|(((value>>bit)&1)?mask:0);
+  }
+}
+function planningBlock(variant=0) {
+  const bytes=block(variant);
+  for(const slot of [0,2,30]) {
+    const at=0x250+slot*136;
+    putBits(bytes,at+4,25,7,55);
+    [450,220,180,155,300,277].forEach((value,i)=>putBits(bytes,at+0x0c+Math.floor(i/2)*4,(i%2)*10,10,value));
+    putBits(bytes,at+0x18,8,5,5); // Ice Fang: +50 Attack, no base-stat change.
+    const resistance=Array.from({length:27},(_,i)=>i%8);
+    for(let i=0;i<16;i++)putBits(bytes,at+8+Math.floor(i/4)*4,20+(i%4)*3,3,resistance[i]);
+    for(let i=16;i<22;i++)putBits(bytes,at+0x18,13+(i-16)*3,3,resistance[i]);
+    for(let i=22;i<27;i++)putBits(bytes,at+0x1c,16+(i-22)*3,3,resistance[i]);
+    for(let i=0;i<9;i++)putBits(bytes,at+0x40,i*3,3,i>=3?4:0); // No parental candidates.
+    bytes.set([4,10,23],at+0x48);
+    bytes.fill(255,at+0x20,at+0x25);bytes[at+0x45]=255;
+    putBits(bytes,at+0x20,0,5,9);putBits(bytes,at+0x45,0,1,0); // First direct candidate: skill 4.
+    putBits(bytes,at+0x20,5,5,0);putBits(bytes,at+0x45,1,1,0);bytes[at+0x86]=2; // Special selector 0.
+  }
+  return finishBlock(bytes);
+}
+function candidateBlock(delta=4) {
+  const bytes=planningBlock(2),at=0x250+2*136;
+  for(let i=0;i<3;i++)putBits(bytes,at+0x40,i*3,3,i===0?delta:4);
+  bytes.fill(0,at+0x48,at+0x58);
+  bytes.fill(255,at+0x20,at+0x25);bytes[at+0x45]=255;bytes[at+0x86]=0;
+  return finishBlock(bytes);
+}
+module.exports = {block, card, finishBlock, putBits, planningBlock, candidateBlock};

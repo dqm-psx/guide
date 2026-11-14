@@ -37,6 +37,39 @@ test.afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
 });
 
+test('published handbook subsection links work with enhancement, sharing and without JavaScript',async({browser,page})=>{
+  const path='articles/field-restored-content/#article-section-foreign-master-differences';
+  await page.goto(url+path);
+  await expect(page.locator('#article-title')).toContainText('Game Boy, PlayStation');
+  await expect(page.locator('#article-section-foreign-master-differences')).toBeInViewport();
+  await page.context().grantPermissions(['clipboard-read','clipboard-write']);
+  await page.locator('#entry-permalink').click();
+  expect(await page.evaluate(()=>navigator.clipboard.readText())).toBe(url+path);
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const reader=await context.newPage();
+    await reader.goto(url+path);
+    await expect(reader.locator('#article-section-foreign-master-differences')).toBeInViewport();
+    await reader.getByRole('navigation',{name:'In this article'}).locator('summary').click();
+    await reader.getByRole('navigation',{name:'In this article'}).getByRole('link',{name:'What changes in the PlayStation remake'}).click();
+    await expect(reader).toHaveURL(/articles\/field-restored-content\/#article-section-presentation-controls$/);
+    await expect(reader.locator('#article-section-presentation-controls')).toBeInViewport();
+  } finally {await context.close();}
+});
+
+test('damage article publishes real skill links without JavaScript',async({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try {
+    const reader=await context.newPage();
+    await reader.goto(url+'articles/field-damage-and-resistance/');
+    await expect(reader.getByRole('table',{name:'Base damage in ordinary wild battles'})).toContainText('12–15');
+    await expect(reader.getByRole('link',{name:'Open the damage calculator →',exact:true})).toHaveAttribute('href','#combat-planner');
+    await reader.locator('.article-topic-links a[href="skills/e0c10/"]').click();
+    await expect(reader).toHaveURL(/skills\/e0c10\/$/);
+    await expect(reader.getByRole('heading',{level:1})).toHaveText('Blaze');
+  } finally {await context.close();}
+});
+
 function audit(page, context) {
   const errors = [];
   const failures = [];
@@ -181,7 +214,7 @@ test('current-name search opens the matching library, growth, and provenance pro
   await expect(values.nth(0)).toHaveText(metadata.current_patch?.version || 'Not supplied by this snapshot');
   await expect(values.nth(1)).toContainText(metadata.updated_at.slice(0, 10));
   await expect(values.nth(2)).toHaveText(metadata.gameplay_verification?.version || metadata.gameplay_version || shipped.data.metadata.version);
-  await expect(page.locator('.monster-source .source-versions a')).toHaveAttribute('href',
+  await expect(page.locator('.monster-source .source-versions').getByRole('link', { name: 'View published source' })).toHaveAttribute('href',
     'https://github.com/dqm-psx/translations/tree/' + metadata.public_revision);
   if (metadata.current_patch && metadata.gameplay_verification && metadata.current_patch.version !== metadata.gameplay_verification.version) {
     await expect(page.locator('.monster-source')).toContainText('The latest release has not yet had a separate gameplay verification.');
@@ -367,8 +400,11 @@ test('published quests and characters can be followed with JavaScript disabled',
   try {
     const reader=await context.newPage();
     await reader.goto(url+'entries/');
+    await expect(reader.locator('#mechanics .handbook-chapter')).toHaveCount(4);
+    await reader.locator('#mechanics').getByText('All articles',{exact:true}).click();
     const articles = reader.getByRole('table',{name:'Mechanics articles'});
-    await expect(articles.getByRole('link')).toHaveCount(22);
+    await expect(articles.getByRole('link')).toHaveCount(24);
+    await expect(articles.locator('a[href="articles/field-triangle/"]')).toHaveCount(0);
     await expect(articles.getByRole('button')).toHaveCount(0);
     await expect(articles.getByRole('link',{name:'Default monster nicknames'})).toHaveAttribute('href','articles/field-default-nicknames/');
     const items=reader.getByRole('table',{name:'Items',exact:true});
@@ -395,6 +431,17 @@ test('published quests and characters can be followed with JavaScript disabled',
     await reader.locator('a[href="entries/#quests-dqm2"]').click();
     await expect(reader.locator('#quests-dqm2 h2')).toBeInViewport();
   } finally {await context.close();}
+});
+
+test('retired field abilities URL opens the consolidated instructions without JavaScript',async({browser})=>{
+  const context=await browser.newContext({javaScriptEnabled:false});
+  try{
+    const reader=await context.newPage();
+    await reader.goto(url+'articles/field-triangle/');
+    await expect(reader).toHaveURL(/articles\/field-movement-settings\/#article-section-field-abilities$/);
+    await expect(reader.locator('#article-section-field-abilities')).toBeInViewport();
+    await expect(reader.getByRole('heading',{name:'Movement, running and field abilities',exact:true})).toHaveCount(1);
+  }finally{await context.close();}
 });
 
 test('a direct entry respects saved spoilers and keeps its static reference when a tool fails', async({page})=>{

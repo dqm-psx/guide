@@ -146,7 +146,7 @@
     const leaf = node.speciesIndex === null;
     const atLimit = path.length >= MAX_DEPTH;
     return '<div class="tree-branch"><article class="tree-node' + (selected === path ? ' tree-node-selected' : '') + (leaf ? ' tree-node-family' : '') + '" data-tree-path="' + path + '"><div class="tree-node-role">' + role + (path ? ' · Generation ' + path.length : '') + '</div>' + title +
-      (leaf ? '' : '<span class="tree-node-family-name">' + esc(species.get(node.speciesIndex).family_display || species.get(node.speciesIndex).family) + '</span>') +
+      (leaf ? '' : '<span class="tree-node-family-name">' + familyLabelMarkup(species.get(node.speciesIndex).family_id, species.get(node.speciesIndex).family_display || species.get(node.speciesIndex).family) + '</span>') +
       (condition ? '<p class="tree-condition">' + esc(condition) + '</p>' : '') +
       (!leaf ? '<div class="tree-node-actions"><button type="button" data-tree-select="' + path + '" aria-label="' + (node.children ? 'Change recipe for ' : 'Choose parents for ') + esc(name(node.speciesIndex)) + '"' + (atLimit ? ' disabled' : '') + '>' + (node.children ? 'Change recipe' : 'Choose parents') + '</button>' + (node.children ? '<button type="button" data-tree-collapse="' + path + '" aria-expanded="' + !hidden + '" aria-label="' + (hidden ? 'Show' : 'Hide') + ' parents of ' + esc(name(node.speciesIndex)) + '">' + (hidden ? 'Show' : 'Hide') + '</button>' : '') + '</div>' : '') +
       (atLimit ? '<p class="tree-node-note">Generation limit reached</p>' : '') + '</article>' +

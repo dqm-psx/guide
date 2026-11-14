@@ -82,6 +82,11 @@
       const stats=readStats(options.stats);
       const known=skillList(options.knownSkills??[],8,'Retained learned skills');
       const inherited=skillList(options.inheritedSkills??[],25,'Inherited candidate skills');
+      // A restored save already contains the complete CURRENT candidate pool.
+      // Its first nine slots can have been removed or advanced, so adding the
+      // species' original natural skills would resurrect unavailable routes.
+      const currentPool=options.candidateSkills===undefined?null:skillList(options.candidateSkills,25,'Current candidate skills');
+      const candidates=currentPool??[...mon.naturalSkills[campaign],...inherited];
       const location=options.location??'party';
       if(!['party','farm','hibernation'].includes(location))throw new RangeError('Unknown training location.');
       if(options.atLevelCap!=null&&typeof options.atLevelCap!=='boolean')throw new TypeError('Level-limit setting must be true or false.');
@@ -105,8 +110,8 @@
           prerequisiteUpgrades:kind==='combination'?automaticUpgrades.filter(row=>requiredSkillIds.includes(row.from)):[],
           requirements:rows,thresholdsMet:rows.every(row=>row.status==='met')});
       }
-      if(mon.naturalSkills[campaign].includes(skill.skillId))route('natural',[],skill.requirements,true);
-      if(inherited.includes(skill.skillId))route('inherited',[],skill.requirements,true);
+      if(currentPool===null&&mon.naturalSkills[campaign].includes(skill.skillId))route('natural',[],skill.requirements,true);
+      if((currentPool??inherited).includes(skill.skillId))route('inherited',[],skill.requirements,true);
       if(skill.upgradesFrom!=null)route('upgrade',[skill.upgradesFrom],skill.requirements);
       for(const combo of skill.combinations)route('combination',combo.requiredSkillIds,combo.requirements);
       // Still show the numerical requirements when no source route is present.
@@ -116,7 +121,7 @@
       // recipes can consequently read different requirements. Flag that
       // interaction instead of presenting the ordinary recipe as a promise.
       const orderedCombinations=reference.skills.flatMap(row=>row.combinations.map(combo=>({...combo,skillId:row.skillId})));
-      const pending=new Set([...mon.naturalSkills[campaign],...inherited].filter(id=>
+      const pending=new Set(candidates.filter(id=>
         !known.includes(id)&&requirements(getSkill(id).requirements,level,stats).every(row=>row.status==='met')));
       for(const change of automaticUpgrades){pending.add(change.from);pending.add(change.to);}
       let requirementIndex=0,uncertainEarlier=false,combinationOrder=false,combinationUnknown=false;
@@ -159,7 +164,7 @@
       const status=alreadyKnown?'already-known':blockedBy.find(reason=>['farm','hibernation','level-cap'].includes(reason))
         ??(ready?'ready':!accessible.length?'missing-route':blockedBy.includes('combination-order')?'combination-order':blockedBy.includes('unknown-stats')?'unknown-stats':'requirements-short');
       return {status,learnableNow:status==='ready',alreadyKnown,supersededBy,routes,numericalRequirements,blockedBy,
-        knownAfterUpgrades,automaticUpgrades,warnings,
+        knownAfterUpgrades,automaticUpgrades,warnings,candidateSource:currentPool===null?'species-and-inherited':'current',
         learnedSkillSlotsUsed:known.length,replacementRequired:ready&&known.length===8&&!alreadyKnown&&!routes.some(row=>row.kind==='upgrade'&&row.accessible&&row.thresholdsMet),
         learningTiming:'party-level-up'};
     }

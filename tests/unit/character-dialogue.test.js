@@ -102,3 +102,33 @@ test('only explicitly bound static-pool dialogue enters the transcript builder',
   rows.find(row => row.id === 'e0affe4_019b').catalog = 'text/system.json';
   assert.throws(() => buildCharacterDialogue({rows}, revision), /Missing current character dialogue e0affe4_019b/);
 });
+
+test('new Bazaar and service contacts retain their own dialogue, maps and quest links', () => {
+  const checks = [
+    ['npc-bunny', 'map-8-0', /Hi! I'm Bunny!/],
+    ['npc-bazaar-cook', 'map-8-0', /monster that can make fire/],
+    ['npc-bazaar-muscleman', 'map-8-0', /Do you know the skill Summon/],
+    ['npc-well-professor', 'map-6-7', /monster with a lightning skill/],
+    ['npc-greattree-storage-apprentice', 'map-6-6', /first-rate security/],
+    ['npc-greatlog-key-appraiser', 'map-12-28', /This is the key shop\. I appraise keys/]
+  ];
+  for (const [id, map, dialogue] of checks) {
+    assert.match(text(id), dialogue);
+    assert.ok(characters.find(row => row.id === id).map_ids.includes(map), id);
+  }
+  assert.doesNotMatch(text('npc-bazaar-cook'), /Do you know the skill Summon/);
+  assert.doesNotMatch(text('npc-bazaar-muscleman'), /monster that can make fire/);
+  assert.doesNotMatch(text('npc-greatlog-key-appraiser'), /my appraised key/,
+    'A customer-like line in the shared script is not assigned to the service NPC');
+  const bunnyName = require('../../scripts/world-name-bindings.json').terms.find(term => term.spelling === 'Bunny');
+  assert.equal(bunnyName.source_id, 's0afae000_1063');
+  assert.ok(bunnyName.affected_entries.includes('npc-bunny'));
+  for (const [npc, quest] of [
+    ['npc-bazaar-cook', 'quest-fire-at-the-bazaar'],
+    ['npc-bazaar-muscleman', 'quest-summon-entertainment-at-the-bazaar'],
+    ['npc-well-professor', 'quest-the-well-professor-s-experiment']
+  ]) {
+    assert.ok(WORLD_GUIDE.entries.find(row => row.id === quest).related.includes(npc));
+    assert.ok(characters.find(row => row.id === npc).related.includes(quest));
+  }
+});

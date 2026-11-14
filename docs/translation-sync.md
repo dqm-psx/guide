@@ -134,6 +134,26 @@ path is copied to the guide. The guide reads this object from the same pinned
 public commit as its wording snapshot, validates its exact schema, and keeps it
 separate from the translation revision and gameplay verification.
 
+When a public release is ahead of that export, `scripts/current-patch.json`
+supplies a reviewed release record with the same five public fields. The sync
+selects the newer version numerically. A newer export can advance the label;
+an older one cannot downgrade it. If both records name the same version, their
+source revision and package checksum must agree or publication stops for review.
+This checked-in record is pinned by the guide commit and its source fingerprint,
+so preparation and validation use identical release metadata. The guide does not
+make a second live release lookup during publication.
+
+The current reviewed record comes from the public
+[v1.0.74 release](https://github.com/dqm-psx/patch/releases/tag/v1.0.74).
+Its `release.json` has SHA-256
+`f59d21dfa1300a72969e645edcd9d43111a3539e60e77fbe0ccfaa1fc7f66fad`.
+The record uses the default **Enhanced** ZIP's SHA-256; its source revision is
+`11d6abacc1ce217b8f1e5521a180c3135628b296`. The retained `edition: current`
+field describes English wording, not the feature profile: Enhanced and
+Translation only use the same Current wording. Updating this record requires
+checking the official release, its catalog and the default package checksum.
+It does not change the older native gameplay verification receipts.
+
 The original implementation synchronized wording automatically but did not
 export a patch-version label or refresh gameplay. Historical snapshots without
 `current_patch` remain readable; the guide does not invent a release version

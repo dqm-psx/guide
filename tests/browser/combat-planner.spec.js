@@ -33,6 +33,20 @@ test('Metal Slime immunity differs from its enemy spell range and companion resi
   await expect(page.locator('#combat-copy')).toBeDisabled();
 });
 
+test('encounter groups have distinct labels and enemy controls appear only for calculated moves',async({page})=>{
+  await page.goto(url+'#combat-planner?game=cobi');
+  const labels=await page.locator('#combat-area option').allTextContents();
+  expect(new Set(labels).size).toBe(labels.length);
+  expect(labels.some(label=>label.includes('Group ')&&label.includes('Lv '))).toBe(true);
+  await page.goto(url+'#combat-planner?game=terry&area=1&enemy=0');
+  await expect(page.locator('#combat-incoming-controls')).toBeHidden();
+  await expect(page.locator('#combat-incoming-result')).toContainText('No supported damage move');
+  await page.goto(url+'#combat-planner?game=terry&area=22&enemy=1');
+  await expect(page.locator('#combat-incoming-controls')).toBeVisible();
+  await expect(page.locator('#combat-incoming')).toBeEnabled();
+  await expect(page.locator('#combat-incoming-result .combat-damage')).toBeVisible();
+});
+
 test('filters recover and the calculator works from disk on narrow screens',async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.setViewportSize({width:320,height:800});

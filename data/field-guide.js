@@ -21,7 +21,6 @@ globalThis.FIELD_GUIDE = {
       "category": "Consumable",
       "summary": "Restores 30–40 HP to one ally.",
       "details": [
-        "Cobi / Tara: Mom gives you one at the farm. Terry can receive one at GreatTree Castle; leave space in your bag for the gift.",
         "Single use.",
         "Terry shops sell it for 10 G (9 G with a Gold Pass). GreatTree / Bazaar · Travelers’ Gate item-shop floor.",
         "Cobi / Tara shops sell it for 10 G (9 G with a Gold Pass). GreatLog / Main Street · Port Ritz Town · Assia."
@@ -2987,7 +2986,9 @@ globalThis.FIELD_GUIDE = {
         "item-28",
         "field-arena-items"
       ],
-      "species_ids": [20],
+      "species_ids": [
+        20
+      ],
       "aliases": [
         "foreign masters",
         "wandering masters",
@@ -3116,22 +3117,23 @@ globalThis.FIELD_GUIDE = {
     {
       "id": "field-movement-settings",
       "game": "both",
-      "title": "Walking speed, running and encounters",
-      "summary": "Terry walks faster on ordinary gate floors than Cobi or Tara do on the Desert, Water, Ice and Sky overworlds. Walk around GreatLog and the siblings use the same faster pace as Terry’s gate floors.",
-      "details": [
-        "The Japanese PS1 game sets walking pace by map. A normal step takes four movement updates on Terry’s ordinary gate floors and eight on those four overworlds. The same timing difference applies to diagonal steps.",
-        "In English patch v1.0.73, Tactics → Movement changes the speed for each adventure. Walk defaults to 1× the map’s usual pace. Hold R1 for 2×, or choose Toggle to switch speeds with each press. Walk and R1 can each be set to 1×, 2× or 4×.",
-        "Choose Time for roughly the same number of encounters per minute as you speed up. Choose Distance to keep the usual rate per step. You’ll cover ground faster between fights with Time.",
-        "Use Up and Down to choose a setting and Left and Right to change it. Circle or Triangle applies it. Save your adventure to keep the settings. When you reload, you start at walking speed.",
-        "Cobi and Tara also gain Triangle actions from Warubou as the story advances. Those actions let them cross water, break rocks and fly across gaps."
-      ],
+      "title": "Movement, running and field abilities",
+      "summary": "Enhanced lets you run with R1 and choose your movement speed. In both downloads, Cobi and Tara use Triangle for the field abilities they unlock during the story.",
+      "details": [],
       "source_ids": [
         "Japanese PS1 map movement selector 0x8005EA1C and step tables 0x800BC118–0x800BC14E · v55 walking-speed investigation",
         "v1.0.73 release README · Movement Settings",
-        "s004d6000_065a"
+        "s004d6000_065a",
+        "s003b7800_0dab",
+        "s003b7800_1201",
+        "s003b7800_1955",
+        "s003b7800_1a2d",
+        "v1.0.74 release README · Enhanced: Movement and Other Features"
       ],
       "related": [
-        "field-triangle"
+        "item-54",
+        "item-55",
+        "item-56"
       ],
       "aliases": [
         "run",
@@ -3142,55 +3144,626 @@ globalThis.FIELD_GUIDE = {
         "movement differences",
         "why does Cobi walk slowly",
         "Terry gate speed",
-        "diagonal walking"
+        "diagonal walking",
+        "Triangle",
+        "cross water",
+        "break rocks",
+        "fly",
+        "field abilities"
       ],
       "kind": "mechanic",
-      "spoiler": "none"
+      "spoiler": "none",
+      "sections": [
+        {
+          "id": "running",
+          "title": "Set your walking and running speeds",
+          "paragraphs": [
+            "In Enhanced, open Tactics → Movement. Walking defaults to 1× the map’s usual pace; hold R1 for 2×. Choose Toggle if you prefer to press R1 once to start running and again to stop. Walk and R1 can each use 1×, 2× or 4×.",
+            "Use Up/Down to choose a setting and Left/Right to change it. Circle or Triangle applies your choices. Save the adventure to keep them; loading a save starts you at walking speed.",
+            "Translation only keeps the original movement controls and does not include this menu or R1 running."
+          ]
+        },
+        {
+          "id": "encounter-pacing",
+          "title": "Choose what running does to encounters",
+          "table": {
+            "columns": [
+              "Setting",
+              "While moving faster"
+            ],
+            "rows": [
+              [
+                "Time",
+                "Keeps roughly the usual number of encounters per minute. You cover more ground between battles."
+              ],
+              [
+                "Distance",
+                "Keeps the usual encounter rate per step. You reach battles sooner in real time."
+              ]
+            ]
+          }
+        },
+        {
+          "id": "field-abilities",
+          "title": "Cobi & Tara: water, rocks and gaps",
+          "paragraphs": [
+            "Bring each recovered treasure to Warubou to unlock its field action. Face the obstacle and press Triangle."
+          ],
+          "table": {
+            "columns": [
+              "Treasure",
+              "Action"
+            ],
+            "rows": [
+              [
+                "Sea Bell",
+                "Cross water."
+              ],
+              [
+                "Mirror of Destruction",
+                "Break suitable rocks."
+              ],
+              [
+                "Sky Shield",
+                "Fly across gaps."
+              ]
+            ]
+          },
+          "links": [
+            "item-54",
+            "item-55",
+            "item-56"
+          ]
+        },
+        {
+          "id": "map-pace",
+          "title": "Why the adventures feel different",
+          "paragraphs": [
+            "In the original Japanese PSX game, Terry walks faster on ordinary gate floors than Cobi or Tara do on the Desert, Water, Ice and Sky overworlds. GreatLog uses the same faster pace as Terry’s gate floors. The difference also applies to diagonal steps.",
+            "Enhanced’s speed multipliers act on each map’s normal pace, so equal settings do not make every map feel identical."
+          ]
+        }
+      ]
     },
     {
       "id": "field-restored-content",
-      "game": "dqm1",
-      "title": "What changed from Game Boy to PlayStation in Terry’s adventure?",
-      "summary": "The Game Boy game let Terry sit with his party at the Arena and visit special dungeon floors. The Japanese PlayStation release kept assets for those features. The English patch restores them.",
-      "details": [
-        "To hear your monsters talk, bring one to three living, visible party members to the Arena dining room. Sit on the east stool at the right-hand table. Press Up, Left or Down to select a monster, then Talk. Cancel or Right stands up.",
-        "In Travelers’ Gates you can find treasure rooms with Mimics, the Lost Forest, the traveling colosseum, mazes and sliding floors. Their behavior and appearance rates were reconstructed for the patch. Game Boy floor odds can give the wrong expectation here.",
-        "In the traveling colosseum, three wins unlock an optional second set of fights for the displayed prize. Decline to finish, then leave by the north door. If your bag was full when you won, make space and return to that door."
-      ],
+      "game": "both",
+      "title": "Game Boy, PlayStation and English patch differences",
+      "summary": "PlayStation combines all three adventures, expands Terry’s roster and revises story routes. The English patch offers Enhanced additions or Translation only with bug fixes.",
+      "details": [],
       "source_ids": [
         "v1.0.73 release README · Restored Content in Terry’s Adventure",
-        "v1.0.70 traveling colosseum exit"
+        "v1.0.70 traveling colosseum exit",
+        "PSX/GB foreign-master comparison; see docs/edition-comparison-evidence.md",
+        "v1.0.74 published release README and release.json · download choices and added features"
       ],
       "related": [
-        "field-packing",
-        "field-movement-settings"
+        "field-wandering-masters",
+        "field-breed",
+        "field-skill-inheritance",
+        "field-movement-settings",
+        "field-retail-bugs",
+        "field-two-save-breeding",
+        "field-colosseum-prizes",
+        "field-greattree-arena",
+        "quest-aibou-egg",
+        "field-personality",
+        "field-battle-combos"
       ],
       "aliases": [
         "version differences",
-        "Game Boy Color",
-        "GBC vs PS1",
-        "special dungeon floors",
-        "Mimic room",
-        "Lost Forest",
-        "monster table conversations",
-        "traveling colosseum",
-        "restored content"
+        "GBC PSX differences",
+        "DWM1 DWM2 comparison",
+        "original Japanese PlayStation",
+        "restored content",
+        "cut content",
+        "PS1 remake",
+        "v74",
+        "Enhanced",
+        "Translation only"
       ],
       "kind": "mechanic",
-      "spoiler": "none"
+      "spoiler": "none",
+      "sections": [
+        {
+          "id": "presentation-controls",
+          "title": "What changes in the PlayStation remake",
+          "table": {
+            "columns": [
+              "Part of play",
+              "Game Boy / Game Boy Color",
+              "Japanese PlayStation"
+            ],
+            "rows": [
+              [
+                "Adventures",
+                "Terry’s DWM1 is one game; DWM2 has separate Cobi’s Journey and Tara’s Adventure cartridges.",
+                "All three adventures are included on one disc."
+              ],
+              [
+                "Presentation",
+                "Handheld towns, dungeon maps and small battle portraits.",
+                "Redrawn maps and more detailed 2D monsters with animation, scaling and battle effects. The larger maps can change the route through a familiar place."
+              ],
+              [
+                "Sound",
+                "The original handheld soundtracks.",
+                "New arrangements, with additional castle and boss music."
+              ],
+              [
+                "Terry’s monster roster",
+                "DWM1 has its original monster and skill pool.",
+                "Terry can use the later monster and skill pool, including the Aquatic family from DWM2. These monsters are not all ordinary wild encounters in his gates."
+              ],
+              [
+                "World traversal in Cobi & Tara",
+                "Story items already grant water crossing, rock breaking and flight; use the A button for these actions.",
+                "Retains those abilities, activated with Triangle. They are not new abilities added by the remake."
+              ],
+              [
+                "Local battles",
+                "Connect two handheld systems with a Game Link Cable; each player uses their own screen.",
+                "Load Adventure Logs on one console and share one screen. Players enter commands in timed, alternating turns, with the opponent’s team selection visible."
+              ],
+              [
+                "New items",
+                "No Miracle Mark or Spellblade Ring.",
+                "Miracle Mark changes a hatched monster’s sex. Cobi and Tara can also obtain Spellblade Ring for HP/MP growth."
+              ]
+            ]
+          },
+          "bullets": [
+            "The Japanese PSX release also supported a historical mobile-phone monster-transfer service. That service is not a current acquisition route in this guide."
+          ],
+          "sources": [
+            {
+              "label": "Contemporary report of Enix’s PSX announcement",
+              "url": "https://game.watch.impress.co.jp/docs/20020326/dqm.htm"
+            },
+            {
+              "label": "Publisher’s original battle presentation",
+              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/taisen_gokui.html"
+            },
+            {
+              "label": "DWM1 instruction manual, p. 34",
+              "url": "https://www.videogamemanual.com/gbc/Dragon%20Warrior%20Monsters%20%28USA%29.pdf"
+            },
+            {
+              "label": "DWM2 instruction manual: Game Link Cable mode",
+              "url": "https://www.woodus.com/den/gallery/graphics/dwm2gbc/manual/dwm2gbc_cobi_manual.pdf"
+            },
+            {
+              "label": "Handheld Cobi traversal controls",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/14383"
+            },
+            {
+              "label": "Publisher’s PlayStation breeding guide",
+              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/slash/haigou.html"
+            },
+            {
+              "label": "Japanese PlayStation release overview",
+              "url": "https://wikiwiki.jp/dqdic3rd/%E3%80%90%E3%83%89%E3%83%A9%E3%82%B4%E3%83%B3%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%BA%EF%BC%91%E3%83%BB%EF%BC%92%20%E6%98%9F%E9%99%8D%E3%82%8A%E3%81%AE%E5%8B%87%E8%80%85%E3%81%A8%E7%89%A7%E5%A0%B4%E3%81%AE%E4%BB%B2%E9%96%93%E3%81%9F%E3%81%A1%E3%80%91"
+            },
+            {
+              "label": "Publisher’s historical mobile-transfer FAQ",
+              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/psdqmisub/dqmi_tensou_others.html"
+            }
+          ]
+        },
+        {
+          "id": "terry-gates",
+          "title": "Terry: activities removed and restored",
+          "table": {
+            "columns": [
+              "Activity",
+              "Game Boy DWM1",
+              "Japanese PlayStation",
+              "Enhanced v1.0.74"
+            ],
+            "rows": [
+              [
+                "Special gate floors",
+                "Includes treasure and Mimic rooms, Lost Forest, the traveling colosseum, mazes and sliding floors.",
+                "Most of these special rooms are not selected during normal gate exploration.",
+                "Restores these rooms using retained PSX assets and reconstructed behavior."
+              ],
+              [
+                "Conversations with your party at the arena table",
+                "You can sit with your monsters and talk to them.",
+                "The dialogue remains in the game, but the table interaction is unavailable.",
+                "Restores sitting with your party and talking to them."
+              ]
+            ]
+          },
+          "paragraphs": [
+            "These restorations are included in Enhanced. Translation only keeps the Japanese release’s unavailable rooms and table interaction. The restored special floors use reconstructed behavior, so Game Boy encounter rates and room rules are not exact PSX values."
+          ],
+          "sources": [
+            {
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
+            },
+            {
+              "label": "Handheld special floors and restoration evidence",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "cobi-tara-worlds",
+          "title": "Cobi & Tara: story and postgame changes",
+          "paragraphs": [
+            "These are route changes from DWM2 on Game Boy Color to the Japanese PSX remake. The English patch retains them. “Pirate World” in an old guide and “Water World” here refer to the same story world."
+          ],
+          "table": {
+            "columns": [
+              "Story step",
+              "Game Boy Color",
+              "PlayStation"
+            ],
+            "rows": [
+              [
+                "GreatLog’s opening",
+                "After the plug breaks, speak to the island’s inhabitants to seek a volunteer master.",
+                "Return home with your sibling, collect your father’s pot and bring it to Warubou as a temporary plug."
+              ],
+              [
+                "Ice Key",
+                "Give Father a MadGopher, then give the dock merchant an ArmyAnt; the merchant finds the key beneath a crate.",
+                "Search the GreatLog farm for the Ice Key after returning the Mirror of Destruction. The monster handovers are no longer needed."
+              ],
+              [
+                "Ice World’s northern mountain",
+                "The handheld route sends you north of Eastoria for the Sleep Herb to continue the queen’s story.",
+                "The Birdsong Herb and Eastoria’s lost-voices investigation are optional for reaching the Sky Key. Finish the Northden/Westernia peace route, return to the Spirit’s Spring for the Sky Shield, then visit GreatLog Castle."
+              ],
+              [
+                "After the ending",
+                "Six named Hidden Keys form additional adventures, three per cartridge, with trading to obtain the other set.",
+                "Those handheld Hidden Key adventures are cut. Continue with generated Magic Key worlds, arena rewards, breeding, library completion and spirit rewards."
+              ]
+            ]
+          },
+          "links": [
+            "quest-find-the-ice-key",
+            "story-ice-eastoria",
+            "story-greatlog-postgame"
+          ],
+          "sources": [
+            {
+              "label": "Verified world text and progression guards",
+              "url": "https://github.com/dqm-psx/guide/blob/main/data/world-verification.json"
+            },
+            {
+              "label": "Handheld guide pages and PSX comparison evidence",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
+            }
+          ],
+          "spoiler": "story"
+        },
+        {
+          "id": "foreign-master-differences",
+          "title": "Foreign masters: changed conditions and strength",
+          "paragraphs": [
+            "On PSX, breeding to keep levels low does not keep Terry’s foreign-master teams weak: opponent strength follows party stats instead. The other changes below also affect how you find a particular visitor."
+          ],
+          "table": {
+            "columns": [
+              "Situation",
+              "Game Boy / Game Boy Color",
+              "Japanese PlayStation"
+            ],
+            "rows": [
+              [
+                "Terry: opponent strength",
+                "Based on the party’s total levels.",
+                "Based on party statistics: HP, MP, Attack and Defense, plus a smaller contribution from Agility and Intelligence."
+              ],
+              [
+                "Terry: basic availability",
+                "The original uses a separate 50% master roll on an otherwise qualifying floor.",
+                "After Class F, meeting a role condition selects that master on an ordinary qualifying floor; a boss or special-floor destination can take priority."
+              ],
+              [
+                "Terry: Wizard",
+                "Reveal all 16 rooms on a 16-screen floor; the teleport can descend up to 20 floors.",
+                "Reveal every reachable room; leave an item on the floor to avoid the higher-priority Priest. The teleport descends up to 10 floors."
+              ],
+              [
+                "Cobi / Tara: Bard versus Merchant",
+                "The handheld Merchant is checked before Bard; carried meat blocks Merchant.",
+                "Bard is checked first. Merchant needs at most 10 carried items and no meat."
+              ],
+              [
+                "Cobi / Tara: travel Wizard",
+                "A handheld visitor can offer map help for 200 G.",
+                "This Wizard visitor is absent from the PSX selection described here."
+              ]
+            ]
+          },
+          "links": [
+            "field-wandering-masters"
+          ],
+          "sources": [
+            {
+              "label": "Native PSX and handheld comparison evidence",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "resistance-breeding-changes",
+          "title": "Breeding resistance: more grades, but no inherited immunity",
+          "table": {
+            "columns": [
+              "Rule",
+              "Game Boy Color DWM2",
+              "PlayStation: all three adventures"
+            ],
+            "rows": [
+              [
+                "Resistance grades",
+                "Four grades, 0–3.",
+                "Eight grades, 0–7, allowing finer improvements."
+              ],
+              [
+                "Inheritance result",
+                "Includes a random roll; the child’s base grade, the parents’ current grades and the child’s + value affect the possible result.",
+                "Deterministic: the same child species, parent grades and child + produce the same resistance."
+              ],
+              [
+                "Breeding for immunity",
+                "A species with base grade 1 or 2 can inherit immunity. A base-0 channel cannot.",
+                "Only a naturally immune child species keeps grade 7. Every nonimmune channel is capped at grade 6, even with two immune parents."
+              ]
+            ]
+          },
+          "paragraphs": [
+            "The English patch retains these PSX rules. A Game Boy recipe for an immune monster therefore does not establish the same result on PlayStation."
+          ],
+          "links": [
+            "field-breed"
+          ],
+          "sources": [
+            {
+              "label": "Original PSX and v74 inheritance verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/resistance-inheritance-evidence.md"
+            },
+            {
+              "label": "DwM2_DD’s GBC resistance research",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/62849"
+            }
+          ]
+        },
+        {
+          "id": "learning-changes",
+          "title": "Skill learning: lower requirements and new Summon recipes",
+          "paragraphs": [
+            "Compared with DWM2 on Game Boy Color, these spells require less Intelligence to learn on PSX. Their level and maximum-MP requirements stay the same. The English patch retains the PSX requirements; these are learning thresholds, not casting costs."
+          ],
+          "table": {
+            "columns": [
+              "Skill",
+              "Level",
+              "Max MP",
+              "GBC Int.",
+              "PSX Int."
+            ],
+            "rows": [
+              [
+                "Blaze",
+                "1",
+                "7",
+                "36",
+                "20"
+              ],
+              [
+                "Firebal",
+                "3",
+                "11",
+                "42",
+                "23"
+              ],
+              [
+                "Bang",
+                "4",
+                "13",
+                "47",
+                "26"
+              ],
+              [
+                "Heal",
+                "1",
+                "7",
+                "11",
+                "6"
+              ],
+              [
+                "Healmore",
+                "10",
+                "52",
+                "87",
+                "48"
+              ],
+              [
+                "Healall",
+                "16",
+                "82",
+                "114",
+                "80"
+              ]
+            ]
+          },
+          "bullets": [
+            "On Game Boy Color, the TatsuCall → DiagoCall → SamsiCall → BazooCall chain advances through level and stat thresholds. The printed Intelligence thresholds are 100, 250, 400 and 550.",
+            "On PSX, the stronger summons are combination skills. Summon Deago requires Summon Tattsu, Defense and Focus Spirit, plus level 25, 100 max MP and 120 Intelligence.",
+            "Summon Samshin combines Summon Tattsu, Speedup and Charge Power at level 30, 130 max MP and 150 Intelligence. Summon Bazoo combines Summon Tattsu, Thordain and Wave of Darkness at level 35, 160 max MP and 180 Intelligence.",
+            "A monster that knows Summon Tattsu therefore needs the other combination skills, not just more levels, to learn the stronger PSX summons."
+          ],
+          "links": [
+            "field-skill-inheritance"
+          ],
+          "sources": [
+            {
+              "label": "Handheld pages and native PSX learning table comparison",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
+            },
+            {
+              "label": "Native skill-learning evidence",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/skill-learning-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "battle-combo-changes",
+          "title": "Battle combinations: both handheld sets in every adventure",
+          "table": {
+            "columns": [
+              "Rule",
+              "Game Boy Color DWM2",
+              "PlayStation"
+            ],
+            "rows": [
+              [
+                "Available combinations",
+                "Ten combinations in Cobi’s cartridge and ten in Tara’s.",
+                "All 20 in Terry, Cobi and Tara’s adventures. The English patch retains this shared system."
+              ],
+              [
+                "GigaMagic damage",
+                "The linked handheld guide describes four times the users’ combined MP.",
+                "Includes both users’ levels as well as MP spent: twice their combined levels and spent MP, with a ±10% roll before further modifiers."
+              ],
+              [
+                "Elemental slash bonuses",
+                "The handheld guide lists a single family bonus for each of its three slash combinations.",
+                "Wave Slash favors Slime, Zombie and Aquatic targets; Air Slash favors Dragon, Bird and Devil; Earth Slash favors Beast, Plant and Bug."
+              ],
+              [
+                "Spirit Festival",
+                "The linked handheld guide describes full-party revival and recovery.",
+                "Restores living allies’ HP and MP and clears multiple ailments. Does not revive fallen allies."
+              ]
+            ]
+          },
+          "links": [
+            "field-battle-combos"
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            },
+            {
+              "label": "McBick’s GBC co-op skill guide",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/77570/list-of-co-op-skills"
+            }
+          ]
+        },
+        {
+          "id": "english-settings-fixes",
+          "title": "What v1.0.74 changes: Enhanced and Translation only",
+          "paragraphs": [
+            "Both downloads use the same English wording, fonts and bug fixes. Enhanced also includes restored content and added features; Translation only keeps the original gameplay and interface except for English support and bug repairs. The table compares each with Japanese PSX."
+          ],
+          "table": {
+            "columns": [
+              "Feature",
+              "Japanese PlayStation",
+              "Enhanced v1.0.74",
+              "Translation only v1.0.74"
+            ],
+            "rows": [
+              [
+                "Running and encounters",
+                "Normal map movement, without speed settings.",
+                "Choose 1×, 2× or 4× walking/R1 speeds, Hold or Toggle, and Time or Distance encounter pacing.",
+                "Original movement controls; no running settings."
+              ],
+              [
+                "Inventory and party display",
+                "Repeated carried items occupy separate menu rows; original party display.",
+                "Groups duplicate items with quantity counts and bulk selling; expanded HP/MP displays in the field and battle.",
+                "Original inventory and party display."
+              ],
+              [
+                "GreatTree postgame Arena",
+                "No Replay, Pro or Survival modes.",
+                "Adds class replays, varied Pro opponents and a Survival challenge with prizes. New in v74.",
+                "Original Arena."
+              ],
+              [
+                "GreatLog party conversations",
+                "No party-table interaction for Cobi or Tara.",
+                "Adds personality-based conversations at the Arena table. New in v74.",
+                "No added table interaction."
+              ],
+              [
+                "Aibou",
+                "Originally obtained through the now-closed mobile-phone service.",
+                "Adds an offline Medal Man egg exchange in all three adventures. New in v74.",
+                "No added egg exchange."
+              ],
+              [
+                "Title-screen Colosseum",
+                "Original two-player battles with fixed rules.",
+                "Adds selectable rules and optional monster wagers.",
+                "Original two-player battles remain available; no added rules or wagers."
+              ],
+              [
+                "Truth Gate retry",
+                "Losing to Dungeon Shrimp can prevent another challenge and block gate completion credit.",
+                "Repaired: return and answer the questions again to retry.",
+                "Includes the same repair."
+              ],
+              [
+                "Monster library rarity stars",
+                "Shows stars in the monster detail display.",
+                "Restores stars displaced by the English text; corrected in v74.",
+                "Includes the same correction."
+              ],
+              [
+                "Graphics faults",
+                "Scene/NPC graphics can remain allocated after use; walking-sprite loading also has a fault.",
+                "Includes the graphics fixes introduced in v73.",
+                "Includes the same fixes."
+              ]
+            ]
+          },
+          "links": [
+            "field-greattree-arena",
+            "quest-aibou-egg",
+            "field-personality",
+            "field-movement-settings",
+            "field-colosseum-prizes",
+            "field-retail-bugs"
+          ],
+          "sources": [
+            {
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
+            },
+            {
+              "label": "Publisher: original Colosseum setup and rules",
+              "url": "https://www.jp.square-enix.com/dragonquest/psdqm12/taisen_top.html"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "field-retail-bugs",
       "game": "both",
       "title": "Which bugs came from the Japanese PlayStation game?",
-      "summary": "The patch release notes identify a Truth Gate progression bug in the original game and several faults in how it loaded and freed graphics.",
+      "summary": "Both v74 downloads repair the original Truth Gate progression bug and include fixes for how the game loaded and freed graphics.",
       "details": [
         "In Terry’s Truth Gate, losing to Dungeon Shrimp (Digster) could leave the boss unable to challenge you again. That also blocked credit for the gate toward recruiting Watabou. The English v1.0.34 release includes the repair. Return to the boss room on the updated game and answer the questions again to retry.",
         "The original game could leave scene and NPC graphics in memory after they were no longer needed. v1.0.73 fixes these leaks and a separate walking-sprite loading bug.",
         "For a stuck event on an older English build, patch a clean Japanese disc image, boot the updated game and load your in-game memory-card save. An emulator save state can resume the old game code."
       ],
       "source_ids": [
-        "v1.0.73 release README · v34, v73 and Install"
+        "v1.0.73 release README · v34, v73 and Install",
+        "v1.0.74 release README · Choosing a Download"
       ],
       "related": [
         "field-restored-content"
@@ -3210,14 +3783,16 @@ globalThis.FIELD_GUIDE = {
       "id": "field-colosseum-prizes",
       "game": "both",
       "title": "How do two players wager monsters?",
-      "summary": "In the title-screen Colosseum, choose Local Rules and enable prizes. Monster transfer is available from English patch v1.0.73.",
+      "summary": "In Enhanced, open the title-screen Colosseum, choose Local Rules and enable prizes. Monster wagers are off by default.",
       "details": [
-        "Each player offers an awake farm monster outside their saved adventure party. Make space on the receiving farm before starting.",
+        "Use saves from two different players. Each offers an awake farm monster outside their saved adventure party. Leave space on both farms before starting.",
         "The winner keeps their own offer and receives the opponent’s monster. A draw leaves both farms as they were.",
-        "The transfer writes both Adventure Logs. Wait until both saves finish. If a card write fails, choose Retry before resetting or turning off the game."
+        "The transfer writes both Adventure Logs. Wait until both saves finish. If a card write fails, choose Retry before resetting or turning off the game.",
+        "Translation only retains the original two-player battles, without the added rules or monster wagers. Wagering was introduced in v1.0.73 and is part of Enhanced in v74."
       ],
       "source_ids": [
-        "v1.0.73 release README · Colosseum Battles"
+        "v1.0.73 release README · Colosseum Battles",
+        "v1.0.74 release README · Enhanced: Two-Player Colosseum"
       ],
       "related": [
         "field-farm"
@@ -3238,15 +3813,22 @@ globalThis.FIELD_GUIDE = {
       "kind": "mechanic",
       "game": "both",
       "title": "Recruit a wild monster",
-      "summary": "Compare how much meat helps for a particular monster and encounter. Previous collection matters, even if you no longer own that species.",
+      "summary": "Give meat to enemy monsters during battle to improve their chance of joining. More than one piece can help, and a species you have collected before is harder to recruit again.",
       "details": [
-        "Meat used on enemies adds to a shared food score for that battle. More than one piece can help, but the same species can have different recruitment settings in different encounters. Choose its area and floor band in the calculator before comparing food.",
-        "The game remembers whether a species has ever entered your collection, including through gifts or breeding. Releasing or breeding away your last copy does not restore its first-collection chance. Your current party or farm alone cannot establish this history.",
-        "In the calculator’s Terry examples, a previously collected Metal Slime gets an 8.47% joining check from one Sirloin and 23.87% from two. The Slime example already reaches 70.07% with one Sirloin. These native calculations match the Japanese release and English patch v1.0.73. They assume the monster is the eligible recruitment candidate and no Starry Orb was used.",
-        "The percentages describe the joining check, not the chance per battle: they do not determine which defeated monster becomes the candidate. A Starry Orb guarantees an otherwise eligible joining check, but neither it nor meat bypasses battle or encounter restrictions. Feeding your own monsters changes wildness instead.",
-        "In a DQM2 world reached by a generated magic key, defeat its resident boss before trying to recruit the local monsters."
+        "Meat adds to a shared food score for that battle. Feeding your own monsters instead reduces wildness; it does not help recruit the enemy.",
+        "In a generated Magic Key world, defeat the resident boss before trying to recruit local monsters. Meat and even a Starry Orb cannot bypass battle or encounter restrictions.",
+        "Collection history is permanent: gifts and breeding count too. Releasing or breeding away your last copy does not restore its first-collection chance.",
+        "For a particular target, choose its adventure, area and floor band in the recruitment calculator. The same species can have different recruitment settings in different encounters. Compare one piece of meat with two before spending a valuable supply.",
+        "The calculator gives the joining check for an eligible candidate, not the chance per battle. It does not choose which defeated monster gets that check. A Starry Orb guarantees the check only when the monster is otherwise eligible."
       ],
-      "aliases": ["recruitment calculator", "meat stacking", "Sirloin chance", "taming", "catch a monster", "feeding"],
+      "aliases": [
+        "recruitment calculator",
+        "meat stacking",
+        "Sirloin chance",
+        "taming",
+        "catch a monster",
+        "feeding"
+      ],
       "spoiler": "none",
       "source_ids": [
         "s0adf7000_5062",
@@ -3268,7 +3850,7 @@ globalThis.FIELD_GUIDE = {
       "id": "field-storage",
       "kind": "mechanic",
       "game": "both",
-      "title": "Keep gold safe in storage",
+      "title": "Gold storage",
       "summary": "A party wipe costs half the gold you are carrying. Deposited gold stays safe.",
       "details": [
         "Deposit gold in GreatTree or GreatLog before a risky expedition. A GreatLog resident gives the storage limit as 999,900 G."
@@ -3327,16 +3909,151 @@ globalThis.FIELD_GUIDE = {
       "id": "field-breed",
       "kind": "mechanic",
       "game": "both",
-      "title": "Prepare a pair for breeding",
-      "summary": "Bring a male and a female, each at level 10 or higher, to the Starry Shrine.",
-      "details": [
-        "In GreatLog, win the Kids’ Class for permission to use the shrine. Finish Water World and return when the line has cleared.",
-        "Breeding leaves an egg. Both parents leave, so keep another monster ready to travel with you.",
-        "Choose the pedigree parent deliberately and check the ordered pair in the breeding calculator. The offspring can inherit skills from both parents.",
-        "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. In the title-screen Breeding room, the same pair from two different Adventure Logs produces Killing Machine 2 at lower + values."
+      "title": "Breeding: parents, offspring and resistance",
+      "summary": "Both parents pass on skills and resistance, but the child’s species sets its natural strengths. On PlayStation, breeding improves resistance predictably; it cannot give a nonimmune species full immunity.",
+      "details": [],
+      "sections": [
+        {
+          "id": "prepare-parents",
+          "title": "Before breeding",
+          "paragraphs": [
+            "Bring a male and a female, each at level 10 or higher, to the Starry Shrine. In GreatLog, win the Kids’ Class for permission, then finish Water World and return when the line has cleared.",
+            "Breeding leaves an egg and both parents leave. Keep another monster ready to travel with you. Choose the pedigree deliberately: reversing the parents can change the offspring species. Check the ordered pair in Find offspring.",
+            "Trying for Killing Machine 2 (Roboster2)? Two Killing Machines at +5 and +6 produce another Killing Machine at the PlayStation shrine. At least one parent must reach +8. The title-screen Breeding room has a different rule for this pair from two Adventure Logs."
+          ],
+          "links": [
+            "field-eggs",
+            "field-skill-inheritance",
+            "field-two-save-breeding"
+          ]
+        },
+        {
+          "id": "resistance-inheritance",
+          "title": "What resistance the child inherits",
+          "intro": "Yes, PlayStation has resistance inheritance in Terry, Cobi and Tara’s adventures. It uses a different calculation from Game Boy Color DWM2. These are original PSX rules, retained in the English patch.",
+          "rows": [
+            [
+              "Each resistance is separate",
+              "The game calculates all 27 resistance channels individually. Strong fire resistance does not imply strong ice or sleep resistance."
+            ],
+            [
+              "Both parents matter",
+              "The calculation uses both parents’ individual resistance grades, including improvements inherited in earlier generations, and the child’s resulting + value. It starts from the child species’ natural grade, not either parent species’ baseline. A later generation can lose earlier gains, but never falls below its own species’ base grade."
+            ],
+            [
+              "No random inheritance roll",
+              "With the same child species, parent resistance grades and child + value, the resistance result is the same. Swapping parents does not change this arithmetic once those inputs are fixed."
+            ],
+            [
+              "Immunity must be natural to the child species",
+              "A naturally immune channel stays immune. Any other channel can improve only to the grade below immunity—even if both parents are immune. Choose a species naturally immune to an effect when complete protection matters."
+            ]
+          ],
+          "paragraphs": [
+            "An imported monster’s individual resistance is more useful than an unbred species baseline. My game passes those saved values to the Damage calculator. Equipment and temporary battle protection are separate from this inheritance calculation."
+          ],
+          "links": [
+            "field-damage-and-resistance",
+            "field-growth"
+          ],
+          "sources": [
+            {
+              "label": "Original PSX and v74 inheritance verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/resistance-inheritance-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "resistance-example",
+          "title": "Example: two immune parents cannot give this child immunity",
+          "intro": "Suppose both parents are immune to a damage spell, but the child species has no natural resistance to it. The following results use the child’s + value, not the sum of the parents’ + values.",
+          "table": {
+            "columns": [
+              "Child’s + value",
+              "Inherited grade",
+              "Spell damage taken"
+            ],
+            "rows": [
+              [
+                "+20",
+                "3",
+                "65%"
+              ],
+              [
+                "+50",
+                "4",
+                "50%"
+              ],
+              [
+                "+74",
+                "6",
+                "15%"
+              ]
+            ]
+          },
+          "paragraphs": [
+            "Further breeding while keeping this species cannot raise that channel to grade 7, which is immunity. The percentages above are for the standard damage-spell scale; breaths and status effects use their own scales."
+          ]
+        },
+        {
+          "id": "resistance-formula",
+          "title": "The exact PSX calculation",
+          "intro": "Resistance grades run from 0 to 7: higher is stronger, and 7 is immune. For each channel, let B be the child species’ base grade, P be the sum of both parents’ individual grades, and C be the child’s resulting + value.",
+          "paragraphs": [
+            "If B is 7, the result is 7. Otherwise, divide (10 × P + 3 × C) by the divisor below, round down, and add B. Cap the result at 6.",
+            "For the +20 example above: P = 7 + 7 = 14 and B = 0. (10 × 14 + 3 × 20) ÷ 60 = 3⅓, rounded down to grade 3."
+          ],
+          "table": {
+            "columns": [
+              "Child’s base grade B",
+              "Divisor"
+            ],
+            "rows": [
+              [
+                "0",
+                "60"
+              ],
+              [
+                "1",
+                "75"
+              ],
+              [
+                "2",
+                "90"
+              ],
+              [
+                "3",
+                "105"
+              ],
+              [
+                "4",
+                "120"
+              ],
+              [
+                "5",
+                "150"
+              ],
+              [
+                "6",
+                "180"
+              ]
+            ]
+          }
+        }
       ],
-      "aliases": ["Roboster2 recipe", "Killing Machine 2 breeding", "Game Boy breeding differences"],
-      "species_ids": [252, 253],
+      "aliases": [
+        "Roboster2 recipe",
+        "Killing Machine 2 breeding",
+        "Game Boy breeding differences",
+        "resistance inheritance",
+        "breed immunity",
+        "resistance breeding",
+        "Prepare a pair for breeding"
+      ],
+      "species_ids": [
+        252,
+        253
+      ],
       "spoiler": "none",
       "source_ids": [
         "v0a08bc_01e3",
@@ -3347,12 +4064,16 @@ globalThis.FIELD_GUIDE = {
         "PSX shrine rule 8004AB80 and two-save override 8004B05C",
         "s003f6800_1bac",
         "s003f6800_1c4c",
-        "m_exe_090738"
+        "m_exe_090738",
+        "PSX offspring resistance 80049C90–80049D7C; coefficients 80010A14; retail and v1.0.74"
       ],
       "related": [
         "field-eggs",
         "field-skill-inheritance",
         "field-two-save-breeding",
+        "field-damage-and-resistance",
+        "field-growth",
+        "field-restored-content",
         "npc-monster-professor"
       ]
     },
@@ -3368,62 +4089,135 @@ globalThis.FIELD_GUIDE = {
           "title": "What passes to the egg",
           "intro": "These are the original PlayStation rules. Breeding creates a pool of possible skills; it does not give a level-1 hatchling every move immediately.",
           "rows": [
-            ["Natural skills", "The child’s three species skills and each parent species’ three skills enter the pool. A parent does not need to have learned its own natural skills first. Check Natural skills on each species page."],
-            ["Learned skills", "Both parents’ retained skills also enter the pool, converted to the base forms of their upgrade chains. The child learns and upgrades them as it meets the requirements."],
-            ["Keeping a skill through generations", "An unlearned inherited skill is not copied from a parent’s possible-skill pool. If it is not natural to either new parent or the new child, teach it to a parent and keep it among that parent’s learned skills before breeding again."],
-            ["Eight learned skills", "A monster can retain eight learned skills at once. Its breeding pool has 25 candidate slots, including duplicates and empty slots; that is not a 25-move limit for its battle menu."]
+            [
+              "Natural skills",
+              "The child’s three species skills and each parent species’ three skills enter the pool. A parent does not need to have learned its own natural skills first. Check Natural skills on each species page."
+            ],
+            [
+              "Learned skills",
+              "Both parents’ retained skills also enter the pool, converted to the base forms of their upgrade chains. The child learns and upgrades them as it meets the requirements."
+            ],
+            [
+              "Keeping a skill through generations",
+              "An unlearned inherited skill is not copied from a parent’s possible-skill pool. If it is not natural to either new parent or the new child, teach it to a parent and keep it among that parent’s learned skills before breeding again."
+            ],
+            [
+              "Eight learned skills",
+              "A monster can retain eight learned skills at once. Its breeding pool has 25 candidate slots, including duplicates and empty slots; that is not a 25-move limit for its battle menu."
+            ]
           ]
         },
         {
           "title": "Why a monster has not learned a skill yet",
           "intro": "A skill’s level requirement is only one part of the check. Open its page in Skills to see the required stats, earlier skill or combination prerequisites.",
           "rows": [
-            ["Stats and level", "The monster must reach every listed requirement. The game checks its base maximum HP, maximum MP, Attack, Defense, Agility and Intelligence; an accessory’s immediate stat bonus does not satisfy a missing base-stat requirement."],
-            ["Upgrades and combinations", "Some skills evolve from a move the monster already knows. Others require a combination of learned skills as well as their own learning requirements."],
-            ["After farm training", "Awake farm monsters can gain levels and stats without running the party’s skill-learning checks. Bring the monster into the active party and gain a level in battle. The check considers all eligible candidates against its current stats and level, so several learning prompts can appear together."]
+            [
+              "Stats and level",
+              "The monster must reach every listed requirement. The game checks its base maximum HP, maximum MP, Attack, Defense, Agility and Intelligence; an accessory’s immediate stat bonus does not satisfy a missing base-stat requirement."
+            ],
+            [
+              "Upgrades and combinations",
+              "Some skills evolve from a move the monster already knows. Others require a combination of learned skills as well as their own learning requirements. These are learning requirements for one monster. Two monsters combining their commands during battle is a separate feature; see Battle combinations."
+            ],
+            [
+              "After farm training",
+              "Awake farm monsters can gain levels and stats without running the party’s skill-learning checks. Bring the monster into the active party and gain a level in battle. The check considers all eligible candidates against its current stats and level, so several learning prompts can appear together."
+            ]
+          ],
+          "links": [
+            "field-battle-combos"
           ]
         }
       ],
-      "aliases": ["move inheritance", "inherited skills", "skill breeding", "unlearned skills", "farm learning", "ranch skills", "eight skills", "8 moves", "why has my monster not learned a skill"],
+      "aliases": [
+        "move inheritance",
+        "inherited skills",
+        "skill breeding",
+        "unlearned skills",
+        "farm learning",
+        "ranch skills",
+        "eight skills",
+        "8 moves",
+        "why has my monster not learned a skill"
+      ],
       "spoiler": "none",
       "source_ids": [
         "PSX BreedCreateChild · 80049094 · 9 species candidates + 16 retained-parent skills",
         "PSX results overlay 104 · 801222DC / 80122724 · learning requirements",
         "PSX results overlay 104 · 8011E950 / 8011FB38 / 801200D4 · farm and party level-ups"
       ],
-      "related": ["field-breed", "field-farm", "field-growth", "field-equipment"]
+      "related": [
+        "field-breed",
+        "field-farm",
+        "field-growth",
+        "field-equipment",
+        "field-battle-combos"
+      ]
     },
     {
       "id": "field-two-save-breeding",
       "kind": "mechanic",
       "game": "both",
-      "title": "Can monsters breed between Adventure Logs?",
-      "summary": "Yes. Choose Breeding on the game’s title screen to pair monsters from two different masters’ saved Adventure Logs.",
+      "title": "Breed monsters between Adventure Logs",
+      "summary": "Choose Breeding on the game’s title screen to pair monsters from two different masters’ saved Adventure Logs.",
       "details": [
         "The original PlayStation game already supports this separate breeding room. It is different from the Starry Shrine in an adventure and from wagering monsters in Colosseum battles.",
         "Breeding between Terry’s adventure and Cobi or Tara’s adventure requires game completion. The game checks the selected Adventure Logs before allowing the session.",
         "Both offered parents leave their respective saves. Each participant receives an egg, and the session overwrites both Adventure Logs. Let the game finish saving before removing either memory card or turning off the console."
       ],
-      "aliases": ["cross campaign breeding", "cross-game breeding", "two memory cards", "two saves", "multiplayer breeding", "Terry Cobi Tara breeding"],
+      "aliases": [
+        "cross campaign breeding",
+        "cross-game breeding",
+        "two memory cards",
+        "two saves",
+        "multiplayer breeding",
+        "Terry Cobi Tara breeding"
+      ],
       "spoiler": "none",
-      "source_ids": ["s0a736000_1170", "s0a736000_118d", "s0a736000_11b4", "s0a736000_140e", "s0a736000_1429"],
-      "related": ["field-breed", "field-eggs", "field-skill-inheritance", "field-colosseum-prizes"]
+      "source_ids": [
+        "s0a736000_1170",
+        "s0a736000_118d",
+        "s0a736000_11b4",
+        "s0a736000_140e",
+        "s0a736000_1429"
+      ],
+      "related": [
+        "field-breed",
+        "field-eggs",
+        "field-skill-inheritance",
+        "field-colosseum-prizes"
+      ]
     },
     {
       "id": "field-battle-text-speed",
       "kind": "mechanic",
       "game": "both",
       "title": "How can I slow down battle messages?",
-      "summary": "Choose Tactics → Text Speed → 8 to make paced battle messages wait for confirmation under normal input conditions.",
+      "summary": "Choose Tactics → Text Speed → 8 to make paced battle messages wait for a button press.",
       "details": [
-        "Settings 1–7 use fixed waits. Setting 8 selects a button wait for the pacing control used by messages such as meat-feeding results. The menu labels the range Fast to Slow without explaining this difference.",
-        "Avoid holding the confirm button or fast-forwarding while reading. This setting controls the tested message-pacing path; it does not promise that every animation or message waits for a button.",
-        "This manual mode exists in the Japanese PlayStation game too. The English patch retains the native pacing settings. Text wrapping and page layout are separate from how long a battle message remains visible."
+        "Settings 1–7 advance after a fixed delay. Setting 8 is useful when you want time to read results such as meat-feeding messages; the menu labels it Slow without explaining the button wait.",
+        "Release the confirm button and stop fast-forwarding while reading. Some messages and animations still advance automatically.",
+        "This option is already present in the Japanese PSX game."
       ],
-      "aliases": ["text speed 8", "battle messages too fast", "meat message", "pause dialogue", "slow battle text", "reading speed"],
+      "aliases": [
+        "text speed 8",
+        "battle messages too fast",
+        "meat message",
+        "pause dialogue",
+        "slow battle text",
+        "reading speed"
+      ],
       "spoiler": "none",
-      "source_ids": ["m_exe_08d9ec", "e0af718_206c", "e0af718_207b", "PSX original and v1.0.73 PACE_WAIT · 80035074 / 800C70E0"],
-      "related": ["field-recruitment", "field-movement-settings"]
+      "source_ids": [
+        "m_exe_08d9ec",
+        "e0af718_206c",
+        "e0af718_207b",
+        "PSX original and v1.0.73 PACE_WAIT · 80035074 / 800C70E0"
+      ],
+      "related": [
+        "field-recruitment",
+        "field-movement-settings"
+      ]
     },
     {
       "id": "field-eggs",
@@ -3503,7 +4297,8 @@ globalThis.FIELD_GUIDE = {
       "summary": "Bring Tiny Medals to the local collector. Early rewards use your cumulative medal total.",
       "details": [
         "The exchange menu becomes available after the cumulative reward track. Make room in your bag or on your farm before claiming a prize.",
-        "In GreatLog there is a separate offer from the talking pot on Main Street. It offers a single magic key in exchange for one Tiny Medal."
+        "In GreatLog there is a separate offer from the talking pot on Main Street. It offers a single magic key in exchange for one Tiny Medal.",
+        "In v74 Enhanced, the collector also offers an Aibou egg after all four milestone rewards, 312 registered species and a balance of 99 Tiny Medals. Leave a space on the farm; accepting spends those medals."
       ],
       "spoiler": "none",
       "source_ids": [
@@ -3515,11 +4310,13 @@ globalThis.FIELD_GUIDE = {
         "medal_0aadc0_031e",
         "s00419800_0197",
         "s00419800_0345",
-        "s00419800_0372"
+        "s00419800_0372",
+        "v1.0.74 release README · Enhanced: Aibou at the Medal Man"
       ],
       "related": [
         "item-44",
-        "item-30"
+        "item-30",
+        "quest-aibou-egg"
       ]
     },
     {
@@ -3536,7 +4333,8 @@ globalThis.FIELD_GUIDE = {
       "source_ids": [
         "s003f6800_0221",
         "s0039f000_306a",
-        "s0afae000_1197"
+        "s0afae000_1197",
+        "v1.0.74 release README · Enhanced: Monster Table Conversations"
       ],
       "related": [
         "item-19",
@@ -3544,7 +4342,31 @@ globalThis.FIELD_GUIDE = {
         "item-21",
         "item-22",
         "item-23",
-        "item-24"
+        "item-24",
+        "field-battle-combos"
+      ],
+      "sections": [
+        {
+          "id": "party-table-conversations",
+          "title": "Talk with your party at the Arena table",
+          "paragraphs": [
+            "In Enhanced, bring one to three living, visible party monsters. Terry uses the right-hand table in the Arena dining room. Cobi and Tara use the lower table on the west side of GreatLog’s Arena lobby.",
+            "Walk onto the stool on the table’s east side. Up, Left or Down selects a monster; Confirm/Talk starts its personality-based conversation. After closing the dialogue, Cancel or Right makes you stand up. Step away before sitting again.",
+            "Terry’s interaction restores conversations retained in the Japanese disc. The GreatLog interaction is a new v74 addition for Cobi and Tara. Translation only includes neither table interaction."
+          ],
+          "sources": [
+            {
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
+            }
+          ]
+        }
+      ],
+      "aliases": [
+        "party conversations",
+        "monster table",
+        "GreatLog table",
+        "Arena table"
       ]
     },
     {
@@ -3582,7 +4404,7 @@ globalThis.FIELD_GUIDE = {
       "title": "Prepare for an arena class",
       "summary": "Prepare before entering. Both arenas forbid item use and count fleeing as a loss.",
       "details": [
-        "GreatTree requires three wins. Direct orders are unavailable, so take monsters whose behavior and skills fit the team.",
+        "GreatTree’s original classes require three wins. Direct orders are unavailable, so take monsters whose behavior and skills fit the team.",
         "GreatLog’s Kids’ Class also requires three wins. A full key ring can interfere with collecting the prize."
       ],
       "spoiler": "none",
@@ -3590,6 +4412,172 @@ globalThis.FIELD_GUIDE = {
         "s0adf7000_df8b",
         "s0039f000_23af",
         "s0039f000_2801"
+      ],
+      "related": [
+        "field-greattree-arena"
+      ]
+    },
+    {
+      "id": "field-greattree-arena",
+      "kind": "mechanic",
+      "game": "dqm1",
+      "topic": "battle",
+      "title": "GreatTree Arena: Replay, Pro Classes and Survival",
+      "summary": "In v74 Enhanced, win the Monster Elder’s revenge match, then return to GreatTree’s Arena registration desk to unlock the new modes.",
+      "details": [
+        "Save normally to keep the unlock. If you bring a save from an older patch or the Japanese game, win the revenge match again in Enhanced. Translation only does not include these modes."
+      ],
+      "spoiler": "ending",
+      "aliases": [
+        "postgame arena",
+        "replay a class",
+        "Pro Classes",
+        "Survival Arena",
+        "Elder rematch",
+        "v74 arena"
+      ],
+      "source_ids": [
+        "v1.0.74 release README · Enhanced: GreatTree Arena",
+        "v1.0.74 public release.json · GreatTree Arena, Pro Classes and Survival Arena FAQ",
+        "v1.0.74 source · greattree_arena_pro_rewards.py and greattree_arena_rewards.py"
+      ],
+      "related": [
+        "story-terry-postgame",
+        "field-arena-items",
+        "field-personality",
+        "field-medals"
+      ],
+      "sections": [
+        {
+          "id": "modes",
+          "title": "Choose your challenge",
+          "table": {
+            "columns": [
+              "Mode",
+              "What to expect"
+            ],
+            "rows": [
+              [
+                "Replay a Class",
+                "Revisit the original three battles from any class, including Starry Night, without changing story progress."
+              ],
+              [
+                "Pro Classes",
+                "Pay an entry fee and win three battles for a class prize. Each Master draws three monsters from six possible species; return visits can bring different teams."
+              ],
+              [
+                "Survival Arena",
+                "First lap: all nine original classes, 27 consecutive battles ending with Milly. Later laps bring different, stronger teams. Earn a prize after every lap."
+              ],
+              [
+                "Elder Rematch",
+                "Challenge the Monster Elder’s revenge team again."
+              ]
+            ]
+          },
+          "paragraphs": [
+            "HP, MP and knockouts carry between fights; Pro Classes also carries poison between bouts. Items and direct orders are unavailable. Heal and prepare your team before entering."
+          ]
+        },
+        {
+          "id": "pro-prizes",
+          "title": "Pro Classes: fees and prizes",
+          "paragraphs": [
+            "Win all three fights for a random prize from the row below. Fleeing forfeits your entry. Leave one free bag slot, or two for Starry Night’s possible two-medal reward."
+          ],
+          "table": {
+            "columns": [
+              "Class",
+              "Entry fee",
+              "Possible prize"
+            ],
+            "rows": [
+              [
+                "G",
+                "200 G",
+                "Amor Water, Magic Water, PorkChop or Stone Fang"
+              ],
+              [
+                "F",
+                "400 G",
+                "Rib, Magic Water, Kindness Book or Elfin Elixir"
+              ],
+              [
+                "E",
+                "600 G",
+                "Rib, Elfin Elixir, Strength Seed or Stone Fang"
+              ],
+              [
+                "D",
+                "800 G",
+                "Sirloin, Yggdrasil Leaf, Divine Staff or Defense Seed"
+              ],
+              [
+                "C",
+                "1,000 G",
+                "Medicinal Herb, Dragon Scale, Elfin Elixir, Yggdrasil Leaf, Divine Staff, Sage’s Stone, Sirloin or Stone Fang"
+              ],
+              [
+                "B",
+                "2,000 G",
+                "Amor Water, Humor Book, Agility Seed, Wisdom Seed, Adventure Book, Kindness Book or Steel Fang"
+              ],
+              [
+                "A",
+                "3,000 G",
+                "Yggdrasil Dew, Strength Seed, Life Nut, Mystic Nut, Clear Mind Book, a Tiny Medal or random equipment"
+              ],
+              [
+                "S",
+                "5,000 G",
+                "Friendship Staff, a Tiny Medal, Strength Seed, Defense Seed, Clear Mind Book, random equipment or Starry Orb"
+              ],
+              [
+                "Starry Night",
+                "7,500 G",
+                "Starry Orb, two Tiny Medals, Goddess Ring, Spellblade Ring or Miracle Mark"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "survival-prizes",
+          "title": "Survival: collect a prize or keep going",
+          "paragraphs": [
+            "After 27 wins, choose one reward. If the chosen reward will not fit, you can choose another.",
+            "Once you collect the prize, retire or continue. Later laps strengthen the enemy teams up to a cap. Losing, forfeiting or retiring ends the run; prizes already collected are kept, and your next run begins at Class G."
+          ],
+          "table": {
+            "columns": [
+              "Choice",
+              "What to make room for"
+            ],
+            "rows": [
+              [
+                "50,000 G",
+                "Enough space in your wallet."
+              ],
+              [
+                "One item",
+                "A free bag slot; choose from the item menu."
+              ],
+              [
+                "One rare monster egg",
+                "A free farm slot; choose one of the three eggs offered for that lap."
+              ],
+              [
+                "Three Tiny Medals",
+                "Three free bag slots."
+              ]
+            ]
+          },
+          "sources": [
+            {
+              "label": "v1.0.74 release and feature instructions",
+              "url": "https://github.com/dqm-psx/patch/releases/tag/v1.0.74"
+            }
+          ]
+        }
       ]
     },
     {
@@ -3612,6 +4600,450 @@ globalThis.FIELD_GUIDE = {
         "item-54",
         "item-55",
         "item-56"
+      ],
+      "redirect_to": "field-movement-settings",
+      "redirect_section": "field-abilities"
+    },
+    {
+      "id": "field-damage-and-resistance",
+      "kind": "mechanic",
+      "game": "both",
+      "topic": "battle",
+      "title": "Damage, Defense and resistance",
+      "summary": "Use Attack and Defense for normal hits, and the target’s resistance for damage spells and breaths. The same move can have different damage ranges when your monster and a wild enemy use it.",
+      "details": [],
+      "spoiler": "none",
+      "aliases": [
+        "damage formula",
+        "physical damage",
+        "spell damage",
+        "breath damage",
+        "elemental resistance",
+        "damage calculator",
+        "weakness",
+        "immunity"
+      ],
+      "source_ids": [
+        "PSX retail and v1.0.73 verified normal-attack and damage handlers; docs/combat-evidence.md",
+        "PSX retail and v1.0.73 monster unpacking and equipment restoration; docs/save-planner-evidence.md"
+      ],
+      "related": [
+        "field-equipment",
+        "field-skill-inheritance",
+        "field-breed",
+        "field-battle-combos"
+      ],
+      "sections": [
+        {
+          "id": "battle-inputs",
+          "title": "Start with the monster and encounter you actually have",
+          "paragraphs": [
+            "Import your save once in My game, then select a monster in the Damage calculator. Its Attack and Defense include its equipped accessory, and its individual resistance replaces the unbred species defaults. Calculator edits do not change your roster or save.",
+            "Choose the adventure, area, floor band and enemy. Ordinary wild enemies roll their stats from 80% to 110% of the encounter’s base values, rounded down and subject to stat limits. Two appearances of the same species can therefore have different damage ranges. Bosses and arena opponents need their own battle data."
+          ],
+          "links": [
+            "field-equipment"
+          ]
+        },
+        {
+          "id": "normal-attacks",
+          "title": "Normal attacks: Attack against Defense",
+          "paragraphs": [
+            "For an ordinary successful hit, halve the target’s Defense and round down. Subtract that from the attacker’s Attack, halve the result and round down again. This gives the center of the usual damage range; the game then adds a small random variation.",
+            "For example, 100 Attack against 100 Defense deals 23–27 damage. Very low damage uses special rules: 16 Attack against 26 Defense deals 0–1. High Defense alone does not guarantee that every normal attack deals zero."
+          ]
+        },
+        {
+          "id": "spell-breath-ranges",
+          "title": "Spells and breaths have their own damage ranges",
+          "intro": "The supported damage moves do not use the normal Attack-versus-Defense calculation. Start with the move’s range, apply the target’s relevant resistance and round down. These examples are before resistance and other modifiers, per target.",
+          "table": {
+            "caption": "Base damage in ordinary wild battles",
+            "columns": [
+              "Move",
+              "Your monster uses it",
+              "Wild enemy uses it"
+            ],
+            "rows": [
+              [
+                "Blaze",
+                "12–15",
+                "7–12"
+              ],
+              [
+                "Fire Breath",
+                "14–22",
+                "10–16"
+              ]
+            ]
+          },
+          "links": [
+            "skill-e0c10",
+            "skill-e0d4d"
+          ]
+        },
+        {
+          "id": "resistance",
+          "title": "Read resistance as damage taken",
+          "intro": "A lower percentage means less damage: 100% takes the full amount; 0% is immune to that damage channel. Spell and breath reductions use different scales. Your monsters also have finer resistance steps than ordinary wild enemies.",
+          "table": {
+            "caption": "Possible damage percentages after resistance",
+            "columns": [
+              "Target",
+              "Spell scale",
+              "Breath scale"
+            ],
+            "rows": [
+              [
+                "Your monster",
+                "100, 85, 75, 65, 50, 30, 15, 0%",
+                "100, 80, 70, 60, 40, 30, 10, 0%"
+              ],
+              [
+                "Ordinary wild enemy",
+                "100, 75, 30, 0%",
+                "100, 70, 30, 0%"
+              ]
+            ]
+          },
+          "paragraphs": [
+            "For example, your Blaze against a wild target taking 75% spell damage deals 9–11. A wild enemy’s Blaze against your monster taking 85% deals 5–10. The attacker’s version of the move and the defender’s scale both matter.",
+            "Check the resistance to the selected move, rather than treating resistance as one overall stat. A bred monster can differ from its species baseline. An imported save supplies its current individual values; without one, select a known reduction in the calculator.",
+            "Breeding can improve each resistance using both parents’ individual grades and the child’s + value. It cannot make a nonimmune child species immune. The breeding guide explains the calculation and gives worked examples."
+          ],
+          "links": [
+            "field-breed"
+          ]
+        },
+        {
+          "id": "level-and-family",
+          "title": "Level and family can change the result",
+          "rows": [
+            [
+              "Wind Sickle, Vacuum Wave and Lightning",
+              "These moves use level-dependent formulas. Enter the attacker’s actual level; their damage is not a fixed range at every level."
+            ],
+            [
+              "Grand Cross",
+              "Deals 30% extra damage to Zombie-family targets. The family increase is rounded down before resistance. Against a wild Zombie taking 70% damage, your monster’s Grand Cross deals 163–191."
+            ],
+            [
+              "Gigaslash",
+              "Deals 30% extra damage when its user belongs to the Dragon family. Resistance is applied first, then the family increase, with each step rounded down."
+            ]
+          ],
+          "links": [
+            "skill-e0d84",
+            "skill-e0e51",
+            "skill-e0e59"
+          ]
+        },
+        {
+          "id": "long-battles",
+          "title": "Effects and repeated skills during a longer battle",
+          "paragraphs": [
+            "Temporary Defense and Agility changes and other protections can wear off. Reapply them when needed; your opening setup does not necessarily last for the whole fight.",
+            "Repeating the same eligible attacking skill can improve its effect against resistance, with an additional damage bonus possible on the fourth use. Changing the command restarts the sequence; the four-use cycle also restarts after its fourth entry.",
+            "The damage calculator shows the baseline hit. It does not include this repeated-skill sequence or temporary battle effects."
+          ],
+          "sources": [
+            {
+              "label": "Native repeated-action and duration audit",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/edition-comparison-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "calculator-scope",
+          "title": "What the calculator’s range means",
+          "paragraphs": [
+            "The calculator covers normal attacks and 36 supported damage moves in ordinary wild battles. A range describes a successful, unguarded hit on one target. It does not predict hit chance, AI choices, or whether a monster has learned the selected move or has enough MP.",
+            "Critical hits, guarding, charge, temporary buffs and debuffs, reflection, repeated-skill bonuses, multi-hit rules and special battle settings are outside these calculations. Use the skill’s own page for effects that the damage calculator does not cover."
+          ],
+          "links": [
+            "field-skill-inheritance"
+          ],
+          "sources": [
+            {
+              "label": "Verified PSX combat rules and calculation scope",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/combat-evidence.md"
+            },
+            {
+              "label": "Imported stats, equipment and resistance",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/save-planner-evidence.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "field-battle-combos",
+      "kind": "mechanic",
+      "game": "both",
+      "topic": "battle",
+      "title": "Battle combinations: two monsters, one stronger move",
+      "summary": "All 20 party combinations work in Terry, Cobi and Tara’s PlayStation adventures. Have two monsters choose a matching pair of skills in the same turn for a chance to combine their actions.",
+      "details": [],
+      "spoiler": "none",
+      "aliases": [
+        "co-op skills",
+        "coop skills",
+        "cooperative skills",
+        "combo skills",
+        "battle combos",
+        "party combos",
+        "Kazap",
+        "IceBlaze",
+        "Wave Slash",
+        "Air Slash",
+        "Earth Slash",
+        "Giga Cross Break",
+        "Gigante",
+        "Twin Attack",
+        "Quick Draw",
+        "GigaMagic",
+        "Spirit Festival",
+        "Reaper's Feast",
+        "Demon Lord Form",
+        "Twilight Wave",
+        "Mist of Forgetting",
+        "Mega Magic Drain",
+        "Counter",
+        "Enchanting Dance",
+        "Iron Wall Shield",
+        "Enlightenment"
+      ],
+      "source_ids": [
+        "PSX battle overlay 5502 · selector 8013F7E0 · paired action conversion 8013FE38",
+        "e1109",
+        "e110f",
+        "e1115",
+        "e111b",
+        "e1122",
+        "e1128",
+        "e1132",
+        "e1137",
+        "e113e",
+        "e1144",
+        "e114a",
+        "e1153",
+        "e115c",
+        "e1163",
+        "e116c",
+        "e1175",
+        "e117b",
+        "e1181",
+        "e1189",
+        "e1191"
+      ],
+      "skill_ids": [
+        15,
+        3,
+        18,
+        77,
+        103,
+        73,
+        75,
+        21,
+        112,
+        106,
+        145,
+        42,
+        98,
+        29,
+        61,
+        124,
+        160,
+        117,
+        121,
+        58,
+        60,
+        129,
+        130,
+        146,
+        156,
+        50,
+        119,
+        149,
+        150,
+        52,
+        120,
+        148,
+        152,
+        138,
+        159
+      ],
+      "related": [
+        "field-damage-and-resistance",
+        "field-personality",
+        "field-skill-inheritance",
+        "field-restored-content"
+      ],
+      "sections": [
+        {
+          "id": "using-combos",
+          "title": "How to use a battle combination",
+          "paragraphs": [
+            "Choose one listed skill for one monster and the matching skill for a different monster in the same turn. For Kazap, both monsters choose Thordain. Each must be able to act and have enough MP for its selected skill.",
+            "Each monster pays the MP cost of its own chosen skill. Gigante is the exception: it consumes all remaining MP from both users.",
+            "The combination is a chance outcome, not a separate command you can select. Personality compatibility and a hidden motivation value affect the chance; the right moves alone do not guarantee it. Time using AI tactics can raise motivation, while repeated direct orders lower it. At most one pair combines on each side in a turn.",
+            "These moves are not learned permanently and do not take up an extra skill slot. A single monster knowing both component skills is not enough. Learning a new skill from prerequisites is a different system."
+          ],
+          "links": [
+            "field-skill-inheritance",
+            "field-personality"
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "combo-recipes",
+          "title": "All 20 PlayStation combinations",
+          "intro": "Use the current English patch names below. Each pair needs two different monsters, including recipes that repeat the same skill. Damage ranges are before resistance and other battle modifiers unless noted.",
+          "table": {
+            "columns": [
+              "Combination",
+              "Skills chosen by the two monsters",
+              "PSX effect"
+            ],
+            "rows": [
+              [
+                "Kazap",
+                "Thordain + Thordain",
+                "500–700 base lightning damage to all enemies before resistance and guarding."
+              ],
+              [
+                "IceBlaze",
+                "Blazemost + Blizzard",
+                "700–900 base damage to one enemy before guarding."
+              ],
+              [
+                "Wave Slash",
+                "Tidal Wave + Gigaslash",
+                "500–600 base damage to one enemy; 1.5× damage against Slime, Zombie and Aquatic families, after resistance and guarding."
+              ],
+              [
+                "Air Slash",
+                "Vacuum Wave + Gigaslash",
+                "500–600 base damage to one enemy; 1.5× damage against Dragon, Bird and Devil families, after resistance and guarding."
+              ],
+              [
+                "Earth Slash",
+                "Rock Throw + Gigaslash",
+                "500–600 base damage to one enemy; 1.5× damage against Beast, Plant and Bug families, after resistance and guarding."
+              ],
+              [
+                "Giga Cross Break",
+                "Gigaslash + Gigaslash",
+                "500–700 base damage to all enemies before resistance and guarding."
+              ],
+              [
+                "Gigante",
+                "Sacrifice + Suicide Charge",
+                "Attempts near-fatal damage to every enemy. Uses all MP from both participants; each then has a 50% chance of being knocked out, otherwise losing 99% of current HP (rounded down). A participant already at 1 HP is knocked out."
+              ],
+              [
+                "Twin Attack",
+                "High Jump + Geyser",
+                "A physical attack using the High Jump user’s Attack while ignoring the target’s Defense."
+              ],
+              [
+                "Quick Draw",
+                "Speedup + Gale Thrust",
+                "A fast physical attack with doubled noncritical damage and an additional action-priority bonus."
+              ],
+              [
+                "GigaMagic",
+                "Magic Healus + MegaMagic",
+                "Damage to all enemies starts from twice the combined levels plus twice the MP spent by both users, with a ±10% roll before resistance and guarding."
+              ],
+              [
+                "Spirit Festival",
+                "Hustle Dance + Spirit Song",
+                "Fully restores living allies’ HP and MP and clears multiple ailments. Does not revive fallen allies."
+              ],
+              [
+                "Reaper's Feast",
+                "Curse Words + Death Dance",
+                "Randomly applies one of five ailments to each enemy: curse, poison, sleep, paralysis or confusion."
+              ],
+              [
+                "Demon Lord Form",
+                "Transform + Chance",
+                "Transforms both users, raising their maximum HP, maximum MP, Attack, Defense and Agility by 25% (up to 999), and replacing their skills and resistances for the transformation."
+              ],
+              [
+                "Twilight Wave",
+                "Wave of Light + Wave of Darkness",
+                "Buffs the party’s Attack, Defense, Agility and evasion."
+              ],
+              [
+                "Mist of Forgetting",
+                "Stop Dance + Sealing Prayer",
+                "Seals enemy spells, dances and breaths regardless of resistance."
+              ],
+              [
+                "Mega Magic Drain",
+                "RobMagic + Magic Drain Dance",
+                "Drains all of one enemy’s MP and restores half to each user, limited by each user’s maximum MP."
+              ],
+              [
+                "Counter",
+                "Parry + Blade Defense",
+                "Both participants take a counter stance for the turn; eligible incoming physical attacks are redirected with doubled damage. Does not protect the third party member."
+              ],
+              [
+                "Enchanting Dance",
+                "Confuse + Confusion Dance",
+                "Confuses all enemies regardless of resistance."
+              ],
+              [
+                "Iron Wall Shield",
+                "Strong Defense + Defend All",
+                "The leading participant protects allies with strong defense."
+              ],
+              [
+                "Enlightenment",
+                "Concentrate + Meditate",
+                "Lets allies repeat eligible actions and makes their critical-capable attacks critical hits."
+              ]
+            ]
+          },
+          "paragraphs": [
+            "In the English patch’s local Colosseum, turn Combos on to allow battle combinations. Demon Lord Form still cannot form there. These local rules do not limit combinations in Terry, Cobi or Tara’s adventure."
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            }
+          ]
+        },
+        {
+          "id": "game-boy-comparison",
+          "title": "What changes from Game Boy Color?",
+          "paragraphs": [
+            "The Game Boy versions normally divide these combinations into ten for Cobi and ten for Tara. Their recipe tables and version check confirm that split. PSX uses the same 20 skill pairs without the campaign restriction: all 20 are available to Terry as well as Cobi and Tara.",
+            "The handheld guide describes Spirit Festival as reviving allies and Mega Magic Drain as draining all enemies. On PSX, Spirit Festival only restores living allies, and Mega Magic Drain targets one enemy. The three elemental slashes also cover different families, while GigaMagic includes both users’ levels as well as their spent MP."
+          ],
+          "links": [
+            "field-restored-content"
+          ],
+          "sources": [
+            {
+              "label": "Native PSX battle-combo verification",
+              "url": "https://github.com/dqm-psx/guide/blob/main/docs/battle-combos-evidence.md"
+            },
+            {
+              "label": "McBick’s GBC co-op skill guide",
+              "url": "https://gamefaqs.gamespot.com/gbc/525414-dragon-warrior-monsters-2-cobis-journey/faqs/77570/list-of-co-op-skills"
+            }
+          ]
+        }
       ]
     }
   ],

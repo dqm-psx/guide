@@ -190,9 +190,11 @@ test('Mechanics sorts by adventure or article and preserves the reader’s place
   await page.setViewportSize({width:320,height:760});
   await page.goto(url);
   await page.getByRole('link',{name:'Browse all mechanics'}).click();
+  await expect(page.getByRole('navigation',{name:'Mechanics topics'})).toBeVisible();
+  await page.getByRole('navigation',{name:'Mechanics view'}).getByRole('link',{name:'All articles'}).click();
   const index = page.getByRole('table',{name:'Mechanics articles'});
   const sections = index.locator('tbody td');
-  await expect(index.getByRole('link')).toHaveCount(22);
+  await expect(index.getByRole('link')).toHaveCount(24);
   expect([...new Set(await sections.allTextContents())]).toEqual(['General','Terry','Cobi & Tara']);
   await expect(index.getByRole('columnheader',{name:'Section'})).toHaveAttribute('aria-sort','ascending');
   const articleSort = index.getByRole('button',{name:'Article'});
@@ -209,7 +211,8 @@ test('Mechanics sorts by adventure or article and preserves the reader’s place
   const search = page.getByLabel('Search the guide');
   await search.fill('Bard');
   await expect(search).toBeFocused();
-  await expect(index.getByRole('link')).toHaveCount(1);
+  await expect(index.locator('a[href*="entry=field-wandering-masters"]')).toBeVisible();
+  await expect(index.locator('a[href*="entry=field-restored-content"]')).toBeVisible();
   await expect(index.locator('tbody')).toContainText('Bard');
   await search.fill('zzzzzz');
   await expect(page.getByRole('link',{name:'Search all topics for “zzzzzz”'})).toBeVisible();
@@ -252,9 +255,34 @@ test('a species hunting question opens the correct campaign and encounter pool',
   await page.getByLabel('Search the guide').fill('Where can I catch Almiraj as Tara?');
   const match=page.locator('.guide-row').filter({hasText:'Almiraj'});
   await expect(match).toContainText('Tara · Ice Field · Lv. 19');
+  await expect(match.locator('.monster-sprite img')).toBeVisible();
   await match.click();
   await expect(page.locator('#atlas-game')).toHaveValue('tara');
   await expect(page.locator('#atlas-detail')).toContainText('Almiraj');
+});
+
+test('monster search results show individual sprites and respect the saved sprite style', async ({page}) => {
+  await page.setViewportSize({width:375,height:780});
+  await page.goto(url+'#field-guide?q=divin');
+  const result=page.locator('.guide-row[href^="#monster?id="]').first();
+  await expect(result).toBeVisible();
+  const speciesId=(await result.getAttribute('href')).split('=')[1];
+  const portrait=result.locator('.monster-sprite img');
+  await expect(portrait).toHaveAttribute('data-monster-index',speciesId);
+  await expect(portrait).toHaveAttribute('src','media/monster-portrait-'+speciesId+'.webp');
+  await expect(portrait).toHaveAttribute('alt','');
+  await expect.poll(()=>portrait.evaluate(image=>image.complete && image.naturalWidth>0)).toBe(true);
+  await page.locator('#guide-settings > summary').click();
+  await page.locator('#guide-settings [data-sprite-style="overworld"]').click();
+  await page.locator('#guide-settings > summary').click();
+  await expect(portrait).toHaveAttribute('data-sprite-kind','overworld');
+  await expect(portrait).toHaveAttribute('src','media/monster-overworld-'+speciesId+'.webp');
+  await page.reload();
+  await expect(portrait).toHaveAttribute('data-sprite-kind','overworld');
+  await expect.poll(()=>portrait.evaluate(image=>image.complete && image.naturalWidth>0)).toBe(true);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(375);
+  await result.click();
+  await expect(page).toHaveURL(new RegExp('#monster\\?id='+speciesId+'$'));
 });
 
 test('event copies share an atlas entry while distinct places and dungeon layouts remain reachable', async ({page}) => {
@@ -340,7 +368,7 @@ test('skill profiles explain the effect and link upgrades and learner profiles',
   await expect(page.locator('.skill-progression').getByRole('link',{name:'Blazemost',exact:true})).toBeVisible();
   await page.locator('.skill-progression').getByRole('link',{name:'Blaze',exact:true}).click();
   await expect(page.locator('#article-title')).toHaveText('Blaze');
-  await expect(page.locator('.skill-learner-list svg').first()).toBeVisible();
+  await expect(page.locator('.skill-learner-list img').first()).toBeVisible();
   await expect(page.locator('.skill-profile .monster-japanese')).toHaveText('メラ');
   await page.locator('.skill-campaign[open] a').first().click();
   await page.locator('#monster-skills a').filter({hasText:/^Blaze$/}).click();
@@ -355,7 +383,8 @@ test('the offline skill profile fits a narrow screen and connects combination in
   await expect(page.locator('#article-title')).toHaveText('MegaMagic');
   await expect(page.locator('.skill-combat-facts')).toContainText('All remaining MP');
   const related=page.locator('.skill-progression');
-  await expect(related.getByRole('link')).toHaveCount(5);
+  await expect(related.getByRole('link')).toHaveCount(6);
+  await expect(related.getByRole('link',{name:'GigaMagic',exact:true})).toBeVisible();
   await expect(page.getByRole('navigation',{name:'Adjacent skills'})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await related.getByRole('link',{name:'Blazemost',exact:true}).click();

@@ -5,6 +5,8 @@
   const originalPath = location.pathname;
   if (!route || !/^https?:$/.test(location.protocol)) return;
   window.DQMEntryHash = () => {
+    if (location.pathname === originalPath && route.startsWith('#field-guide?entry=') &&
+        /^#article-section-[\w-]+$/.test(location.hash)) return route+'&section='+location.hash.slice('#article-section-'.length);
     if (location.pathname === originalPath && route.startsWith('#atlas?map=') &&
         /^#map-\d+-\d+$/.test(location.hash)) return '#atlas?map='+location.hash.slice(1);
     if (location.pathname === originalPath && route.startsWith('#field-guide?entry=location-') &&

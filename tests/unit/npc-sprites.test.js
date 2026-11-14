@@ -76,3 +76,22 @@ test('native royal-sprite reuse and Terry’s Tife portrait retain their verifie
   assert.equal(tife.sceneResource, 5661);
   assert.equal(tife.messageSlot, 1208);
 });
+
+test('Bazaar and service portraits follow the identified scene actors', () => {
+  const expected = [
+    ['npc-bunny', 5663, 15, 5671, 169],
+    ['npc-bazaar-cook', 5663, 8, 5671, 104],
+    ['npc-bazaar-muscleman', 5663, 9, 5671, 205],
+    ['npc-well-professor', 5607, 0, 5630, 1380],
+    ['npc-greattree-storage-apprentice', 5628, 1, 5630, 1212],
+    ['npc-greatlog-key-appraiser', 2858, 0, 133, 987]
+  ];
+  for (const [id, archive, slot, scene, message] of expected) {
+    const proof = evidence.portraits[id];
+    assert.deepEqual([proof.archiveIndex, proof.actorSlot, proof.sceneResource, proof.messageSlot],
+      [archive, slot, scene, message], id);
+  }
+  assert.notEqual(NPC_SPRITES['npc-bunny'].image, NPC_SPRITES['npc-tife'].image);
+  assert.equal(NPC_SPRITES['npc-bazaar-cook'].image, NPC_SPRITES['npc-bazaar-muscleman'].image,
+    'The two distinct Bazaar actors deliberately share the native strongman art');
+});

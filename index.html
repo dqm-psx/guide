@@ -26,6 +26,8 @@
 <link rel="stylesheet" href="css/monster-reference.css">
 <link rel="stylesheet" href="css/dark-mode.css">
 <link rel="stylesheet" href="css/player-guide.css">
+<link rel="stylesheet" href="css/walkthrough.css">
+<link rel="stylesheet" href="css/handbook.css">
 <link rel="stylesheet" href="css/reference-tables.css">
 <link rel="stylesheet" href="css/my-game.css">
 <link rel="stylesheet" href="css/mechanics-tools.css">
@@ -134,7 +136,7 @@
             </a>
             <a class="home-import" href="#team-planner?import=save">
               <span class="breeding-tool-art"><img src="media/adventure-log.webp" width="48" height="48" alt=""></span>
-              <span>Import a memory card<small>See what your monsters can breed</small></span>
+              <span>Import a memory card<small>Use your monsters in breeding, skills &amp; damage tools</small></span>
             </a>
           </div>
           <a class="browse-mechanics" href="#skill-planner">Plan skills &amp; growth →</a>
@@ -142,12 +144,12 @@
         <a class="hero-map" href="#atlas?map=map-6-0"><img src="media/greattree.webp" width="640" height="360" alt=""><span><span><span data-place="map-6-0">GreatTree</span> map</span></span></a>
       </div>
       <div class="home-columns">
-        <div class="home-topics"><h2>Player questions</h2><div class="topic-links question-links">
+        <div class="home-topics"><h2>Understand the game</h2><div class="topic-links question-links">
           <a href="#field-guide?entry=field-recruitment">How much meat should I use?</a>
           <a href="#combat-planner">How much damage will this move do?</a>
           <a href="#field-guide?entry=field-skill-inheritance">Why hasn’t my monster learned a skill?</a>
           <a href="#field-guide?entry=field-wandering-masters">How do I find a foreign master?</a>
-          <a href="#field-guide?entry=field-restored-content">What changed in Terry’s PS1 adventure?</a>
+          <a href="#field-guide?entry=field-restored-content">Game Boy, PSX &amp; patch differences</a>
           <a href="#field-guide?entry=field-movement-settings">Why does my walking speed change?</a>
           <a href="#field-guide?entry=field-retail-bugs">Which bugs were in the Japanese release?</a>
         </div><a class="browse-mechanics" href="#field-guide?kind=mechanic">Browse all mechanics</a></div>
@@ -233,7 +235,7 @@
 
 <section id="sources" class="section view" data-view="sources" aria-labelledby="sources-heading" hidden><div class="section-head"><h2 id="sources-heading" tabindex="-1">Sources &amp; coverage</h2></div>
 <p>The guide uses the PlayStation releases of Terry’s adventure and Cobi and Tara’s adventures. Campaign scripts, fixed maps, learning requirements and breeding rules have been checked against the v1.0.73 English disc.</p>
-<p><a href="https://anonymous.4open.science/r/DQM-1-2-PSX-translation-D1FC/README.txt">English patch release</a> · <a href="https://github.com/dqm-psx/guide/tree/main/docs">Verification notes</a> · <a href="https://dqm-psx.github.io/translations/">Compare translation editions</a></p><div class="source-body"><div id="source-version-summary"></div><p id="coverage-summary"></p><p>Names, library wording, skill/location labels, and the latest patch version update automatically from the translation project's public export. Publication is checked every four hours. Gameplay verification is a separate check against a release build; a text update does not advance it. All shipped data works offline.</p><details><summary>Technical provenance and original extraction</summary><pre id="source-metadata"></pre></details></div></section>
+<p><a href="https://github.com/dqm-psx/patch/releases/latest">English patch release</a> · <a href="https://github.com/dqm-psx/guide/tree/main/docs">Verification notes</a> · <a href="https://dqm-psx.github.io/translations/">Compare translation editions</a></p><div class="source-body"><div id="source-version-summary"></div><p id="coverage-summary"></p><p>Names, library wording and skill/location labels update from the translation project's public export, checked every four hours. The patch version uses the newer of that export and the guide's reviewed public release record. Gameplay verification is a separate check against a release build; a text or release-label update does not advance it. All shipped data works offline.</p><details><summary>Technical provenance and original extraction</summary><pre id="source-metadata"></pre></details></div></section>
 
 <section id="team-planner" class="section planner view" data-view="team-planner" aria-labelledby="planner-heading" hidden>
   <div class="section-head my-game-heading">
@@ -439,13 +441,14 @@
   <nav class="wrap footer-links" aria-label="Resources"><a href="#sources">Sources &amp; coverage</a><a href="https://dqm-psx.github.io/">English patch</a><a href="https://dqm-psx.github.io/translations/">Translations</a><a href="https://github.com/dqm-psx/guide">GitHub</a></nav>
 </footer>
 <script type="application/json" id="guide-assets">
-{"shared":["data/sprite-sheets.js","js/sprites.js"],
+{"shared":["data/sprite-images.js","data/family-icons.js","js/sprites.js","data/patch-rewards.js"],
 "dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
-"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","data/recruitment-reference.js","js/current-names.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/recruitment.js","js/recruitment-ui.js","js/player-guide.js","js/player-atlas.js"],
-"tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/planner-core.js","js/reference.js","js/recipe-planner.js","js/app-state.js","js/save-import.js","js/planner-ui.js"],
-"combat":["data/handbook-reference.js","data/combat-reference.js","js/monster-picker.js","js/combat-planner.js","js/combat-planner-ui.js"],
-"learning":["data/handbook-reference.js","data/skill-learning-reference.js","js/monster-picker.js","js/skill-learning.js","js/skill-planner-ui.js"],
-"tree":["js/breeding-tree.js"],"matrix":["js/matrix-tools.js"],
+"field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","data/recruitment-reference.js","js/current-names.js","js/walkthrough-context.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/recruitment.js","js/recruitment-ui.js","js/player-guide.js","js/player-atlas.js"],
+"tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/planner-core.js","js/reference.js","js/recipe-planner.js","js/app-state.js","js/owned-monsters.js","data/handbook-reference.js","data/save-reference.js","js/save-import.js","js/planner-ui.js"],
+"combat":["data/breeding-data.js","js/planner-core.js","js/app-state.js","js/storage.js","js/owned-monsters.js","data/handbook-reference.js","data/combat-reference.js","js/monster-picker.js","js/combat-planner.js","js/combat-planner-ui.js"],
+"learning":["data/breeding-data.js","js/planner-core.js","js/app-state.js","js/storage.js","js/owned-monsters.js","data/handbook-reference.js","data/skill-learning-reference.js","js/monster-picker.js","js/skill-learning.js","js/skill-planner-ui.js"],
+"tree":["js/breeding-tree.js"],
+"matrix":["js/matrix-tools.js"],
 "profile":["data/monster-reference.js","js/monster-reference.js"]}
 </script>
 <script src="data/home-names.js"></script>

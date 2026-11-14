@@ -38,6 +38,8 @@ test(`previews a local card, creates a team in its campaign and uses it in both 
   await expect(page.locator('#save-import-dialog')).not.toBeVisible();
   await expect(page.locator('#planner-party')).toContainText(/Lv\.? 30/);
   await expect(page.locator('#planner-party').getByRole('link', {name: 'Bob'})).toHaveAttribute('href', '#monster?id=26');
+  await expect(page.locator('#planner-party-heading')).toBeFocused();
+  await expect(page.locator('#planner-party-heading')).toBeInViewport();
   await expect(page.locator('#planner-party .planner-card').first()).toBeInViewport({ratio:0.9});
   await page.getByRole('tab', {name: 'Team breeding'}).click();
   await expect(page.getByLabel('Include farm monsters')).toBeChecked();

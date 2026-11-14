@@ -94,7 +94,8 @@
       });
       const aroundTown=sideGates.filter(([slug])=>!unverifiedEntrances.has(sideId(slug))).map(([slug,,,questId,condition])=>{
         const row=byId.get(sideId(slug));
-        const info=questId ? entryLink(questId,condition) : escape(row.levelRange);
+        const entrance=globalThis.GATE_ENTRANCES?.entries[row.id]?.[0];
+        const info=questId ? entryLink(questId,condition) : entrance ? 'Entrance: '+mapLink(entrance.map) : '';
         return '<li>'+entryLink(row.id)+(hidden(row) ? '' : '<small>'+info+'</small>')+'</li>';
       });
       const extraGates=[...unverifiedEntrances].filter(id=>byId.has(id));

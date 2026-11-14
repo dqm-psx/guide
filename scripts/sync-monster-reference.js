@@ -1,6 +1,7 @@
 'use strict';
 
-// Only public, commit-pinned translation data is read. No remote code is run.
+// Public translation data is commit-pinned. Reviewed release metadata is a
+// tracked input so publication can reproduce it without another live lookup.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -49,6 +50,20 @@ function validateCurrentPatch(value) {
   requireValue(typeof value.published_at === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value.published_at) && Number.isFinite(Date.parse(value.published_at)) && new Date(value.published_at).toISOString().replace('.000Z', 'Z') === value.published_at, 'invalid current patch publication date');
   requireValue(typeof value.source_revision === 'string' && SHA.test(value.source_revision) && typeof value.package_sha256 === 'string' && SHA256.test(value.package_sha256), 'invalid current patch source or checksum');
   return Object.fromEntries(keys.map(key => [key, value[key]]));
+}
+
+function selectCurrentPatch(published, reviewed) {
+  const source = validateCurrentPatch(published);
+  const snapshot = validateCurrentPatch(reviewed);
+  if (!source || !snapshot) return source || snapshot;
+  const sourceVersion = source.version.slice(1).split('.').map(BigInt);
+  const reviewedVersion = snapshot.version.slice(1).split('.').map(BigInt);
+  for (let i = 0; i < sourceVersion.length; i++) {
+    if (sourceVersion[i] !== reviewedVersion[i]) return sourceVersion[i] > reviewedVersion[i] ? source : snapshot;
+  }
+  requireValue(source.source_revision === snapshot.source_revision && source.package_sha256 === snapshot.package_sha256,
+    'current patch conflicts with the reviewed release; review this version\'s source and package');
+  return snapshot;
 }
 
 function validateGameplayVerification(value, baseline, breeding) {
@@ -266,6 +281,8 @@ async function main(argv) {
     [comparisonBytes, manifestBytes] = await Promise.all([download(base + 'comparison-data.json', 64 * 1024 * 1024), download(base + 'source-manifest.json', 1024 * 1024)]);
   }
   const {comparison, manifest} = verifySnapshot(comparisonBytes, manifestBytes);
+  manifest.current_patch = selectCurrentPatch(manifest.current_patch,
+    JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/current-patch.json'), 'utf8')));
   const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/monster-baseline.json'), 'utf8'));
   const proofPath = path.join(ROOT, 'data/gameplay-verification.json');
   const gameplayVerification = fs.existsSync(proofPath) ? JSON.parse(fs.readFileSync(proofPath, 'utf8')) : null;
@@ -316,5 +333,5 @@ async function main(argv) {
   console.log(`Validated ${reference.metadata.coverage.named_species} monster names, ${reference.guide_names.default_nicknames.length} default nicknames, ${coverage.items} items, ${coverage.skills} skills, ${coverage.maps} maps, and ${coverage.world_name_bindings} world-name bindings; public source ${publicRevision}.`);
 }
 
-module.exports = {verifySnapshot, validateBaseline, validateCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest, STATS};
+module.exports = {verifySnapshot, validateBaseline, validateCurrentPatch, selectCurrentPatch, validateGameplayVerification, buildReference, generateScript, readBreeding, digest, STATS};
 if (require.main === module) main(process.argv.slice(2)).catch(error => { console.error(error.message); process.exitCode = 1; });

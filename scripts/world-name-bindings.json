@@ -28,8 +28,12 @@
       "extract": "phrase",
       "prefix": "I am ",
       "suffix": ", princess of ",
-      "aliases": ["Princess Laura"],
-      "affected_entries": ["npc-laura"]
+      "aliases": [
+        "Princess Laura"
+      ],
+      "affected_entries": [
+        "npc-laura"
+      ]
     },
     {
       "spelling": "Demon King's Castle Shrine",
@@ -2351,6 +2355,17 @@
       "suffix": "'s number-one pupil!",
       "affected_entries": [
         "npc-monster-professor"
+      ]
+    },
+    {
+      "spelling": "Bunny",
+      "source_id": "s0afae000_1063",
+      "catalog": "dialogue/main/4000_6131.json",
+      "extract": "phrase",
+      "prefix": "Hi! I'm ",
+      "suffix": "!",
+      "affected_entries": [
+        "npc-bunny"
       ]
     }
   ]

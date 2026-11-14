@@ -41,7 +41,7 @@ private development repositories.
 | Which skills survive breeding? | Explain natural skills, retained parental skills, base forms, the eight learned-skill slots and the inherited-but-unlearned distinction. | Native offspring construction and skill candidate scan; identical in original and v1.0.73. |
 | Why did farm training produce no skills, then many prompts? | Explain farm growth, party level-up checks, current-stat thresholds and batches of eligible candidates. | Separate native farm and party level-up routines; identical in both editions. |
 | Why did this monster stop gaining levels? | Give the offspring cap formula, `min(99, species base limit + 3 × plus)`, with examples. | Native offspring constructor, checked in both editions. |
-| Can monsters breed between Adventure Logs? | Explain the title-screen room, completion restriction for crossing games 1 and 2, and the parent/egg/save consequences. | Original Japanese event messages and their current translations. The precise completion flags are not inferred. |
+| Breed monsters between Adventure Logs | Explain the title-screen room, completion restriction for crossing games 1 and 2, and the parent/egg/save consequences. | Original Japanese event messages and their current translations. The precise completion flags are not inferred. |
 | Battle messages disappear too quickly. | Explain Text Speed 8's manual pacing mode and its limits. | Native pacing dispatcher, manual branch and timer table compared in both editions. |
 
 Reproduction steps, native addresses and scope limits are in
