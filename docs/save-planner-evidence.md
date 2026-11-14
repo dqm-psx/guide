@@ -9,6 +9,7 @@ The packed monster records begin at save offset `0x250`, with 50 records of `0x8
 | Value | Packed record offset | Treatment |
 | --- | --- | --- |
 | Species, sex, breeding +, level, actual level cap | `0x04` | Native bitfields; unsupported calculator values remain unknown |
+| Current HP and MP | `0x08`, bits 0–9 and 10–19 | Restore to monster offsets `0xA0` and `0xA4`. Current MP determines whether a party member could afford a combo component at save time. A saved zero is valid. |
 | Base maximum HP/MP, Attack/Defense, Agility/Intelligence | `0x0c`, `0x10`, `0x14` | Two 10-bit stats per word, before equipment |
 | Individual resistance | `0x08`–`0x1c` | All 27 native 3-bit channels, preserving channel order |
 | Accessory | `0x18`, bits 8–12 | `31` means none; otherwise item ID is selector + `0x40` |
@@ -35,6 +36,12 @@ Editing Level, Attack or Defense detaches the plan from the roster without chang
 The synthetic suite covers every saved accessory encoding in all three campaigns, capped battle stats, all 27 resistance channels, both parents' natural candidates, an upgraded candidate, the final direct-candidate slot, all eight learned slots, and a special selector requiring its high bit. It uses invented saves and no player files.
 
 Verified result: **96 synthetic saves / 288 monster comparisons per disc, 576 comparisons total**, matching both the Japanese retail release and English v1.0.73.
+
+The extended suite compared current HP and MP as well as the existing fields
+in 96 synthetic saves per disc on retail Japanese and v1.0.74 Enhanced. All 576
+monster comparisons passed, including zero HP/MP, all three campaign variants
+and each accessory encoding. Backups imported before these two fields were
+recorded have unknown current HP/MP until the player re-imports the save.
 
 Reproduce with local copies of the authenticated discs:
 

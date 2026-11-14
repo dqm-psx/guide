@@ -311,8 +311,8 @@ test('battle combo renames update recipes and PSX prose without becoming learnab
   assert.equal(generated.coverage.skills,169);
   assert.equal(generated.skills[208],undefined);
   assert.equal(generated.battle_combos.length,20);
-  assert.deepEqual(generated.battle_combos[0],{id:208,title:'Thunder Chorus',source_id:'e1109',skills:[15,15]});
-  assert.deepEqual(generated.battle_combos[7],{id:215,title:'Twin Assault',source_id:'e1137',skills:[106,145]});
+  assert.deepEqual(generated.battle_combos[0],{id:208,title:'Thunder Chorus',source_id:'e1109',skills:[15,15],effect:priorRecipes[0][2]});
+  assert.deepEqual(generated.battle_combos[7],{id:215,title:'Twin Assault',source_id:'e1137',skills:[106,145],effect:priorRecipes[7][2].replace('High Jump','Sky Leap')});
   const requirements = structuredClone(f.field.skill_requirements);
   apply({guide_names:generated,species:[]},f.field,f.world,f.atlas);
   assert.deepEqual(f.field.skill_requirements,requirements);

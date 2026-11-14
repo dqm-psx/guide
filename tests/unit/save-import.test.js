@@ -28,6 +28,7 @@ test('restores base stats, equipped stats, individual cap and all resistance cha
   assert.equal(details.levelCap,55);assert.equal(details.campaign,'tara');assert.equal(details.equipmentId,69);
   assert.deepEqual(details.baseStats,{hp:450,mp:220,attack:180,defense:155,agility:300,intelligence:277});
   assert.deepEqual(details.battleStats,{...details.baseStats,attack:230});
+  assert.equal(details.currentHp,237);assert.equal(details.currentMp,85);
   assert.deepEqual(details.resistances,Array.from({length:27},(_,i)=>i%8));
   assert.deepEqual(details.knownSkills,[4,reference.specialSkills[0]]);
   assert.deepEqual(details.inheritedSkills,[...new Set([...reference.naturalSkills.dqm2[26].filter(Boolean),4,10,23])]);
@@ -39,8 +40,10 @@ test('rejects unsupported skill selectors and unknown numeric fields instead of 
   const bytes=planningBlock(),at=0x250+2*136;
   putBits(bytes,at+0x20,0,5,30); // Normal selector outside 25-slot pool.
   putBits(bytes,at+0x0c,0,10,1000);putBits(bytes,at+4,25,7,20);
+  putBits(bytes,at+8,0,10,0);putBits(bytes,at+8,10,10,1023);
   const details=read(finishBlock(bytes),species,reference).saves[0].entries[0].saveDetails;
   assert.equal(details.knownSkills,null);assert.equal(details.baseStats.hp,null);assert.equal(details.levelCap,null);
+  assert.equal(details.currentHp,0);assert.equal(details.currentMp,null);
   const old=read(planningBlock(),species).saves[0].entries[0].saveDetails;
   assert.equal(old.knownSkills,null);assert.equal(old.inheritedSkills,null);assert.equal(old.battleStats.attack,null);
 });

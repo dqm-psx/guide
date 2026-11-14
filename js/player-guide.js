@@ -454,8 +454,7 @@
         routeFacts(row,routeData,p)+locationCharacters(row,p)+relatedMarkup+'</header>'+routeMarkup(row,routeData,p)+'</div>';
       body = (item ? DQMItemIndex.itemFacts(row,itemOptions) : art + (!gate && lead ? '<p class="article-lead">' + linkedProse(lead,row,routeData,p) + '</p>' : '')) +
         DQMRecruitmentUI.markup(row) +
-        (row.id==='field-skill-inheritance' || row.id==='field-growth' ? '<p><a class="guide-action training-open" href="#skill-planner">Open the skill &amp; growth planner →</a></p>' : '') +
-        (row.id==='field-damage-and-resistance' ? '<p><a class="guide-action training-open" href="#combat-planner">Open the damage calculator →</a></p>' : '') +
+        DQMMechanicsIndex.articleTool(row.id,safe) +
         (gate ? '<div class="gate-content">' : '')+
         (row.kind==='location' && mapLinks.length ? '<section class="location-maps" aria-label="Maps">'+(gate?'':'<h3 id="location-maps-heading">Maps</h3>')+
           '<div id="location-map-browser"></div></section>' : '')+

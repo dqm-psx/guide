@@ -106,6 +106,7 @@ const PRECACHE = [
   "./js/recipe-planner.js",
   "./js/app-state.js",
   "./js/planner-ui.js",
+  "./js/offspring-resistances.js",
   "./js/router.js",
   "./js/breeding-tree.js",
   "./js/monster-reference.js",

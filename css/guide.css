@@ -288,3 +288,4 @@ button.species-star[aria-pressed=true]{color:var(--gold)}
 :root[data-theme=dark]{--family-text:#c7dabc}
 .family-label{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;white-space:nowrap}
 .family-label>.family-icon{width:20px;height:20px;max-width:none;flex:0 0 20px;object-fit:contain;image-rendering:pixelated}
+:root[data-theme=dark] .family-icon{filter:drop-shadow(0 1px 0 #829897) drop-shadow(0 -1px 0 #829897)}

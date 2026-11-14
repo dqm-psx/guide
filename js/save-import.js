@@ -20,6 +20,7 @@
     return value;
   }
   function planningDetails(bytes, at, entry, variant, byCode, reference, flags) {
+    const currentHp = bits(bytes, at + 8, 0, 10), currentMp = bits(bytes, at + 8, 10, 10);
     const baseStats = Object.fromEntries(statKeys.map((key, i) => {
       const value = bits(bytes, at + 0x0c + Math.floor(i / 2) * 4, (i % 2) * 10, 10);
       return [key, value <= 999 ? value : null];
@@ -63,6 +64,7 @@
       campaign: campaignKeys[variant], location: entry.location,
       trainingLocation: entry.location === 'party' ? 'party' : flags & 0x1000 ? 'hibernation' : 'farm',
       levelCap: levelCap >= entry.level && levelCap <= 99 ? levelCap : null,
+      currentHp: currentHp <= 999 ? currentHp : null, currentMp: currentMp <= 999 ? currentMp : null,
       baseStats, battleStats, equipmentId, resistances, knownSkills, inheritedSkills};
   }
   // The patch uses 00–09 for digits, 0a–23 for capitals and 40–59 for

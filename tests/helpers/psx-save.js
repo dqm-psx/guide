@@ -59,6 +59,7 @@ function planningBlock(variant=0) {
   for(const slot of [0,2,30]) {
     const at=0x250+slot*136;
     putBits(bytes,at+4,25,7,55);
+    putBits(bytes,at+8,0,10,237);putBits(bytes,at+8,10,10,85);
     [450,220,180,155,300,277].forEach((value,i)=>putBits(bytes,at+0x0c+Math.floor(i/2)*4,(i%2)*10,10,value));
     putBits(bytes,at+0x18,8,5,5); // Ice Fang: +50 Attack, no base-stat change.
     const resistance=Array.from({length:27},(_,i)=>i%8);
@@ -80,4 +81,26 @@ function candidateBlock(delta=4) {
   bytes.fill(255,at+0x20,at+0x25);bytes[at+0x45]=255;bytes[at+0x86]=0;
   return finishBlock(bytes);
 }
-module.exports = {block, card, finishBlock, putBits, planningBlock, candidateBlock};
+// Two active monsters and one in storage. Direct candidates outside the eight
+// learned selectors must never be counted as battle commands.
+function comboBlock({variant=0, first=[15,3], second=[15,18], farm=[103], firstMp=85, secondMp=85, firstHp=237, secondHp=237}={}) {
+  const bytes=planningBlock(variant);
+  bytes.writeUInt16LE(2 | (31 << 10),0x14c);
+  bytes[0x150]=2;
+  for (const [slot,skills,hp,mp] of [[2,first,firstHp,firstMp],[0,second,secondHp,secondMp],[30,farm,237,85]]) {
+    const at=0x250+slot*136;
+    putBits(bytes,at+8,0,10,hp);
+    putBits(bytes,at+8,10,10,mp);
+    bytes.fill(0,at+0x48,at+0x58);
+    bytes.set([...skills,103],at+0x48);
+    bytes.fill(255,at+0x20,at+0x25);
+    bytes[at+0x45]=255;
+    bytes[at+0x86]=0;
+    skills.forEach((_,i)=>{
+      putBits(bytes,at+0x20,i*5,5,9+i);
+      putBits(bytes,at+0x45,i,1,0);
+    });
+  }
+  return finishBlock(bytes);
+}
+module.exports = {block, card, finishBlock, putBits, planningBlock, candidateBlock, comboBlock};

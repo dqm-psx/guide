@@ -10,6 +10,7 @@ test.use({javaScriptEnabled:false});
 
 test('published combos and component skill pages remain connected without JavaScript',async({page})=>{
   await page.goto(url+'articles/field-battle-combos/');
+  await expect(page.getByRole('link',{name:'Check my party’s battle combos'})).toHaveAttribute('href','#team-planner?tab=roster&combos=party');
   const table=page.getByRole('region',{name:'All 20 PlayStation combinations',exact:true});
   await expect(table.locator('tbody tr')).toHaveCount(20);
   await expect(page.getByRole('link',{name:'Chance',exact:true})).toHaveCount(1);

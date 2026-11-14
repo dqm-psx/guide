@@ -22,7 +22,8 @@ def main():
     spec=importlib.util.spec_from_file_location('builder',ROOT/'scripts/build-save-reference.py')
     builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
     current,original=args.bin.read_bytes(),args.original_bin.read_bytes()
-    builder.build(current,original)
+    disc_hash=builder.world.digest(current)
+    builder.build(current,original,expected_disc_hash=disc_hash)
     program="""
       require('./data/breeding-data');require('./data/save-reference');
       const {planningBlock,putBits,finishBlock}=require('./tests/helpers/psx-save');
@@ -30,6 +31,8 @@ def main():
       for(let campaign=0;campaign<3;campaign++)for(let accessory=0;accessory<32;accessory++){
         const bytes=planningBlock(campaign);
         for(const slot of [0,2,30]){const at=0x250+slot*136;putBits(bytes,at+0x18,8,5,accessory);
+          putBits(bytes,at+8,0,10,slot===30?0:slot*53);
+          putBits(bytes,at+8,10,10,slot===2?0:accessory*6);
           if(accessory%2)putBits(bytes,at+0x10,0,10,990);
           // Both parents, upgraded natural candidates, the last direct slot,
           // special selector 33 (high bit), and all eight learned slots.
@@ -45,7 +48,7 @@ def main():
     """
     cases=json.loads(subprocess.check_output(['node','-e',program],cwd=ROOT,text=True))
     reports=[]
-    for label,image in [('retail Japanese',original),('English v1.0.73',current)]:
+    for label,image in [('retail Japanese',original),(builder.ENGLISH_DISCS[disc_hash],current)]:
         disc=builder.world.Disc(image)
         cpu=Uc(UC_ARCH_MIPS,UC_MODE_MIPS32|UC_MODE_LITTLE_ENDIAN)
         def invalid(cpu,access,address,size,value,user):
@@ -72,6 +75,7 @@ def main():
             for entry,slot in zip(case['entries'],[2,0,30]):
                 row=bytes(cpu.mem_read(0xCACD0+slot*256,256));actual=entry['saveDetails']
                 expected={'baseStats':dict(zip(['hp','mp','attack','defense','agility','intelligence'],struct.unpack_from('<6H',row,0xB4))),
+                          'currentHp':struct.unpack_from('<H',row,0xA0)[0],'currentMp':struct.unpack_from('<H',row,0xA4)[0],
                           'battleStats':dict(zip(['hp','mp','attack','defense','agility','intelligence'],[struct.unpack_from('<H',row,at)[0] for at in [0xA2,0xA6,0xA8,0xAA,0xAC,0xAE]])),
                           'resistances':list(row[0xC0:0xDB]),'levelCap':row[0x9B],
                           'knownSkills':list(dict.fromkeys(v for v in row[0x78:0x80] if v)),

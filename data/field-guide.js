@@ -3493,7 +3493,7 @@ globalThis.FIELD_GUIDE = {
         },
         {
           "id": "resistance-breeding-changes",
-          "title": "Breeding resistance: more grades, but no inherited immunity",
+          "title": "Breeding resistance and the highest grade",
           "table": {
             "columns": [
               "Rule",
@@ -3512,9 +3512,9 @@ globalThis.FIELD_GUIDE = {
                 "Deterministic: the same child species, parent grades and child + produce the same resistance."
               ],
               [
-                "Breeding for immunity",
+                "Reaching the highest grade",
                 "A species with base grade 1 or 2 can inherit immunity. A base-0 channel cannot.",
-                "Only a naturally immune child species keeps grade 7. Every nonimmune channel is capped at grade 6, even with two immune parents."
+                "A child keeps grade 7 only where its species starts at 7. Every other channel can reach at most grade 6, even with two grade-7 parents."
               ]
             ]
           },
@@ -3910,7 +3910,7 @@ globalThis.FIELD_GUIDE = {
       "kind": "mechanic",
       "game": "both",
       "title": "Breeding: parents, offspring and resistance",
-      "summary": "Both parents pass on skills and resistance, but the child’s species sets its natural strengths. On PlayStation, breeding improves resistance predictably; it cannot give a nonimmune species full immunity.",
+      "summary": "Both parents can pass on skills and improve their child’s resistances. The child’s species determines which resistances can reach the highest grade.",
       "details": [],
       "sections": [
         {
@@ -3945,8 +3945,8 @@ globalThis.FIELD_GUIDE = {
               "With the same child species, parent resistance grades and child + value, the resistance result is the same. Swapping parents does not change this arithmetic once those inputs are fixed."
             ],
             [
-              "Immunity must be natural to the child species",
-              "A naturally immune channel stays immune. Any other channel can improve only to the grade below immunity—even if both parents are immune. Choose a species naturally immune to an effect when complete protection matters."
+              "Grade 7 comes from the child’s species",
+              "A channel that starts at 7 stays at 7. Every other channel can reach at most 6, even with two grade-7 parents."
             ]
           ],
           "paragraphs": [
@@ -3965,7 +3965,7 @@ globalThis.FIELD_GUIDE = {
         },
         {
           "id": "resistance-example",
-          "title": "Example: two immune parents cannot give this child immunity",
+          "title": "Example: two parents immune to a damage spell",
           "intro": "Suppose both parents are immune to a damage spell, but the child species has no natural resistance to it. The following results use the child’s + value, not the sum of the parents’ + values.",
           "table": {
             "columns": [
@@ -3992,13 +3992,13 @@ globalThis.FIELD_GUIDE = {
             ]
           },
           "paragraphs": [
-            "Further breeding while keeping this species cannot raise that channel to grade 7, which is immunity. The percentages above are for the standard damage-spell scale; breaths and status effects use their own scales."
+            "This child can reach grade 6 and take 15% of the spell’s damage. Grade 7 would reduce that spell’s damage to zero. Other effects use their own scales. For example, the Gigante battle combo can still hit a monster with grade 7 resistance to it."
           ]
         },
         {
           "id": "resistance-formula",
           "title": "The exact PSX calculation",
-          "intro": "Resistance grades run from 0 to 7: higher is stronger, and 7 is immune. For each channel, let B be the child species’ base grade, P be the sum of both parents’ individual grades, and C be the child’s resulting + value.",
+          "intro": "Resistance grades run from 0 to 7. For each channel, let B be the child species’ base grade, P be the sum of both parents’ individual grades, and C be the child’s resulting + value.",
           "paragraphs": [
             "If B is 7, the result is 7. Otherwise, divide (10 × P + 3 × C) by the divisor below, round down, and add B. Cap the result at 6.",
             "For the +20 example above: P = 7 + 7 = 14 and B = 0. (10 × 14 + 3 × 20) ÷ 60 = 3⅓, rounded down to grade 3."
@@ -4709,7 +4709,7 @@ globalThis.FIELD_GUIDE = {
           "paragraphs": [
             "For example, your Blaze against a wild target taking 75% spell damage deals 9–11. A wild enemy’s Blaze against your monster taking 85% deals 5–10. The attacker’s version of the move and the defender’s scale both matter.",
             "Check the resistance to the selected move, rather than treating resistance as one overall stat. A bred monster can differ from its species baseline. An imported save supplies its current individual values; without one, select a known reduction in the calculator.",
-            "Breeding can improve each resistance using both parents’ individual grades and the child’s + value. It cannot make a nonimmune child species immune. The breeding guide explains the calculation and gives worked examples."
+            "Breeding can improve a child’s resistance in each channel. A child can reach grade 7 only where its own species starts at grade 7. The breeding guide shows the calculation and a worked example."
           ],
           "links": [
             "field-breed"

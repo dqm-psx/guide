@@ -283,7 +283,7 @@ function addEntryPages(assets) {
       (gateLinks.length ? '<nav class="entry-gate-links" aria-label="Related guide entries">'+gateLinks.join('')+'</nav>' : '')+
       '</div>'+gateEncounterTable(routeData.encounters,row.availability==='unused')+'</div>' : '';
     const mapsAndFloors=gate ? '<div class="entry-gate-content">'+locationMaps(row)+db.DQMGateGeneration.render(row.id,{escape,headingLevel:2})+'</div>' : locationMaps(row);
-    const calculatorLink=row.id==='field-damage-and-resistance' ? '<p>'+link('#combat-planner','Open the damage calculator →')+'</p>' : '';
+    const calculatorLink=db.DQMMechanicsIndex.articleTool(row.id,escape);
     add('articles',row.id,row.title,db.DQMLocations.leadFor(row),gateSummary+fullWalk+identity+itemFacts+calculatorLink+db.DQMArticleSections(row,escape,text=>articleProse(row,text),2,null,{
       articleLink,compactContents:true,collapseSpoilers:true,sectionHref:id=>articlePath(row)+'#article-section-'+id
     })+nicknameNote+stepsMarkup+walkChapters+requests+mapsAndFloors+

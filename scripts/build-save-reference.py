@@ -11,9 +11,12 @@ spec = importlib.util.spec_from_file_location('world', ROOT / 'scripts/verify-wo
 world = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(world)
 
+ENGLISH_DISCS = {world.V73_HASH: 'English v1.0.73',
+                 '04b30048a0dc1c207801041a410925aba0283da6793ba3989b98f46a38543b15': 'English v1.0.74 Enhanced'}
 
-def build(image, original_image):
-    world.require(world.digest(image) == world.V73_HASH, 'Expected verified English v1.0.73')
+def build(image, original_image, *, expected_disc_hash=world.V73_HASH):
+    world.require(expected_disc_hash in ENGLISH_DISCS and world.digest(image) == expected_disc_hash,
+                  'Unexpected English disc')
     world.require(world.digest(original_image) == world.native.RETAIL_SHA256, 'Expected verified Japanese retail')
     disc, original = world.Disc(image), world.Disc(original_image)
     spans = []
@@ -41,7 +44,7 @@ def build(image, original_image):
     return {'schemaVersion':1,'naturalSkills':natural,
             'specialSkills':list(disc.exe[0x8009A01C-world.PSX_EXE_BIAS:0x8009A03E-world.PSX_EXE_BIAS]),
             'accessories':accessories,
-            'provenance':{'currentDiscSha256':world.V73_HASH,'originalDiscSha256':world.native.RETAIL_SHA256,'codeSpans':spans}}
+            'provenance':{'currentDiscSha256':expected_disc_hash,'originalDiscSha256':world.native.RETAIL_SHA256,'codeSpans':spans}}
 
 
 def main():

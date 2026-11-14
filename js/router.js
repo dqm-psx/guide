@@ -223,6 +223,9 @@
     if (viewId === "team-planner" && new URLSearchParams(parse(location.hash).params).get("manage") === "teams") {
       settings.focusId = "manage-teams";
     }
+    if (viewId === "team-planner" && new URLSearchParams(parse(location.hash).params).get("combos") === "party") {
+      settings.focusId = "planner-party-combos-summary";
+    }
     // Browsing another location in the same list should not jump the page to
     // its heading. Filters, pages, view changes and explicit focus still do.
     const keepAtlasPosition = changedRoute && settings.scroll !== true && atlasDirectory != null &&

@@ -174,7 +174,7 @@
 <div><div class="parent-title"><h3>Pedigree</h3></div><div class="field"><label class="sr-only" for="pedigree">Choose pedigree</label><div class="monster-picker"><span id="pedigree-sprite" class="monster-preview" aria-hidden="true"></span><select id="pedigree"></select></div></div><label class="pair-plus-field" for="pair-pedigree-plus">Parent + value <input id="pair-pedigree-plus" type="number" min="0" max="255" step="1" value="0" required></label></div>
 <button id="swap" class="swap" type="button" aria-label="Swap pedigree and mate" title="Swap pedigree and mate">⇄</button>
 <div><div class="parent-title"><h3>Mate</h3></div><div class="field"><label class="sr-only" for="mate">Choose mate</label><div class="monster-picker"><span id="mate-sprite" class="monster-preview" aria-hidden="true"></span><select id="mate"></select></div></div><label class="pair-plus-field" for="pair-mate-plus">Parent + value <input id="pair-mate-plus" type="number" min="0" max="255" step="1" value="0" required></label></div>
-</div><div class="pair-options"><label for="pair-context">Breed at <select id="pair-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></label><p class="hint">Uses each parent’s current + value, before breeding.</p>
+</div><div class="pair-options"><label for="pair-context">Breed at <select id="pair-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></label><p class="hint">Uses each parent’s current + value, before breeding. <a href="#team-planner?tab=breeding">Use parents from My game</a></p>
 </div><div class="result" id="pair-result" aria-live="polite" aria-atomic="true"><div><div class="kicker">Base offspring</div><span id="result-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="result-name">Choose two parents</h3><p id="result-detail" class="short"></p><p id="pair-description"></p><p id="pair-room-note" class="hint" hidden></p><p id="pair-plus-note" class="pair-plus-note" hidden></p><div class="pair-result-actions"><button id="result-find-parents" type="button" hidden>Find parents ↗</button><button id="copy-pairing" type="button">Copy pairing</button></div></div><div class="reverse-result"><div class="kicker">Reversed order</div><span id="reverse-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="reverse-name">—</h3><p id="reverse-detail" class="short"></p><p id="reverse-comparison"></p><p id="reverse-room-note" class="hint" hidden></p><div class="pair-result-actions"><button id="reverse-find-parents" type="button" hidden>Find parents ↗</button></div></div></div></div><p id="copy-pairing-status" class="hint" role="status"></p><section id="recent-pairs" class="panel recent-pairs" aria-labelledby="recent-pairs-heading" hidden><div class="planner-panel-heading"><h3 id="recent-pairs-heading">Recent pairings</h3></div><ul id="recent-pairs-list" class="recent-pairs-list" aria-label="Recent pairings"></ul><div class="recent-pairs-actions"><button id="recent-pairs-clear" type="button">Clear history</button></div></section>
 </section>
 <section id="offspring-finder" class="section view" data-view="offspring-finder" aria-labelledby="offspring-heading" hidden><div class="section-head"><div><h2 id="offspring-heading" tabindex="-1">Find parents</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder">Find offspring</a><a href="#offspring-finder" data-parent-mode aria-current="page">Find parents</a></nav></div></div>
@@ -287,6 +287,10 @@
     <div id="planner-filter-empty" class="my-game-empty my-game-filter-empty" hidden>
       <h3>No monsters match these filters</h3><p>Try another name or show the rest of your team.</p><button type="button" id="planner-clear-filters">Clear filters</button>
     </div>
+    <details id="planner-party-combos" class="party-combos" hidden>
+      <summary id="planner-party-combos-summary">Party battle combos <span id="planner-combo-count"></span></summary>
+      <div id="planner-combo-results"></div>
+    </details>
     <div class="planner-roster-columns">
       <section class="planner-roster-column" aria-labelledby="planner-party-heading">
         <div class="planner-roster-heading"><h3 id="planner-party-heading">Party</h3><span id="planner-party-count" class="planner-count">0</span></div>
@@ -378,11 +382,13 @@
         <div class="field"><label for="planner-context">Breeding context</label><select id="planner-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option><option value="base">Base table only</option></select></div>
         <div class="field"><label for="planner-result-search">Find an offspring</label><input id="planner-result-search" type="search" autocomplete="off"></div>
         <div class="field"><label for="planner-breeding-member">Use a monster</label><select id="planner-breeding-member"><option value="">All monsters</option></select></div>
+        <div class="field" id="planner-breeding-partner-field" hidden><label for="planner-breeding-partner">Partner</label><select id="planner-breeding-partner"><option value="">All partners</option></select></div>
         <div class="field"><label for="planner-breeding-view">View</label><select id="planner-breeding-view"><option value="list">Offspring list</option><option value="matrix">Breeding tables</option></select></div>
         <label class="settings-inline"><input id="planner-breeding-include-farm" type="checkbox" checked> Include farm monsters</label>
       </div>
       <p id="team-breeding-eligibility" class="hint planner-context-note">Check breeding eligibility in game.</p>
     </div>
+    <section id="planner-selected-pair" class="panel" aria-label="Selected breeding pair" hidden></section>
     <p id="planner-breeding-summary" class="planner-summary" role="status"></p>
     <div id="planner-team-results" class="team-results-grid"></div>
     <div id="planner-team-results-pagination" class="planner-pagination team-results-pagination"><span id="planner-team-results-range" role="status"></span><div class="planner-page-actions"><button id="planner-team-results-prev" type="button">← Previous</button><button id="planner-team-results-next" type="button">Next →</button></div></div>
@@ -443,6 +449,7 @@
 <script type="application/json" id="guide-assets">
 {"shared":["data/sprite-images.js","data/family-icons.js","js/sprites.js","data/patch-rewards.js"],
 "dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
+"myGame":["data/skill-descriptions.js","data/combat-reference.js","js/offspring-resistances.js"],
 "field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","data/recruitment-reference.js","js/current-names.js","js/walkthrough-context.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/recruitment.js","js/recruitment-ui.js","js/player-guide.js","js/player-atlas.js"],
 "tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/planner-core.js","js/reference.js","js/recipe-planner.js","js/app-state.js","js/owned-monsters.js","data/handbook-reference.js","data/save-reference.js","js/save-import.js","js/planner-ui.js"],
 "combat":["data/breeding-data.js","js/planner-core.js","js/app-state.js","js/storage.js","js/owned-monsters.js","data/handbook-reference.js","data/combat-reference.js","js/monster-picker.js","js/combat-planner.js","js/combat-planner-ui.js"],

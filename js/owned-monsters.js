@@ -17,6 +17,7 @@
       campaign,level,plus:integer(entry.plus,0,99),levelCap,
       location:source.location === entry.location && ['party','farm','hibernation'].includes(source.trainingLocation) ? source.trainingLocation : entry.location === 'farm' ? 'farm' : 'party',
       baseStats:copyStats(source.baseStats),battleStats:copyStats(source.battleStats),
+      currentHp:integer(source.currentHp,0,999),currentMp:integer(source.currentMp,0,999),
       knownSkills:skillList(source.knownSkills,8),inheritedSkills:skillList(source.inheritedSkills,25),
       resistances:Array.isArray(source.resistances) && source.resistances.length === 27 && source.resistances.every(code=>integer(code,0,7)!==null) ? [...source.resistances] : null,
       equipmentId:integer(source.equipmentId,64,94),
