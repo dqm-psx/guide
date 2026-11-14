@@ -25,7 +25,7 @@
   const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
   const FORBIDDEN_IDS = ['constructor', 'prototype'];
   const DOCUMENT_KEYS = ['version', 'game', 'activeGame', 'spriteStyle', 'favoriteSpeciesIndices', 'activeTeamId', 'teams'];
-  const TEAM_KEYS = ['id', 'name', 'game', 'entries', 'activeTargetId', 'targets'];
+  const TEAM_KEYS = ['id', 'name', 'game', 'entries', 'activeTargetId', 'targets', 'adventureLog'];
   const ENTRY_KEYS = ['id', 'speciesIndex', 'sex', 'plus', 'nickname', 'location'];
   const TARGET_KEYS = ['id', 'speciesIndex', 'plan'];
 
@@ -152,6 +152,97 @@
       });
     }
 
+    function normalizeAdventureLog(log) {
+      if (!record(log) || log.schemaVersion !== 1 || typeof log.completed !== 'boolean') {
+        fail('invalid', 'The imported Adventure Log summary is invalid.');
+      }
+      function number(value, max) {
+        if (!Number.isInteger(value) || value < 0 || value > max) fail('invalid', 'Invalid number in Adventure Log.');
+        return value;
+      }
+      function list(value, max, normalize) {
+        if (!Array.isArray(value) || value.length > max) fail('invalid', 'Invalid list in Adventure Log.');
+        return value.map(normalize);
+      }
+      function item(row, maxQuantity) {
+        if (!record(row) || !row.itemId || !row.quantity) fail('invalid', 'Invalid saved item.');
+        return {itemId: number(row.itemId, 127), quantity: number(row.quantity, maxQuantity)};
+      }
+      function sex(value) {
+        if (!['male', 'female'].includes(value)) fail('invalid', 'Invalid saved monster sex.');
+        return value;
+      }
+      function distinct(values) {
+        if (new Set(values).size !== values.length) fail('invalid', 'Duplicate entry in Adventure Log.');
+        return values;
+      }
+      // Extra species are read-only records: never turn one into a breeding-team entry.
+      function extraDetails(row) {
+        const d = row.saveDetails;
+        if (d == null) return {};
+        if (!record(d) || d.schemaVersion !== 1 || d.speciesIndex !== row.speciesIndex || d.plus !== row.plus || d.level !== row.level) fail('invalid','Invalid saved details for an extra monster.');
+        const opt = (v,max) => v == null ? null : number(v,max);
+        const stats = values => Object.fromEntries(['hp','mp','attack','defense','agility','intelligence'].map(key => [key,opt(values?.[key],999)]));
+        const skills = (values,max) => values == null ? null : distinct(list(values,max,id=>number(id,169)));
+        const pedigree = d.pedigree == null ? null : list(d.pedigree,6,(a,i) => {
+          if (a == null) return null;
+          if (!record(a)) fail('invalid','Invalid saved ancestor.');
+          return {speciesIndex:opt(a.speciesIndex,324),sex:sex(a.sex),...(i < 2 ? {plus:opt(a.plus,127),nickname:typeof a.nickname==='string' ? a.nickname.slice(0,5) : ''} : {})};
+        });
+        return {saveDetails:{schemaVersion:1,speciesIndex:row.speciesIndex,level:row.level,plus:row.plus,location:row.location==='party'?'party':'farm',trainingLocation:row.location,
+          campaign:['terry','cobi','tara'].includes(d.campaign) ? d.campaign : null,levelCap:opt(d.levelCap,99),experience:opt(d.experience,0xffffff),experienceToNext:opt(d.experienceToNext,0xffffff),
+          currentHp:opt(d.currentHp,999),currentMp:opt(d.currentMp,999),wildness:opt(d.wildness,255),personalityId:opt(d.personalityId,27),equipmentId:opt(d.equipmentId,94),
+          baseStats:stats(d.baseStats),battleStats:stats(d.battleStats),knownSkills:skills(d.knownSkills,8),inheritedSkills:skills(d.inheritedSkills,25),
+          resistances:d.resistances == null ? null : list(d.resistances,27,id=>number(id,7)),pedigree}};
+      }
+      let keys = null;
+      if (log.keys !== null) {
+        if (!record(log.keys)) fail('invalid', 'Invalid saved keys.');
+        keys = {fixed: distinct(list(log.keys.fixed, 12, id => number(id, 11))),
+          appraised: number(log.keys.appraised, 20), mysterious: number(log.keys.mysterious, 20)};
+        if (keys.appraised + keys.mysterious > 20) fail('invalid', 'Too many saved magic keys.');
+        keys.generated = list(log.keys.generated, 20, key => {
+          if (!record(key) || !key.slot || typeof key.appraised !== 'boolean') fail('invalid', 'Invalid generated key.');
+          return {slot: number(key.slot, 20), appraised: key.appraised,
+            prefix: key.prefix === null ? null : number(key.prefix, 31), noun: key.noun === null ? null : number(key.noun, 95)};
+        });
+        distinct(keys.generated.map(key => key.slot));
+        if (keys.generated.length !== keys.appraised + keys.mysterious || keys.generated.filter(key => key.appraised).length !== keys.appraised) {
+          fail('invalid', 'The generated key counts disagree.');
+        }
+      }
+      const bag = list(log.bag, 30, row => item(row, 30));
+      if (bag.reduce((n, row) => n + row.quantity, 0) > 30) fail('invalid', 'Too many saved bag items.');
+      distinct(bag.map(row => row.itemId));
+      let arenaWins;
+      if (log.arenaWins !== undefined) arenaWins = distinct(list(log.arenaWins, 8, rank => {
+        if (!['kids','g','f','e','d','c','b','a','s'].includes(rank)) fail('invalid', 'Invalid arena class.');
+        return rank;
+      }));
+      let savedMap;
+      if (log.savedMap != null) {
+        if (!record(log.savedMap)) fail('invalid', 'Invalid saved map.');
+        savedMap = {scene:number(log.savedMap.scene, 0x7fff), area:number(log.savedMap.area, 255)};
+      }
+      return {schemaVersion: 1, hours: number(log.hours, 65535), minutes: number(log.minutes, 255),
+        ...(arenaWins ? {arenaWins} : {}), ...(savedMap ? {savedMap} : {}),
+        completed: log.completed, gold: number(log.gold, 0x1ffff), bankGold: number(log.bankGold, 0xfffff),
+        depositedMedals: number(log.depositedMedals, 255), bag, vault: list(log.vault, 97, row => item(row, 127)),
+        librarySpecies: distinct(list(log.librarySpecies, 312, id => number(id, 311))), keys,
+        eggs: list(log.eggs, 50, row => {
+          if (!record(row)) fail('invalid', 'Invalid saved egg.');
+          return {speciesIndex: row.speciesIndex === null ? null : number(row.speciesIndex, 324),
+            plus: number(row.plus, 127), sex: row.sex === null ? null : sex(row.sex)};
+        }),
+        extraMonsters: list(log.extraMonsters, 50, row => {
+          if (!record(row) || !['party','farm','hibernation'].includes(row.location) || row.speciesIndex < 315) fail('invalid', 'Invalid extra saved monster.');
+          return {speciesIndex: number(row.speciesIndex, 324), plus: number(row.plus, 127),
+            level: number(row.level, 127), sex: sex(row.sex), location: row.location,
+            ...(typeof row.nickname === 'string' ? {nickname:row.nickname.slice(0,5)} : {}), ...extraDetails(row)};
+        }),
+        unavailable: number(log.unavailable, 50), unidentified: number(log.unidentified, 50)};
+    }
+
     function normalizeTeam(team, position, teamIds) {
       const label = 'Team ' + (position + 1);
       if (!record(team)) fail('invalid', label + ' must be an object.');
@@ -185,6 +276,7 @@
       }
       return {
         ...extraKeys(team, TEAM_KEYS),
+        ...(team.adventureLog == null ? {} : {adventureLog: normalizeAdventureLog(team.adventureLog)}),
         id: team.id,
         name,
         game,
@@ -319,13 +411,16 @@
         fail('invalid', 'Unsupported team file. Expected version 1 or ' + APP_VERSION + '.');
       }
       if (input.game !== GAME_ID) fail('game', 'This team file belongs to a different game or patch. Expected ' + GAME_ID + '.');
+      const source = Array.isArray(input.teams) ? input.teams[0] : input;
+      const log = source.adventureLog == null ? null : normalizeAdventureLog(source.adventureLog);
       const validated = validateEntries(entries, false);
-      if (validated.length === 0) fail('invalid', 'The legacy team has no usable entries.');
+      if (validated.length === 0 && !log) fail('invalid', 'The legacy team has no usable entries.');
       const teamName = typeof name === 'string' && name.trim()
         ? name.trim().slice(0, MAX_NAME_LENGTH)
         : DEFAULT_TEAM_NAME;
-      // Imported teams start unassigned; the player files them under a game.
-      return { id: makeId('t-'), name: teamName, game: null, entries: validated, activeTargetId: null, targets: [] };
+      const campaign = log && ['terry','cobi','tara'].includes(source.campaign) ? source.campaign : null;
+      return { id: makeId('t-'), name: teamName, game: campaign ? (campaign === 'terry' ? 'dqm1' : 'dqm2') : null,
+        ...(campaign ? {campaign} : {}), ...(log ? {adventureLog:log} : {}), entries: validated, activeTargetId: null, targets: [] };
     }
 
     function parseLegacyTeam(text, name) {
@@ -369,7 +464,8 @@
       }
       if (record(parsed) && Array.isArray(parsed.entries)) {
         const team = teamFromLegacy(parsed, DEFAULT_TEAM_NAME);
-        const state = { ...defaultState(), teams: [team], activeTeamId: team.id };
+        const initial = defaultState();
+        const state = { ...initial, activeGame:team.game || initial.activeGame, teams: [team], activeTeamId: team.id };
         return { kind: 'legacy', state, summary: summarize(state) };
       }
       fail('invalid', 'The file is neither a full backup nor a legacy team export.');

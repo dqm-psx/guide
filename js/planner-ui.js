@@ -13,7 +13,7 @@
   const rosterSpecies = DATA.species.filter(s => s.index < 315 && isPlayable(s));
   const PAGE = 12;
   // The planner's tabs, in the order the arrow keys walk them.
-  const PLANNER_TABS = ["roster", "targets", "breeding"];
+  const PLANNER_TABS = ["roster", "targets", "breeding", "adventure"];
   const named = index => displayName(byId.get(index));
   const profileLink = (index, label) => index === null ? safe(label) : '<a href="#monster?id='+Number(index)+'">'+safe(label ?? named(index))+'</a>';
   const copy = value => JSON.parse(JSON.stringify(value));
@@ -31,6 +31,7 @@
   let undoState = null, editing = null, detail = null;
   let malePage = 0, femalePage = 0, rowPage = 0, columnPage = 0;
   let activeTab = "roster";
+  let comboTeam = null, comboSlots = [];
   let storageBlocked = false;
   let storageHealthy = storage.available();
   let documentTooLarge = false;
@@ -248,21 +249,97 @@
     fileGame.hidden = !unassigned;
     fileGame.textContent = "File under " + gameLabel(state.activeGame);
   }
-  function savedMonsterMarkup(monster) {
+  // English release v1.0.74, system text e1237–e12dc in native index order.
+  const personalityNames = [null,'Hot-blooded','Hard-working','Vain','Passionate','Proactive','Arrogant',
+    'Unconventional','Fearless','Reckless','Calm','Serious','Self-centered','Simple','Innocent','Stubborn',
+    'Meddlesome','Carefree','Selfish','Brilliant','Cunning','Cold-hearted','Shy','Gentle','Cowardly',
+    'Gullible','Happy-go-lucky','Lazy'];
+  const rosterStatNames = {level:'Lv', hp:'HP', mp:'MP', attack:'Attack', defense:'Defense', agility:'Agility', intelligence:'Intelligence'};
+  let rosterLearning;
+  function rosterSkillLink(id) {
+    const skill = GUIDE_REFERENCE.guide_names.skills[id];
+    return skill ? '<a href="#field-guide?kind=skill&amp;entry=skill-'+safe(skill.id)+'">'+safe(skill.title)+'</a>' : 'Unlisted skill';
+  }
+  function upcomingSkillMarkup(monster) {
+    if (!globalThis.DQMSkillLearning || !globalThis.SKILL_LEARNING_REFERENCE) return '<p>Skill data is unavailable.</p>';
+    rosterLearning ??= DQMSkillLearning.create(SKILL_LEARNING_REFERENCE);
+    const forecast = rosterLearning.upcoming(monster);
+    if (!forecast) return '<p>This import has incomplete learning data.</p>';
+    if (forecast.atCap) return '<p>At its level cap. This monster has no further level-ups.</p>';
+    if (!forecast.skills.length) return '<p>No new skills are available from the saved candidates and learned moves.</p>';
+    const location = monster.location === 'party' ? '' : ' Move this monster into the party to learn skills.';
+    const skillName = id => GUIDE_REFERENCE.guide_names.skills[id]?.title || 'Unlisted skill';
+    const order = move => move.ready ? forecast.level : move.projectedLevel ?? Infinity;
+    const rows = forecast.skills.sort((a,b) => order(a) - order(b) || skillName(a.skillId).localeCompare(skillName(b.skillId))).map(move => {
+      const routes = move.routes;
+      const route = routes.find(route => route.thresholdsMet) || routes.find(route => route.kind === 'inherited') || routes[0];
+      const source = route.kind === 'upgrade' ? 'Upgrades '+skillName(route.requiredSkillIds[0]) :
+        route.kind === 'combination' ? 'From '+route.requiredSkillIds.map(skillName).join(' + ') : '';
+      const unmet = route.requirements.filter(req => req.status !== 'met').map(req => rosterStatNames[req.stat]+' '+req.minimum);
+      const condition = move.ready ? 'Next level' : move.projectedLevel !== null ? 'Around Lv '+move.projectedLevel :
+        move.beyondCap ? 'Beyond current growth limit' :
+        move.status === 'combination-order' ? 'Depends on an earlier combination' :
+        source ? 'If prerequisites are retained' : 'Level uncertain';
+      const detail = move.replacementRequired ? 'Choose a move to replace' : unmet.length ? 'Needs '+unmet.join(', ') : '';
+      return '<li><span>'+rosterSkillLink(move.skillId)+(source?'<small>'+safe(source)+'</small>':'')+'</span><span>'+safe(condition)+(detail?'<small>'+safe(detail)+'</small>':'')+'</span></li>';
+    });
+    return '<p>Next party level-up at Lv '+forecast.level+'. Estimates use normal stat gains.'+location+'</p><ul class="roster-skill-forecast">'+rows.join('')+'</ul>';
+  }
+  function showUpcomingSkills(event) {
+    const section = event.target;
+    if (!section.open || !section.matches('details[data-roster-skills]')) return;
+    const content = section.querySelector('div');
+    if (content.hasChildNodes()) return;
+    const entry = activeTeam()?.entries.find(row => row.id === section.closest('[data-entry-id]')?.dataset.entryId);
+    if (entry) content.innerHTML = upcomingSkillMarkup(DQMOwnedMonsters.adapt(entry, activeTeam()));
+  }
+  function rosterPedigree(pedigree) {
+    if (!pedigree) return '';
+    if (!pedigree.some(Boolean)) return '<p class="roster-detail-note">No parents recorded.</p>';
+    const identity = ancestor => {
+      if (!ancestor) return 'Unrecorded';
+      const name = ancestor.speciesIndex === null ? 'Unlisted species' : profileLink(ancestor.speciesIndex);
+      const facts = [ancestor.nickname ? safe(ancestor.nickname) : '', ancestor.plus != null ? '+'+ancestor.plus : '',
+        ancestor.sex === 'female' ? '♀' : ancestor.sex === 'male' ? '♂' : ''].filter(Boolean);
+      return name+(facts.length ? ' · '+facts.join(' ') : '');
+    };
+    const branches = ['Pedigree parent','Mate parent'].map((role, i) => {
+      const ancestors = pedigree.slice(2 + i*2, 4 + i*2);
+      return '<li><small>'+role+'</small>'+identity(pedigree[i])+
+        (ancestors.some(Boolean)?'<small>Grandparents</small>'+ancestors.map(identity).join(' / '):'')+'</li>';
+    });
+    return '<details class="roster-record"><summary>Pedigree</summary><ul class="roster-lineage">'+branches.join('')+'</ul></details>';
+  }
+  function rosterResistances(monster) {
+    const channels = globalThis.DQMOffspringResistances?.channels;
+    if (!channels || !monster.resistances) return '';
+    const rows = channels.map((name,i) => '<div><dt>'+safe(name)+'</dt><dd>'+monster.resistances[i]+'</dd></div>');
+    return '<details class="roster-record"><summary>Resistances</summary><p class="hint">This monster’s saved grades, including inherited gains. Higher is stronger; 7 is innate.</p><dl class="roster-resistances">'+rows.join('')+'</dl></details>';
+  }
+  function savedMonsterMarkup(monster, standardRoster = true) {
     if (!monster || monster.sourceStatus === 'manual') return '';
     if (monster.sourceStatus === 'changed') return '<p class="planner-card-save-note">Re-import this monster to refresh its saved stats and skills.</p>';
-    const statLabels = {hp:'Max HP',mp:'Max MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
+    const statLabels = {hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const names = GUIDE_REFERENCE.guide_names;
     const equipment = names.items['item-'+monster.equipmentId];
     const equipped = monster.equipmentId !== null;
     const stats = equipped ? monster.battleStats : monster.baseStats;
-    const skills = monster.knownSkills === null ? '<span class="hint">Not available in this import</span>' : monster.knownSkills.length ? monster.knownSkills.map(id => {
-      const skill = names.skills[id];
-      return skill ? '<a href="#field-guide?kind=skill&amp;entry=skill-'+safe(skill.id)+'">'+safe(skill.title)+'</a>' : '<span>Unlisted skill</span>';
-    }).join('') : '<span class="hint">None learned yet</span>';
-    return '<div class="planner-card-saved"><dl class="planner-card-attributes" aria-label="'+(equipped?'Stats including equipment':'Base stats')+'">'+Object.entries(statLabels).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+(stats[key] ?? '—')+'</dd></div>').join('')+'</dl>'+
+    const skills = monster.knownSkills === null ? '<span class="hint">Not available in this import</span>' : monster.knownSkills.length ? monster.knownSkills.map(rosterSkillLink).join('') : '<span class="hint">None learned yet</span>';
+    const progress = [];
+    if (monster.experience !== null) progress.push(monster.experience.toLocaleString('en-US')+' EXP');
+    if (monster.level !== null && monster.level < (monster.levelCap ?? 99) && monster.experienceToNext !== null) progress.push(monster.experienceToNext.toLocaleString('en-US')+' to Lv '+(monster.level+1));
+    const traits = [personalityNames[monster.personalityId], monster.wildness === null ? '' : 'Wildness '+monster.wildness].filter(Boolean);
+    const statValue = key => {
+      if (key !== 'hp' && key !== 'mp') return stats[key] ?? '—';
+      const current = key === 'hp' ? monster.currentHp : monster.currentMp;
+      return (current ?? '—')+'<span class="roster-stat-max"> / '+(stats[key] ?? '—')+'</span>';
+    };
+    return '<div class="planner-card-saved"><dl class="planner-card-attributes" aria-label="'+(equipped?'Stats including equipment':'Base stats')+'">'+Object.entries(statLabels).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+statValue(key)+'</dd></div>').join('')+'</dl>'+
+      (progress.length?'<p class="roster-exp">'+progress.join(' · ')+'</p>':'')+
+      (traits.length?'<p class="roster-detail-note">'+traits.map(safe).join(' · ')+'</p>':'')+
       (equipped ? '<p class="planner-card-equipment">'+(equipment?'<a href="#field-guide?kind=item&amp;entry=item-'+monster.equipmentId+'">'+safe(equipment.title)+'</a>':'Equipped accessory')+' <span>· included in stats</span></p>' : '')+
-      '<div class="planner-card-skills"><span class="planner-card-skills-label">Learned skills</span><div>'+skills+'</div></div></div>';
+      '<div class="planner-card-skills"><span class="planner-card-skills-label">Learned skills</span><div>'+skills+'</div></div>'+
+      (standardRoster ? '<details class="roster-record" data-roster-skills><summary>Upcoming skills</summary><div></div></details>' : '')+rosterPedigree(monster.pedigree)+rosterResistances(monster)+'</div>';
   }
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
@@ -273,6 +350,91 @@
     return '<article class="planner-card'+(monster.sourceStatus==='save'?' planner-card-imported':'')+'" data-entry-id="'+id+'" data-sex="'+sex+'" data-location="'+entryLocation(entry)+'"><div class="planner-card-identity">'+spriteMarkup(entry.speciesIndex)+'<div><h4 class="planner-card-name">'+profileLink(entry.speciesIndex,memberName(entry))+'</h4><p class="planner-card-meta">'+safe(entry.nickname ? named(entry.speciesIndex)+" · " : "")+familyLabelMarkup(species.family_id,species.family_display||species.family)+'</p><div class="planner-card-stats"><span class="planner-card-sex">'+(sex==='male'?'♂ Male':'♀ Female')+'</span><span>'+level+'</span><span>+'+entry.plus+'</span>'+(monster.levelCap!==null?'<span>Cap '+monster.levelCap+'</span>':'')+(monster.location==='hibernation'?'<span>Hibernating</span>':'')+'</div></div>'+star+'</div>'+savedMonsterMarkup(monster)+'<div class="planner-card-actions">'+
       '<button type="button" class="planner-card-breed" data-member-breed="'+id+'" aria-label="See breeding options for '+name+'">Breed</button><a class="planner-card-tool" href="#skill-planner?team='+safe(activeTeam().id)+'&amp;owned='+id+'">Skills &amp; growth</a><a class="planner-card-tool" href="#combat-planner?team='+safe(activeTeam().id)+'&amp;owned='+id+'">Damage</a><button type="button" data-member-edit="'+id+'" aria-label="Edit '+name+'">Edit</button>'+
       '<details class="planner-card-more"><summary aria-label="More actions for '+name+'">More</summary><div><button type="button" data-member-move="'+id+'">Move to '+otherLocation(entryLocation(entry))+'</button><button type="button" data-member-switch="'+id+'">Switch to '+(sex==='male'?'female':'male')+'</button><button type="button" data-member-remove="'+id+'" aria-label="Remove '+name+'">Remove</button></div></details></div></article>';
+  }
+  function comboCommand(member, skillId, resultId) {
+    const skill = GUIDE_REFERENCE.guide_names.skills[skillId];
+    const cost = SKILL_DESCRIPTIONS[skillId].mpCost;
+    const requiredMp = cost === 'All remaining MP' ? 1 : cost;
+    const spendsAll = resultId === 214 || cost === 'All remaining MP';
+    const {currentHp, currentMp} = member;
+    let status = 0, reason = '';
+    if (currentHp === 0) {
+      status = 2; reason = 'Fainted in this save';
+    } else if (currentMp !== null && currentMp < requiredMp) {
+      status = 2; reason = 'Needs '+(requiredMp-currentMp)+' more MP';
+    } else if (currentHp === null || (requiredMp > 0 && currentMp === null)) {
+      status = 1; reason = 'Check '+[currentHp === null && 'HP',requiredMp > 0 && currentMp === null && 'MP'].filter(Boolean).join(' and ');
+    }
+    const markup = '<li><b>'+safe(member.label)+'</b> · <a href="#field-guide?kind=skill&amp;entry=skill-'+safe(skill.id)+'">'+safe(skill.title)+'</a> <small>('+
+      (spendsAll?'all MP':cost+' MP')+')</small>'+(reason?' <strong class="party-combo-reason">'+safe(reason)+'</strong>':'')+'</li>';
+    return {status,markup};
+  }
+  function partyComboMatches(members) {
+    const matches = [];
+    for (const combo of GUIDE_REFERENCE.guide_names.battle_combos) {
+      const [firstSkill,secondSkill] = combo.skills;
+      const pairs = [];
+      for (const [i,first] of members.entries()) {
+        if (!first.knownSkills?.includes(firstSkill)) continue;
+        for (const [j,second] of members.entries()) {
+          if (i === j || (firstSkill === secondSkill && j < i) || !second.knownSkills?.includes(secondSkill)) continue;
+          const a = comboCommand(first,firstSkill,combo.id), b = comboCommand(second,secondSkill,combo.id);
+          pairs.push({status:Math.max(a.status,b.status), markup:'<ul>'+a.markup+b.markup+'</ul>'});
+        }
+      }
+      if (!pairs.length) continue;
+      pairs.sort((a,b)=>a.status-b.status);
+      matches.push({combo,pairs,status:pairs[0].status});
+    }
+    return matches.sort((a,b)=>a.status-b.status);
+  }
+  function renderPartyCombos() {
+    const panel = P('planner-party-combos'), team = activeTeam();
+    const direct = new URLSearchParams(location.hash.split('?')[1]).get('combos') === 'party';
+    if (comboTeam !== team.id) {
+      comboTeam = team.id;
+      comboSlots = [];
+    }
+    panel.hidden = !team.entries.length && !direct;
+    if (panel.hidden || !globalThis.SKILL_DESCRIPTIONS) return;
+    const party = team.entries.map(entry=>({...DQMOwnedMonsters.adapt(entry,team),label:memberName(entry)})).filter(member=>member.location === 'party');
+    // Duplicate nicknames still need unambiguous command and lineup labels.
+    const names = party.map(member=>member.label);
+    party.forEach((member,i)=>{ if (names.indexOf(member.label) !== names.lastIndexOf(member.label)) member.label += ' (party '+(i+1)+')'; });
+    const ids = party.map(member=>member.entryId);
+    const retained = comboSlots.filter(id=>ids.includes(id));
+    comboSlots = [...retained,...ids.filter(id=>!retained.includes(id))].slice(0,3);
+    const members = comboSlots.map(id=>party.find(member=>member.entryId===id));
+    let html = '';
+    if (party.length > 3) {
+      html += '<fieldset class="party-combo-lineup"><legend>Choose three monsters for this battle</legend>'+
+        members.map((member,i)=>'<label>Slot '+(i+1)+'<select data-combo-slot="'+i+'">'+party.map(option=>
+          '<option value="'+safe(option.entryId)+'"'+(option.entryId===member.entryId?' selected':comboSlots.includes(option.entryId)?' disabled':'')+'>'+safe(option.label)+'</option>'
+        ).join('')+'</select></label>').join('')+'</fieldset>';
+    }
+    const matches = partyComboMatches(members);
+    const unknown = members.filter(member=>member.knownSkills === null);
+    const count = matches.length;
+    const counter = P('planner-combo-count');
+    const canCount = count > 0 || (!unknown.length && members.length >= 2);
+    counter.textContent = canCount ? count+' match'+(count===1?'':'es') : '';
+    if (members.length < 2) {
+      html += '<p>Two active party monsters are needed for a battle combo.</p>';
+    } else if (count) {
+      html += '<p>In adventure battles, choose the two commands on the same turn. One pair can combine per turn. Both monsters must be able to act, and personality and motivation affect the chance.</p>';
+      for (const {combo,pairs,status} of matches) {
+        const heading = ['Can try','Check HP or MP','Recover first'][status];
+        html += '<section class="party-combo-match" data-combo="'+combo.id+'"><header><h4>'+safe(combo.title)+'</h4><span>'+heading+'</span></header>'+
+          '<p>'+safe(combo.effect)+(combo.id === 220?' Unavailable in local battles.':'')+'</p>'+pairs[0].markup+
+          (pairs.length>1?'<details><summary>Other command pairs ('+(pairs.length-1)+')</summary>'+pairs.slice(1).map(pair=>pair.markup).join('')+'</details>':'')+'</section>';
+      }
+    } else if (!unknown.length) {
+      html += '<p>No two active party members know a matching pair of skills.</p>';
+    }
+    if (unknown.length) html += '<p>Learned skills are unavailable for '+safe(unknown.map(member=>member.label).join(', '))+'. Import a current save to check these monsters.</p>';
+    html += '<p class="party-combo-links">'+(!team.entries.length || unknown.length?'<a href="#team-planner?import=save">Import a save</a>':'')+
+      '<a href="#field-guide?kind=mechanic&amp;entry=field-battle-combos&amp;section=combo-recipes">All 20 battle combos</a></p>';
+    P('planner-combo-results').innerHTML = html;
   }
   function renderRoster() {
     const team = activeTeam();
@@ -298,18 +460,101 @@
     P("planner-roster-empty").hidden = Boolean(team.entries.length);
     P("planner-filter-empty").hidden = !team.entries.length || Boolean(visible.length);
     P("planner-roster-search").closest('.my-game-roster-toolbar')?.classList.toggle('is-empty',!team.entries.length);
-    P("planner-export").disabled = !team.entries.length;
+    P("planner-export").disabled = !team.entries.length && !team.adventureLog;
   }
-  function renderBreeding() {
+  function resistanceForecast(team, a, b, childId, context) {
+    if (context === "shrine") {
+      return DQMOffspringResistances.predict(DQMOwnedMonsters.adapt(a,team), DQMOwnedMonsters.adapt(b,team), childId, COMBAT_REFERENCE, SAVE_REFERENCE);
+    }
+    const reason = context === "room" ? "The two-save Breeding room takes one parent from each Adventure Log." : "The base table omits the shrine’s special breeding rules.";
+    return {reason:reason + " Select Ordinary shrine to forecast offspring from this team."};
+  }
+  function resistanceMarkup(forecast) {
+    const heading = '<h4>Offspring resistances</h4>';
+    const stats = forecast.stats;
+    const fields = {hp:'Max HP', mp:'Max MP', attack:'Attack', defense:'Defense', agility:'Agility', intelligence:'Intelligence'};
+    let hatch = '';
+    if (stats) {
+      const partial = stats.minPercent !== stats.maxPercent || Object.values(stats.values).includes(null);
+      const cells = Object.entries(fields).map(([key, label]) => {
+        const pair = stats.values[key];
+        const value = !pair ? 'Unknown' : pair[0] === pair[1] ? pair[0] : pair.join('–');
+        return '<div><dt>'+label+'</dt><dd>'+value+'</dd></div>';
+      }).join('');
+      const bonusLabels = {personality:'Compatible personalities', species:'Combined species rank of 10 or more',
+        wildness:'Combined wildness of 50 or more', skills:'At least 16 distinct skills in the hatchling’s learning pool'};
+      const bonuses = Object.entries(bonusLabels).map(([key, label]) => {
+        const bonus = stats.bonuses[key];
+        return '<li>'+label+' <strong>'+(bonus === null ? 'Unknown' : bonus ? '+5%' : '+0%')+'</strong></li>';
+      }).join('');
+      hatch = '<section class="offspring-stats"><h4>Level 1 hatchling stats</h4><dl>'+cells+'</dl>'+
+        (partial ? '<p class="hint">Some parent details are missing. Re-import the save for an exact forecast.</p>' : '')+
+        '<details><summary>How are these stats calculated?</summary><p>The egg starts with one quarter of the parents’ combined base stat, rounded down to a minimum of 1. Each bonus adds 5% to that starting value.</p><ul>'+
+        bonuses+'</ul></details></section>';
+    }
+    if (forecast.reason) return hatch+'<section class="offspring-resistances">'+(hatch ? heading : '')+'<p>'+safe(forecast.reason)+'</p></section>';
+    const improved = forecast.grades.filter(row => row.grade > row.base);
+    const unchanged = forecast.grades.filter(row => row.grade === row.base);
+    const gradeLabel = value => value === 7 ? '7 · Innate' : value;
+    const table = rows => '<table><thead><tr><th scope="col">Resistance</th><th scope="col">Species base</th><th scope="col">Offspring</th></tr></thead><tbody>'+rows.map(row =>
+      '<tr><th scope="row">'+safe(row.channel)+'</th><td>'+gradeLabel(row.base)+'</td><td><strong>'+gradeLabel(row.grade)+'</strong></td></tr>').join('')+'</tbody></table>';
+    const scales = COMBAT_REFERENCE.scales;
+    const scaleKey = '<details class="offspring-grade-key"><summary>What does a grade mean for damage?</summary>'+
+      '<table><thead><tr><th scope="col">Grade</th><th scope="col">Spell damage taken</th><th scope="col">Breath damage taken</th></tr></thead><tbody>'+
+      scales.spell.saved.map((spell,grade)=>'<tr><th scope="row">'+grade+'</th><td>'+spell+'%</td><td>'+scales.breath.saved[grade]+'%</td></tr>').join('')+
+      '</tbody></table><p class="hint">These percentages apply to standard damaging spells and breaths. Status effects use their own success rules.</p></details>';
+    return hatch+'<section class="offspring-resistances">'+heading+'<p>'+
+      (improved.length ? '<strong>'+improved.length+' of 27</strong> resistances improve over the species base.' : 'All 27 resistances stay at the species base.')+
+      '</p><p class="hint">Higher grades give stronger resistance. Only species that start at grade 7 can reach it.</p>'+
+      (improved.length ? table(improved) : '')+
+      (unchanged.length ? '<details><summary>Unchanged resistances ('+unchanged.length+')</summary>'+table(unchanged)+'</details>' : '')+
+      scaleKey+'<a class="offspring-rules" href="#field-guide?kind=mechanic&amp;entry=field-breed&amp;section=resistance-inheritance">How resistance inheritance works</a></section>';
+  }
+  function renderBreeding(partnerId = P("planner-breeding-partner").value) {
     const team = activeTeam();
     const memberSelect = P("planner-breeding-member"), selected = memberSelect.value;
-    memberSelect.replaceChildren(new Option("All my monsters", ""), ...team.entries.map(entry=>new Option(fullName(entry),entry.id)));
+    const parentLabels = new Map();
+    const labelCounts = new Map();
+    for (const entry of team.entries) {
+      const label = fullName(entry) + (entry.level ? ' · Lv '+entry.level : '') + ' · '+(entryLocation(entry)==='farm'?'Farm':'Party');
+      const count = (labelCounts.get(label) || 0) + 1;
+      labelCounts.set(label,count);
+      parentLabels.set(entry.id,count === 1 ? label : label + ' ('+count+')');
+    }
+    const option = entry => new Option(parentLabels.get(entry.id),entry.id);
+    memberSelect.replaceChildren(new Option("All my monsters", ""), ...team.entries.map(option));
     memberSelect.value = team.entries.some(entry=>entry.id===selected) ? selected : "";
     const member = memberSelect.value;
     const includeFarm = P("planner-breeding-include-farm").checked;
     const pool = team.entries.filter(e => includeFarm || entryLocation(e) !== "farm");
     const males = pool.filter(e => e.sex === "male"), females = pool.filter(e => e.sex === "female");
     const context = P("planner-context").value, query = P("planner-result-search").value;
+    const chosen = pool.find(entry=>entry.id===member);
+    const partnerSelect = P("planner-breeding-partner");
+    const partners = chosen ? pool.filter(entry=>entry.sex !== chosen.sex) : [];
+    const partner = partners.find(entry=>entry.id===partnerId);
+    partnerSelect.replaceChildren(new Option(partners.length ? "All partners" : "No available partners", ""), ...partners.map(option));
+    partnerSelect.value = partner?.id || "";
+    partnerSelect.disabled = !partners.length;
+    P("planner-breeding-partner-field").hidden = !chosen;
+    const panel = P("planner-selected-pair");
+    panel.hidden = !partner;
+    memberSelect.labels[0].textContent = partner ? "Pedigree" : "Use a monster";
+    partnerSelect.labels[0].textContent = partner ? "Mate" : "Partner";
+    for (const id of ["planner-breeding-view","planner-result-search"]) P(id).closest(".field").hidden = Boolean(partner);
+    if (partner) {
+      const result = core.result(chosen.speciesIndex,partner.speciesIndex,chosen.plus,partner.plus,context);
+      const forecast = resistanceForecast(team,chosen,partner,result.resultIndex,context);
+      const suffix = Number.isInteger(forecast.plus) ? ' +'+forecast.plus : '';
+      panel.innerHTML = '<header class="team-result-heading">'+spriteMarkup(result.resultIndex)+'<div><h3>'+profileLink(result.resultIndex)+suffix+'</h3><small>Pedigree · '+
+        safe(memberName(chosen))+' &nbsp; Mate · '+safe(memberName(partner))+'</small></div><button type="button" data-swap-saved-pair>Swap parents</button></header>'+
+        resistanceMarkup(forecast);
+      P("planner-breeding-summary").textContent = "";
+      for (const id of ["planner-team-results","planner-team-results-pagination","team-breeding-eligibility"]) P(id).hidden = true;
+      for (const sex of ["male","female"]) P("planner-"+sex+"-grid").closest("section").hidden = true;
+      return;
+    }
+    panel.replaceChildren();
     const listView = P("planner-breeding-view").value === "list";
     const outcomes = new Map();
     let total = 0, matches = 0;
@@ -345,7 +590,7 @@
       breedingPage=Math.max(0,Math.min(breedingPage,Math.ceil(groups.length/PAGE)-1));
       const parent=(entry,role)=>'<span class="team-pair-parent"><small>'+role+'</small>'+spriteMarkup(entry.speciesIndex)+'<span>'+safe(memberName(entry))+' <strong>+'+entry.plus+'</strong></span></span>';
       const pairing=({a,b,result})=>'<div class="team-pair">'+parent(a,'Pedigree')+parent(b,'Mate')+
-        '<button type="button" data-planner-pair data-a="'+a.speciesIndex+'" data-b="'+b.speciesIndex+'" data-ap="'+a.plus+'" data-bp="'+b.plus+'" data-context="'+context+'" aria-label="Inspect '+safe(fullName(a)+' as pedigree and '+fullName(b)+' as mate')+'">Inspect</button>'+
+        '<button type="button" data-planner-pair data-owned-a="'+safe(a.id)+'" data-owned-b="'+safe(b.id)+'" data-a="'+a.speciesIndex+'" data-b="'+b.speciesIndex+'" data-ap="'+a.plus+'" data-bp="'+b.plus+'" data-context="'+context+'" aria-label="Inspect '+safe(fullName(a)+' as pedigree and '+fullName(b)+' as mate')+'">Inspect</button>'+
         (result.ruleKind!=='base'?'<small class="team-pair-rule">'+safe(ruleLabel(result))+'</small>':'')+'</div>';
       P("planner-team-results").innerHTML = groups.length ? groups.slice(breedingPage*PAGE,(breedingPage+1)*PAGE).map(([id,pairs])=>
         '<article class="team-result-card"><div class="team-result-heading">'+spriteMarkup(id)+'<div><h3>'+profileLink(id)+'</h3><small>'+pairs.length+' pairing'+(pairs.length===1?'':'s')+'</small></div></div>'+pairs.slice(0,3).map(pairing).join('')+
@@ -353,7 +598,6 @@
       pageRange("planner-team-results",breedingPage,groups.length,"Offspring");
       return;
     }
-    const chosen=pool.find(entry=>entry.id===member);
     const maleRows=chosen?.sex==='male'?[chosen]:males, femaleRows=chosen?.sex==='female'?[chosen]:females;
     malePage = Math.max(0,Math.min(malePage, Math.max(0, Math.ceil(maleRows.length/PAGE)-1)));
     femalePage = Math.max(0, Math.min(femalePage, Math.max(0, Math.ceil(femaleRows.length/PAGE)-1)));
@@ -362,6 +606,8 @@
     pageRange("planner-male", malePage, maleRows.length, "Pedigrees");
     pageRange("planner-female", femalePage, femaleRows.length, "Pedigrees");
   }
+  let targetPickerTeam = null;
+  let shortcutsTeam = null;
   function renderTargets() {
     const team = activeTeam();
     const activeTargetId = team ? team.activeTargetId : null;
@@ -370,10 +616,22 @@
     const browsingIndex = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
     const browsingSpecies = browsingIndex != null ? byId.get(browsingIndex) : null;
 
-    // The pin control stays beside the offspring selector in Find parents;
-    // the saved list and the plan it opens live in the planner.
     const summary = P("target-active-summary");
     P("saved-targets-panel").hidden = !team?.targets.length;
+    if (activeTab === "targets" && !P("team-planner").hidden) {
+      if (targetPickerTeam !== team.id) {
+        DQMMonsterPicker.get(P("plan-target"))?.refresh();
+        targetPickerTeam = team.id;
+      }
+      if (shortcutsTeam !== team) {
+        const choices = DQMTeamTargetShortcuts.forTeam(team,core);
+        P("plan-team-options").hidden = !choices.length;
+        P("plan-team-choices").innerHTML = choices.map(index =>
+          '<button type="button" data-plan-shortcut="'+index+'">'+spriteMarkup(index)+safe(named(index))+'</button>'
+        ).join('');
+        shortcutsTeam = team;
+      }
+    }
     const activeText = activeSpecies
       ? "Active target: " + displayName(activeSpecies)
       : "No active target.";
@@ -392,7 +650,6 @@
       ? "View plan for " + displayName(activeSpecies) + " in My game ↗"
       : "View plan in My game ↗";
 
-    // The path back to Find parents to choose another target.
     const link = P("planner-open-target");
     link.hidden = !activeSpecies;
     link.href = activeSpecies ? "#offspring-finder?target="+activeSpecies.index : "#offspring-finder";
@@ -405,12 +662,10 @@
     list.innerHTML = team.targets.map(target => {
       const species = byId.get(target.speciesIndex);
       const isActive = target.id === activeTargetId;
+      const name = safe(displayName(species));
       return '<li class="target-item' + (isActive ? " is-active" : "") + '" data-target-id="' + safe(target.id) + '">' +
-        '<span class="target-name">' + spriteMarkup(target.speciesIndex) + safe(displayName(species)) + "</span>" +
-        '<div class="target-actions">' +
-        '<button type="button" data-target-switch="' + safe(target.id) + '" aria-label="Open target ' + safe(displayName(species)) + '"' + (isActive ? ' aria-current="true"' : "") + ">Open</button>" +
-        '<button type="button" data-target-remove="' + safe(target.id) + '" aria-label="Remove target ' + safe(displayName(species)) + '">Remove</button>' +
-        "</div></li>";
+        '<button class="target-name" type="button" data-target-switch="' + safe(target.id) + '" aria-label="Open target ' + name + '"' + (isActive ? ' aria-current="true"' : "") + '>'+spriteMarkup(target.speciesIndex)+name+'</button>'+
+        '<button class="target-remove" type="button" data-target-remove="' + safe(target.id) + '" aria-label="Remove target ' + name + '" title="Remove '+name+' from saved targets">×</button></li>';
     }).join("");
   }
   // ---- breeding plan per target ----
@@ -492,11 +747,8 @@
       else link.removeAttribute("href");
     }
 
-    const empty = P("plan-empty");
-    const body = P("plan-body");
+    P("plan-panel").hidden = !target;
     if (!team || !target) {
-      empty.hidden = false;
-      body.hidden = true;
       plan = null;
       currentTargetId = null;
       return;
@@ -511,8 +763,7 @@
       replaceConfirmedForNode = null;
       P("plan-replace-warning").hidden = true;
     }
-    empty.hidden = true;
-    body.hidden = false;
+    P("plan-heading").textContent = named(target.speciesIndex)+" breeding plan";
     if (target.plan === null) {
       plan = planner.createPlan(target.speciesIndex, "shrine");
       state = app.setTargetPlan(state, team.id, target.id, plan);
@@ -574,15 +825,15 @@
     if (!root) return;
     tree.appendChild(renderNodeCard(root, "Target"));
   }
-  function renderNodeCard(node, role) {
+  function renderNodeCard(node, role, familyMate = null) {
     const species = node.speciesIndex !== null ? byId.get(node.speciesIndex) : null;
-    const name = species ? displayName(species) : "Any monster";
+    const name = species ? displayName(species) : familyMate?.parentNames[1] || "Any monster";
     const card = document.createElement("div");
     card.className = "plan-node" + (planFlagged.has(node.id) ? " is-incompatible" : "");
     card.dataset.nodeId = node.id;
     const header = document.createElement("div");
     header.className = "plan-node-header";
-    header.innerHTML = spriteMarkup(node.speciesIndex) +
+    header.innerHTML = (familyMate ? familyLabelMarkup(familyMate.mateFamilyIndex,"") : spriteMarkup(node.speciesIndex)) +
       '<span class="plan-node-name">' + profileLink(node.speciesIndex,name) + "</span>" +
       '<span class="plan-node-role">' + safe(role) + "</span>";
     card.appendChild(header);
@@ -603,10 +854,12 @@
     note.setAttribute("aria-label", "Note for " + name);
     note.value = node.note;
     card.appendChild(note);
+    let chosenRecipe = null;
     if (node.recipe) {
-      const recipe = node.recipe;
+      if (!planInvalid) chosenRecipe = planner.findRecipe(node.speciesIndex, node.recipe.context, node.recipe.parents);
+      const recipe = chosenRecipe || node.recipe;
       const pedigreeName = named(recipe.parents[0]);
-      const mateName = recipe.parents[1] === null ? "Any monster" : named(recipe.parents[1]);
+      const mateName = recipe.parents[1] === null ? recipe.parentNames?.[1] || "Any monster" : named(recipe.parents[1]);
       const kindLabel = ruleLabel({ ruleKind: recipe.kind });
       const recipeInfo = document.createElement("div");
       recipeInfo.className = "plan-node-recipe";
@@ -616,14 +869,10 @@
           : "") +
         '<p class="plan-node-parents">Pedigree ' + profileLink(recipe.parents[0],pedigreeName) + " + Mate " + profileLink(recipe.parents[1],mateName) + "</p>" +
         '<span class="plan-node-kind">' + safe(kindLabel) + "</span>";
-      if (recipe.kind === "plus_threshold" && recipe.minPlus !== null) {
-        recipeInfo.innerHTML += '<p class="plan-node-condition">Either parent +' + recipe.minPlus + " or higher.</p>";
-      }
+      const condition = recipeCondition(recipe);
+      if (condition) recipeInfo.innerHTML += '<p class="plan-node-condition">' + safe(condition) + '</p>';
       if (recipe.kind === "plus_threshold") {
         recipeInfo.innerHTML += '<p class="plan-node-unknowns">An unknown + value is not treated as zero.</p>';
-      }
-      if (recipe.kind === "flag_gated") {
-        recipeInfo.innerHTML += '<p class="plan-node-unknowns">Applies in the title-screen Breeding room only.</p>';
       }
       card.appendChild(recipeInfo);
       const actions = document.createElement("div");
@@ -635,7 +884,7 @@
     } else if (node.speciesIndex === null) {
       const hint = document.createElement("p");
       hint.className = "plan-node-hint";
-      hint.textContent = "This requirement is any monster from the recipe's family; it cannot be expanded further.";
+      hint.textContent = "Choose a mate from this family in the Breeding room.";
       card.appendChild(hint);
     } else {
       const actions = document.createElement("div");
@@ -669,101 +918,109 @@
       const pedigree = planner.nodeById(plan, node.children[0]);
       const mate = planner.nodeById(plan, node.children[1]);
       if (pedigree) childrenContainer.appendChild(renderNodeCard(pedigree, "Pedigree"));
-      if (mate) childrenContainer.appendChild(renderNodeCard(mate, "Mate"));
+      if (mate) childrenContainer.appendChild(renderNodeCard(mate, "Mate", chosenRecipe?.familyWildcard ? chosenRecipe : null));
       card.appendChild(childrenContainer);
     }
     return card;
   }
+  function suggestionsForNode(team, node) {
+    return planner.suggestions(node.speciesIndex, {
+      context: plan.context,
+      rosterSpecies: team.entries.map(entry => entry.speciesIndex),
+      availableSpecies: plan.nodes.filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null).map(n => n.speciesIndex),
+      ancestorSpecies: planner.ancestorSpecies(plan, node.id),
+      page: suggestionPage,
+      pageSize: PAGE
+    });
+  }
+  function suggestionParent(item, position, locations) {
+    const index = item.parents[position];
+    const role = position === 0 ? "Pedigree" : "Mate";
+    const name = index === null ? item.parentNames[position] : named(index);
+    const art = index === null ? familyLabelMarkup(item.mateFamilyIndex, "") : spriteMarkup(index);
+    let status = "";
+    if (index !== null) {
+      const places = locations.get(index);
+      let label = item.missingParents.includes(position) ? "Not on team" : "Marked available";
+      if (places) {
+        const where = [];
+        if (places.has("party")) where.push("in party");
+        if (places.has("farm")) where.push("on farm");
+        if (places.has("hibernation")) where.push("hibernating");
+        label = where.join(" and ");
+        label = label.charAt(0).toUpperCase() + label.slice(1);
+      }
+      status = '<span class="plan-parent-status' + (places ? ' is-owned' : '') + '">' + safe(label) + '</span>';
+    }
+    return '<div class="plan-suggestion-parent"><span class="plan-parent-art">' + art + '</span><div>' +
+      '<span class="plan-parent-role">' + role + '</span><strong>' + profileLink(index, name) + '</strong>' + status + '</div></div>';
+  }
+  function recipeCondition(item) {
+    if (item.kind === "plus_threshold") return "At least one parent must be +" + item.minPlus + " or higher.";
+    if (item.parentPlusBelow != null) return "Both parents must be below +" + item.parentPlusBelow + ".";
+    if (item.kind === "flag_gated") return "Two-save Breeding room only.";
+    return "";
+  }
   function renderSuggestions() {
     const team = activeTeam();
-    const target = activeTarget();
     const container = P("plan-suggestions");
-    container.innerHTML = "";
-    if (!team || !target || !plan) {
-      P("plan-suggestions-for").textContent = "";
-      P("plan-suggestions-clear").hidden = true;
-      P("plan-suggestions-range").textContent = "";
-      P("plan-suggestions-page").textContent = "";
-      P("plan-suggestions-prev").disabled = true;
-      P("plan-suggestions-next").disabled = true;
-      return;
-    }
-    const isTarget = suggestionTarget === null;
-    const nodeId = isTarget ? plan.rootId : suggestionTarget;
-    const node = planner.nodeById(plan, nodeId);
-    if (!node) {
+    let node = planner.nodeById(plan, suggestionTarget);
+    if (node?.speciesIndex == null) {
       suggestionTarget = null;
-      P("plan-suggestions-for").textContent = "";
-      P("plan-suggestions-clear").hidden = true;
-      return;
+      node = planner.nodeById(plan, plan?.rootId);
     }
-    const speciesName = node.speciesIndex !== null ? named(node.speciesIndex) : "Any monster";
-    if (node.speciesIndex === null) {
-      suggestionTarget = null;
-      P("plan-suggestions-for").textContent = "";
-      P("plan-suggestions-clear").hidden = true;
-      P("plan-suggestions-range").textContent = "";
-      P("plan-suggestions-page").textContent = "";
-      P("plan-suggestions-prev").disabled = true;
-      P("plan-suggestions-next").disabled = true;
-      return;
+    const section = container.closest("aside");
+    section.hidden = !!planInvalid || node?.speciesIndex == null;
+    if (section.hidden) return;
+
+    const name = named(node.speciesIndex);
+    P("plan-suggestions-for").textContent = "Recipes for " + name;
+    const back = P("plan-suggestions-clear");
+    back.hidden = node.id === plan.rootId;
+    back.textContent = "← Back to " + named(plan.speciesIndex);
+    const locations = new Map();
+    for (const entry of team.entries) {
+      const places = locations.get(entry.speciesIndex) || new Set();
+      places.add(DQMOwnedMonsters.adapt(entry, team).location);
+      locations.set(entry.speciesIndex, places);
     }
-    P("plan-suggestions-for").textContent = isTarget ? "" : "Recipe options for " + speciesName;
-    P("plan-suggestions-clear").hidden = isTarget;
-    const rosterSpecies = team.entries.map(e => e.speciesIndex);
-    // Both locations count as owned, so a parent can be in the party, on the
-    // farm, or both. The badge says where each roster parent lives.
-    const locationsBySpecies = new Map();
-    for (const e of team.entries) {
-      const set = locationsBySpecies.get(e.speciesIndex) || new Set();
-      set.add(entryLocation(e));
-      locationsBySpecies.set(e.speciesIndex, set);
-    }
-    const availableSpecies = plan.nodes
-      .filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null)
-      .map(n => n.speciesIndex);
-    const result = planner.suggestions(node.speciesIndex, {
-      context: plan.context,
-      rosterSpecies,
-      availableSpecies,
-      page: suggestionPage,
-      pageSize: 12
-    });
-    for (const item of result.items) {
-      const card = document.createElement("div");
-      card.className = "plan-suggestion";
-      card.setAttribute("role", "listitem");
-      let html = '<p class="plan-suggestion-parents">Pedigree ' + safe(item.parentNames[0]) + " + Mate " + safe(item.parentNames[1]) + "</p>" +
-        '<span class="plan-suggestion-kind">' + safe(ruleLabel({ ruleKind: item.kind })) + "</span>";
-      if (item.condition) {
-        html += '<p class="plan-suggestion-condition">' + safe(item.condition) + "</p>";
-      }
-      html += '<p class="plan-suggestion-badges">';
-      for (const pos of item.rosterParents) {
-        const locs = ["party","farm"].filter(loc => locationsBySpecies.get(item.parents[pos])?.has(loc));
-        if (locs.length) html += '<span class="plan-suggestion-badge">'+safe((pos === 0 ? "Pedigree" : "Mate")+" in "+locs.join(" + "))+'</span>';
-      }
-      if (item.missingParents.length > 0) html += '<span class="plan-suggestion-badge">Missing</span>';
-      html += "</p>";
-      html += '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' + safe(named(item.parents[0])) + " + Mate " + safe(item.parents[1] === null ? "Any monster" : named(item.parents[1])) + '">Use this recipe</button>';
-      card.innerHTML = html;
-      container.appendChild(card);
-    }
+    const result = suggestionsForNode(team, node);
+    suggestionPage = result.page;
+    container.innerHTML = result.items.map(item => {
+      const condition = recipeCondition(item);
+      const mate = item.parents[1] === null ? item.parentNames[1] : named(item.parents[1]);
+      return '<div class="plan-suggestion" role="listitem"><div class="plan-suggestion-parents">' +
+        suggestionParent(item, 0, locations) + '<span class="plan-pair-plus" aria-hidden="true">+</span>' +
+        suggestionParent(item, 1, locations) + '</div><div class="plan-recipe-actions">' +
+        (condition ? '<span class="plan-suggestion-condition">' + safe(condition) + '</span>' : '') +
+        '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' +
+        safe(named(item.parents[0])) + " + Mate " + safe(mate) + '">Use recipe</button></div></div>';
+    }).join("");
+
+    P("plan-limits").hidden = !team.entries.length || result.total < 2;
     const range = P("plan-suggestions-range");
     const pageLabel = P("plan-suggestions-page");
     const prev = P("plan-suggestions-prev");
     const next = P("plan-suggestions-next");
     if (result.total === 0) {
-      range.textContent = "No suggested recipes.";
+      range.innerHTML = 'No pairing can extend this branch. ' + profileLink(node.speciesIndex, "How to get " + name) +
+        ' · <a href="#offspring-finder?target=' + node.speciesIndex + '">All parent pairings</a>';
       pageLabel.textContent = "";
     } else {
-      const start = result.page * 12 + 1;
-      const end = Math.min((result.page + 1) * 12, result.total);
-      range.textContent = start + "–" + end + " of " + result.total;
+      const start = result.page * PAGE + 1;
+      const end = Math.min((result.page + 1) * PAGE, result.total);
+      range.textContent = result.pages > 1 ? start + "–" + end + " of " + result.total + " recipes" : "";
       pageLabel.textContent = "Page " + (result.page + 1) + " of " + result.pages;
     }
     prev.disabled = result.page === 0;
     next.disabled = result.page + 1 >= result.pages;
+    prev.parentElement.hidden = result.pages < 2;
+    range.parentElement.hidden = result.pages === 1;
+  }
+  function focusRecipes() {
+    const heading = P("plan-suggestions-for");
+    heading.focus({preventScroll:true});
+    heading.scrollIntoView({block:"start", behavior:"instant"});
   }
   function renderGameSwitch() {
     for (const game of DQMAppState.TEAM_GAMES) {
@@ -771,6 +1028,8 @@
     }
   }
   function renderAll() {
+    // An imported roster can be replaced from another tab with a pair open.
+    if (P("planner-pair-dialog").open && P("planner-pair-dialog").parentElement.id === "planner-team-detail-host") hidePairDetail();
     if (currentSpriteStyle !== state.spriteStyle) {
       currentSpriteStyle = state.spriteStyle;
       setSpriteStyle(currentSpriteStyle);
@@ -778,6 +1037,8 @@
     renderTeams();
     renderGameSwitch();
     renderRoster();
+    renderPartyCombos();
+    if (activeTab === "adventure") renderAdventureLog();
     renderBreeding();
     renderTargets();
     renderPlan();
@@ -826,7 +1087,8 @@
         const outcome = core.result(row.speciesIndex, column.speciesIndex, row.plus, column.plus, context);
         const visible = matchesName(byId.get(outcome.resultIndex), query);
         const description = fullName(row)+" as pedigree + "+fullName(column)+" as mate → "+named(outcome.resultIndex)+". "+contextLabel(context)+". "+ruleLabel(outcome)+".";
-        html += '<td'+(!visible?' class="planner-nonmatch"':'')+'><button type="button" class="planner-cell" data-planner-pair data-a="'+row.speciesIndex+'" data-b="'+column.speciesIndex+'" data-ap="'+row.plus+'" data-bp="'+column.plus+'" data-context="'+context+'" aria-label="'+safe(description)+'">'+spriteMarkup(outcome.resultIndex)+'<span>'+safe(named(outcome.resultIndex))+'</span>'+(outcome.ruleKind!=='base'?'<small class="planner-rule">'+safe(ruleLabel(outcome))+'</small>':'')+'</button></td>';
+        const owned = targetId === "planner-all-grid" ? "" : ' data-owned-a="'+safe(row.id)+'" data-owned-b="'+safe(column.id)+'"';
+        html += '<td'+(!visible?' class="planner-nonmatch"':'')+'><button type="button" class="planner-cell" data-planner-pair'+owned+' data-a="'+row.speciesIndex+'" data-b="'+column.speciesIndex+'" data-ap="'+row.plus+'" data-bp="'+column.plus+'" data-context="'+context+'" aria-label="'+safe(description)+'">'+spriteMarkup(outcome.resultIndex)+'<span>'+safe(named(outcome.resultIndex))+'</span>'+(outcome.ruleKind!=='base'?'<small class="planner-rule">'+safe(ruleLabel(outcome))+'</small>':'')+'</button></td>';
       }
       html += '</tr>';
     }
@@ -916,8 +1178,24 @@
     P("planner-copy-pairing").dataset.copyText = pairingText;
     P("planner-pair-copy-status").textContent = "";
     P("planner-pair-detail-body").innerHTML = '<p class="kicker">'+safe(contextLabel(detail.context))+'</p><h3>'+profileLink(detail.a)+" +"+detail.ap+" + "+profileLink(detail.b)+" +"+detail.bp+' → '+spriteLabel(forward.resultIndex, named(forward.resultIndex))+'</h3><p>'+safe(forward.detail||forward.condition)+" Base table: "+safe(named(forward.baseIndex))+'.</p><p><strong>Reversed parents:</strong> '+spriteLabel(reverse.resultIndex, named(reverse.resultIndex))+" · "+safe(ruleLabel(reverse))+'.</p>';
+    if (cell.hasAttribute("data-owned-a")) {
+      const team = activeTeam();
+      const a = team.entries.find(entry=>entry.id===cell.dataset.ownedA), b = team.entries.find(entry=>entry.id===cell.dataset.ownedB);
+      if (a && b) {
+        const forecast = resistanceForecast(team,a,b,forward.resultIndex,detail.context);
+        if (Number.isInteger(forecast.plus)) P("planner-pair-detail-body").querySelector("h3").append(' +'+forecast.plus);
+        P("planner-pair-detail-body").insertAdjacentHTML("beforeend",
+          '<p class="hint">Pedigree · '+safe(memberName(a))+' &nbsp; Mate · '+safe(memberName(b))+'</p>'+resistanceMarkup(forecast));
+      }
+    }
     P("planner-pair-detail").hidden = false;
     P("planner-pair-dialog").showModal();
+  }
+  function renderAdventureLog() {
+    const team = activeTeam();
+    P("planner-log-empty").hidden = !!team.adventureLog;
+    const extraRecord = row => savedMonsterMarkup(DQMOwnedMonsters.adapt({...row,location:row.location==='party'?'party':'farm'},team),false);
+    globalThis.DQMAdventureLog?.render(P("planner-log-record"),team,{safe,named,profileLink,familyLabelMarkup,extraRecord});
   }
   function setPlannerTab(name, focus = false) {
     activeTab = name;
@@ -927,8 +1205,9 @@
       tab.setAttribute("aria-selected", String(mode === name)); tab.tabIndex = mode === name ? 0 : -1;
     }
     hidePairDetail();
-    if (name === "targets") { renderTargets(); renderPlan(); }
+    if (name === "targets") { setupTargetPicker(); renderTargets(); renderPlan(); }
     if (name === "breeding") renderBreeding();
+    if (name === "adventure") renderAdventureLog();
     if (focus) P("planner-tab-"+name).focus();
   }
   // Visibility, the active nav link, the page title, scroll position, and
@@ -954,6 +1233,7 @@
       if (!member) return;
       P("planner-breeding-include-farm").checked = true;
       P("planner-breeding-member").value = member.id;
+      P("planner-breeding-partner").value = "";
       P("planner-breeding-view").value = "list";
       P("planner-result-search").value = "";
       breedingPage = 0;
@@ -1069,7 +1349,8 @@
       return;
     }
     const inserted = next.teams[next.teams.length-1];
-    commit(app.setActiveTeam(next, inserted.id), 'Imported "'+inserted.name+'" as a new team.');
+    next = app.setActiveTeam(next, inserted.id);
+    commit(inserted.game ? app.setActiveGame(next, inserted.game) : next, 'Imported "'+inserted.name+'" as a new team.');
   }
 
   // ---- PSX save import ----
@@ -1103,7 +1384,7 @@
         skipped + names + (rows ? '<details><summary>Review monsters (' + save.entries.length + ')</summary><div class="table-scroll"><table>' +
         '<caption class="sr-only">Monsters in this save</caption><thead><tr><th scope="col">Monster</th><th scope="col">Location</th>' +
         '<th scope="col">Sex</th><th scope="col">Level</th><th scope="col">Plus</th></tr></thead><tbody>' + rows + "</tbody></table></div></details>" : "");
-      apply.disabled = !rows;
+      apply.disabled = !save.adventureLog && !rows;
     }
     input.addEventListener("change", async () => {
       const file = input.files[0];
@@ -1140,11 +1421,17 @@
     P("save-import-dialog").addEventListener("cancel",clear);
     apply.addEventListener("click", () => {
       const save = saves[select.selectedIndex];
-      if (!save || !save.entries.length) return;
+      if (!save || (!save.entries.length && !save.adventureLog)) return;
       const name = save.campaign + (save.slot === null ? " · Save" : " · Slot " + save.slot);
       try {
-        const team = {id: app.makeId("t-"), name, game: save.game, campaign:save.campaignKey, targets: [], activeTargetId: null,
-          entries: save.entries.map(e => ({...e, id: app.makeId("m-"), favorite: false, nickname: useNames.checked ? e.nickname : ""}))};
+        function importMonster(e) {
+          if (useNames.checked) return e;
+          const pedigree = e.saveDetails.pedigree.map((ancestor, index) => ancestor && index < 2 ? {...ancestor, nickname:''} : ancestor);
+          return {...e, nickname:"", saveDetails:{...e.saveDetails, pedigree}};
+        }
+        const adventureLog = {...save.adventureLog, extraMonsters:save.adventureLog.extraMonsters.map(importMonster)};
+        const team = {id: app.makeId("t-"), name, game: save.game, campaign:save.campaignKey, adventureLog, targets: [], activeTargetId: null,
+          entries: save.entries.map(e => ({...importMonster(e), id:app.makeId("m-"), favorite:false}))};
         const next = app.insertTeam(state, team);
         commit(app.setActiveGame(app.setActiveTeam(next, team.id), save.game), "Imported " + team.entries.length + " monsters into " + name + ".");
         clear();
@@ -1152,7 +1439,7 @@
         // Complete the import at the collection itself, with the first monster
         // in view, instead of returning to the setup controls above it.
         const rosterHeading = team.entries.some(entry => entryLocation(entry) === "party") ? "planner-party-heading" : "planner-farm-heading";
-        DQMViews.go("team-planner",{params:new URLSearchParams({tab:"roster"}),focusId:rosterHeading});
+        DQMViews.go("team-planner",team.entries.length ? {params:{tab:"roster"},focusId:rosterHeading} : {params:{tab:"adventure"},focusId:"planner-tab-adventure"});
       } catch (error) { status.textContent = error.message; }
     });
   }
@@ -1221,6 +1508,14 @@
   P("planner-open-import").addEventListener("click",openImport);
   for (const button of document.querySelectorAll('[data-planner-open]')) button.addEventListener("click",()=>button.dataset.plannerOpen==='import'?openImport():openEditor());
   P("planner-party").addEventListener("click", cardAction);
+  for (const section of ['planner-party','planner-farm']) P(section).addEventListener('toggle', showUpcomingSkills, true);
+  P("planner-combo-results").addEventListener("change",event=>{
+    const slot = event.target.closest("select[data-combo-slot]");
+    if (!slot) return;
+    comboSlots[Number(slot.dataset.comboSlot)] = slot.value;
+    renderPartyCombos();
+    P('planner-combo-results').querySelector('[data-combo-slot="'+slot.dataset.comboSlot+'"]').focus({preventScroll:true});
+  });
   P("planner-farm").addEventListener("click", cardAction);
   for (const id of ["planner-roster-location","planner-roster-sex","planner-roster-sort"]) P(id).addEventListener("change",renderRoster);
   P("planner-roster-search").addEventListener("input",renderRoster);
@@ -1253,6 +1548,7 @@
     const legacy = {
       version: app.APP_VERSION,
       game: app.GAME_ID,
+      ...(team.adventureLog ? {adventureLog:team.adventureLog,campaign:team.campaign} : {}),
       entries: team.entries.map(({favorite, ...rest}) => rest),
     };
     downloadText(JSON.stringify(legacy, null, 2)+"\n", "DQM-guide-team-v61.json");
@@ -1453,7 +1749,18 @@
       if (next !== undefined) { event.preventDefault(); setPlannerTab(PLANNER_TABS[next], true); }
     });
   }
-  for (const id of ["planner-context","planner-breeding-member","planner-breeding-view"]) P(id).addEventListener("change", () => { hidePairDetail(); breedingPage=malePage=femalePage=0; renderBreeding(); });
+  for (const id of ["planner-context","planner-breeding-member","planner-breeding-partner","planner-breeding-view"]) P(id).addEventListener("change", () => {
+    if (id==="planner-breeding-member") P("planner-breeding-partner").value = "";
+    hidePairDetail(); breedingPage=malePage=femalePage=0; renderBreeding();
+  });
+  P("planner-selected-pair").addEventListener("click",event=>{
+    if (!event.target.closest("[data-swap-saved-pair]")) return;
+    const first = P("planner-breeding-member"), second = P("planner-breeding-partner");
+    const original = first.value;
+    first.value = second.value;
+    renderBreeding(original);
+    P("planner-selected-pair").querySelector("[data-swap-saved-pair]").focus({preventScroll:true});
+  });
   P("planner-result-search").addEventListener("input",()=>{breedingPage=0;renderBreeding();});
   P("planner-breeding-include-farm").addEventListener("change", () => {
     hidePairDetail();
@@ -1515,6 +1822,37 @@
     hidePairDetail();
     DQMReference.openPair(detail);
   });
+  function setupTargetPicker() {
+    const select = P("plan-target");
+    if (DQMMonsterPicker.get(select)) return;
+    const options = rosterSpecies.slice().sort((a,b) => named(a.index).localeCompare(named(b.index)));
+    setOptions("plan-target",options);
+    select.prepend(new Option("", ""));
+    select.value = "";
+    const picker = DQMMonsterPicker.attach(select,{species:options,label:"Choose a breeding target"});
+    picker.input.placeholder = "Search monster names or families";
+    select.addEventListener("change",() => {
+      const species = current("plan-target");
+      if (!species) return;
+      select.value = "";
+      picker.refresh();
+      openTargetInPlanner(species.index);
+    });
+  }
+  function openTargetInPlanner(index) {
+    const team = activeTeam();
+    try {
+      const next = app.addTarget(state,team.id,index);
+      commit(next,"Opened the breeding plan for "+named(index)+".");
+      P("plan-heading").focus();
+    } catch (error) {
+      notice(error.message);
+    }
+  }
+  P("plan-team-choices").addEventListener("click",event => {
+    const choice = event.target.closest("button[data-plan-shortcut]");
+    if (choice) openTargetInPlanner(Number(choice.dataset.planShortcut));
+  });
   P("target-pin").addEventListener("click", () => {
     const index = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
     const species = index != null ? byId.get(index) : null;
@@ -1557,12 +1895,9 @@
         const next = app.removeTarget(state, team.id, targetId);
         commit(next, "Removed the target.");
         renderTargets();
-        // The pin control is in Find parents, so focus stays in this tab: the
-        // next saved target, or the path back when the list is empty.
-        const nextItem = P("target-list").querySelector("button[data-target-switch]");
-        const fallback = nextItem || P("planner-open-target");
-        if (fallback && !fallback.hidden) fallback.focus({preventScroll: true});
-        else P("planner-tab-targets").focus({preventScroll: true});
+        const nextItem = P("target-list").querySelector('button[aria-current="true"]') || P("target-list").querySelector("button[data-target-switch]");
+        if (nextItem) nextItem.focus({preventScroll:true});
+        else DQMMonsterPicker.get(P("plan-target")).focus();
       } catch (error) {
         notice(error.message);
       }
@@ -1609,7 +1944,7 @@
     suggestionTarget = pendingNodeId;
     suggestionPage = 0;
     renderSuggestions();
-    P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    focusRecipes();
   });
   P("plan-replace-cancel").addEventListener("click", () => {
     pendingReplaceId = null;
@@ -1622,16 +1957,19 @@
     if (suggestionPage > 0) {
       suggestionPage--;
       renderSuggestions();
+      focusRecipes();
     }
   });
   P("plan-suggestions-next").addEventListener("click", () => {
     suggestionPage++;
     renderSuggestions();
+    focusRecipes();
   });
   P("plan-suggestions-clear").addEventListener("click", () => {
     suggestionTarget = null;
     suggestionPage = 0;
     renderSuggestions();
+    focusRecipes();
   });
   P("plan-tree").addEventListener("change", event => {
     const statusSelect = event.target.closest("select[data-node-status]");
@@ -1688,7 +2026,7 @@
       suggestionTarget = nodeId;
       suggestionPage = 0;
       renderSuggestions();
-      P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      focusRecipes();
     } else if (availableButton) {
       const nodeId = availableButton.dataset.nodeAvailable;
       pendingReplaceSuggestion = null;
@@ -1710,7 +2048,7 @@
         pendingReplaceId = nodeId;
         P("plan-replace-warning-text").textContent = "Replacing this recipe removes its dependent steps and their progress. Replace anyway?";
         P("plan-replace-warning").hidden = false;
-        P("plan-replace-confirm").focus({ preventScroll: true });
+        P("plan-replace-confirm").focus();
         return;
       }
       pendingReplaceSuggestion = null;
@@ -1718,7 +2056,7 @@
       suggestionTarget = nodeId;
       suggestionPage = 0;
       renderSuggestions();
-      P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      focusRecipes();
     } else if (collapseButton) {
       const nodeId = collapseButton.dataset.nodeCollapse;
       pendingReplaceSuggestion = null;
@@ -1743,17 +2081,7 @@
       planNotice("This requirement cannot be expanded further.");
       return;
     }
-    const rosterSpecies = team.entries.map(e => e.speciesIndex);
-    const availableSpecies = plan.nodes
-      .filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null)
-      .map(n => n.speciesIndex);
-    const result = planner.suggestions(node.speciesIndex, {
-      context: plan.context,
-      rosterSpecies,
-      availableSpecies,
-      page: suggestionPage,
-      pageSize: 12
-    });
+    const result = suggestionsForNode(team, node);
     const item = result.items.find(r => r.id === suggestionId);
     if (!item) return;
     const speciesName = node.speciesIndex !== null ? named(node.speciesIndex) : "Any monster";
@@ -1772,7 +2100,9 @@
       }
     } catch (error) {
       planNotice(error.message);
+      return;
     }
+    P("plan-tree").querySelector('[data-node-id="' + nodeId + '"] > .plan-node-header')?.scrollIntoView({block:"nearest", behavior:"instant"});
   }
   P("plan-suggestions").addEventListener("click", event => {
     const button = event.target.closest("button[data-suggestion-use]");
@@ -1790,7 +2120,7 @@
       pendingReplaceSuggestion = { nodeId, suggestionId };
       P("plan-replace-warning-text").textContent = "Replacing this recipe removes its dependent steps and their progress. Replace anyway?";
       P("plan-replace-warning").hidden = false;
-      P("plan-replace-confirm").focus({ preventScroll: true });
+      P("plan-replace-confirm").focus();
       return;
     }
     replaceConfirmedForNode = null;
@@ -1815,7 +2145,11 @@
         movePairDetail("planner-team-detail-host");
         const query = new URLSearchParams(location.hash.split("?")[1]);
         const tab = query.get("tab");
-        setPlannerTab(PLANNER_TABS.includes(tab) ? tab : "roster");
+        const showCombos = query.get('combos') === 'party';
+        setPlannerTab(!showCombos && PLANNER_TABS.includes(tab) ? tab : "roster");
+        renderRoster();
+        renderPartyCombos();
+        if (showCombos) P('planner-party-combos').open = true;
         if (query.get("import")==="save") openImport();
         if (query.get("manage")==="teams") P("manage-teams").open=true;
       } else if (id === "breeding-table") {

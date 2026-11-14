@@ -5,18 +5,136 @@ write disc/game state. The JSON result is suitable for the evidence document.
 """
 import argparse
 import importlib.util
+from itertools import product
 import json
 from pathlib import Path
+import random
 import struct
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 V74 = "04b30048a0dc1c207801041a410925aba0283da6793ba3989b98f46a38543b15"
 DIVISORS = [60, 75, 90, 105, 120, 150, 180]
+# One named action per channel in the guide, in native resistance array order.
+CHANNEL_SKILL_IDS = [1, 4, 7, 10, 13, 16, 46, 47, 19, 50, 51, 52, 39, 43, 21,
+                     61, 64, 69, 95, 96, 117, 122, 146, 147, 75, 103, 76]
 
 
 def expected(base, parent_a, parent_b, plus):
     return 7 if base == 7 else min(6, base + (10*(parent_a+parent_b)+3*plus)//DIVISORS[base])
+
+
+def verify_child_plus(cpu, reg, parents, child):
+    for register, address in zip((reg.UC_MIPS_REG_S3, reg.UC_MIPS_REG_S4, reg.UC_MIPS_REG_FP),
+                                 (*parents, child)):
+        cpu.reg_write(register, address | 0x80000000)
+    level_pairs = [(10, 10), (19, 20), (20, 20), (20, 39), (30, 30),
+                   (39, 40), (40, 40), (49, 50), (50, 50), (99, 99)]
+    plus_pairs = [(0, 0), (5, 4), (97, 98), (99, 99)]
+    # Parent (maxHP, maxMP) include sums on either side of the quarter-stat rounding boundary.
+    stat_pairs = [((1, 0), (1, 0)), ((6, 7), (5, 4)), ((6, 7), (5, 5)),
+                  ((7, 6), (5, 5)), ((999, 999), (999, 999))]
+    cases = 0
+    for levels, pluses, same_family, stats in product(level_pairs, plus_pairs, (False, True), stat_pairs):
+        families = (0, 0 if same_family else 1)
+        for parent, family, level, plus, (hp, mp) in zip(parents, families, levels, pluses, stats):
+            cpu.mem_write(parent + 0x0D, bytes([family, plus]))
+            cpu.mem_write(parent + 0x9A, bytes([level]))
+            cpu.mem_write(parent + 0xB4, struct.pack('<HH', hp, mp))
+        child_hp, child_mp = (max(1, sum(values)//4) for values in zip(*stats))
+        flags = [all(level % 10 == 0 for level in levels), same_family,
+                 child_mp > child_hp, sum(pluses) % 2 == 0]
+        wanted = min(99, max(pluses) + min(5, sum(levels)//20) + sum(flags)//2)
+        for stat_bonus in range(5):
+            cpu.emu_start(0x80049594, 0x800495F4, count=100)
+            # The same 100–120% multiplier is applied to all six stats.
+            cpu.reg_write(reg.UC_MIPS_REG_S1, stat_bonus)
+            cpu.mem_write(child + 0x0E, b'\xff')
+            cpu.emu_start(0x80049810, 0x80049BD0, count=500)
+            actual = cpu.mem_read(child + 0x0E, 1)[0]
+            if actual != wanted:
+                raise ValueError(f'Native offspring + {actual} != {wanted} for levels {levels}, '
+                                 f'+ {pluses}, families {families}, base stats {stats}, stat bonus {stat_bonus}')
+            cases += 1
+    return cases
+
+
+def hatch_cases():
+    """Feed the shipped JS forecast the same (synthetic) parents as the constructor."""
+    rng = random.Random(0x49094)
+    cases = []
+    keys = ['hp', 'mp', 'attack', 'defense', 'agility', 'intelligence']
+    for i in range(512):
+        parents = []
+        for j in range(2):
+            values = [rng.randrange(1000) for _ in keys]
+            if i % 8 == 0:
+                values = [0, 1, 999, 17, 60, 83]
+            parents.append(dict(speciesIndex=rng.randrange(312), personalityId=rng.randrange(1,28),
+                wildness=(24 + j + i % 2), level=10, plus=0, sourceStatus='save',
+                knownSkills=rng.sample(range(1,170), 8 if i % 4 < 2 else 0),
+                baseStats=dict(zip(keys,values)), campaign=['terry','cobi','tara'][i%3]))
+        cases.append({'a':parents[0], 'b':parents[1]})
+    program = """
+      require('./data/breeding-data'); require('./data/combat-reference'); require('./data/save-reference');
+      require('./js/planner-core'); require('./js/offspring-resistances');
+      const core=DQMPlannerCore.create(DATA);
+      const cases=JSON.parse(require('node:fs').readFileSync(0,'utf8'));
+      for(const c of cases) {
+        const {a,b}=c;
+        const child=core.result(a.speciesIndex,b.speciesIndex,a.plus,b.plus,'shrine').resultIndex;
+        c.records=[a.speciesIndex,b.speciesIndex,child].map(id=>[DATA.species[id].member,DATA.species[id].family_id]);
+        const {stats}=DQMOffspringResistances.predict(a,b,child,COMBAT_REFERENCE,SAVE_REFERENCE);
+        if(stats.minPercent!==stats.maxPercent)throw Error('Missing exact prediction');
+        c.percent=stats.minPercent;
+        c.predicted=Object.values(stats.values).map(([low,high])=>{
+          if(low!==high)throw Error('Unexpected range');return low;
+        });
+      }
+      process.stdout.write(JSON.stringify(cases));
+    """
+    result = subprocess.run(['node','-e',program], cwd=ROOT, input=json.dumps(cases),
+                            capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
+def verify_hatch_stats(cpu, reg, disc, parents, child, cases):
+    from unicorn import UC_HOOK_CODE
+    gp = 0xC7050
+    cpu.mem_write(gp+0x784, struct.pack('<I',0x80184000))
+    cpu.mem_write(gp+0x758, struct.pack('<I',0x80188000))
+    cpu.mem_write(0x184000, disc.resource(3657))
+    cpu.mem_write(0x188000, disc.resource(3658))
+    cpu.mem_write(0xC75B4, struct.pack('<I',0x80189000))
+    tables = [disc.resource(3655), disc.resource(3656)]
+    multipliers = set()
+    percent = None
+    def read_multiplier(emu, address, size, data):
+        nonlocal percent
+        percent = 100 + emu.reg_read(reg.UC_MIPS_REG_S1) * 5
+    cpu.hook_add(UC_HOOK_CODE, read_multiplier, begin=0x80049810, end=0x80049810)
+    cpu.hook_add(UC_HOOK_CODE, lambda emu, *args: emu.emu_stop(), begin=0x80049A64, end=0x80049A64)
+    for case in cases:
+        for record, address in zip(case['records'], (*parents, child)):
+            cpu.mem_write(address+0x0C, bytes(record))
+        for address, p in zip(parents, (case['a'], case['b'])):
+            cpu.mem_write(address+0x99, bytes([p['personalityId']]))
+            cpu.mem_write(address+0xB0, bytes([p['wildness']]))
+            cpu.mem_write(address+0x78, bytes(p['knownSkills']).ljust(8,b'\0'))
+            cpu.mem_write(address+0xB4, struct.pack('<6H', *p['baseStats'].values()))
+        cpu.mem_write(0x189000, tables[case['a']['campaign'] != 'terry'])
+        for name,address in zip(('S3','S4','FP','GP'), (*parents,child,gp)):
+            cpu.reg_write(getattr(reg,'UC_MIPS_REG_'+name), address | 0x80000000)
+        percent = None
+        cpu.emu_start(0x80049214, 0x80001000, count=10000)
+        actual = struct.unpack('<6H',cpu.mem_read(child+0xB4,12))
+        if list(actual) != case['predicted'] or percent != case['percent']:
+            raise ValueError(f'Native PC={hex(cpu.reg_read(reg.UC_MIPS_REG_PC))}, stats {actual} at {percent}% vs forecast: {case}')
+        multipliers.add(percent)
+    if multipliers != {100,105,110,115,120}:
+        raise ValueError(f'Missing native multiplier coverage: {multipliers}')
+    return len(cases)
 
 
 def main():
@@ -58,7 +176,18 @@ def main():
     coefficients = original.exe[0x80010A14-bias:0x80010A24-bias]
     world.require(coefficients.hex() == '02010502030107020401050106010701', 'Coefficient table changed')
     reports = []
+    hatches = hatch_cases()
     for label, disc in [('retail Japanese', original), ('English v1.0.74 Enhanced', current)]:
+        battle = disc.resource(5502)
+        action_table = 0x80174824 - 0x80114CB8
+        for channel, skill_id in enumerate(CHANNEL_SKILL_IDS, start=1):
+            world.require(battle[action_table + 16*skill_id + 1] == channel,
+                          f'Action {skill_id} no longer uses resistance channel {channel}')
+        # Gigante uses the Sacrifice / Body Slam channel and has a nonzero
+        # near-death threshold at grade 7, unlike ordinary spell damage.
+        chance_table = 0x80175680 - 0x80114CB8
+        world.require(battle[action_table + 16*214 + 1] == 15 and battle[chance_table + 5*8 + 7] == 30,
+                      'Gigante resistance channel or grade-7 status threshold changed')
         cpu = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 | UC_MODE_LITTLE_ENDIAN)
         cpu.mem_map(0, 0x200000)
         cpu.mem_write(0x10000, disc.exe[0x800:])
@@ -94,12 +223,18 @@ def main():
         for plus in (0, 1, 20, 50, 73, 74, 99):
             check([i%8 for i in range(27)], [(i+2)%8 for i in range(27)], [(i+5)%8 for i in range(27)], plus)
             cases += 1
-        reports.append({'disc':label, 'cases':cases, 'channelsPerCase':27})
+        plus_cases = verify_child_plus(cpu, reg, (parent_a, parent_b), child)
+        hatch_cpu = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 | UC_MODE_LITTLE_ENDIAN)
+        hatch_cpu.mem_map(0, 0x200000)
+        hatch_cpu.mem_write(0x10000, disc.exe[0x800:])
+        hatch_count = verify_hatch_stats(hatch_cpu, reg, disc, (parent_a,parent_b), child, hatches)
+        reports.append({'disc':label, 'cases':cases, 'channelsPerCase':27, 'hatchStatCases':hatch_count,
+                        'childPlusCases':plus_cases, 'channelActionIds':CHANNEL_SKILL_IDS})
     print(json.dumps({'passed':True, 'originalDiscSha256':world.native.RETAIL_SHA256,
         'currentDiscSha256':V74, 'matchingSpans':spans, 'speciesAttributesSha256':world.digest(species),
         'coefficientHex':coefficients.hex(), 'divisors':DIVISORS, 'damagePercentScales':scales,
         'nativeRuns':reports,
-        'scope':'Exact resistance instruction loop, every base/parent grade and child plus 0-99; no complete game or disc build.'}, indent=2))
+        'scope':'Offspring resistance loop, six hatch stats, child + boundaries and action descriptor channel identities.'}, indent=2))
 
 
 if __name__ == '__main__':

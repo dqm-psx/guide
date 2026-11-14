@@ -23,6 +23,11 @@ The original Japanese FONT resource SHA-256 is
 The extractor checks this identity and texture/palette placement, then verifies
 every exported image's RGBA pixels after decoding the WebP.
 
+The English v1.0.74 font stores block 1 with native run-length compression.
+After decoding, all 100 RGBA pixels of each family emblem match the Japanese
+release, including the Slime's large white eyes. The guide adds a faint outline
+around the transparent silhouettes in dark mode.
+
 ```sh
 python scripts/build-family-icons.py /path/to/extracted/asset_5542.bin
 ```

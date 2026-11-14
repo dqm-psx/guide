@@ -5,6 +5,17 @@
   const stats = ['hp','mp','attack','defense','agility','intelligence'];
   const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max ? value : null;
   const skillList = (value, max) => Array.isArray(value) && value.length <= max && value.every(id => integer(id,1,169) !== null) && new Set(value).size === value.length ? [...value] : null;
+  function readPedigree(value) {
+    if (!Array.isArray(value) || value.length !== 6) return null;
+    return Array.from(value, (ancestor, index) => {
+      if (!ancestor || typeof ancestor !== 'object' || Array.isArray(ancestor)) return null;
+      const speciesIndex = integer(ancestor.speciesIndex, 0, 324);
+      const sex = ['male', 'female'].includes(ancestor.sex) ? ancestor.sex : null;
+      if (index >= 2) return {speciesIndex, sex};
+      return {speciesIndex, sex, plus: integer(ancestor.plus, 0, 127),
+        nickname: typeof ancestor.nickname === 'string' ? ancestor.nickname.slice(0, 5) : ''};
+    });
+  }
   function adapt(entry, team) {
     const saved = entry.saveDetails;
     const fresh = saved?.schemaVersion === 1 && saved.speciesIndex === entry.speciesIndex && saved.level === entry.level && saved.plus === entry.plus;
@@ -17,6 +28,10 @@
       campaign,level,plus:integer(entry.plus,0,99),levelCap,
       location:source.location === entry.location && ['party','farm','hibernation'].includes(source.trainingLocation) ? source.trainingLocation : entry.location === 'farm' ? 'farm' : 'party',
       baseStats:copyStats(source.baseStats),battleStats:copyStats(source.battleStats),
+      currentHp:integer(source.currentHp,0,999),currentMp:integer(source.currentMp,0,999),
+      experience:integer(source.experience,0,0xffffff),experienceToNext:integer(source.experienceToNext,0,0xffffff),
+      personalityId:integer(source.personalityId,1,27),wildness:integer(source.wildness,0,255),
+      pedigree:readPedigree(source.pedigree),
       knownSkills:skillList(source.knownSkills,8),inheritedSkills:skillList(source.inheritedSkills,25),
       resistances:Array.isArray(source.resistances) && source.resistances.length === 27 && source.resistances.every(code=>integer(code,0,7)!==null) ? [...source.resistances] : null,
       equipmentId:integer(source.equipmentId,64,94),

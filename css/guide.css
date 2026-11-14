@@ -258,7 +258,7 @@ button.species-star[aria-pressed=true]{color:var(--gold)}
 .plan-node-parents{font-weight:650;color:var(--ink);margin:0 0 4px}
 .plan-node-kind{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);background:var(--light);border-radius:20px;padding:2px 9px;margin-bottom:4px}
 .plan-node-context{margin:0 0 4px}
-.plan-node-condition{margin:0 0 4px;color:var(--gold);font-weight:600}
+.plan-node-condition{margin:0 0 4px;color:var(--ink);font-weight:600}
 .plan-node-unknowns{margin:0 0 4px;font-size:12px}
 .plan-node-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .plan-node-actions button{font-size:12px;padding:6px 11px}
@@ -267,18 +267,38 @@ button.species-star[aria-pressed=true]{color:var(--gold)}
 .plan-node-incompatible{margin:0 0 6px;font-size:12px;font-weight:650;color:#8a5a12}
 .plan-node-hint{margin:0 0 4px;font-size:12px;color:var(--muted)}
 .plan-inline-error .plan-node-actions{margin-top:8px}
-.plan-side-column{min-width:0}
-#plan-suggestions-for{margin:0 0 10px;font-size:13px;font-weight:600}
-#plan-suggestions{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-.plan-suggestion{border:1px solid var(--line);border-radius:10px;background:var(--white);padding:12px 14px}
-.plan-suggestion-parents{font-weight:650;font-size:14px;margin:0 0 4px}
-.plan-suggestion-kind{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);background:var(--light);border-radius:20px;padding:2px 9px;margin-bottom:4px}
-.plan-suggestion-condition{font-size:12px;color:var(--muted);margin:0 0 4px}
-.plan-suggestion-badges{margin:0 0 4px}
-.plan-suggestion-badge{display:inline-block;font-size:10px;font-weight:700;color:var(--gold);background:#fdf3e3;border-radius:20px;padding:2px 8px;margin-right:4px}
-.plan-suggestion-unknowns{font-size:11px;color:var(--muted);margin:0 0 8px}
-.plan-suggestion button{font-size:12px;padding:6px 11px}
-#plan-suggestions-clear{font-size:13px;margin-top:10px}
+.plan-side-column{min-width:0;container-type:inline-size}
+#plan-suggestions-for{margin:0;font:700 1.2rem/1.3 Georgia,serif;color:var(--guide-green);scroll-margin-top:5rem}
+#plan-limits{margin:4px 0 0;font-size:.8rem}
+#plan-suggestions-clear{margin:4px 0;padding:5px 0;background:none;border:0;color:var(--teal);font-size:.83rem;text-decoration:underline;text-underline-offset:3px}
+#plan-suggestions{margin-top:12px}
+.plan-suggestion{border-top:1px solid var(--line);padding:12px 0;display:grid;gap:8px}
+.plan-suggestion-parents{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center}
+.plan-suggestion-parent{display:flex;align-items:center;gap:9px;min-width:0;line-height:1.25}
+.plan-suggestion-parent>div{min-width:0}
+.plan-parent-art{display:grid;place-items:center;flex:0 0 44px;height:44px;background:var(--light);border-radius:6px}
+.plan-parent-art>.monster-sprite{width:40px;height:40px}
+.plan-suggestion-parent strong{display:block;color:var(--ink);font-size:.95rem;overflow-wrap:anywhere}
+.plan-suggestion-parent a{color:inherit;text-decoration-color:var(--guide-rule);text-underline-offset:3px}
+.plan-suggestion-parent a:hover{color:var(--teal)}
+.plan-parent-role,.plan-parent-status{display:block;color:var(--muted);font-size:.76rem}
+.plan-parent-role{margin-bottom:2px}
+.plan-parent-status{margin-top:3px}
+.plan-parent-status.is-owned{color:var(--teal);font-weight:650}
+.plan-pair-plus{color:var(--muted)}
+.plan-recipe-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px 12px;flex-wrap:wrap}
+.plan-suggestion-condition{flex:1 1 9rem;color:var(--ink);font-size:.82rem;line-height:1.3}
+.plan-recipe-actions button{min-height:34px;padding:5px 12px;font-size:.8rem}
+.plan-side-column .pagination{padding-inline:0}
+@container (max-width:355px){
+  .plan-suggestion-parents{gap:5px}
+  .plan-suggestion-parent{align-items:flex-start;flex-direction:column;gap:5px}
+  .plan-pair-plus{align-self:start;line-height:40px}
+}
+@container (min-width:580px){
+  .plan-suggestion{grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:16px}
+  .plan-recipe-actions{max-width:12rem}
+}
 #plan-suggestions-clear[hidden]{display:none}
 @media(max-width:950px){.plan-layout{grid-template-columns:1fr}}
 @media(max-width:650px){.plan-toolbar{padding:6px 18px 13px}.plan-inline-error{margin:4px 18px 0}#plan-clear{margin:10px 18px 0}.plan-undo-row{padding:10px 18px 0}.plan-layout{padding:14px 18px 0}.plan-node-actions button{flex:1 1 auto}}
@@ -288,3 +308,4 @@ button.species-star[aria-pressed=true]{color:var(--gold)}
 :root[data-theme=dark]{--family-text:#c7dabc}
 .family-label{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;white-space:nowrap}
 .family-label>.family-icon{width:20px;height:20px;max-width:none;flex:0 0 20px;object-fit:contain;image-rendering:pixelated}
+:root[data-theme=dark] .family-icon{filter:drop-shadow(0 1px 0 #829897) drop-shadow(0 -1px 0 #829897)}

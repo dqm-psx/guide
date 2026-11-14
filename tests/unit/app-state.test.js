@@ -21,6 +21,22 @@ const DQMStorage = context.DQMStorage;
 // so deepStrictEqual comparisons round-trip through JSON first.
 const plain = value => JSON.parse(JSON.stringify(value));
 
+test('memory card Adventure Log is bounded, anonymous and survives a document backup', () => {
+  const {adventureBlock} = require('../helpers/psx-save');
+  const log = require('../../js/save-import').read(adventureBlock(2),context.DATA.species).saves[0].adventureLog;
+  const state = api.defaultState();
+  state.teams[0].adventureLog = {...log, privateName:'do not keep', bag:log.bag.map(row=>({...row,note:'untrusted'}))};
+  const backup = api.toJSON(state);
+  assert.deepEqual(plain(api.normalizeDocument(JSON.parse(backup)).teams[0].adventureLog),log);
+  assert.ok(!backup.includes('do not keep') && !backup.includes('untrusted'));
+  state.teams[0].adventureLog = {...log, librarySpecies:[312]};
+  assertCode(()=>api.toJSON(state),'invalid');
+  state.teams[0].adventureLog = {...log, eggs:Array(51).fill(log.eggs[0])};
+  assertCode(()=>api.toJSON(state),'invalid');
+  state.teams[0].adventureLog = {...log, keys:{...log.keys, appraised:5}};
+  assertCode(()=>api.toJSON(state),'invalid');
+});
+
 function assertCode(fn, code) {
   let thrown = null;
   try {

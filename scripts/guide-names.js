@@ -217,7 +217,8 @@ function sectionSkillNames(entryId, section, skills, skillBindings) {
 function sectionComboNames(entryId, section, combos, comboBindings, skills, skillBindings) {
   const article = entryId === 'field-battle-combos';
   const comparison = entryId === 'field-restored-content' && section.id === 'battle-combo-changes';
-  if (!comboBindings.length || (!article && !comparison)) return section;
+  const resistanceExample = entryId === 'field-breed' && section.id === 'resistance-example';
+  if (!comboBindings.length || (!article && !comparison && !resistanceExample)) return section;
   const revise = matcher(comboBindings.map((bind,i) => ({spelling:bind.spelling,title:combos[i].title})));
   const result = {...section};
   for (const key of ['title','intro']) if (section[key]) result[key] = revise(section[key]);
@@ -393,6 +394,9 @@ function buildGuideNames({comparison, revision, field, world, atlas, skillBindin
         if (section.table) translated.table={...section.table,
           ...(section.table.caption ? {caption:revise(section.table.caption)} : {}),
           columns:section.table.columns.map(revise),rows:section.table.rows.map(pair=>pair.map(revise))};
+        if (row.id === 'field-battle-combos' && section.id === 'combo-recipes') {
+          battleCombos.forEach((combo, i) => { combo.effect = translated.table.rows[i][2]; });
+        }
         return translated;
       });
       if (JSON.stringify(sections) !== JSON.stringify(row.sections)) patch.sections = sections;

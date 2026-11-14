@@ -127,7 +127,11 @@
       if (event.key === 'Enter' && !list.hidden) { event.preventDefault(); commit(active); }
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
-        if (list.hidden) { show(''); return; }
+        if (list.hidden) {
+          show('');
+          if (active < 0 && items.length) highlight(event.key === 'ArrowUp' ? items.length - 1 : 0, true);
+          return;
+        }
         highlight(Math.max(0, Math.min(items.length - 1, active + (event.key === 'ArrowDown' ? 1 : -1))), true);
       }
     });

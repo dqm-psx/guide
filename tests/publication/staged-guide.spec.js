@@ -167,6 +167,27 @@ test('downloading from home includes unopened planning tools and retains calcula
   await expect(page.locator('.combat-damage').first()).toHaveText('12–15 damage');
   await page.reload();
   await expect(page.locator('#combat-attack')).toHaveValue('100');
+  // Enter through the handbook after downloading. My game and its data have
+  // never been opened online in this browser.
+  await page.goto(url+'#field-guide?entry=field-battle-combos');
+  await page.getByRole('link',{name:'Check my party’s battle combos'}).click();
+  const {comboBlock}=await import('../helpers/psx-save.js');
+  await page.locator('#planner-open-import').click();
+  await page.locator('#save-import-file').setInputFiles({name:'team.sav',mimeType:'application/octet-stream',buffer:comboBlock()});
+  await page.locator('#save-import-apply').click();
+  await expect(page.locator('#planner-party-combos')).toBeVisible();
+  await page.goto(url+'#field-guide?entry=field-battle-combos');
+  await page.getByRole('link',{name:'Check my party’s battle combos'}).click();
+  await expect(page.locator('#planner-party-combos')).toHaveAttribute('open','');
+  for (const id of [208,209]) {
+    await expect(page.locator('#planner-combo-results')).toContainText(shipped.reference.guide_names.battle_combos.find(combo=>combo.id===id).title);
+  }
+  await page.goto(url+'#field-guide?entry=field-breed');
+  await page.getByRole('link',{name:'Choose parents from My game'}).click();
+  const [first,second]=await page.evaluate(()=>DQMApp.activeTeam().entries.map(entry=>entry.id));
+  await page.locator('#planner-breeding-member').selectOption(first);
+  await page.locator('#planner-breeding-partner').selectOption(second);
+  await expect(page.locator('#planner-selected-pair')).toContainText('17 of 27 resistances improve');
   check.assertClean();
 });
 

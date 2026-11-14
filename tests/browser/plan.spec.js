@@ -85,10 +85,10 @@ test.describe('served', () => {
 
   const readStored = (page, key) => page.evaluate(k => localStorage.getItem(k), key);
 
-  test('shows the empty plan state when no target is pinned', async ({ page }) => {
+  test('offers a monster picker in My game before the team has a breeding plan', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await openPlan(page);
-    await expect(page.locator('#plan-empty')).toBeVisible();
+    await expect(page.getByRole('combobox', {name:'Choose a breeding target'})).toBeVisible();
     await expect(page.locator('#plan-body')).toBeHidden();
   });
 
@@ -98,8 +98,25 @@ test.describe('served', () => {
     await expect(page.locator('#plan-body')).toBeVisible();
     await expect(page.locator('#plan-tree .plan-node')).toHaveCount(1);
 
-    // The top suggestion for Winged Slime is Drake Slime + Picky.
-    await useSuggestionById(page, 'base:shrine:0:89');
+    await page.setViewportSize({width:375, height:812});
+    const recipe = page.locator('#plan-suggestions').getByRole('listitem').first();
+    const parents = recipe.locator('.plan-suggestion-parent');
+    await expect(parents).toHaveCount(2);
+    await expect(parents.nth(0)).toContainText('Pedigree');
+    await expect(parents.nth(0)).toContainText('Drake Slime');
+    await expect(parents.nth(0).locator('img[data-monster-index="0"]')).toBeVisible();
+    await expect(parents.nth(1)).toContainText('Mate');
+    await expect(parents.nth(1)).toContainText('Picky');
+    await expect(parents.nth(1).locator('img[data-monster-index="89"]')).toBeVisible();
+    await expect(parents.locator('.plan-parent-status')).toHaveText(['Not on team', 'Not on team']);
+    await recipe.scrollIntoViewIfNeeded();
+    const bounds = await recipe.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(375);
+    expect(await recipe.evaluate(card => card.scrollWidth <= card.clientWidth)).toBe(true);
+    await expect.poll(() => parents.locator('img').evaluateAll(images =>
+      images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+    await recipe.getByRole('button', {name:/Use recipe.*Drake Slime.*Picky/}).press('Enter');
 
     // The tree shows the recipe with parents in order and two child requirements.
     await expect(page.locator('#plan-tree .plan-node')).toHaveCount(3);
@@ -115,7 +132,7 @@ test.describe('served', () => {
     await expect(children.nth(1)).toContainText(/Mate/i);
   });
 
-  test('expand a child and reject a cycle-creating recipe', async ({ page }) => {
+  test('suggestions for a child exclude recipes that would need its ancestor', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await pinTarget(page, 2); // Winged Slime
 
@@ -129,15 +146,46 @@ test.describe('served', () => {
     await useSuggestionById(page, 'base:shrine:1:26');
     await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
 
-    // Attempt a recipe that would create a cycle: Spotted Slime + Drake Slime
-    // (Drake Slime is already an ancestor of Spotted Slime).
     const spottedCard = nodeCard(page, 'Spotted Slime');
     await spottedCard.locator('button[data-node-choose]').click();
-    await useSuggestionById(page, 'base:shrine:0:57');
-
-    // The error is shown and the plan is unchanged.
-    await expect(page.locator('#plan-message')).toContainText('cycle');
+    await expect(page.locator('#plan-suggestions-for')).toHaveText('Recipes for Spotted Slime');
+    await expect(page.locator('#plan-suggestions [data-suggestion-use]')).not.toHaveCount(0);
+    await expect(page.locator('[data-suggestion-use="base:shrine:0:57"]')).toHaveCount(0);
     await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
+  });
+
+  test('owned and missing parent labels remain readable in both themes', async ({ page }) => {
+    await page.setViewportSize({width:530, height:892});
+    await seedTeam(page, [{speciesIndex:0, sex:'male'}]);
+    await page.goto(url() + '#team-planner?tab=targets');
+    const picker = page.getByRole('combobox', {name:'Choose a breeding target'});
+    await picker.fill('Winged Slime');
+    await picker.press('Enter');
+
+    const status = page.locator('#plan-suggestions .plan-suggestion').first().locator('.plan-parent-status');
+    await expect(status).toHaveText(['In party', 'Not on team']);
+    for (const theme of ['light', 'dark']) {
+      await page.locator('#guide-settings > summary').click();
+      await page.click('button[data-theme-choice="' + theme + '"]');
+      await page.locator('#guide-settings > summary').click();
+      const ratios = await status.evaluateAll(labels => {
+        function luminance(cssColor) {
+          const channels = cssColor.match(/[\d.]+/g).slice(0,3).map(value => Number(value) / 255);
+          const [r,g,b] = channels.map(channel => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+          return 0.2126*r + 0.7152*g + 0.0722*b;
+        }
+        return labels.map(label => {
+          let surface = label;
+          while (surface.parentElement && getComputedStyle(surface).backgroundColor === 'rgba(0, 0, 0, 0)') {
+            surface = surface.parentElement;
+          }
+          const text = luminance(getComputedStyle(label).color);
+          const background = luminance(getComputedStyle(surface).backgroundColor);
+          return (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05);
+        });
+      });
+      for (const ratio of ratios) expect(ratio, theme + ' parent status contrast').toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   test('status and note persist across reload', async ({ page }) => {
@@ -224,6 +272,8 @@ test.describe('served', () => {
     // The suggestions now rank the available parent first.
     const firstAfter = page.locator('#plan-suggestions button[data-suggestion-use]').first();
     await expect(firstAfter).toHaveAttribute('data-suggestion-use', 'base:shrine:1:89');
+    const firstParents = page.locator('#plan-suggestions .plan-suggestion').first().locator('.plan-parent-status');
+    await expect(firstParents).toHaveText(['Marked available', 'Not on team']);
   });
 
   test('replace a recipe keeps an unrelated branch and offers undo', async ({ page }) => {
@@ -269,7 +319,7 @@ test.describe('served', () => {
     await expect(drakeCard3.locator('.plan-node-parents')).toContainText('Spotted Slime');
   });
 
-  test('replacing a recipe refuses a cycle-creating recipe', async ({ page }) => {
+  test('replacing a recipe only offers parents that can go into the branch', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await pinTarget(page, 2);
     await useSuggestionById(page, 'base:shrine:0:89');
@@ -282,8 +332,9 @@ test.describe('served', () => {
     const drake2 = nodeCard(page, 'Drake Slime');
     await drake2.locator('button[data-node-replace]').click();
     await page.click('#plan-replace-confirm');
-    await useSuggestionById(page, 'base:shrine:0:0');
-    await expect(page.locator('#plan-message')).toContainText('cycle');
+    await expect(page.locator('#plan-suggestions-for')).toHaveText('Recipes for Drake Slime');
+    await expect(page.locator('[data-suggestion-use="base:shrine:0:0"]')).toHaveCount(0);
+    await expect(page.locator('[data-suggestion-use="base:shrine:1:26"]')).toBeVisible();
     await expect(page.locator('#plan-tree .plan-node')).toHaveCount(5);
   });
 
@@ -354,6 +405,10 @@ test.describe('served', () => {
     // The room recipe now appears first.
     const firstRoom = page.locator('#plan-suggestions button[data-suggestion-use]').first();
     await expect(firstRoom).toHaveAttribute('data-suggestion-use', 'flag_gated:room:13:family7');
+    const familyMate = page.locator('#plan-suggestions .plan-suggestion').first().locator('.plan-suggestion-parent').nth(1);
+    await expect(familyMate.locator('img.family-icon')).toBeVisible();
+    await expect(familyMate).toContainText(/Zombie/i);
+    await expect(familyMate.locator('img[data-monster-index]')).toHaveCount(0);
 
     // Switch back to shrine.
     await page.locator('#plan-context').selectOption('shrine');
@@ -361,22 +416,37 @@ test.describe('served', () => {
     await expect(firstShrine2).toHaveAttribute('data-suggestion-use', 'base:shrine:11:222');
   });
 
-  test('recipes share one eligibility note and plus recipes show the required +N condition', async ({ page }) => {
+  test('plus recipes show the required +N before and after choosing the parents', async ({ page }) => {
+    await seedTeam(page, [{speciesIndex:1, sex:'male'}]);
     await page.goto(url() + '#offspring-finder');
-    await pinTarget(page, 2); // Winged Slime
-    await useSuggestionById(page, 'base:shrine:0:89');
-
-    await expect(page.locator('#plan-limits')).toBeVisible();
-    await expect(page.locator('#plan-body').getByText(/check availability, offspring sex/i)).toHaveCount(1);
-
-    // Pin Spotted King and expand with the plus recipe.
     await pinTarget(page, 17); // Spotted King
-    await useSuggestionById(page, 'plus_threshold:shrine:1:1');
+    const recipe = page.locator('#plan-suggestions').getByRole('listitem').filter({
+      has:page.locator('[data-suggestion-use="plus_threshold:shrine:1:1"]')
+    });
+    await expect(recipe).toContainText(/\+4/);
+    await recipe.getByRole('button').click();
 
     // The plus recipe shows the required +N condition.
     const rootCard2 = page.locator('#plan-tree .plan-node').first();
     await expect(rootCard2.locator('.plan-node-condition')).toContainText(/\+4/);
     await expect(rootCard2.locator('.plan-node-unknowns').last()).toContainText(/zero/);
+  });
+
+  test('Dragon Kid parents retain the below +4 condition in a saved Dragon plan', async ({ page }) => {
+    await seedTeam(page, [{speciesIndex:26, sex:'male'}, {speciesIndex:26, sex:'female'}]);
+    await page.goto(url() + '#team-planner?tab=targets');
+    const target = page.getByRole('combobox', {name:'Choose a breeding target'});
+    await target.fill('Dragon');
+    await target.press('Enter');
+    const recipe = page.locator('#plan-suggestions').getByRole('listitem').filter({
+      has:page.locator('[data-suggestion-use="base:shrine:26:26"]')
+    });
+    await expect(recipe.locator('.plan-suggestion-condition')).toHaveText('Both parents must be below +4.');
+    await recipe.getByRole('button').click();
+    const rule = page.locator('#plan-tree .plan-node').first().locator(':scope > .plan-node-recipe .plan-node-condition');
+    await expect(rule).toHaveText('Both parents must be below +4.');
+    await page.reload();
+    await expect(rule).toHaveText('Both parents must be below +4.');
   });
 
   test('full backup round trip restores the plan, statuses, notes, and roster links', async ({ page }) => {
@@ -459,8 +529,9 @@ test.describe('served', () => {
     const choose = rootCard.locator('button[data-node-choose]');
     await choose.focus();
     await page.keyboard.press('Enter');
-    await expect(page.locator('#plan-suggestions-for')).toContainText('Recipe options for Winged Slime');
-    await page.locator('#plan-suggestions-clear').click();
+    await expect(page.locator('#plan-suggestions-for')).toHaveText('Recipes for Winged Slime');
+    await expect(page.locator('#plan-suggestions-for')).toBeFocused();
+    await expect(page.locator('#plan-suggestions-clear')).toBeHidden();
 
     // The summary announces via role="status".
     await expect(page.locator('#plan-summary')).toHaveAttribute('role', 'status');
@@ -470,6 +541,11 @@ test.describe('served', () => {
     await useSuggestionById(page, 'base:shrine:0:89');
     const drakeCard = nodeCard(page, 'Drake Slime');
     await expect(drakeCard.locator('select[data-node-roster]')).toHaveAttribute('aria-label', 'Link roster entry for Drake Slime');
+
+    await drakeCard.getByRole('button', {name:'Choose recipe for Drake Slime'}).press('Enter');
+    await expect(page.locator('#plan-suggestions-for')).toHaveText('Recipes for Drake Slime');
+    await page.getByRole('button', {name:'Back to Winged Slime'}).press('Enter');
+    await expect(page.locator('#plan-suggestions-for')).toHaveText('Recipes for Winged Slime');
 
     // The suggestion pager is operable by keyboard.
     const nextButton = page.locator('#plan-suggestions-next');
@@ -543,6 +619,8 @@ test.describe('served', () => {
 
     // The family-wildcard mate cannot be expanded and must not crash the page.
     const mateCard = rootCard.locator('.plan-node-children .plan-node').nth(1);
+    await expect(mateCard.locator('.plan-node-name')).toHaveText('Any Zombie-family monster');
+    await expect(mateCard.locator('.plan-node-header img.family-icon')).toBeVisible();
     await expect(mateCard.locator('.plan-node-hint')).toBeVisible();
     await expect(mateCard.locator('button[data-node-choose]')).toHaveCount(0);
     assert.deepEqual(errors, []);
@@ -751,6 +829,7 @@ test.describe('served', () => {
   });
 
   test('a base recipe superseded by a room override is flagged in the room context', async ({ page }) => {
+    await seedTeam(page, [{speciesIndex:11, sex:'male'}, {speciesIndex:101, sex:'female'}]);
     await page.goto(url() + '#offspring-finder');
     await pinTarget(page, 2);
     await useSuggestionById(page, 'base:shrine:11:101');
@@ -765,6 +844,7 @@ test.describe('served', () => {
   });
 
   test('a family-wildcard room override flags a base recipe in the room context', async ({ page }) => {
+    await seedTeam(page, [{speciesIndex:13, sex:'male'}, {speciesIndex:199, sex:'female'}]);
     await page.goto(url() + '#offspring-finder');
     await pinTarget(page, 6); // Bubble Slime
     await useSuggestionById(page, 'base:shrine:13:199'); // Healer Slime + Ghost

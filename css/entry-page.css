@@ -98,6 +98,7 @@ a{color:#1b604e}li{margin:4px 0}img{max-width:100%;height:auto;image-rendering:p
 .entry-identity{display:flex;align-items:center;gap:1rem}
 .family-label{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;white-space:nowrap}
 .family-label>.family-icon{width:20px;height:20px;max-width:none;flex:0 0 20px;object-fit:contain;image-rendering:pixelated}
+@media(prefers-color-scheme:dark){.family-icon{filter:drop-shadow(0 1px 0 #829897) drop-shadow(0 -1px 0 #829897)}}
 .entry-identity p,.entry-profile .entry-note{margin:.2rem 0 .6rem;color:var(--muted);font-size:.875rem}
 .entry-portrait{object-fit:contain;flex:none;width:2rem;height:2rem;image-rendering:pixelated}
 .entry-identity>.entry-portrait{width:4.5rem;height:4.5rem;padding:.35rem;background:var(--soft);border-radius:.55rem}

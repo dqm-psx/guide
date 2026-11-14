@@ -21,16 +21,20 @@ test('changed species, plus or level invalidates the entire saved calculator con
   for(const change of [{speciesIndex:11},{plus:13},{level:31}]){
     const result=adapt({...entry,...change},team);
     assert.equal(result.sourceStatus,'changed');assert.equal(result.baseStats.attack,null);assert.equal(result.levelCap,null);assert.equal(result.resistances,null);assert.equal(result.knownSkills,null);
+    assert.equal(result.currentMp,null);assert.equal(result.currentHp,null);
   }
   const moved=adapt({...team.entries[2],location:'party'},team);assert.equal(moved.location,'party');
 });
 test('unknown and tampered optional metadata stays unknown; DQM2 is not assumed to mean Cobi',()=>{
   const manual=adapt({speciesIndex:11,plus:0,location:'party',id:'m'},{id:'t',game:'dqm2'});
   assert.equal(manual.campaign,null);assert.equal(manual.level,null);assert.equal(manual.knownSkills,null);
+  assert.equal(manual.currentHp,null);assert.equal(manual.currentMp,null);
   const team=fixture(),entry=team.entries[0];
   entry.saveDetails.baseStats.attack='999';entry.saveDetails.resistances[4]=8;entry.saveDetails.knownSkills=[4,4];entry.saveDetails.inheritedSkills=[170];entry.saveDetails.levelCap=20;
+  entry.saveDetails.currentHp=1000;entry.saveDetails.currentMp=0;
   const result=adapt(entry,team);
   assert.equal(result.baseStats.attack,null);assert.equal(result.resistances,null);assert.equal(result.knownSkills,null);assert.equal(result.inheritedSkills,null);assert.equal(result.levelCap,null);
+  assert.equal(result.currentHp,null);assert.equal(result.currentMp,0);
 });
 
 test('guide backup export/import preserves the verified snapshot and optional campaign',()=>{

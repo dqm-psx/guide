@@ -19,6 +19,17 @@
   function topicFor(article) {
     return topics.find(topic=>topic.id===article.topic) || topics.find(topic=>topic.entries.includes(article.id)) || topics[3];
   }
+  const articleTools = {
+    'field-battle-combos':['#team-planner?tab=roster&combos=party','Check my party’s battle combos'],
+    'field-breed':['#team-planner?tab=breeding','Choose parents from My game'],
+    'field-skill-inheritance':['#skill-planner','Open the skill & growth planner'],
+    'field-growth':['#skill-planner','Open the skill & growth planner'],
+    'field-damage-and-resistance':['#combat-planner','Open the damage calculator']
+  };
+  function articleTool(id, escape) {
+    const tool = articleTools[id];
+    return tool ? '<p><a class="guide-action training-open" href="'+escape(tool[0])+'">'+escape(tool[1])+' →</a></p>' : '';
+  }
   function handbook(articles,{escape,titleFor,linkTo,topicHref,activeTopic='',tools=true}) {
     articles=articles.filter(article=>!article.redirect_to);
     const available=topics.filter(topic=>articles.some(article=>topicFor(article)===topic));
@@ -70,7 +81,7 @@
     }, onChange);
   }
 
-  globalThis.DQMMechanicsIndex = {render, enableSorting,handbook,topics,topicFor};
+  globalThis.DQMMechanicsIndex = {render, enableSorting,handbook,topics,topicFor,articleTool};
   const published = globalThis.document?.querySelector('#mechanics .mechanics-index');
   if (published) enableSorting(published);
 })();
