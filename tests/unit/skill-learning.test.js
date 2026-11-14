@@ -47,6 +47,22 @@ test('each native direct-skill minimum is sufficient and every positive requirem
   }
 });
 
+test('upcoming moves use the saved pool, exclude old versions and stop at the individual cap',()=>{
+  const monster={speciesIndex:11,campaign:'terry',level:4,levelCap:10,knownSkills:[5],inheritedSkills:[4,5,8],
+    baseStats:stats, location:'farm'};
+  const result=model.upcoming(monster);
+  assert.equal(result.level,5);
+  assert.ok(!result.skills.some(move=>move.skillId===4||move.skillId===5));
+  assert.ok(result.skills.some(move=>move.skillId===8&&move.beyondCap&&move.projectedLevel===null));
+  assert.ok(result.skills.some(move=>move.skillId===6&&move.projectedLevel===null&&move.routes.some(r=>r.kind==='upgrade')));
+  const projected=model.upcoming({...monster,levelCap:30}).skills.find(move=>move.skillId===8);
+  assert.equal(projected.projectedLevel,14);
+  const unknown=model.upcoming({...monster,levelCap:30,baseStats:{...stats,mp:null}}).skills.find(move=>move.skillId===8);
+  assert.equal(unknown.projectedLevel,null);assert.equal(unknown.beyondCap,false);
+  assert.equal(model.upcoming({...monster,inheritedSkills:null}),null);
+  assert.deepEqual(model.upcoming({...monster,level:10}),{atCap:true,skills:[]});
+});
+
 test('access, numerical thresholds and training location are separate conditions',()=>{
   assert.equal(model.check({...base,skillId:1}).status,'missing-route');
   const natural={...base,skillId:4,level:3,stats:{mp:11,intelligence:23}};

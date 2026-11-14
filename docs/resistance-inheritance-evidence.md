@@ -52,6 +52,26 @@ are sufficient for the comparison. For example, two same-family, level-10
 parents both at +0 produce a +2 child when HP equals or exceeds MP and a +3
 child when MP is higher.
 
+### Level 1 hatchling stats
+
+The ordinary shrine sets all six base stats when creating the egg. For each
+stat it takes one quarter of the parents’ combined unequipped value, rounds
+down, and uses at least 1. It applies one shared multiplier and rounds each
+result to the nearest integer, with halves rounded up. Injuries and spent MP
+have no effect on the forecast.
+
+The multiplier starts at 100%. Each of these conditions adds five percentage points.
+
+- The ordered pair of personality IDs receives a 3 in the shrine’s compatibility table (resource 3658).
+- The parents’ species ranks sum to at least 10 (byte 0 of each row in resource 3657).
+- The parents have at least 50 wildness in total.
+- The child starts with at least 16 distinct nonzero skill candidates. The game counts the campaign-specific natural skills of both parents and the child, plus the base forms of moves currently learned by either parent. Duplicate IDs count once.
+
+Each pair has a definite result. Reversing the parents can change the child
+species and the personality lookup. My game recalculates after a swap and
+shows a range when an older import is missing a bonus input. A missing base
+stat is displayed as unknown. Re-importing the card restores these inputs.
+
 ### Calculating each resistance grade
 
 For each resistance channel, let `B` be the child's species base grade, `P1` and
@@ -149,6 +169,13 @@ HP/MP rounding boundaries under all five starting-stat multipliers. The same
 verifier reads byte 1 of the 16-byte action descriptors at `0x80174824` in
 resource 5502 to match one representative skill with each of the 27 saved
 channels in order.
+
+For 512 synthetic pairings per disc, the verifier compares the shipped
+JavaScript forecast with execution from `0x80049214` through `0x80049A60`.
+The emulator reads the parents, child species, unmodified skill, attribute and
+personality tables and runs the original stat instructions. All 6,144 stat
+comparisons matched across the two discs, covering both natural-skill tables,
+all three campaigns and all five multipliers.
 
 ```text
 python scripts/verify-resistance-inheritance-native.py --original-bin ORIGINAL.bin --bin V74-ENHANCED.bin --python-packages UNICORN_PACKAGES

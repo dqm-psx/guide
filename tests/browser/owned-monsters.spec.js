@@ -48,6 +48,36 @@ test('changed monsters do not show stale imported stats or learned skills on the
   await expect(card.locator('.planner-card-skills')).toHaveCount(0);
 });
 
+test('individual party records show EXP, lineage and the next party level-up',async({page})=>{
+  await importSave(page,fixture.pedigreeBlock());
+  const card=page.locator('#planner-party .planner-card').first();
+  await expect(card).toContainText('1,193,046 EXP · 273 to Lv 31');
+  await expect(card).toContainText('Fearless · Wildness 22');
+  await expect(card).toContainText('237 / 450');
+  await card.getByText('Pedigree',{exact:true}).click();
+  await expect(card.locator('.roster-lineage')).toContainText('AB +7');
+  await expect(card.locator('.roster-lineage a[href="#monster?id=1"]')).toBeVisible();
+  await card.getByText('Upcoming skills',{exact:true}).click();
+  await expect(card.locator('[data-roster-skills]')).toContainText('Next party level-up at Lv 31');
+  await expect(card.locator('.roster-skill-forecast a').first()).toBeVisible();
+  await expect(card.locator('.roster-skill-forecast')).not.toContainText(/\bFirebal\b/);
+});
+
+test('disabling nickname import also removes parent nicknames from the saved team',async({page})=>{
+  await page.goto(url+'#team-planner');
+  await page.locator('#planner-open-import').click();
+  await page.locator('#save-import-file').setInputFiles({name:'synthetic.sav',mimeType:'application/octet-stream',buffer:fixture.pedigreeBlock()});
+  await page.getByLabel('Use English-patch monster nicknames').uncheck();
+  await page.locator('#save-import-apply').click();
+  const saved=await page.evaluate(()=>{
+    const doc=DQMApp.state();
+    return doc.teams.find(row=>row.id===doc.activeTeamId).entries[0];
+  });
+  expect(saved.nickname).toBe('');
+  expect(saved.saveDetails.pedigree.slice(0,2).map(row=>row.nickname)).toEqual(['','']);
+  expect(saved.saveDetails.pedigree[0].speciesIndex).toBe(0);
+});
+
 test('same-level plans show one learning result and avoid zero-growth tables',async({page})=>{
   await importSave(page);
   await page.locator('#planner-party').getByRole('link',{name:'Skills & growth'}).click();

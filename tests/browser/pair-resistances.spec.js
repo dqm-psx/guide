@@ -24,6 +24,9 @@ test('choosing two saved parents predicts the ordered child and all 27 resistanc
   await partner.selectOption(female);
   const panel = page.locator('#planner-selected-pair');
   await expect(panel).toContainText('Dragon Kid +14');
+  await expect(panel.locator('.offspring-stats dd')).toHaveText(['225','110','90','77','150','138']);
+  await panel.getByText('How are these stats calculated?').click();
+  await expect(panel.locator('.offspring-stats li strong')).toHaveText(['+0%','+0%','+0%','+0%']);
   await expect(panel).toContainText('17 of 27 resistances improve');
   await expect(panel.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Sleep',exact:true})}).getByRole('cell')).toHaveText(['2','4']);
   await panel.locator('summary').filter({hasText:'Unchanged resistances'}).click();
@@ -39,6 +42,7 @@ test('choosing two saved parents predicts the ordered child and all 27 resistanc
   }
   await panel.getByRole('button',{name:'Swap parents'}).click();
   await expect(panel).toContainText('Drake Slime +14');
+  await expect(panel.locator('.offspring-stats dd')).toHaveText(['225','110','90','77','150','138']);
   await expect(partner).toHaveValue(male);
   await partner.selectOption(young);
   await expect(panel).toContainText('Both parents must reach level 10');
@@ -54,10 +58,11 @@ test('choosing two saved parents predicts the ordered child and all 27 resistanc
 
 test('list and matrix Inspect use the selected individual when saved species and + match', async ({page}) => {
   const bytes = fixture.planningBlock(0);
-  // Duplicate the male as a farm monster with a distinct Sleep resistance.
+  // Duplicate the male as a farm monster with distinct Sleep resistance and HP.
   const first = 0x250 + 136*2, other = 0x250 + 136*3;
   bytes.copy(bytes,other,first,first+136);
   fixture.putBits(bytes,other+0x0c,29,3,0);
+  fixture.putBits(bytes,other+0x0c,0,10,250);
   const [male,female,duplicate] = await importTeam(page,fixture.finishBlock(bytes));
   await page.locator('[data-member-breed="'+female+'"]').click();
   const individual = id => '[data-planner-pair][data-owned-a="'+id+'"][data-owned-b="'+female+'"]';
@@ -68,6 +73,7 @@ test('list and matrix Inspect use the selected individual when saved species and
       await page.locator(host).locator(individual(id)).click();
       const sleep = dialog.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Sleep',exact:true})});
       await expect(sleep.getByRole('cell')).toHaveText(['2',grade]);
+      await expect(dialog.locator('.offspring-stats dd').first()).toHaveText(id===male?'225':'175');
       await page.locator('#planner-close-pair').click();
     }
   }

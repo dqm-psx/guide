@@ -13,7 +13,7 @@
   const rosterSpecies = DATA.species.filter(s => s.index < 315 && isPlayable(s));
   const PAGE = 12;
   // The planner's tabs, in the order the arrow keys walk them.
-  const PLANNER_TABS = ["roster", "targets", "breeding"];
+  const PLANNER_TABS = ["roster", "targets", "breeding", "adventure"];
   const named = index => displayName(byId.get(index));
   const profileLink = (index, label) => index === null ? safe(label) : '<a href="#monster?id='+Number(index)+'">'+safe(label ?? named(index))+'</a>';
   const copy = value => JSON.parse(JSON.stringify(value));
@@ -249,21 +249,97 @@
     fileGame.hidden = !unassigned;
     fileGame.textContent = "File under " + gameLabel(state.activeGame);
   }
-  function savedMonsterMarkup(monster) {
+  // English release v1.0.74, system text e1237–e12dc in native index order.
+  const personalityNames = [null,'Hot-blooded','Hard-working','Vain','Passionate','Proactive','Arrogant',
+    'Unconventional','Fearless','Reckless','Calm','Serious','Self-centered','Simple','Innocent','Stubborn',
+    'Meddlesome','Carefree','Selfish','Brilliant','Cunning','Cold-hearted','Shy','Gentle','Cowardly',
+    'Gullible','Happy-go-lucky','Lazy'];
+  const rosterStatNames = {level:'Lv', hp:'HP', mp:'MP', attack:'Attack', defense:'Defense', agility:'Agility', intelligence:'Intelligence'};
+  let rosterLearning;
+  function rosterSkillLink(id) {
+    const skill = GUIDE_REFERENCE.guide_names.skills[id];
+    return skill ? '<a href="#field-guide?kind=skill&amp;entry=skill-'+safe(skill.id)+'">'+safe(skill.title)+'</a>' : 'Unlisted skill';
+  }
+  function upcomingSkillMarkup(monster) {
+    if (!globalThis.DQMSkillLearning || !globalThis.SKILL_LEARNING_REFERENCE) return '<p>Skill data is unavailable.</p>';
+    rosterLearning ??= DQMSkillLearning.create(SKILL_LEARNING_REFERENCE);
+    const forecast = rosterLearning.upcoming(monster);
+    if (!forecast) return '<p>This import has incomplete learning data.</p>';
+    if (forecast.atCap) return '<p>At its level cap. This monster has no further level-ups.</p>';
+    if (!forecast.skills.length) return '<p>No new skills are available from the saved candidates and learned moves.</p>';
+    const location = monster.location === 'party' ? '' : ' Move this monster into the party to learn skills.';
+    const skillName = id => GUIDE_REFERENCE.guide_names.skills[id]?.title || 'Unlisted skill';
+    const order = move => move.ready ? forecast.level : move.projectedLevel ?? Infinity;
+    const rows = forecast.skills.sort((a,b) => order(a) - order(b) || skillName(a.skillId).localeCompare(skillName(b.skillId))).map(move => {
+      const routes = move.routes;
+      const route = routes.find(route => route.thresholdsMet) || routes.find(route => route.kind === 'inherited') || routes[0];
+      const source = route.kind === 'upgrade' ? 'Upgrades '+skillName(route.requiredSkillIds[0]) :
+        route.kind === 'combination' ? 'From '+route.requiredSkillIds.map(skillName).join(' + ') : '';
+      const unmet = route.requirements.filter(req => req.status !== 'met').map(req => rosterStatNames[req.stat]+' '+req.minimum);
+      const condition = move.ready ? 'Next level' : move.projectedLevel !== null ? 'Around Lv '+move.projectedLevel :
+        move.beyondCap ? 'Beyond current growth limit' :
+        move.status === 'combination-order' ? 'Depends on an earlier combination' :
+        source ? 'If prerequisites are retained' : 'Level uncertain';
+      const detail = move.replacementRequired ? 'Choose a move to replace' : unmet.length ? 'Needs '+unmet.join(', ') : '';
+      return '<li><span>'+rosterSkillLink(move.skillId)+(source?'<small>'+safe(source)+'</small>':'')+'</span><span>'+safe(condition)+(detail?'<small>'+safe(detail)+'</small>':'')+'</span></li>';
+    });
+    return '<p>Next party level-up at Lv '+forecast.level+'. Estimates use normal stat gains.'+location+'</p><ul class="roster-skill-forecast">'+rows.join('')+'</ul>';
+  }
+  function showUpcomingSkills(event) {
+    const section = event.target;
+    if (!section.open || !section.matches('details[data-roster-skills]')) return;
+    const content = section.querySelector('div');
+    if (content.hasChildNodes()) return;
+    const entry = activeTeam()?.entries.find(row => row.id === section.closest('[data-entry-id]')?.dataset.entryId);
+    if (entry) content.innerHTML = upcomingSkillMarkup(DQMOwnedMonsters.adapt(entry, activeTeam()));
+  }
+  function rosterPedigree(pedigree) {
+    if (!pedigree) return '';
+    if (!pedigree.some(Boolean)) return '<p class="roster-detail-note">No parents recorded.</p>';
+    const identity = ancestor => {
+      if (!ancestor) return 'Unrecorded';
+      const name = ancestor.speciesIndex === null ? 'Unlisted species' : profileLink(ancestor.speciesIndex);
+      const facts = [ancestor.nickname ? safe(ancestor.nickname) : '', ancestor.plus != null ? '+'+ancestor.plus : '',
+        ancestor.sex === 'female' ? '♀' : ancestor.sex === 'male' ? '♂' : ''].filter(Boolean);
+      return name+(facts.length ? ' · '+facts.join(' ') : '');
+    };
+    const branches = ['Pedigree parent','Mate parent'].map((role, i) => {
+      const ancestors = pedigree.slice(2 + i*2, 4 + i*2);
+      return '<li><small>'+role+'</small>'+identity(pedigree[i])+
+        (ancestors.some(Boolean)?'<small>Grandparents</small>'+ancestors.map(identity).join(' / '):'')+'</li>';
+    });
+    return '<details class="roster-record"><summary>Pedigree</summary><ul class="roster-lineage">'+branches.join('')+'</ul></details>';
+  }
+  function rosterResistances(monster) {
+    const channels = globalThis.DQMOffspringResistances?.channels;
+    if (!channels || !monster.resistances) return '';
+    const rows = channels.map((name,i) => '<div><dt>'+safe(name)+'</dt><dd>'+monster.resistances[i]+'</dd></div>');
+    return '<details class="roster-record"><summary>Resistances</summary><p class="hint">This monster’s saved grades, including inherited gains. Higher is stronger; 7 is innate.</p><dl class="roster-resistances">'+rows.join('')+'</dl></details>';
+  }
+  function savedMonsterMarkup(monster, standardRoster = true) {
     if (!monster || monster.sourceStatus === 'manual') return '';
     if (monster.sourceStatus === 'changed') return '<p class="planner-card-save-note">Re-import this monster to refresh its saved stats and skills.</p>';
-    const statLabels = {hp:'Max HP',mp:'Max MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
+    const statLabels = {hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const names = GUIDE_REFERENCE.guide_names;
     const equipment = names.items['item-'+monster.equipmentId];
     const equipped = monster.equipmentId !== null;
     const stats = equipped ? monster.battleStats : monster.baseStats;
-    const skills = monster.knownSkills === null ? '<span class="hint">Not available in this import</span>' : monster.knownSkills.length ? monster.knownSkills.map(id => {
-      const skill = names.skills[id];
-      return skill ? '<a href="#field-guide?kind=skill&amp;entry=skill-'+safe(skill.id)+'">'+safe(skill.title)+'</a>' : '<span>Unlisted skill</span>';
-    }).join('') : '<span class="hint">None learned yet</span>';
-    return '<div class="planner-card-saved"><dl class="planner-card-attributes" aria-label="'+(equipped?'Stats including equipment':'Base stats')+'">'+Object.entries(statLabels).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+(stats[key] ?? '—')+'</dd></div>').join('')+'</dl>'+
+    const skills = monster.knownSkills === null ? '<span class="hint">Not available in this import</span>' : monster.knownSkills.length ? monster.knownSkills.map(rosterSkillLink).join('') : '<span class="hint">None learned yet</span>';
+    const progress = [];
+    if (monster.experience !== null) progress.push(monster.experience.toLocaleString('en-US')+' EXP');
+    if (monster.level !== null && monster.level < (monster.levelCap ?? 99) && monster.experienceToNext !== null) progress.push(monster.experienceToNext.toLocaleString('en-US')+' to Lv '+(monster.level+1));
+    const traits = [personalityNames[monster.personalityId], monster.wildness === null ? '' : 'Wildness '+monster.wildness].filter(Boolean);
+    const statValue = key => {
+      if (key !== 'hp' && key !== 'mp') return stats[key] ?? '—';
+      const current = key === 'hp' ? monster.currentHp : monster.currentMp;
+      return (current ?? '—')+'<span class="roster-stat-max"> / '+(stats[key] ?? '—')+'</span>';
+    };
+    return '<div class="planner-card-saved"><dl class="planner-card-attributes" aria-label="'+(equipped?'Stats including equipment':'Base stats')+'">'+Object.entries(statLabels).map(([key,label])=>'<div><dt>'+label+'</dt><dd>'+statValue(key)+'</dd></div>').join('')+'</dl>'+
+      (progress.length?'<p class="roster-exp">'+progress.join(' · ')+'</p>':'')+
+      (traits.length?'<p class="roster-detail-note">'+traits.map(safe).join(' · ')+'</p>':'')+
       (equipped ? '<p class="planner-card-equipment">'+(equipment?'<a href="#field-guide?kind=item&amp;entry=item-'+monster.equipmentId+'">'+safe(equipment.title)+'</a>':'Equipped accessory')+' <span>· included in stats</span></p>' : '')+
-      '<div class="planner-card-skills"><span class="planner-card-skills-label">Learned skills</span><div>'+skills+'</div></div></div>';
+      '<div class="planner-card-skills"><span class="planner-card-skills-label">Learned skills</span><div>'+skills+'</div></div>'+
+      (standardRoster ? '<details class="roster-record" data-roster-skills><summary>Upcoming skills</summary><div></div></details>' : '')+rosterPedigree(monster.pedigree)+rosterResistances(monster)+'</div>';
   }
   function cardMarkup(entry, sex) {
     const species = byId.get(entry.speciesIndex);
@@ -384,18 +460,39 @@
     P("planner-roster-empty").hidden = Boolean(team.entries.length);
     P("planner-filter-empty").hidden = !team.entries.length || Boolean(visible.length);
     P("planner-roster-search").closest('.my-game-roster-toolbar')?.classList.toggle('is-empty',!team.entries.length);
-    P("planner-export").disabled = !team.entries.length;
+    P("planner-export").disabled = !team.entries.length && !team.adventureLog;
   }
   function resistanceForecast(team, a, b, childId, context) {
     if (context === "shrine") {
-      return DQMOffspringResistances.predict(DQMOwnedMonsters.adapt(a,team), DQMOwnedMonsters.adapt(b,team), childId, COMBAT_REFERENCE);
+      return DQMOffspringResistances.predict(DQMOwnedMonsters.adapt(a,team), DQMOwnedMonsters.adapt(b,team), childId, COMBAT_REFERENCE, SAVE_REFERENCE);
     }
     const reason = context === "room" ? "The two-save Breeding room takes one parent from each Adventure Log." : "The base table omits the shrine’s special breeding rules.";
     return {reason:reason + " Select Ordinary shrine to forecast offspring from this team."};
   }
   function resistanceMarkup(forecast) {
     const heading = '<h4>Offspring resistances</h4>';
-    if (forecast.reason) return '<section class="offspring-resistances">'+heading+'<p>'+safe(forecast.reason)+'</p></section>';
+    const stats = forecast.stats;
+    const fields = {hp:'Max HP', mp:'Max MP', attack:'Attack', defense:'Defense', agility:'Agility', intelligence:'Intelligence'};
+    let hatch = '';
+    if (stats) {
+      const partial = stats.minPercent !== stats.maxPercent || Object.values(stats.values).includes(null);
+      const cells = Object.entries(fields).map(([key, label]) => {
+        const pair = stats.values[key];
+        const value = !pair ? 'Unknown' : pair[0] === pair[1] ? pair[0] : pair.join('–');
+        return '<div><dt>'+label+'</dt><dd>'+value+'</dd></div>';
+      }).join('');
+      const bonusLabels = {personality:'Compatible personalities', species:'Combined species rank of 10 or more',
+        wildness:'Combined wildness of 50 or more', skills:'At least 16 distinct skills in the hatchling’s learning pool'};
+      const bonuses = Object.entries(bonusLabels).map(([key, label]) => {
+        const bonus = stats.bonuses[key];
+        return '<li>'+label+' <strong>'+(bonus === null ? 'Unknown' : bonus ? '+5%' : '+0%')+'</strong></li>';
+      }).join('');
+      hatch = '<section class="offspring-stats"><h4>Level 1 hatchling stats</h4><dl>'+cells+'</dl>'+
+        (partial ? '<p class="hint">Some parent details are missing. Re-import the save for an exact forecast.</p>' : '')+
+        '<details><summary>How are these stats calculated?</summary><p>The egg starts with one quarter of the parents’ combined base stat, rounded down to a minimum of 1. Each bonus adds 5% to that starting value.</p><ul>'+
+        bonuses+'</ul></details></section>';
+    }
+    if (forecast.reason) return hatch+'<section class="offspring-resistances">'+(hatch ? heading : '')+'<p>'+safe(forecast.reason)+'</p></section>';
     const improved = forecast.grades.filter(row => row.grade > row.base);
     const unchanged = forecast.grades.filter(row => row.grade === row.base);
     const gradeLabel = value => value === 7 ? '7 · Innate' : value;
@@ -406,7 +503,7 @@
       '<table><thead><tr><th scope="col">Grade</th><th scope="col">Spell damage taken</th><th scope="col">Breath damage taken</th></tr></thead><tbody>'+
       scales.spell.saved.map((spell,grade)=>'<tr><th scope="row">'+grade+'</th><td>'+spell+'%</td><td>'+scales.breath.saved[grade]+'%</td></tr>').join('')+
       '</tbody></table><p class="hint">These percentages apply to standard damaging spells and breaths. Status effects use their own success rules.</p></details>';
-    return '<section class="offspring-resistances">'+heading+'<p>'+
+    return hatch+'<section class="offspring-resistances">'+heading+'<p>'+
       (improved.length ? '<strong>'+improved.length+' of 27</strong> resistances improve over the species base.' : 'All 27 resistances stay at the species base.')+
       '</p><p class="hint">Higher grades give stronger resistance. Only species that start at grade 7 can reach it.</p>'+
       (improved.length ? table(improved) : '')+
@@ -928,6 +1025,7 @@
     renderGameSwitch();
     renderRoster();
     renderPartyCombos();
+    if (activeTab === "adventure") renderAdventureLog();
     renderBreeding();
     renderTargets();
     renderPlan();
@@ -1080,6 +1178,12 @@
     P("planner-pair-detail").hidden = false;
     P("planner-pair-dialog").showModal();
   }
+  function renderAdventureLog() {
+    const team = activeTeam();
+    P("planner-log-empty").hidden = !!team.adventureLog;
+    const extraRecord = row => savedMonsterMarkup(DQMOwnedMonsters.adapt({...row,location:row.location==='party'?'party':'farm'},team),false);
+    globalThis.DQMAdventureLog?.render(P("planner-log-record"),team,{safe,named,profileLink,familyLabelMarkup,extraRecord});
+  }
   function setPlannerTab(name, focus = false) {
     activeTab = name;
     for (const mode of PLANNER_TABS) {
@@ -1090,6 +1194,7 @@
     hidePairDetail();
     if (name === "targets") { renderTargets(); renderPlan(); }
     if (name === "breeding") renderBreeding();
+    if (name === "adventure") renderAdventureLog();
     if (focus) P("planner-tab-"+name).focus();
   }
   // Visibility, the active nav link, the page title, scroll position, and
@@ -1231,7 +1336,8 @@
       return;
     }
     const inserted = next.teams[next.teams.length-1];
-    commit(app.setActiveTeam(next, inserted.id), 'Imported "'+inserted.name+'" as a new team.');
+    next = app.setActiveTeam(next, inserted.id);
+    commit(inserted.game ? app.setActiveGame(next, inserted.game) : next, 'Imported "'+inserted.name+'" as a new team.');
   }
 
   // ---- PSX save import ----
@@ -1265,7 +1371,7 @@
         skipped + names + (rows ? '<details><summary>Review monsters (' + save.entries.length + ')</summary><div class="table-scroll"><table>' +
         '<caption class="sr-only">Monsters in this save</caption><thead><tr><th scope="col">Monster</th><th scope="col">Location</th>' +
         '<th scope="col">Sex</th><th scope="col">Level</th><th scope="col">Plus</th></tr></thead><tbody>' + rows + "</tbody></table></div></details>" : "");
-      apply.disabled = !rows;
+      apply.disabled = !save.adventureLog && !rows;
     }
     input.addEventListener("change", async () => {
       const file = input.files[0];
@@ -1302,11 +1408,17 @@
     P("save-import-dialog").addEventListener("cancel",clear);
     apply.addEventListener("click", () => {
       const save = saves[select.selectedIndex];
-      if (!save || !save.entries.length) return;
+      if (!save || (!save.entries.length && !save.adventureLog)) return;
       const name = save.campaign + (save.slot === null ? " · Save" : " · Slot " + save.slot);
       try {
-        const team = {id: app.makeId("t-"), name, game: save.game, campaign:save.campaignKey, targets: [], activeTargetId: null,
-          entries: save.entries.map(e => ({...e, id: app.makeId("m-"), favorite: false, nickname: useNames.checked ? e.nickname : ""}))};
+        function importMonster(e) {
+          if (useNames.checked) return e;
+          const pedigree = e.saveDetails.pedigree.map((ancestor, index) => ancestor && index < 2 ? {...ancestor, nickname:''} : ancestor);
+          return {...e, nickname:"", saveDetails:{...e.saveDetails, pedigree}};
+        }
+        const adventureLog = {...save.adventureLog, extraMonsters:save.adventureLog.extraMonsters.map(importMonster)};
+        const team = {id: app.makeId("t-"), name, game: save.game, campaign:save.campaignKey, adventureLog, targets: [], activeTargetId: null,
+          entries: save.entries.map(e => ({...importMonster(e), id:app.makeId("m-"), favorite:false}))};
         const next = app.insertTeam(state, team);
         commit(app.setActiveGame(app.setActiveTeam(next, team.id), save.game), "Imported " + team.entries.length + " monsters into " + name + ".");
         clear();
@@ -1314,7 +1426,7 @@
         // Complete the import at the collection itself, with the first monster
         // in view, instead of returning to the setup controls above it.
         const rosterHeading = team.entries.some(entry => entryLocation(entry) === "party") ? "planner-party-heading" : "planner-farm-heading";
-        DQMViews.go("team-planner",{params:new URLSearchParams({tab:"roster"}),focusId:rosterHeading});
+        DQMViews.go("team-planner",team.entries.length ? {params:{tab:"roster"},focusId:rosterHeading} : {params:{tab:"adventure"},focusId:"planner-tab-adventure"});
       } catch (error) { status.textContent = error.message; }
     });
   }
@@ -1383,6 +1495,7 @@
   P("planner-open-import").addEventListener("click",openImport);
   for (const button of document.querySelectorAll('[data-planner-open]')) button.addEventListener("click",()=>button.dataset.plannerOpen==='import'?openImport():openEditor());
   P("planner-party").addEventListener("click", cardAction);
+  for (const section of ['planner-party','planner-farm']) P(section).addEventListener('toggle', showUpcomingSkills, true);
   P("planner-combo-results").addEventListener("change",event=>{
     const slot = event.target.closest("select[data-combo-slot]");
     if (!slot) return;
@@ -1422,6 +1535,7 @@
     const legacy = {
       version: app.APP_VERSION,
       game: app.GAME_ID,
+      ...(team.adventureLog ? {adventureLog:team.adventureLog,campaign:team.campaign} : {}),
       entries: team.entries.map(({favorite, ...rest}) => rest),
     };
     downloadText(JSON.stringify(legacy, null, 2)+"\n", "DQM-guide-team-v61.json");
@@ -1997,6 +2111,7 @@
         const tab = query.get("tab");
         const showCombos = query.get('combos') === 'party';
         setPlannerTab(!showCombos && PLANNER_TABS.includes(tab) ? tab : "roster");
+        renderRoster();
         renderPartyCombos();
         if (showCombos) P('planner-party-combos').open = true;
         if (query.get("import")==="save") openImport();

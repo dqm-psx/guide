@@ -168,6 +168,43 @@
         learnedSkillSlotsUsed:known.length,replacementRequired:ready&&known.length===8&&!alreadyKnown&&!routes.some(row=>row.kind==='upgrade'&&row.accessible&&row.thresholdsMet),
         learningTiming:'party-level-up'};
     }
+    // Ordinary saved candidates have a stable numerical threshold. For later
+    // upgrades/recipes the player may keep different moves before reaching it.
+    function upcoming(monster){
+      if (!species.has(monster.speciesIndex) || monster.level == null || monster.levelCap == null ||
+          !campaigns.includes(monster.campaign) || monster.inheritedSkills == null || monster.knownSkills == null) return null;
+      if (monster.level >= monster.levelCap) return {atCap:true, skills:[]};
+      const level = monster.level + 1;
+      const projection = project({speciesIndex:monster.speciesIndex, level:monster.level, targetLevel:level,
+        levelCap:monster.levelCap, stats:monster.baseStats});
+      const growth = [projection.projectedStats];
+      for (let future = level+1; future <= monster.levelCap; future++) {
+        growth.push(project({speciesIndex:monster.speciesIndex, level:future-1, targetLevel:future,
+          levelCap:monster.levelCap, stats:growth[growth.length-1]}).projectedStats);
+      }
+      const ids = new Set(monster.inheritedSkills);
+      for (const skill of skills.values()) {
+        if (monster.knownSkills.includes(skill.upgradesFrom) || skill.combinations.length) ids.add(skill.skillId);
+      }
+      const moves = [];
+      for (const skillId of ids) {
+        const result = check({speciesIndex:monster.speciesIndex, campaign:monster.campaign, level,
+          stats:projection.projectedStats, knownSkills:monster.knownSkills, candidateSkills:monster.inheritedSkills, skillId});
+        const routes = result.routes.filter(route => route.accessible);
+        if (result.alreadyKnown || !routes.length) continue;
+        const direct = routes.find(route => route.kind === 'inherited');
+        let projectedLevel = null, beyondCap = false;
+        if (direct) {
+          const required = getSkill(skillId).requirements;
+          const index = growth.findIndex((stats,i) => requirements(required,level+i,stats).every(row => row.status === 'met'));
+          if (index >= 0) projectedLevel = level + index;
+          else beyondCap = requirements(required, monster.levelCap, growth[growth.length-1]).some(row => row.status === 'short');
+        }
+        moves.push({skillId, ready:result.learnableNow, status:result.status, projectedLevel, beyondCap,
+          replacementRequired:result.replacementRequired, routes});
+      }
+      return {atCap:false, level, skills:moves};
+    }
     function inherit(options){
       const child=getSpecies(options.offspringSpeciesIndex),campaign=getCampaign(options.campaign??'terry');
       if(!Array.isArray(options.parents)||options.parents.length!==2)throw new RangeError('Choose exactly two parents.');
@@ -181,7 +218,7 @@
         naturalSkills:[...child.naturalSkills[campaign]],
         inheritedSkills:[...new Set(candidateSlots.slice(3).filter(Boolean))]};
     }
-    return Object.freeze({project,check,inherit,statKeys:Object.freeze(statKeys)});
+    return Object.freeze({project,check,upcoming,inherit,statKeys:Object.freeze(statKeys)});
   }
   return Object.freeze({create});
 });

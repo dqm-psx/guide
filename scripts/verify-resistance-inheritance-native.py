@@ -8,7 +8,9 @@ import importlib.util
 from itertools import product
 import json
 from pathlib import Path
+import random
 import struct
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +60,83 @@ def verify_child_plus(cpu, reg, parents, child):
     return cases
 
 
+def hatch_cases():
+    """Feed the shipped JS forecast the same (synthetic) parents as the constructor."""
+    rng = random.Random(0x49094)
+    cases = []
+    keys = ['hp', 'mp', 'attack', 'defense', 'agility', 'intelligence']
+    for i in range(512):
+        parents = []
+        for j in range(2):
+            values = [rng.randrange(1000) for _ in keys]
+            if i % 8 == 0:
+                values = [0, 1, 999, 17, 60, 83]
+            parents.append(dict(speciesIndex=rng.randrange(312), personalityId=rng.randrange(1,28),
+                wildness=(24 + j + i % 2), level=10, plus=0, sourceStatus='save',
+                knownSkills=rng.sample(range(1,170), 8 if i % 4 < 2 else 0),
+                baseStats=dict(zip(keys,values)), campaign=['terry','cobi','tara'][i%3]))
+        cases.append({'a':parents[0], 'b':parents[1]})
+    program = """
+      require('./data/breeding-data'); require('./data/combat-reference'); require('./data/save-reference');
+      require('./js/planner-core'); require('./js/offspring-resistances');
+      const core=DQMPlannerCore.create(DATA);
+      const cases=JSON.parse(require('node:fs').readFileSync(0,'utf8'));
+      for(const c of cases) {
+        const {a,b}=c;
+        const child=core.result(a.speciesIndex,b.speciesIndex,a.plus,b.plus,'shrine').resultIndex;
+        c.records=[a.speciesIndex,b.speciesIndex,child].map(id=>[DATA.species[id].member,DATA.species[id].family_id]);
+        const {stats}=DQMOffspringResistances.predict(a,b,child,COMBAT_REFERENCE,SAVE_REFERENCE);
+        if(stats.minPercent!==stats.maxPercent)throw Error('Missing exact prediction');
+        c.percent=stats.minPercent;
+        c.predicted=Object.values(stats.values).map(([low,high])=>{
+          if(low!==high)throw Error('Unexpected range');return low;
+        });
+      }
+      process.stdout.write(JSON.stringify(cases));
+    """
+    result = subprocess.run(['node','-e',program], cwd=ROOT, input=json.dumps(cases),
+                            capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
+def verify_hatch_stats(cpu, reg, disc, parents, child, cases):
+    from unicorn import UC_HOOK_CODE
+    gp = 0xC7050
+    cpu.mem_write(gp+0x784, struct.pack('<I',0x80184000))
+    cpu.mem_write(gp+0x758, struct.pack('<I',0x80188000))
+    cpu.mem_write(0x184000, disc.resource(3657))
+    cpu.mem_write(0x188000, disc.resource(3658))
+    cpu.mem_write(0xC75B4, struct.pack('<I',0x80189000))
+    tables = [disc.resource(3655), disc.resource(3656)]
+    multipliers = set()
+    percent = None
+    def read_multiplier(emu, address, size, data):
+        nonlocal percent
+        percent = 100 + emu.reg_read(reg.UC_MIPS_REG_S1) * 5
+    cpu.hook_add(UC_HOOK_CODE, read_multiplier, begin=0x80049810, end=0x80049810)
+    cpu.hook_add(UC_HOOK_CODE, lambda emu, *args: emu.emu_stop(), begin=0x80049A64, end=0x80049A64)
+    for case in cases:
+        for record, address in zip(case['records'], (*parents, child)):
+            cpu.mem_write(address+0x0C, bytes(record))
+        for address, p in zip(parents, (case['a'], case['b'])):
+            cpu.mem_write(address+0x99, bytes([p['personalityId']]))
+            cpu.mem_write(address+0xB0, bytes([p['wildness']]))
+            cpu.mem_write(address+0x78, bytes(p['knownSkills']).ljust(8,b'\0'))
+            cpu.mem_write(address+0xB4, struct.pack('<6H', *p['baseStats'].values()))
+        cpu.mem_write(0x189000, tables[case['a']['campaign'] != 'terry'])
+        for name,address in zip(('S3','S4','FP','GP'), (*parents,child,gp)):
+            cpu.reg_write(getattr(reg,'UC_MIPS_REG_'+name), address | 0x80000000)
+        percent = None
+        cpu.emu_start(0x80049214, 0x80001000, count=10000)
+        actual = struct.unpack('<6H',cpu.mem_read(child+0xB4,12))
+        if list(actual) != case['predicted'] or percent != case['percent']:
+            raise ValueError(f'Native PC={hex(cpu.reg_read(reg.UC_MIPS_REG_PC))}, stats {actual} at {percent}% vs forecast: {case}')
+        multipliers.add(percent)
+    if multipliers != {100,105,110,115,120}:
+        raise ValueError(f'Missing native multiplier coverage: {multipliers}')
+    return len(cases)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--original-bin', type=Path, required=True)
@@ -97,6 +176,7 @@ def main():
     coefficients = original.exe[0x80010A14-bias:0x80010A24-bias]
     world.require(coefficients.hex() == '02010502030107020401050106010701', 'Coefficient table changed')
     reports = []
+    hatches = hatch_cases()
     for label, disc in [('retail Japanese', original), ('English v1.0.74 Enhanced', current)]:
         battle = disc.resource(5502)
         action_table = 0x80174824 - 0x80114CB8
@@ -144,13 +224,17 @@ def main():
             check([i%8 for i in range(27)], [(i+2)%8 for i in range(27)], [(i+5)%8 for i in range(27)], plus)
             cases += 1
         plus_cases = verify_child_plus(cpu, reg, (parent_a, parent_b), child)
-        reports.append({'disc':label, 'cases':cases, 'channelsPerCase':27,
+        hatch_cpu = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 | UC_MODE_LITTLE_ENDIAN)
+        hatch_cpu.mem_map(0, 0x200000)
+        hatch_cpu.mem_write(0x10000, disc.exe[0x800:])
+        hatch_count = verify_hatch_stats(hatch_cpu, reg, disc, (parent_a,parent_b), child, hatches)
+        reports.append({'disc':label, 'cases':cases, 'channelsPerCase':27, 'hatchStatCases':hatch_count,
                         'childPlusCases':plus_cases, 'channelActionIds':CHANNEL_SKILL_IDS})
     print(json.dumps({'passed':True, 'originalDiscSha256':world.native.RETAIL_SHA256,
         'currentDiscSha256':V74, 'matchingSpans':spans, 'speciesAttributesSha256':world.digest(species),
         'coefficientHex':coefficients.hex(), 'divisors':DIVISORS, 'damagePercentScales':scales,
         'nativeRuns':reports,
-        'scope':'Offspring resistance loop, child + boundaries and action descriptor channel identities.'}, indent=2))
+        'scope':'Offspring resistance loop, six hatch stats, child + boundaries and action descriptor channel identities.'}, indent=2))
 
 
 if __name__ == '__main__':

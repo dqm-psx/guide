@@ -264,6 +264,16 @@
     <button id="planner-tab-roster" type="button" role="tab" aria-selected="true" aria-controls="planner-roster" data-planner-tab="roster">My monsters</button>
     <button id="planner-tab-targets" type="button" role="tab" aria-selected="false" aria-controls="planner-targets" tabindex="-1" data-planner-tab="targets">Targets &amp; plans</button>
     <button id="planner-tab-breeding" type="button" role="tab" aria-selected="false" aria-controls="planner-breeding" tabindex="-1" data-planner-tab="breeding">Team breeding</button>
+    <button id="planner-tab-adventure" type="button" role="tab" aria-selected="false" aria-controls="planner-adventure" tabindex="-1" data-planner-tab="adventure">Adventure log</button>
+  </div>
+
+  <div id="planner-adventure" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-adventure" hidden>
+    <div class="my-game-empty" id="planner-log-empty" hidden>
+      <h3>No Adventure log for this team</h3>
+      <p>Import a memory card or save block to see its playtime, monster library, bag and bank. Each imported slot gets its own team.</p>
+      <button type="button" data-planner-open="import" class="planner-primary">Import a save</button>
+    </div>
+    <div id="planner-log-record"></div>
   </div>
 
   <div id="planner-roster" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-roster">
@@ -449,7 +459,7 @@
 <script type="application/json" id="guide-assets">
 {"shared":["data/sprite-images.js","data/family-icons.js","js/sprites.js","data/patch-rewards.js"],
 "dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
-"myGame":["data/skill-descriptions.js","data/combat-reference.js","js/offspring-resistances.js"],
+"myGame":["data/skill-descriptions.js","data/combat-reference.js","data/skill-learning-reference.js","js/skill-learning.js","js/offspring-resistances.js","js/adventure-log.js"],
 "field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","data/recruitment-reference.js","js/current-names.js","js/walkthrough-context.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/recruitment.js","js/recruitment-ui.js","js/player-guide.js","js/player-atlas.js"],
 "tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/planner-core.js","js/reference.js","js/recipe-planner.js","js/app-state.js","js/owned-monsters.js","data/handbook-reference.js","data/save-reference.js","js/save-import.js","js/planner-ui.js"],
 "combat":["data/breeding-data.js","js/planner-core.js","js/app-state.js","js/storage.js","js/owned-monsters.js","data/handbook-reference.js","data/combat-reference.js","js/monster-picker.js","js/combat-planner.js","js/combat-planner-ui.js"],

@@ -40,7 +40,7 @@ test.describe('served', () => {
     await expect(page.locator('#planner-breeding-summary')).toContainText('a male and a female');
     await expect(page.locator('#planner-breeding .planner-matrix-panel:visible')).toHaveCount(0);
     await expect(page.locator('#planner-team-select')).toBeVisible();
-    await expect(page.locator('#team-planner [role="tab"]')).toHaveText([/My monsters/, /Targets/, /breeding/i]);
+    await expect(page.locator('#team-planner [role="tab"]')).toHaveText([/My monsters/, /Targets/, /breeding/i, /Adventure log/]);
     await page.click('.nav a[href="#breeding-table"]');
     await expect(page.locator('#breeding-table')).toBeVisible();
     await expect(page.locator('#planner-team-select')).toBeHidden();

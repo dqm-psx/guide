@@ -162,6 +162,15 @@
 #team-planner #planner-selected-pair .team-result-heading{display:grid;grid-template-columns:auto minmax(0,1fr) auto}
 #planner-selected-pair .team-result-heading button{font-size:.8rem}
 .offspring-resistances{min-width:0}
+.offspring-stats{margin:0 0 16px}
+.offspring-stats h4{margin:0 0 8px;font-size:1rem}
+.offspring-stats dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,5.6rem),1fr));gap:8px 12px;margin:0}
+.offspring-stats dl>div{border-top:1px solid var(--line);padding-top:5px}
+.offspring-stats dt{color:var(--muted);font-size:.78rem}
+.offspring-stats dd{margin:2px 0 0;font-weight:700;font-variant-numeric:tabular-nums}
+.offspring-stats details{margin:8px 0;font-size:.84rem}
+.offspring-stats summary{cursor:pointer}
+.offspring-stats ul{margin:6px 0;padding-inline-start:1.2rem}
 .offspring-resistances h4{margin:0 0 4px;font-size:1rem}
 .offspring-resistances p{margin:4px 0 8px}
 .offspring-resistances table{width:100%;margin:10px 0;border-collapse:collapse;font-size:.84rem}
@@ -256,3 +265,55 @@
   #team-planner .team-result-heading h3{font-size:15px}
 }
 @media(prefers-reduced-motion:reduce){#team-planner{scroll-behavior:auto}}
+
+#planner-log-record{max-width:66rem}
+.log-heading,.log-section-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 16px}
+.log-heading h3{margin:0;font:700 1.4rem/1.3 Georgia,serif;color:var(--guide-green)}
+.log-heading p,.log-library>p{margin:0;color:var(--muted);font-size:.85rem}
+.log-totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 18px;margin:12px 0 0;padding:15px 18px;border-radius:6px;background:var(--game-surface);border:1px solid var(--guide-rule)}
+.log-totals dt,.log-section-heading label{color:var(--muted);font-size:.8rem}
+.log-totals dd{margin:2px 0 0;font-weight:700;font-variant-numeric:tabular-nums}
+.log-inventory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 28px;margin-top:20px}
+#planner-log-record h4{margin:0;color:var(--guide-green);font:700 1.15rem/1.4 Georgia,serif}
+#planner-log-record h4 small{font:600 .8rem/1.4 system-ui,sans-serif;color:var(--muted);margin-left:.4em;white-space:nowrap}
+.log-items,.log-key-list,.log-library ul{list-style:none;padding:0;margin:6px 0}
+.log-items li{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid var(--guide-rule);padding:5px 0}
+.log-items li>span:last-child{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.log-more>summary,.log-library summary{cursor:pointer}
+.log-library{margin-top:20px;padding:16px 0;border-block:1px solid var(--guide-rule)}
+.log-section-heading{align-items:center;margin-bottom:4px}
+.log-section-heading select{display:inline-block;width:auto;margin:0 0 0 6px;min-height:32px;padding:4px 24px 4px 8px}
+.log-library [data-library-families]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;align-items:start;margin-top:8px}
+#team-planner .log-library details{margin:0;padding:5px 0;border:0;border-radius:0;border-bottom:1px solid var(--guide-rule);background:transparent}
+.log-library summary>span:last-child{font-size:.8rem;color:var(--muted);margin-left:5px}
+.log-library li,.log-key-list li{padding:2px 0}
+.log-library ul{columns:2;column-width:9rem}
+.log-extra{margin-top:18px}
+.log-extra-list{list-style:none;padding:0;margin:4px 0}
+.log-extra-list>li{border-bottom:1px solid var(--guide-rule);padding:8px 0;max-width:42rem}
+.log-extra-head{display:flex;gap:10px;align-items:baseline;justify-content:space-between}
+.log-extra-head>span:last-child,.log-progress{font-size:.85rem;color:var(--muted)}
+.log-progress{display:flex;flex-wrap:wrap;gap:4px 18px;margin:5px 0}
+.log-progress p{margin:0}
+.roster-resistances{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:2px 14px;margin:6px 0;font-size:.8rem}
+.roster-resistances>div{display:flex;gap:6px;align-items:baseline;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--guide-rule)}
+.roster-resistances dd{margin:0;font-weight:700}
+@media(max-width:600px){
+  .log-totals{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .log-inventory,.log-library [data-library-families]{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:420px){
+  #team-planner .planner-tabs{flex-wrap:wrap}
+  #team-planner .planner-tabs button{white-space:normal}
+}
+#team-planner .roster-record{margin:9px 0 0;padding:0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
+#team-planner .roster-record summary{width:fit-content;padding:7px 0 2px;font-size:13px;cursor:pointer}
+#team-planner .roster-record p,#team-planner .roster-exp{margin:6px 0 0;font-size:12px;line-height:1.5}
+#team-planner .roster-skill-forecast,#team-planner .roster-lineage{list-style:none;margin:6px 0 0;padding:0;font-size:12px}
+#team-planner .roster-skill-forecast li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:4px 0}
+#team-planner .roster-skill-forecast li>span:last-child{color:var(--muted);text-align:end}
+#team-planner .roster-skill-forecast small,#team-planner .roster-lineage small{display:block;color:var(--muted);font-size:11px}
+#team-planner .roster-lineage{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,135px),1fr));gap:10px}
+#team-planner .roster-lineage small:not(:first-child){margin-top:4px}
+#team-planner .roster-stat-max{color:var(--muted);font-size:11px;white-space:nowrap}
+#team-planner .roster-detail-note{margin:6px 0 0;color:var(--muted);font-size:12px}

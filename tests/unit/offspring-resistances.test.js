@@ -15,6 +15,33 @@ const reference = {species:[
 ]};
 const predict = (a,b) => model.predict(a,b,2,reference);
 
+test('hatchling stats come from base stats and one shared modifier, with exact or partial inputs', () => {
+  const save = {
+    naturalSkills:{terry:[[],[1,2,3],[4,5,6]],dqm2:[[],[2,3,4],[10,11,12]]},
+    hatch:{speciesRanks:[0,5,4], personalityMatches:[[2],[]], baseSkillIds:Array.from({length:170},(_,id)=>id)},
+  };
+  const baseStats = {hp:60,mp:0,attack:83,defense:126,agility:888,intelligence:999};
+  const a = parent({baseStats,campaign:'terry',personalityId:1,wildness:25,knownSkills:[7,8,9,10,11]});
+  const b = {...a,personalityId:2,knownSkills:[12,13,14,15,16]};
+  const stats = (first, second) => model.predict(first,second,2,reference,save).stats;
+  // 16 distinct candidates, compatibility, summed rank 10, summed wildness 50.
+  const best = stats(a,b);
+  assert.equal(best.minPercent,120);
+  assert.equal(best.maxPercent,120);
+  assert.deepEqual(Object.values(best.values).map(pair=>pair[0]),[36,1,49,76,533,599]);
+  assert.equal(stats(b,a).minPercent,115); // The personality lookup is ordered.
+  assert.equal(stats(a,{...b,wildness:24}).minPercent,115);
+  assert.equal(stats(a,{...b,speciesIndex:2}).minPercent,115);
+  save.hatch.baseSkillIds[16] = 7; // Two learned upgrades with the same base count only once.
+  assert.equal(stats(a,b).minPercent,115);
+  const partial = stats({...a,personalityId:null,wildness:null},b);
+  assert.deepEqual(Array.from(partial.values.hp),[32,35]);
+  assert.deepEqual(Array.from(partial.values.mp),[1,1]);
+  assert.equal(stats({...a,baseStats:{...baseStats,defense:null}},b).values.defense,null);
+  assert.ok(model.predict({...a,resistances:null},b,2,reference,save).stats);
+  assert.equal(model.predict({...a,sourceStatus:'manual'},b,2,reference,save).stats,undefined);
+});
+
 test('the forecast uses the resulting child +, child base, channel coefficients and inherited grade cap', () => {
   const first = parent(), mate = parent();
   assert.equal(predict(first,mate).plus,2);

@@ -162,7 +162,7 @@ test.describe('served', () => {
     }
     await page.focus('#planner-tab-roster');
     // The arrow keys walk every tab, Targets & plans included.
-    for (const tab of ['targets', 'breeding']) {
+    for (const tab of ['targets', 'breeding', 'adventure']) {
       await page.keyboard.press('ArrowRight');
       await expect(page.locator('#planner-tab-' + tab)).toHaveAttribute('aria-selected', 'true');
       await expect(page.locator('#planner-' + tab)).toBeVisible();
