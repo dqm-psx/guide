@@ -25,11 +25,14 @@ test('family labels use the native icon on profiles, library rows and breeding r
 
 test('all eleven family icons decode and the profile fits a narrow screen',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto(url+'#monster?id=143');
+  await page.goto(url+'#monster?id=11');
+  const slime=page.locator('.monster-profile-identity .family-label');
+  await expect(slime).toHaveText('Slime Family');
+  await expect(slime.locator('img')).toHaveAttribute('width','20');
   const decoded=await page.evaluate(async()=>Promise.all(Object.values(FAMILY_ICONS).map(async frame=>{
     const image=new Image();image.src=frame.src;await image.decode();return [image.naturalWidth,image.naturalHeight];
   })));
-  expect(decoded).toEqual(Array(11).fill([10,10]));
+  expect(decoded).toEqual([[20,20],...Array(10).fill([10,10])]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await expect(page.locator('.monster-profile-identity .family-label')).toBeVisible();
 });

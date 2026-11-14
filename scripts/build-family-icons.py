@@ -1,4 +1,4 @@
-"""Export the eleven native 10x10 monster-family glyphs without resampling."""
+"""Build the family icon manifest and export the ten PSX glyphs used by the guide."""
 import argparse
 import hashlib
 import importlib.util
@@ -40,17 +40,24 @@ def build(source):
     atlas.putdata([colors[index] for byte in icons[5] for index in (byte & 15, byte >> 4)])
     manifest = {}
     for index, name in enumerate(FAMILIES):
-        image = atlas.crop((index * 10, 0, index * 10 + 10, 10))
         relative = "media/family-" + str(index) + ".webp"
+        if name == "Slime":
+            # The guide uses its own pixel art for this family.
+            with Image.open(ROOT / relative) as custom:
+                if custom.size != (20, 20):
+                    raise ValueError("Expected 20x20 Slime Family artwork")
+                manifest[index] = {"src": relative, "width": custom.width, "height": custom.height}
+            continue
+        image = atlas.crop((index * 10, 0, index * 10 + 10, 10))
         image.save(ROOT / relative, lossless=True, exact=True, method=6)
         with Image.open(ROOT / relative) as saved:
             if saved.convert("RGBA").tobytes() != image.tobytes():
                 raise ValueError("Family sprite pixel mismatch: " + name)
         manifest[index] = {"src": relative, "width": 10, "height": 10}
     (ROOT / "data/family-icons.js").write_text(
-        "// Original PSX family glyphs: FONT 5542, block 1, CLUT 0x7F90.\n"
+        "// Slime uses custom guide artwork. Other family glyphs: PSX FONT 5542, block 1, CLUT 0x7F90.\n"
         "globalThis.FAMILY_ICONS = " + json.dumps(manifest, separators=(",", ":")) + ";\n", encoding="utf8")
-    print("Exported 11 exact 10x10 family icons (lossless WebP).")
+    print("Prepared 11 family icons (1 custom Slime icon and 10 native glyphs).")
 
 
 if __name__ == "__main__":

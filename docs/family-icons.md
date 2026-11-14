@@ -1,10 +1,17 @@
-# Native monster-family icons
+# Monster-family icons
 
-The eleven icons are the original PlayStation menu/library glyphs, extracted
-as individual lossless 10×10 WebP images. Their pixels and palette are unchanged.
-CSS displays them at 20×20 with nearest-neighbor pixel rendering; the adjacent
-family name remains real text. The images have empty alt text because that name
-already communicates their meaning.
+The guide displays the family emblems at 20×20 beside the family name. Slime
+uses a custom 20×20 blue Slime with a red smile, generated with ImageGen and
+saved as lossless WebP. The other ten emblems use the original 10×10
+PlayStation menu glyphs at double size. Each image has empty alt text because
+the adjacent label names the family.
+
+<details>
+<summary>Slime icon generation prompt</summary>
+
+Create one tiny Dragon Quest blue Slime family emblem for a PlayStation fan guide. Transparent background. Front-facing, broad low blue teardrop with a single pointed tip, two small separated white eyes with dark pupils, and a clear upturned red smile. Flat pixel art on a coarse 20×20 grid, enlarged with square pixels. Bold navy silhouette, cobalt body, a small sky-blue highlight. Center the complete Slime and fill the square. No text, border, badge, scenery, or cast shadow.
+
+</details>
 
 ## Native identification
 
@@ -24,8 +31,8 @@ The extractor checks this identity and texture/palette placement, then verifies
 every exported image's RGBA pixels after decoding the WebP.
 
 The English v1.0.74 font stores block 1 with native run-length compression.
-After decoding, all 100 RGBA pixels of each family emblem match the Japanese
-release, including the Slime's large white eyes. The guide adds a faint outline
+After decoding, all 100 RGBA pixels of each in-game family emblem match the
+Japanese release. The guide adds a faint outline
 around the transparent silhouettes in dark mode.
 
 ```sh

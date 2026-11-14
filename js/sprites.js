@@ -18,7 +18,7 @@ function spriteMarkup(index) {
 function familyLabelMarkup(familyId, label) {
   const frame = FAMILY_ICONS[familyId];
   const safeLabel = String(label ?? '').replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  return '<span class="family-label">' + (frame ? '<img class="family-icon" src="'+frame.src+'" width="10" height="10" alt="" loading="lazy" decoding="async">' : '') + safeLabel + '</span>';
+  return '<span class="family-label">' + (frame ? '<img class="family-icon" src="'+frame.src+'" width="'+frame.width+'" height="'+frame.height+'" alt="" loading="lazy" decoding="async">' : '') + safeLabel + '</span>';
 }
 function spriteLabel(index, text) {
   const id = Number(index);

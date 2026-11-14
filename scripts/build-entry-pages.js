@@ -389,7 +389,7 @@ function addEntryPages(assets) {
     if (monster) {
       const species = db.DATA.species[monster.index];
       const icon = db.FAMILY_ICONS[species.family_id];
-      const family = '<span class="family-label">'+(icon ? '<img class="family-icon" alt="" src="'+versioned(icon.src)+'" width="10" height="10">' : '')+escape(species.family_display || species.family)+' Family</span>';
+      const family = '<span class="family-label">'+(icon ? '<img class="family-icon" alt="" src="'+versioned(icon.src)+'" width="'+icon.width+'" height="'+icon.height+'">' : '')+escape(species.family_display || species.family)+' Family</span>';
       const identity=[monster.short_name!==monster.display_name && monster.short_name,monster.japanese].filter(Boolean);
       introduction='<div class="entry-identity">'+portrait(monster.index)+'<div><p>'+family+'</p><h1>'+escape(p.title)+'</h1>'+paragraph(identity.join(' · '))+'</div></div>'+
         '<div class="entry-library"><h2>In-game library</h2>'+paragraph(monster.library?.text || 'No in-game library entry.')+'</div>';

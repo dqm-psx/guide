@@ -21,9 +21,14 @@ test('published combos and component skill pages remain connected without JavaSc
   await expect(page.getByRole('heading',{name:'All 20 PlayStation combinations',exact:true})).toBeInViewport();
 });
 
-test('the standalone profile includes the native family icon',async({page})=>{
+test('standalone profiles use each family icon’s own dimensions',async({page})=>{
   await page.goto(url+'monsters/143/');
   const icon=page.locator('.family-icon');
   await expect(icon).toHaveAttribute('src',/family-5\.webp/);
   await expect(page.locator('.family-label')).toContainText('Bug');
+  await expect(icon).toHaveAttribute('width','10');
+  await page.goto(url+'monsters/11/');
+  await expect(icon).toHaveAttribute('src',/family-0\.webp/);
+  await expect(icon).toHaveAttribute('width','20');
+  await expect(icon).toHaveAttribute('height','20');
 });
