@@ -825,15 +825,15 @@
     if (!root) return;
     tree.appendChild(renderNodeCard(root, "Target"));
   }
-  function renderNodeCard(node, role) {
+  function renderNodeCard(node, role, familyMate = null) {
     const species = node.speciesIndex !== null ? byId.get(node.speciesIndex) : null;
-    const name = species ? displayName(species) : "Any monster";
+    const name = species ? displayName(species) : familyMate?.parentNames[1] || "Any monster";
     const card = document.createElement("div");
     card.className = "plan-node" + (planFlagged.has(node.id) ? " is-incompatible" : "");
     card.dataset.nodeId = node.id;
     const header = document.createElement("div");
     header.className = "plan-node-header";
-    header.innerHTML = spriteMarkup(node.speciesIndex) +
+    header.innerHTML = (familyMate ? familyLabelMarkup(familyMate.mateFamilyIndex,"") : spriteMarkup(node.speciesIndex)) +
       '<span class="plan-node-name">' + profileLink(node.speciesIndex,name) + "</span>" +
       '<span class="plan-node-role">' + safe(role) + "</span>";
     card.appendChild(header);
@@ -854,10 +854,12 @@
     note.setAttribute("aria-label", "Note for " + name);
     note.value = node.note;
     card.appendChild(note);
+    let chosenRecipe = null;
     if (node.recipe) {
-      const recipe = node.recipe;
+      if (!planInvalid) chosenRecipe = planner.findRecipe(node.speciesIndex, node.recipe.context, node.recipe.parents);
+      const recipe = chosenRecipe || node.recipe;
       const pedigreeName = named(recipe.parents[0]);
-      const mateName = recipe.parents[1] === null ? "Any monster" : named(recipe.parents[1]);
+      const mateName = recipe.parents[1] === null ? recipe.parentNames?.[1] || "Any monster" : named(recipe.parents[1]);
       const kindLabel = ruleLabel({ ruleKind: recipe.kind });
       const recipeInfo = document.createElement("div");
       recipeInfo.className = "plan-node-recipe";
@@ -867,14 +869,10 @@
           : "") +
         '<p class="plan-node-parents">Pedigree ' + profileLink(recipe.parents[0],pedigreeName) + " + Mate " + profileLink(recipe.parents[1],mateName) + "</p>" +
         '<span class="plan-node-kind">' + safe(kindLabel) + "</span>";
-      if (recipe.kind === "plus_threshold" && recipe.minPlus !== null) {
-        recipeInfo.innerHTML += '<p class="plan-node-condition">Either parent +' + recipe.minPlus + " or higher.</p>";
-      }
+      const condition = recipeCondition(recipe);
+      if (condition) recipeInfo.innerHTML += '<p class="plan-node-condition">' + safe(condition) + '</p>';
       if (recipe.kind === "plus_threshold") {
         recipeInfo.innerHTML += '<p class="plan-node-unknowns">An unknown + value is not treated as zero.</p>';
-      }
-      if (recipe.kind === "flag_gated") {
-        recipeInfo.innerHTML += '<p class="plan-node-unknowns">Applies in the title-screen Breeding room only.</p>';
       }
       card.appendChild(recipeInfo);
       const actions = document.createElement("div");
@@ -886,7 +884,7 @@
     } else if (node.speciesIndex === null) {
       const hint = document.createElement("p");
       hint.className = "plan-node-hint";
-      hint.textContent = "This requirement is any monster from the recipe's family; it cannot be expanded further.";
+      hint.textContent = "Choose a mate from this family in the Breeding room.";
       card.appendChild(hint);
     } else {
       const actions = document.createElement("div");
@@ -920,101 +918,109 @@
       const pedigree = planner.nodeById(plan, node.children[0]);
       const mate = planner.nodeById(plan, node.children[1]);
       if (pedigree) childrenContainer.appendChild(renderNodeCard(pedigree, "Pedigree"));
-      if (mate) childrenContainer.appendChild(renderNodeCard(mate, "Mate"));
+      if (mate) childrenContainer.appendChild(renderNodeCard(mate, "Mate", chosenRecipe?.familyWildcard ? chosenRecipe : null));
       card.appendChild(childrenContainer);
     }
     return card;
   }
+  function suggestionsForNode(team, node) {
+    return planner.suggestions(node.speciesIndex, {
+      context: plan.context,
+      rosterSpecies: team.entries.map(entry => entry.speciesIndex),
+      availableSpecies: plan.nodes.filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null).map(n => n.speciesIndex),
+      ancestorSpecies: planner.ancestorSpecies(plan, node.id),
+      page: suggestionPage,
+      pageSize: PAGE
+    });
+  }
+  function suggestionParent(item, position, locations) {
+    const index = item.parents[position];
+    const role = position === 0 ? "Pedigree" : "Mate";
+    const name = index === null ? item.parentNames[position] : named(index);
+    const art = index === null ? familyLabelMarkup(item.mateFamilyIndex, "") : spriteMarkup(index);
+    let status = "";
+    if (index !== null) {
+      const places = locations.get(index);
+      let label = item.missingParents.includes(position) ? "Not on team" : "Marked available";
+      if (places) {
+        const where = [];
+        if (places.has("party")) where.push("in party");
+        if (places.has("farm")) where.push("on farm");
+        if (places.has("hibernation")) where.push("hibernating");
+        label = where.join(" and ");
+        label = label.charAt(0).toUpperCase() + label.slice(1);
+      }
+      status = '<span class="plan-parent-status' + (places ? ' is-owned' : '') + '">' + safe(label) + '</span>';
+    }
+    return '<div class="plan-suggestion-parent"><span class="plan-parent-art">' + art + '</span><div>' +
+      '<span class="plan-parent-role">' + role + '</span><strong>' + profileLink(index, name) + '</strong>' + status + '</div></div>';
+  }
+  function recipeCondition(item) {
+    if (item.kind === "plus_threshold") return "At least one parent must be +" + item.minPlus + " or higher.";
+    if (item.parentPlusBelow != null) return "Both parents must be below +" + item.parentPlusBelow + ".";
+    if (item.kind === "flag_gated") return "Two-save Breeding room only.";
+    return "";
+  }
   function renderSuggestions() {
     const team = activeTeam();
-    const target = activeTarget();
     const container = P("plan-suggestions");
-    container.innerHTML = "";
-    if (!team || !target || !plan) {
-      P("plan-suggestions-for").textContent = "";
-      P("plan-suggestions-clear").hidden = true;
-      P("plan-suggestions-range").textContent = "";
-      P("plan-suggestions-page").textContent = "";
-      P("plan-suggestions-prev").disabled = true;
-      P("plan-suggestions-next").disabled = true;
-      return;
-    }
-    const isTarget = suggestionTarget === null;
-    const nodeId = isTarget ? plan.rootId : suggestionTarget;
-    const node = planner.nodeById(plan, nodeId);
-    if (!node) {
+    let node = planner.nodeById(plan, suggestionTarget);
+    if (node?.speciesIndex == null) {
       suggestionTarget = null;
-      P("plan-suggestions-for").textContent = "";
-      P("plan-suggestions-clear").hidden = true;
-      return;
+      node = planner.nodeById(plan, plan?.rootId);
     }
-    const speciesName = node.speciesIndex !== null ? named(node.speciesIndex) : "Any monster";
-    if (node.speciesIndex === null) {
-      suggestionTarget = null;
-      P("plan-suggestions-for").textContent = "";
-      P("plan-suggestions-clear").hidden = true;
-      P("plan-suggestions-range").textContent = "";
-      P("plan-suggestions-page").textContent = "";
-      P("plan-suggestions-prev").disabled = true;
-      P("plan-suggestions-next").disabled = true;
-      return;
+    const section = container.closest("aside");
+    section.hidden = !!planInvalid || node?.speciesIndex == null;
+    if (section.hidden) return;
+
+    const name = named(node.speciesIndex);
+    P("plan-suggestions-for").textContent = "Recipes for " + name;
+    const back = P("plan-suggestions-clear");
+    back.hidden = node.id === plan.rootId;
+    back.textContent = "← Back to " + named(plan.speciesIndex);
+    const locations = new Map();
+    for (const entry of team.entries) {
+      const places = locations.get(entry.speciesIndex) || new Set();
+      places.add(DQMOwnedMonsters.adapt(entry, team).location);
+      locations.set(entry.speciesIndex, places);
     }
-    P("plan-suggestions-for").textContent = isTarget ? "" : "Recipe options for " + speciesName;
-    P("plan-suggestions-clear").hidden = isTarget;
-    const rosterSpecies = team.entries.map(e => e.speciesIndex);
-    // Both locations count as owned, so a parent can be in the party, on the
-    // farm, or both. The badge says where each roster parent lives.
-    const locationsBySpecies = new Map();
-    for (const e of team.entries) {
-      const set = locationsBySpecies.get(e.speciesIndex) || new Set();
-      set.add(entryLocation(e));
-      locationsBySpecies.set(e.speciesIndex, set);
-    }
-    const availableSpecies = plan.nodes
-      .filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null)
-      .map(n => n.speciesIndex);
-    const result = planner.suggestions(node.speciesIndex, {
-      context: plan.context,
-      rosterSpecies,
-      availableSpecies,
-      page: suggestionPage,
-      pageSize: 12
-    });
-    for (const item of result.items) {
-      const card = document.createElement("div");
-      card.className = "plan-suggestion";
-      card.setAttribute("role", "listitem");
-      let html = '<p class="plan-suggestion-parents">Pedigree ' + safe(item.parentNames[0]) + " + Mate " + safe(item.parentNames[1]) + "</p>" +
-        '<span class="plan-suggestion-kind">' + safe(ruleLabel({ ruleKind: item.kind })) + "</span>";
-      if (item.condition) {
-        html += '<p class="plan-suggestion-condition">' + safe(item.condition) + "</p>";
-      }
-      html += '<p class="plan-suggestion-badges">';
-      for (const pos of item.rosterParents) {
-        const locs = ["party","farm"].filter(loc => locationsBySpecies.get(item.parents[pos])?.has(loc));
-        if (locs.length) html += '<span class="plan-suggestion-badge">'+safe((pos === 0 ? "Pedigree" : "Mate")+" in "+locs.join(" + "))+'</span>';
-      }
-      if (item.missingParents.length > 0) html += '<span class="plan-suggestion-badge">Missing</span>';
-      html += "</p>";
-      html += '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' + safe(named(item.parents[0])) + " + Mate " + safe(item.parents[1] === null ? "Any monster" : named(item.parents[1])) + '">Use this recipe</button>';
-      card.innerHTML = html;
-      container.appendChild(card);
-    }
+    const result = suggestionsForNode(team, node);
+    suggestionPage = result.page;
+    container.innerHTML = result.items.map(item => {
+      const condition = recipeCondition(item);
+      const mate = item.parents[1] === null ? item.parentNames[1] : named(item.parents[1]);
+      return '<div class="plan-suggestion" role="listitem"><div class="plan-suggestion-parents">' +
+        suggestionParent(item, 0, locations) + '<span class="plan-pair-plus" aria-hidden="true">+</span>' +
+        suggestionParent(item, 1, locations) + '</div><div class="plan-recipe-actions">' +
+        (condition ? '<span class="plan-suggestion-condition">' + safe(condition) + '</span>' : '') +
+        '<button type="button" data-suggestion-use="' + safe(item.id) + '" aria-label="Use recipe: Pedigree ' +
+        safe(named(item.parents[0])) + " + Mate " + safe(mate) + '">Use recipe</button></div></div>';
+    }).join("");
+
+    P("plan-limits").hidden = !team.entries.length || result.total < 2;
     const range = P("plan-suggestions-range");
     const pageLabel = P("plan-suggestions-page");
     const prev = P("plan-suggestions-prev");
     const next = P("plan-suggestions-next");
     if (result.total === 0) {
-      range.textContent = "No suggested recipes.";
+      range.innerHTML = 'No pairing can extend this branch. ' + profileLink(node.speciesIndex, "How to get " + name) +
+        ' · <a href="#offspring-finder?target=' + node.speciesIndex + '">All parent pairings</a>';
       pageLabel.textContent = "";
     } else {
-      const start = result.page * 12 + 1;
-      const end = Math.min((result.page + 1) * 12, result.total);
-      range.textContent = start + "–" + end + " of " + result.total;
+      const start = result.page * PAGE + 1;
+      const end = Math.min((result.page + 1) * PAGE, result.total);
+      range.textContent = result.pages > 1 ? start + "–" + end + " of " + result.total + " recipes" : "";
       pageLabel.textContent = "Page " + (result.page + 1) + " of " + result.pages;
     }
     prev.disabled = result.page === 0;
     next.disabled = result.page + 1 >= result.pages;
+    prev.parentElement.hidden = result.pages < 2;
+    range.parentElement.hidden = result.pages === 1;
+  }
+  function focusRecipes() {
+    const heading = P("plan-suggestions-for");
+    heading.focus({preventScroll:true});
+    heading.scrollIntoView({block:"start", behavior:"instant"});
   }
   function renderGameSwitch() {
     for (const game of DQMAppState.TEAM_GAMES) {
@@ -1938,7 +1944,7 @@
     suggestionTarget = pendingNodeId;
     suggestionPage = 0;
     renderSuggestions();
-    P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    focusRecipes();
   });
   P("plan-replace-cancel").addEventListener("click", () => {
     pendingReplaceId = null;
@@ -1951,16 +1957,19 @@
     if (suggestionPage > 0) {
       suggestionPage--;
       renderSuggestions();
+      focusRecipes();
     }
   });
   P("plan-suggestions-next").addEventListener("click", () => {
     suggestionPage++;
     renderSuggestions();
+    focusRecipes();
   });
   P("plan-suggestions-clear").addEventListener("click", () => {
     suggestionTarget = null;
     suggestionPage = 0;
     renderSuggestions();
+    focusRecipes();
   });
   P("plan-tree").addEventListener("change", event => {
     const statusSelect = event.target.closest("select[data-node-status]");
@@ -2017,7 +2026,7 @@
       suggestionTarget = nodeId;
       suggestionPage = 0;
       renderSuggestions();
-      P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      focusRecipes();
     } else if (availableButton) {
       const nodeId = availableButton.dataset.nodeAvailable;
       pendingReplaceSuggestion = null;
@@ -2039,7 +2048,7 @@
         pendingReplaceId = nodeId;
         P("plan-replace-warning-text").textContent = "Replacing this recipe removes its dependent steps and their progress. Replace anyway?";
         P("plan-replace-warning").hidden = false;
-        P("plan-replace-confirm").focus({ preventScroll: true });
+        P("plan-replace-confirm").focus();
         return;
       }
       pendingReplaceSuggestion = null;
@@ -2047,7 +2056,7 @@
       suggestionTarget = nodeId;
       suggestionPage = 0;
       renderSuggestions();
-      P("plan-suggestions").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      focusRecipes();
     } else if (collapseButton) {
       const nodeId = collapseButton.dataset.nodeCollapse;
       pendingReplaceSuggestion = null;
@@ -2072,17 +2081,7 @@
       planNotice("This requirement cannot be expanded further.");
       return;
     }
-    const rosterSpecies = team.entries.map(e => e.speciesIndex);
-    const availableSpecies = plan.nodes
-      .filter(n => n.fulfillment.choice === "available" && n.speciesIndex !== null)
-      .map(n => n.speciesIndex);
-    const result = planner.suggestions(node.speciesIndex, {
-      context: plan.context,
-      rosterSpecies,
-      availableSpecies,
-      page: suggestionPage,
-      pageSize: 12
-    });
+    const result = suggestionsForNode(team, node);
     const item = result.items.find(r => r.id === suggestionId);
     if (!item) return;
     const speciesName = node.speciesIndex !== null ? named(node.speciesIndex) : "Any monster";
@@ -2101,7 +2100,9 @@
       }
     } catch (error) {
       planNotice(error.message);
+      return;
     }
+    P("plan-tree").querySelector('[data-node-id="' + nodeId + '"] > .plan-node-header')?.scrollIntoView({block:"nearest", behavior:"instant"});
   }
   P("plan-suggestions").addEventListener("click", event => {
     const button = event.target.closest("button[data-suggestion-use]");
@@ -2119,7 +2120,7 @@
       pendingReplaceSuggestion = { nodeId, suggestionId };
       P("plan-replace-warning-text").textContent = "Replacing this recipe removes its dependent steps and their progress. Replace anyway?";
       P("plan-replace-warning").hidden = false;
-      P("plan-replace-confirm").focus({ preventScroll: true });
+      P("plan-replace-confirm").focus();
       return;
     }
     replaceConfirmedForNode = null;

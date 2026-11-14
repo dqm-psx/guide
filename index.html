@@ -375,16 +375,15 @@
         <div class="plan-undo-row"><button id="plan-undo-recipe" type="button" hidden>Undo recipe change</button></div>
         <div class="plan-layout">
           <div class="plan-tree-column"><h4>Requirements</h4><div id="plan-tree"></div></div>
-          <aside class="plan-side-column">
-            <h4>Suggested recipes</h4>
-            <p id="plan-limits" class="hint">Recipes favor parents you own. Check availability, offspring sex, inherited + value and breeding eligibility in game.</p>
-            <p id="plan-suggestions-for" class="hint"></p>
-            <div id="plan-suggestions" role="list" aria-label="Suggested recipes"></div>
+          <aside class="plan-side-column" aria-labelledby="plan-suggestions-for">
+            <h4 id="plan-suggestions-for" tabindex="-1">Suggested recipes</h4>
+            <button id="plan-suggestions-clear" type="button" hidden>← Back to the target</button>
+            <p id="plan-limits" class="hint">Pairs with species on your team appear first.</p>
+            <div id="plan-suggestions" role="list" aria-labelledby="plan-suggestions-for"></div>
             <div class="pagination">
               <span id="plan-suggestions-range" role="status"></span>
               <div class="controls"><button id="plan-suggestions-prev" type="button">← Previous</button><span id="plan-suggestions-page"></span><button id="plan-suggestions-next" type="button">Next →</button></div>
             </div>
-            <button id="plan-suggestions-clear" type="button" hidden>Back to the target</button>
           </aside>
         </div>
         <p id="plan-message" class="planner-message" role="status"></p>

@@ -154,8 +154,11 @@
             continue;
           }
         }
+        const plusOverride = context === 'base' ? null : plusRules.find(rule =>
+          rule.pedigree_index === a && rule.mate_index === b && rule.offspring_index !== speciesIndex);
         add({
           kind: 'base', context, parents: [a, b], minPlus: null, condition: '',
+          parentPlusBelow: plusOverride?.minimum_parent_plus ?? null,
           mateFamilyIndex: null, familyWildcard: false, mateName: null
         });
       }
@@ -212,6 +215,7 @@
         parentNames,
         speciesIndex,
         minPlus: seed.minPlus,
+        parentPlusBelow: seed.parentPlusBelow ?? null,
         condition: seed.condition,
         mateFamilyIndex: seed.mateFamilyIndex,
         familyWildcard: seed.familyWildcard,
@@ -263,8 +267,10 @@
       assertPlayable(speciesIndex, 'Target species');
       const roster = settings.rosterSpecies === undefined ? [] : settings.rosterSpecies;
       const available = settings.availableSpecies === undefined ? [] : settings.availableSpecies;
+      const ancestors = settings.ancestorSpecies === undefined ? [] : settings.ancestorSpecies;
       assertSpeciesList(roster, 'Roster species');
       assertSpeciesList(available, 'Available species');
+      assertSpeciesList(ancestors, 'Ancestor species');
       const page = settings.page === undefined ? 0 : settings.page;
       const pageSize = settings.pageSize === undefined ? 12 : settings.pageSize;
       if (!Number.isInteger(page) || page < 0) throw fail('invalid', 'Page must be a whole number of 0 or more.');
@@ -272,7 +278,9 @@
 
       const rosterSet = new Set(roster);
       const availableSet = new Set(available);
+      const ancestorSet = new Set(ancestors);
       const recipes = candidateSeeds(speciesIndex, context)
+        .filter(seed => !seed.parents.some(parent => ancestorSet.has(parent)))
         .map(seed => buildRecipe(seed, speciesIndex, rosterSet, availableSet));
       recipes.sort(rankRecipes);
       const total = recipes.length;

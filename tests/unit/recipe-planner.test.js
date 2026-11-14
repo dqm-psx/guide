@@ -128,6 +128,16 @@ test('plus threshold recipes appear in shrine but not base', () => {
   assert.equal(base.items.find(r => r.parents[0] === 1 && r.parents[1] === 1), undefined, 'the pair is not a base candidate in base context');
 });
 
+test('Dragon Kid parents yield Dragon below +4 in contexts that apply the upgrade', () => {
+  const planner = createPlanner();
+  const dragon = 45, dragonKid = 26;
+  for (const context of ['shrine', 'room', 'base']) {
+    const recipes = planner.suggestions(dragon, { context, rosterSpecies: [dragonKid] }).items;
+    const dragonKids = recipes.find(r => r.parents.every(parent => parent === dragonKid));
+    assert.equal(dragonKids.parentPlusBelow, context === 'base' ? null : 4);
+  }
+});
+
 test('room rules apply only in the room context and override the base table', () => {
   const planner = createPlanner();
   const shrine = planner.suggestions(19, { context: 'shrine', pageSize: 200 });
@@ -168,6 +178,23 @@ test('ranking puts roster recipes first and breaks ties deterministically', () =
   assert.ok(i50 !== -1 && i51 !== -1 && i50 < i51, '[9,50] sorts before [9,51]');
   const plusIdx = empty.items.findIndex(r => r.kind === 'plus_threshold');
   assert.ok(i50 < plusIdx, 'base sorts before plus_threshold on equal roster and missing counts');
+});
+
+test('plan suggestions omit recipes that require a species on the current branch before pagination', () => {
+  const planner = createPlanner();
+  const akbar = 195, gremlin = 171, hellGatekeeper = 188;
+  const options = { rosterSpecies: [gremlin], pageSize: 1 };
+  const reference = planner.suggestions(akbar, options);
+  assert.deepEqual(plain(reference.items[0].parents), [akbar, gremlin]);
+  const rootOptions = { ...options, ancestorSpecies: [akbar] };
+  const first = planner.suggestions(akbar, rootOptions);
+  assert.equal(first.total, 2);
+  assert.equal(first.pages, 2);
+  assert.deepEqual(plain(first.items[0].parentNames), ['Archdemon', 'Hell Gatekeeper']);
+  assert.deepEqual(plain(planner.suggestions(akbar, { ...rootOptions, page: 1 }).items[0].parentNames), ['Grendel', 'Grendel']);
+  const child = planner.suggestions(akbar, { ...options, ancestorSpecies: [akbar, hellGatekeeper] });
+  assert.equal(child.total, 1);
+  assert.deepEqual(plain(child.items[0].parentNames), ['Grendel', 'Grendel']);
 });
 
 test('expand prevents cycles', () => {

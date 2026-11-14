@@ -314,34 +314,28 @@ test.describe('served', () => {
     await expect(page.locator('.planner-farm-tag')).toHaveCount(0);
   });
 
-  test('suggested recipes badge each roster parent with the location it is in', async ({ page }) => {
+  test('suggested recipes show the roster location beside the individual parent and update it after a move', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     // Drake Slime breeds Winged Slime with Picky; keep one parent in each place.
     await addMonster(page, 0, 'party');
     await openMonsterEditor(page);
     await page.check('#planner-sex-female');
     await addMonster(page, 89, 'farm');
-    await page.click('.nav a[href="#pair-finder"]');
-    await page.locator('#pair-finder [data-parent-mode]').click();
-    await page.selectOption('#target', '2');
-    await page.click('#target-pin');
-    await page.click('#target-view-plan');
-    await expect(page.locator('#planner-targets')).toBeVisible();
-    await expect(page.locator('#plan-body')).toBeVisible();
+    await page.click('#planner-tab-targets');
+    const picker = page.getByRole('combobox', {name:'Choose a breeding target'});
+    await picker.fill('Winged Slime');
+    await picker.press('Enter');
 
-    // The top suggestion has both parents owned, so both carry a location badge.
-    const top = page.locator('#plan-suggestions .plan-suggestion').first();
-    await expect(top.locator('.plan-suggestion-parents')).toContainText('Drake Slime');
-    await expect(top.locator('.plan-suggestion-badge')).toHaveText(['Pedigree in party', 'Mate in farm']);
-    // Nothing is missing, so the Missing badge stays away.
-    await expect(top.locator('.plan-suggestion-badge', { hasText: 'Missing' })).toHaveCount(0);
+    const parents = page.locator('#plan-suggestions .plan-suggestion').first().locator('.plan-suggestion-parent');
+    await expect(parents).toHaveCount(2);
+    await expect(parents.nth(0)).toContainText('Drake Slime');
+    await expect(parents.nth(1)).toContainText('Picky');
+    await expect(parents.locator('.plan-parent-status')).toHaveText(['In party', 'On farm']);
 
-    // Moving Drake Slime to the farm rewrites its badge and nothing else.
     await page.click('#planner-tab-roster');
     await memberAction(page, '.planner-card[data-sex="male"] button[data-member-move]');
     await page.click('#planner-tab-targets');
-    const moved = page.locator('#plan-suggestions .plan-suggestion').first();
-    await expect(moved.locator('.plan-suggestion-badge')).toHaveText(['Pedigree in farm', 'Mate in farm']);
+    await expect(parents.locator('.plan-parent-status')).toHaveText(['On farm', 'On farm']);
   });
 
   test('a full backup exported from a game-and-farm save imports into a fresh page intact', async ({ page }) => {
