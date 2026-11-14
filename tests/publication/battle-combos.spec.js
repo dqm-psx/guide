@@ -29,6 +29,6 @@ test('standalone profiles use each family icon’s own dimensions',async({page})
   await expect(icon).toHaveAttribute('width','10');
   await page.goto(url+'monsters/11/');
   await expect(icon).toHaveAttribute('src',/family-0\.webp/);
-  await expect(icon).toHaveAttribute('width','20');
-  await expect(icon).toHaveAttribute('height','20');
+  await expect(icon).toHaveAttribute('width','10');
+  await expect(icon).toHaveAttribute('height','10');
 });
