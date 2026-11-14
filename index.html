@@ -178,7 +178,7 @@
 </div><div class="result" id="pair-result" aria-live="polite" aria-atomic="true"><div><div class="kicker">Base offspring</div><span id="result-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="result-name">Choose two parents</h3><p id="result-detail" class="short"></p><p id="pair-description"></p><p id="pair-room-note" class="hint" hidden></p><p id="pair-plus-note" class="pair-plus-note" hidden></p><div class="pair-result-actions"><button id="result-find-parents" type="button" hidden>Find parents ↗</button><button id="copy-pairing" type="button">Copy pairing</button></div></div><div class="reverse-result"><div class="kicker">Reversed order</div><span id="reverse-sprite" class="result-portrait" aria-hidden="true"></span><h3 id="reverse-name">—</h3><p id="reverse-detail" class="short"></p><p id="reverse-comparison"></p><p id="reverse-room-note" class="hint" hidden></p><div class="pair-result-actions"><button id="reverse-find-parents" type="button" hidden>Find parents ↗</button></div></div></div></div><p id="copy-pairing-status" class="hint" role="status"></p><section id="recent-pairs" class="panel recent-pairs" aria-labelledby="recent-pairs-heading" hidden><div class="planner-panel-heading"><h3 id="recent-pairs-heading">Recent pairings</h3></div><ul id="recent-pairs-list" class="recent-pairs-list" aria-label="Recent pairings"></ul><div class="recent-pairs-actions"><button id="recent-pairs-clear" type="button">Clear history</button></div></section>
 </section>
 <section id="offspring-finder" class="section view" data-view="offspring-finder" aria-labelledby="offspring-heading" hidden><div class="section-head"><div><h2 id="offspring-heading" tabindex="-1">Find parents</h2><nav class="lookup-modes" aria-label="Breeding lookup mode"><a href="#pair-finder">Find offspring</a><a href="#offspring-finder" data-parent-mode aria-current="page">Find parents</a></nav></div></div>
-<div class="panel"><div class="target-row"><div class="field"><label for="target">Desired offspring</label><div class="monster-picker"><span id="target-sprite" class="monster-preview" aria-hidden="true"></span><select id="target"></select></div></div><div class="target-pin-block"><div class="target-toolbar"><a id="target-tree" href="#breeding-tree">Breeding tree ↗</a><button id="target-pin" type="button" class="planner-primary">Pin current offspring</button><button id="target-view-plan" type="button" hidden>View plan in My game ↗</button></div></div></div><div class="lookup-recipe-choice"><label for="reverse-copy-mode">Parent recipes</label><select id="reverse-copy-mode"><option value="first">For a first copy</option><option value="repeat">Already have the target</option></select></div><details class="matrix-filter-drawer lookup-filters" open><summary>Filters</summary><div class="toolbar"><div class="field"><label for="reverse-pedigree-family">Pedigree family</label><select id="reverse-pedigree-family"></select></div><div class="field"><label for="reverse-mate-family">Mate family</label><select id="reverse-mate-family"></select></div><div class="field"><label for="reverse-search">Either parent’s name</label><input id="reverse-search" type="search" placeholder="Search parent names" autocomplete="off"></div></div></details><div class="table-info"><p id="reverse-count" role="status"></p></div><div class="table-scroll"><table><caption class="sr-only">Ordered parent combinations for the desired offspring</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col"><span class="sr-only">Inspect pairing</span></th></tr></thead><tbody id="reverse-rows"></tbody></table></div><div class="pagination"><span id="reverse-range"></span><div class="controls"><button id="reverse-prev" type="button">← Previous</button><span id="reverse-page"></span><button id="reverse-next" type="button">Next →</button></div></div></div>
+<div class="panel"><div class="target-row"><div class="field"><label for="target">Desired offspring</label><div class="monster-picker"><span id="target-sprite" class="monster-preview" aria-hidden="true"></span><select id="target"></select></div></div><div class="target-pin-block"><span id="target-active-summary" role="status"></span><div class="target-toolbar"><a id="target-tree" href="#breeding-tree">Breeding tree ↗</a><button id="target-pin" type="button" class="planner-primary">Pin current offspring</button><button id="target-view-plan" type="button" hidden>View plan in My game ↗</button></div></div></div><div class="lookup-recipe-choice"><label for="reverse-copy-mode">Parent recipes</label><select id="reverse-copy-mode"><option value="first">For a first copy</option><option value="repeat">Already have the target</option></select></div><details class="matrix-filter-drawer lookup-filters" open><summary>Filters</summary><div class="toolbar"><div class="field"><label for="reverse-pedigree-family">Pedigree family</label><select id="reverse-pedigree-family"></select></div><div class="field"><label for="reverse-mate-family">Mate family</label><select id="reverse-mate-family"></select></div><div class="field"><label for="reverse-search">Either parent’s name</label><input id="reverse-search" type="search" placeholder="Search parent names" autocomplete="off"></div></div></details><div class="table-info"><p id="reverse-count" role="status"></p></div><div class="table-scroll"><table><caption class="sr-only">Ordered parent combinations for the desired offspring</caption><thead><tr><th scope="col">Pedigree</th><th scope="col">Mate</th><th scope="col"><span class="sr-only">Inspect pairing</span></th></tr></thead><tbody id="reverse-rows"></tbody></table></div><div class="pagination"><span id="reverse-range"></span><div class="controls"><button id="reverse-prev" type="button">← Previous</button><span id="reverse-page"></span><button id="reverse-next" type="button">Next →</button></div></div></div>
 <details id="lookup-glossary" class="lookup-glossary"><summary>Breeding terms</summary><dl><dt>Pedigree</dt><dd>Your first parent. Swapping parents can change the result.</dd><dt>Mate</dt><dd>The second parent.</dd><dt>+ value</dt><dd>The breeding bonus beside a monster’s name. A threshold applies to either parent individually.</dd><dt>Base table</dt><dd>The offspring for an ordered pair before special breeding rules apply.</dd><dt>Ordinary shrine</dt><dd>Breed monsters from the same save. Some pairs produce a different offspring at higher + values.</dd><dt>First copy</dt><dd>A recipe where neither parent is the desired offspring.</dd><dt>Breeding room</dt><dd>Breed across two saves from the title screen. Certain pairs have exclusive results here.</dd><dt>Eligible parents</dt><dd>Confirm each parent’s sex and level in game before breeding.</dd></dl></details>
 <p id="breeding-conditions" class="hint">Either parent can meet a + threshold. In the title-screen Breeding room, each player’s monster is their pedigree. <a href="#field-guide?entry=field-two-save-breeding">Breeding between saves</a> · <a href="#field-guide?entry=field-skill-inheritance">Skill inheritance</a></p>
 </section>
@@ -337,20 +337,26 @@
   </div>
 
   <div id="planner-targets" class="planner-view" role="tabpanel" aria-labelledby="planner-tab-targets" hidden>
-    <div id="saved-targets-panel" class="panel target-panel">
-      <div class="planner-panel-heading"><h3>Saved breeding targets</h3></div>
-      <div class="target-toolbar planner-actions">
-        <span id="target-active-summary" role="status"></span>
-        <a id="planner-open-target" href="#offspring-finder" hidden>Find parents ↗</a>
+    <section class="plan-start" aria-labelledby="plan-start-heading">
+      <div class="plan-search-field">
+        <h3 id="plan-start-heading"><label for="plan-target">Choose a breeding target</label></h3>
+        <select id="plan-target"></select>
       </div>
+      <div id="plan-team-options" hidden>
+        <h4>From your team’s pairings</h4>
+        <div class="plan-target-options" id="plan-team-choices"></div>
+      </div>
+    </section>
+    <section id="saved-targets-panel" class="plan-saved" aria-labelledby="saved-targets-heading" hidden>
+      <h4 id="saved-targets-heading">Saved targets</h4>
       <ul id="target-list" class="target-list" aria-label="Saved breeding targets"></ul>
-    </div>
-    <div class="panel plan-panel" id="plan-panel">
-      <div class="planner-panel-heading">
-        <h3 id="plan-heading">Breeding plan</h3><a id="team-open-tree" hidden>Explore this tree</a>
+    </section>
+    <div class="panel plan-panel" id="plan-panel" hidden>
+      <div class="planner-panel-heading plan-heading-row">
+        <h3 id="plan-heading" tabindex="-1">Breeding plan</h3>
+        <div class="plan-reference-links"><a id="planner-open-target" href="#offspring-finder" hidden>Find parents</a><a id="team-open-tree" hidden>Explore this tree</a></div>
       </div>
-      <p id="plan-empty" class="planner-empty">Pin an offspring in <a href="#offspring-finder">Find parents</a> to start a plan.</p>
-      <div id="plan-body" hidden>
+      <div id="plan-body">
         <div class="plan-toolbar">
           <div class="field"><label for="plan-context">Breeding context</label>
             <select id="plan-context"><option value="shrine">Ordinary shrine</option><option value="room">Two-save Breeding room</option></select></div>
@@ -459,7 +465,7 @@
 <script type="application/json" id="guide-assets">
 {"shared":["data/sprite-images.js","data/family-icons.js","js/sprites.js","data/patch-rewards.js"],
 "dialogue":["data/character-dialogue.js","js/character-dialogue.js"],
-"myGame":["data/skill-descriptions.js","data/combat-reference.js","data/skill-learning-reference.js","js/skill-learning.js","js/offspring-resistances.js","js/adventure-log.js"],
+"myGame":["data/skill-descriptions.js","data/combat-reference.js","data/skill-learning-reference.js","js/skill-learning.js","js/offspring-resistances.js","js/adventure-log.js","js/team-target-shortcuts.js"],
 "field":["data/handbook-reference.js","data/player-atlas.js","data/world-guide.js","data/field-guide.js","data/field-routes.js","data/gate-entrances.js","data/gate-generation.js","data/npc-sprites.js","data/skill-descriptions.js","data/item-reference.js","data/item-art.js","data/recruitment-reference.js","js/current-names.js","js/walkthrough-context.js","js/walkthrough.js","js/locations.js","js/place-context.js","js/gate-generation.js","js/sortable-index.js","js/mechanics-index.js","js/skill-index.js","js/item-index.js","js/recruitment.js","js/recruitment-ui.js","js/player-guide.js","js/player-atlas.js"],
 "tools":["data/breeding-data.js","data/breeding-names.js","js/storage.js","js/session.js","js/monster-picker.js","js/planner-core.js","js/reference.js","js/recipe-planner.js","js/app-state.js","js/owned-monsters.js","data/handbook-reference.js","data/save-reference.js","js/save-import.js","js/planner-ui.js"],
 "combat":["data/breeding-data.js","js/planner-core.js","js/app-state.js","js/storage.js","js/owned-monsters.js","data/handbook-reference.js","data/combat-reference.js","js/monster-picker.js","js/combat-planner.js","js/combat-planner-ui.js"],

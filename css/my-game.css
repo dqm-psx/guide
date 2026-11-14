@@ -29,6 +29,26 @@
 #team-planner .planner-tabs button{position:relative;padding:10px 13px;border:0;border-radius:0;background:transparent;color:var(--muted);font-size:13px;white-space:nowrap}
 #team-planner .planner-tabs button[aria-selected=true]{color:var(--guide-green);background:transparent;box-shadow:inset 0 -3px var(--guide-accent)}
 #team-planner .planner-tabs button:hover{background:var(--game-soft)}
+
+#planner-targets .plan-start{display:grid;grid-template-columns:minmax(16rem,26rem) minmax(0,1fr);align-items:start;gap:14px 30px}
+.plan-search-field{min-width:0}
+#plan-start-heading{margin:0 0 8px}
+#plan-start-heading label{font:700 1.2rem/1.3 Georgia,serif;color:var(--guide-green);cursor:text}
+.plan-search-field .monster-combo input{min-height:40px}
+#plan-team-options h4,.plan-saved h4{margin:0 0 7px;color:var(--muted);font-size:.85rem}
+.plan-target-options,#planner-targets .target-list{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.plan-target-options button,#planner-targets .target-name{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:3px 9px;font-size:.85rem;font-weight:600}
+.plan-target-options .monster-sprite,#planner-targets .target-name .monster-sprite{width:26px;height:26px;flex:0 0 26px}
+.plan-saved{margin:15px 0 0}
+#planner-targets .target-list{padding:0}
+#planner-targets .target-item{display:inline-flex;flex-direction:row;align-items:center;gap:0;padding:0;border:1px solid var(--guide-rule);border-radius:6px;background:var(--game-surface)}
+#planner-targets .target-item.is-active{border-color:var(--guide-accent);background:var(--game-soft);box-shadow:none}
+#planner-targets .target-name,#planner-targets .target-remove{border:0;background:transparent}
+#planner-targets .target-remove{min-width:32px;padding:2px 7px;min-height:36px;font-size:1.1rem;color:var(--muted);border-inline-start:1px solid var(--guide-rule);border-radius:0 5px 5px 0}
+#planner-targets .target-item button:hover{background:var(--game-soft);color:var(--guide-accent)}
+#planner-targets .plan-heading-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px 12px;flex-wrap:wrap}
+.plan-reference-links{display:flex;gap:8px 14px;flex-wrap:wrap;font-size:.82rem}
+@media(max-width:850px){#planner-targets .plan-start{grid-template-columns:minmax(0,1fr)}}
 #team-planner .my-game-roster-toolbar{display:grid;grid-template-columns:minmax(150px,1fr) auto;align-items:center;gap:10px}
 #team-planner .my-game-roster-toolbar.is-empty,#team-planner .my-game-roster-toolbar.is-empty+#planner-team-summary{display:none}
 #team-planner .my-game-roster-toolbar input[type=search],#team-planner .my-game-roster-toolbar select{min-height:36px;font-size:12px;padding:7px 9px}

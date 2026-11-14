@@ -22,6 +22,7 @@ const PRECACHE = [
   "./js/walkthrough-context.js",
   "./js/owned-monsters.js",
   "./js/adventure-log.js",
+  "./js/team-target-shortcuts.js",
   "./data/save-reference.js",
   "./css/reference-tables.css",
   "./css/my-game.css",

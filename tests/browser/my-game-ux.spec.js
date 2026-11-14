@@ -30,8 +30,8 @@ test.describe('served', () => {
     await page.click('#planner-team-name-save');
     await expect(page.locator('#planner-targets')).toBeVisible();
     await expect(page.locator('#target-list li')).toHaveCount(0);
-    await expect(page.locator('#plan-empty a')).toHaveAttribute('href', '#offspring-finder');
-    await expect(page.locator('#saved-targets-panel')).toBeHidden();
+    await expect(page.getByRole('combobox', {name:'Choose a breeding target'})).toBeVisible();
+    await expect(page.locator('#plan-body')).toBeHidden();
     await page.selectOption('#planner-team-select', originalId);
     await expect(page.locator('#planner-targets')).toBeVisible();
     await expect(page.locator('#target-list li')).toHaveCount(1);

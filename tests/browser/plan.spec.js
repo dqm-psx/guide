@@ -85,10 +85,10 @@ test.describe('served', () => {
 
   const readStored = (page, key) => page.evaluate(k => localStorage.getItem(k), key);
 
-  test('shows the empty plan state when no target is pinned', async ({ page }) => {
+  test('offers a monster picker in My game before the team has a breeding plan', async ({ page }) => {
     await page.goto(url() + '#team-planner');
     await openPlan(page);
-    await expect(page.locator('#plan-empty')).toBeVisible();
+    await expect(page.getByRole('combobox', {name:'Choose a breeding target'})).toBeVisible();
     await expect(page.locator('#plan-body')).toBeHidden();
   });
 

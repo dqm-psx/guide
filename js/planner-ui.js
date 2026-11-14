@@ -606,6 +606,8 @@
     pageRange("planner-male", malePage, maleRows.length, "Pedigrees");
     pageRange("planner-female", femalePage, femaleRows.length, "Pedigrees");
   }
+  let targetPickerTeam = null;
+  let shortcutsTeam = null;
   function renderTargets() {
     const team = activeTeam();
     const activeTargetId = team ? team.activeTargetId : null;
@@ -614,10 +616,22 @@
     const browsingIndex = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
     const browsingSpecies = browsingIndex != null ? byId.get(browsingIndex) : null;
 
-    // The pin control stays beside the offspring selector in Find parents;
-    // the saved list and the plan it opens live in the planner.
     const summary = P("target-active-summary");
     P("saved-targets-panel").hidden = !team?.targets.length;
+    if (activeTab === "targets" && !P("team-planner").hidden) {
+      if (targetPickerTeam !== team.id) {
+        DQMMonsterPicker.get(P("plan-target"))?.refresh();
+        targetPickerTeam = team.id;
+      }
+      if (shortcutsTeam !== team) {
+        const choices = DQMTeamTargetShortcuts.forTeam(team,core);
+        P("plan-team-options").hidden = !choices.length;
+        P("plan-team-choices").innerHTML = choices.map(index =>
+          '<button type="button" data-plan-shortcut="'+index+'">'+spriteMarkup(index)+safe(named(index))+'</button>'
+        ).join('');
+        shortcutsTeam = team;
+      }
+    }
     const activeText = activeSpecies
       ? "Active target: " + displayName(activeSpecies)
       : "No active target.";
@@ -636,7 +650,6 @@
       ? "View plan for " + displayName(activeSpecies) + " in My game ↗"
       : "View plan in My game ↗";
 
-    // The path back to Find parents to choose another target.
     const link = P("planner-open-target");
     link.hidden = !activeSpecies;
     link.href = activeSpecies ? "#offspring-finder?target="+activeSpecies.index : "#offspring-finder";
@@ -649,12 +662,10 @@
     list.innerHTML = team.targets.map(target => {
       const species = byId.get(target.speciesIndex);
       const isActive = target.id === activeTargetId;
+      const name = safe(displayName(species));
       return '<li class="target-item' + (isActive ? " is-active" : "") + '" data-target-id="' + safe(target.id) + '">' +
-        '<span class="target-name">' + spriteMarkup(target.speciesIndex) + safe(displayName(species)) + "</span>" +
-        '<div class="target-actions">' +
-        '<button type="button" data-target-switch="' + safe(target.id) + '" aria-label="Open target ' + safe(displayName(species)) + '"' + (isActive ? ' aria-current="true"' : "") + ">Open</button>" +
-        '<button type="button" data-target-remove="' + safe(target.id) + '" aria-label="Remove target ' + safe(displayName(species)) + '">Remove</button>' +
-        "</div></li>";
+        '<button class="target-name" type="button" data-target-switch="' + safe(target.id) + '" aria-label="Open target ' + name + '"' + (isActive ? ' aria-current="true"' : "") + '>'+spriteMarkup(target.speciesIndex)+name+'</button>'+
+        '<button class="target-remove" type="button" data-target-remove="' + safe(target.id) + '" aria-label="Remove target ' + name + '" title="Remove '+name+' from saved targets">×</button></li>';
     }).join("");
   }
   // ---- breeding plan per target ----
@@ -736,11 +747,8 @@
       else link.removeAttribute("href");
     }
 
-    const empty = P("plan-empty");
-    const body = P("plan-body");
+    P("plan-panel").hidden = !target;
     if (!team || !target) {
-      empty.hidden = false;
-      body.hidden = true;
       plan = null;
       currentTargetId = null;
       return;
@@ -755,8 +763,7 @@
       replaceConfirmedForNode = null;
       P("plan-replace-warning").hidden = true;
     }
-    empty.hidden = true;
-    body.hidden = false;
+    P("plan-heading").textContent = named(target.speciesIndex)+" breeding plan";
     if (target.plan === null) {
       plan = planner.createPlan(target.speciesIndex, "shrine");
       state = app.setTargetPlan(state, team.id, target.id, plan);
@@ -1192,7 +1199,7 @@
       tab.setAttribute("aria-selected", String(mode === name)); tab.tabIndex = mode === name ? 0 : -1;
     }
     hidePairDetail();
-    if (name === "targets") { renderTargets(); renderPlan(); }
+    if (name === "targets") { setupTargetPicker(); renderTargets(); renderPlan(); }
     if (name === "breeding") renderBreeding();
     if (name === "adventure") renderAdventureLog();
     if (focus) P("planner-tab-"+name).focus();
@@ -1809,6 +1816,37 @@
     hidePairDetail();
     DQMReference.openPair(detail);
   });
+  function setupTargetPicker() {
+    const select = P("plan-target");
+    if (DQMMonsterPicker.get(select)) return;
+    const options = rosterSpecies.slice().sort((a,b) => named(a.index).localeCompare(named(b.index)));
+    setOptions("plan-target",options);
+    select.prepend(new Option("", ""));
+    select.value = "";
+    const picker = DQMMonsterPicker.attach(select,{species:options,label:"Choose a breeding target"});
+    picker.input.placeholder = "Search monster names or families";
+    select.addEventListener("change",() => {
+      const species = current("plan-target");
+      if (!species) return;
+      select.value = "";
+      picker.refresh();
+      openTargetInPlanner(species.index);
+    });
+  }
+  function openTargetInPlanner(index) {
+    const team = activeTeam();
+    try {
+      const next = app.addTarget(state,team.id,index);
+      commit(next,"Opened the breeding plan for "+named(index)+".");
+      P("plan-heading").focus();
+    } catch (error) {
+      notice(error.message);
+    }
+  }
+  P("plan-team-choices").addEventListener("click",event => {
+    const choice = event.target.closest("button[data-plan-shortcut]");
+    if (choice) openTargetInPlanner(Number(choice.dataset.planShortcut));
+  });
   P("target-pin").addEventListener("click", () => {
     const index = (typeof DQMReference !== "undefined" && typeof DQMReference.currentTargetIndex === "function") ? DQMReference.currentTargetIndex() : null;
     const species = index != null ? byId.get(index) : null;
@@ -1851,12 +1889,9 @@
         const next = app.removeTarget(state, team.id, targetId);
         commit(next, "Removed the target.");
         renderTargets();
-        // The pin control is in Find parents, so focus stays in this tab: the
-        // next saved target, or the path back when the list is empty.
-        const nextItem = P("target-list").querySelector("button[data-target-switch]");
-        const fallback = nextItem || P("planner-open-target");
-        if (fallback && !fallback.hidden) fallback.focus({preventScroll: true});
-        else P("planner-tab-targets").focus({preventScroll: true});
+        const nextItem = P("target-list").querySelector('button[aria-current="true"]') || P("target-list").querySelector("button[data-target-switch]");
+        if (nextItem) nextItem.focus({preventScroll:true});
+        else DQMMonsterPicker.get(P("plan-target")).focus();
       } catch (error) {
         notice(error.message);
       }

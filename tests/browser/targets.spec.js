@@ -32,6 +32,74 @@ test.describe('served', () => {
     await expect(page.locator('#planner-targets')).toBeVisible();
   };
 
+  test('start and reopen breeding plans by searching directly in My game on a phone', async ({page}) => {
+    await page.setViewportSize({width: 375, height: 812});
+    await page.goto(url() + '#team-planner?tab=targets');
+    const search = page.getByRole('combobox', {name:'Choose a breeding target'});
+    const targets = page.locator('#target-list .target-item');
+    const planNodes = page.locator('#plan-tree .plan-node');
+    await expect(search).toBeVisible();
+    await search.fill('zzzzzz');
+    await expect(page.locator('#planner-targets')).toContainText('No matching monsters');
+    await search.press('Enter');
+    await expect(targets).toHaveCount(0);
+
+    // Select a published menu alias using only the keyboard.
+    await search.fill('WingSlime');
+    await expect(page.getByRole('option', {name:/Winged Slime/})).toBeVisible();
+    await search.press('Enter');
+    await expect(targets).toHaveCount(1);
+    await expect(planNodes).toContainText('Winged Slime');
+    await page.locator('button[data-suggestion-use="base:shrine:0:89"]').click();
+    await expect(planNodes).toHaveCount(3);
+
+    // A second target starts its own plan without leaving the tab.
+    await search.fill('ドラゴスライム');
+    const choice = page.getByRole('option', {name:/Drake Slime/});
+    await expect(choice).toBeInViewport();
+    await choice.click();
+    await expect(targets).toHaveCount(2);
+    await expect(planNodes).toHaveCount(1);
+    await expect(planNodes).toContainText('Drake Slime');
+    await expect(page).toHaveURL(/#team-planner\?tab=targets$/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+    // Choosing an existing target restores its edited recipe rather than creating a copy.
+    await page.reload();
+    await search.fill('Winged Slime');
+    await search.press('Enter');
+    await expect(targets).toHaveCount(2);
+    await expect(planNodes).toHaveCount(3);
+    await expect(planNodes.first()).toContainText('Picky');
+    await expect(targets.filter({hasText:'Winged Slime'})).toHaveClass(/is-active/);
+  });
+
+  test('start a plan from a saved team’s pairings and keep it with that team', async ({page}) => {
+    const {planningBlock} = await import('../helpers/psx-save');
+    await page.goto(url() + '#team-planner?import=save');
+    const teams = page.locator('#planner-team-select');
+    const original = await teams.inputValue();
+    await page.locator('#save-import-file').setInputFiles({
+      name:'example.sav', mimeType:'application/octet-stream', buffer:planningBlock()
+    });
+    await page.locator('#save-import-apply').click();
+    await page.click('#planner-tab-targets');
+    const imported = await teams.inputValue();
+    const choices = page.locator('#plan-team-choices');
+    const suggestion = choices.getByRole('button').first();
+    await expect(suggestion).toBeVisible();
+    const name = (await suggestion.innerText()).trim();
+    await suggestion.click();
+    const active = page.locator('#target-list .is-active .target-name');
+    await expect(active).toHaveText(name);
+    await expect(page.locator('#plan-body')).toBeVisible();
+    await teams.selectOption(original);
+    await expect(choices).toBeHidden();
+    await expect(page.locator('#target-list .target-item')).toHaveCount(0);
+    await teams.selectOption(imported);
+    await expect(active).toHaveText(name);
+  });
+
   test('species star toggles aria-pressed, label, and glyph and persists across reload', async ({ page }) => {
     await page.goto(url() + '#species-index');
     const star = page.locator('button[data-species-favorite="11"]');
@@ -189,8 +257,7 @@ test.describe('served', () => {
     await page.locator('#target-list .target-item').nth(0).locator('button[data-target-remove]').click();
     await expect(page.locator('#target-list .target-item')).toHaveCount(0);
     await expect(page.locator('#target-active-summary')).not.toHaveText('');
-    // Focus stays in this tab: the removed row is gone, so the tab takes it.
-    await expect(page.locator('#planner-tab-targets')).toBeFocused();
+    await expect(page.getByRole('combobox', {name:'Choose a breeding target'})).toBeFocused();
   });
 
   test('pinned targets persist across reload', async ({ page }) => {
@@ -228,14 +295,13 @@ test.describe('served', () => {
     await expect(page.locator('#target-list .target-item')).toHaveCount(0);
   });
 
-  test('the Targets & plans tab links back to Find parents to choose another target', async ({ page }) => {
+  test('the active target links to its complete parent recipes', async ({ page }) => {
     await page.goto(url() + '#offspring-finder');
     await page.selectOption('#target', '11');
     await page.click('#target-pin');
     await openTargets(page);
     const link = page.locator('#planner-open-target');
     await expect(link).toBeVisible();
-    await expect(link).toContainText(/parents/i);
     await expect(link).toHaveAttribute('href','#offspring-finder?target=11');
     await link.click();
     await expect(page.locator('#offspring-finder')).toBeVisible();
@@ -257,7 +323,7 @@ test.describe('served', () => {
     await expect(page.locator('#planner-targets #plan-panel')).toHaveCount(1);
     await expect(page.locator('#planner-tab-targets')).toHaveText(/Targets/);
     await openTargets(page);
-    await expect(page.locator('#plan-empty')).toBeVisible();
+    await expect(page.getByRole('combobox', {name:'Choose a breeding target'})).toBeVisible();
   });
 
   test('pinning offers a View plan path into the planner Targets & plans tab', async ({ page }) => {
