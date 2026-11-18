@@ -104,25 +104,7 @@
     if (row.kind === 'quest' && row.spoiler !== 'ending' && row.region) return row.region + ' · quest';
     return (row.kind === 'boss' ? 'Boss encounter' : row.kind === 'quest' ? 'Quest' : categories[row.kind] || 'Entry') + ' · spoiler hidden';
   }
-  function otherNames(row) {
-    if (!row.names) return '';
-    const {japanese, current, short, editions} = row.names;
-    const labels = {gameboy:'Game Boy-style patch', delocalized:'Delocalized patch', vibecoded:'Vibecoded patch'};
-    const lines = [['Current menu', short !== current ? short : ''], ['Japanese', row.kind === 'skill' ? '' : japanese]].filter(([,v]) => v);
-    const variants = new Map();
-    for (const [edition, value] of Object.entries(editions || {})) {
-      if (value.full === current && value.short === short) continue;
-      const form = [value.full, value.short !== value.full && value.short ? value.short + ' (menu)' : ''].filter(Boolean).join(' · ');
-      if (form) {
-        if (!variants.has(form)) variants.set(form, []);
-        variants.get(form).push(labels[edition] || edition);
-      }
-    }
-    for (const [form, editions] of variants) lines.push([editions.join(' / '), form]);
-    if (!lines.length) return '';
-    return '<details class="item-names"><summary>Other names</summary><dl>' + lines.map(([k,v]) =>
-      '<div><dt>' + safe(k) + '</dt><dd>' + safe(v) + '</dd></div>').join('') + '</dl></details>';
-  }
+  const entryNames = row => DQMEntryNames.markup(row,{escape:safe, translations:GUIDE_REFERENCE.guide_names});
   function learnerLists(row) {
     const groups = new Map();
     for (const [campaign, ids] of Object.entries(row.learners)) {
@@ -154,17 +136,16 @@
     const trail='<div class="monster-breadcrumb"><a href="'+linked(p,{entry:'',kind})+'">← '+safe(back)+'</a><nav aria-label="Adjacent skills">'+
       adjacent(sortedSkills[ordinal-1],'Previous')+adjacent(sortedSkills[ordinal+1],'Next')+'</nav></div>';
     const facts=[['Type',skill.type],['MP cost',skill.mpCost],['Target',skill.target]].filter(([,v])=>v!=null);
-    const header='<header class="monster-profile-header skill-profile-header"><div class="monster-profile-identity">'+
+    const header='<div class="skill-profile-summary"><header class="monster-profile-header skill-profile-header"><div class="monster-profile-identity">'+
       '<h2 id="article-title" tabindex="-1">'+safe(row.title)+'</h2>'+
-      (row.names?.japanese ? '<p class="monster-japanese" lang="ja">'+safe(row.names.japanese)+'</p>' : '')+otherNames(row)+'</div>'+
+      entryNames(row)+'</div>'+
       '<dl class="skill-facts skill-combat-facts">'+facts.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+safe(value)+'</dd></div>').join('')+'</dl></header>'+
-      '<div class="monster-library-quote"><p class="article-lead">'+safe(row.summary)+'</p></div>'+
-      '<p><strong>Effect</strong> · '+safe(skill.effect)+'</p><p class="hint"><a href="#skill-planner?skill='+row.nativeId+'">Check when your monster can learn this →</a>'+
-      ((row.nativeId>=1&&row.nativeId<=18)||(row.nativeId>=62&&row.nativeId<=77)||[102,103].includes(row.nativeId)?' · <a href="#combat-planner?skill='+row.nativeId+'">Compare damage and resistance →</a>':'')+'</p>';
+      '<div class="skill-profile-description"><p><strong>Skill description:</strong> <span class="article-lead">'+safe(row.summary)+'</span></p></div>'+
+      '<div class="skill-profile-effect"><p><strong>Effect:</strong> <span>'+safe(skill.effect)+'</span></p></div>';
     const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const stats=Object.entries(FIELD_GUIDE.skill_requirements?.[row.nativeId] || {}).filter(([,value])=>value>0);
     const requirements=stats.length ? '<section class="monster-card learning skill-thresholds"><div class="monster-card-heading"><h3>Minimum learning stats</h3></div><dl>'+
-      stats.map(([key,n])=>'<div><dt>'+safe(labels[key] || key)+'</dt><dd>'+safe(n)+'</dd></div>').join('')+'</dl><p class="hint">Uses base stats, without equipment. <a href="#field-guide?entry=field-skill-inheritance">How inheritance and learning work →</a></p></section>' : '';
+      stats.map(([key,n])=>'<div><dt>'+safe(labels[key] || key)+'</dt><dd>'+safe(n)+'</dd></div>').join('')+'</dl><p class="hint">Uses base stats, without equipment.</p></section>' : '';
     const progression=[];
     if (skill.upgradesFrom) progression.push(['Upgrades from',skillLink(skill.upgradesFrom)]);
     const next=sortedSkills.filter(skill=>skill.effect.upgradesFrom===row.nativeId);
@@ -175,10 +156,14 @@
     const battleCombos=(GUIDE_REFERENCE.guide_names.battle_combos || []).filter(combo=>combo.skills.includes(row.nativeId));
     if (battleCombos.length) progression.push(['Battle combinations',battleCombos.map(combo=>
       '<a href="'+linked(p,{entry:'field-battle-combos',section:'combo-recipes'})+'">'+safe(combo.title)+'</a>').join(' · ')]);
-    const related=progression.length ? '<section class="monster-card skill-progression"><div class="monster-card-heading"><h3>Related skills</h3></div><dl class="skill-facts">'+
+    const related=progression.length ? '<section class="skill-progression"><h3>Related skills</h3><dl class="skill-facts">'+
       progression.map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+value+'</dd></div>').join('')+'</dl></section>' : '';
-    return trail+header+'<div class="monster-profile-grid skill-profile-grid"><div class="skill-learning-column">'+requirements+related+'</div>'+
-      '<section class="monster-card skill-learners"><div class="monster-card-heading"><h3>Natural learners</h3></div>'+learnerLists(row)+'</section></div>';
+    const tools='<nav class="skill-tools" aria-label="Learning and tools"><h3>Learning &amp; tools</h3><ul>'+
+      '<li><a href="#skill-planner?skill='+row.nativeId+'">Check when your monster can learn this →</a></li>'+
+      ((row.nativeId>=1&&row.nativeId<=18)||(row.nativeId>=62&&row.nativeId<=77)||[102,103].includes(row.nativeId)?'<li><a href="#combat-planner?skill='+row.nativeId+'">Compare damage and resistance →</a></li>':'')+
+      '<li><a href="#field-guide?entry=field-skill-inheritance">How inheritance and learning work →</a></li></ul></nav>';
+    return trail+header+related+'</div><div class="monster-profile-grid skill-profile-grid">'+requirements+
+      '<section class="monster-card skill-learners"><div class="monster-card-heading"><h3>Natural learners</h3></div>'+learnerLists(row)+'</section></div>'+tools;
   }
   function artwork(row, thumbnail, mapIds=[]) {
     if (row.kind === 'monster') return spriteMarkup(row.index);
@@ -358,7 +343,7 @@
       return dest ? '<a href="'+linked(p,{entry:id,chapter:stage?.id || ''})+'">'+safe(label || safeTitle(dest))+'</a>' : '';
     };
     const walk = DQMWalkthrough.render(game,{
-      byId, routes:FIELD_ROUTES.routes, escape:safe, title:safeTitle, hidden:guarded,
+      byId, routes:FIELD_ROUTES.routes, escape:safe, title:safeTitle, hidden:guarded, entryNames,
       maps:PLAYER_ATLAS.maps,itemReferences:DQMItemReference.items,
       mapHref:(map,stage)=>'#atlas?map='+map.id+'&chapter='+stage.id,
       mapImage:map=>'maps/'+map.image,entryArt:(row,mapIds)=>artwork(row,true,mapIds),
@@ -446,6 +431,7 @@
       const art = artwork(row, false);
       const lead = DQMLocations.leadFor(row);
       if (item) heading = DQMItemIndex.profileHeading(row,{escape:safe, art, level:2});
+      else heading += entryNames(row);
       const relatedMarkup = (profileLinks.length || relatedWithoutContacts.length ? '<div class="article-related"><h3>Related entries</h3>' +
         relatedWithoutContacts.map(r => '<a href="' + linked(p, {entry:r.id}) + '">' + safe(safeTitle(r)) + '</a>').join('') +
         profileLinks.map(m => '<a href="#monster?id=' + m.index + '">' + safe(m.display_name) + '</a>').join('') + '</div>' : '');
@@ -479,7 +465,7 @@
         (characterLocations.length ? '<nav class="character-locations" aria-label="Locations"><h3>Locations</h3>'+characterLocations.map(location=>
           '<a href="'+linked(p,{kind:'location',entry:location.id,game:location.game})+'">'+safe(location.title)+'</a>').join(' · ')+'</nav>' : '')+
         (['npc','boss'].includes(row.kind) ? DQMCharacterDialogue.markup(row,safe,questLinks,!reveal) : '') +
-        (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') + (item ? '' : otherNames(row)) +
+        (prices ? '<div class="guide-stock"><table><caption>Recorded shop prices</caption><thead><tr><th>Adventure</th><th>Merchant location</th><th>Buy</th><th>Gold Pass</th></tr></thead><tbody>'+prices+'</tbody></table></div>' : '') +
         (item ? '<p class="hint item-art-credit">Artwork · '+safe(DQMItemArt.creditFor(row))+'</p>' : '')+
         (otherPlaces.length && row.kind!=='location' && !routeData?.gate ? '<p><strong>Places</strong> · ' + otherPlaces.map(safe).join(' · ') + '</p>' : '') +
         (mapLinks.length && row.kind!=='location' ? '<div class="article-related"><h3>On the map</h3>'+mapLinks.map(m=>'<a href="#atlas?map='+safe(m.id)+'">'+safe(m.title)+'</a>').join('')+'</div>' : '') +

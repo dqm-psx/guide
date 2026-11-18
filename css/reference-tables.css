@@ -183,10 +183,10 @@
 .item-sources .item-source + .item-source { margin-top:.25rem; }
 .item-art-credit { font-size:.8rem; color:var(--muted,inherit); }
 
-/* Name styling shared by monster and item profiles. */
+/* Name styling shared by every guide entry. */
 .monster-japanese{font-size:13px;color:var(--muted, inherit);margin:7px 0}
 .monster-aliases{font-size:11px;display:flex;align-items:center;flex-wrap:wrap;gap:5px;color:var(--muted, inherit);margin-top:8px}
-.monster-alias{border:1px solid var(--line, #87998f);border-radius:4px;padding:2px 6px;color:var(--ink, inherit);background:var(--paper, transparent)}
+.monster-alias{border:1px solid var(--line, #87998f);border-radius:4px;padding:2px 6px;color:var(--ink, inherit);background:var(--paper, transparent);max-width:100%;overflow-wrap:anywhere}
 .item-profile-heading { display:flex; align-items:center; gap:1rem; margin:.6rem 0 1rem; }
 .item-profile-identity { min-width:0; overflow-wrap:anywhere; }
 .item-profile-heading :is(h1,h2) { margin:0; color:inherit; font:600 clamp(1.5rem,3vw,2rem)/1.15 Georgia,serif; letter-spacing:-.025em; }

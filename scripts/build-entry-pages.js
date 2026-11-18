@@ -22,6 +22,7 @@ function addEntryPages(assets) {
   vm.runInContext(assets.get('js/sortable-index.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/mechanics-index.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/skill-index.js').toString(),db,{timeout:5000});
+  vm.runInContext(assets.get('js/entry-names.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/item-index.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/character-dialogue.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/monster-reference.js').toString(),db,{timeout:5000});
@@ -38,6 +39,7 @@ function addEntryPages(assets) {
   const placeContext = db.DQMPlaceContext.create({entries:[...articles.values()],routes:db.FIELD_ROUTES.routes,
     scenes:db.FIELD_ROUTES.scenes,maps:db.PLAYER_ATLAS.maps,entrances:db.GATE_ENTRANCES,generation:db.GATE_GENERATION});
   const names = db.FIELD_GUIDE.skill_names;
+  const entryNames = row => row ? db.DQMEntryNames.markup(row,{escape,translations:db.MONSTER_REFERENCE.guide_names}) : '';
   const species = db.MONSTER_REFERENCE.species;
   const bySpecies = new Map(species.map(m=>[m.index,m]));
   const skillLink = n=>link('skills/'+n.id+'/',n.title);
@@ -195,7 +197,7 @@ function addEntryPages(assets) {
   for (const [game,label] of Object.entries(adventures)) {
     const path = db.DQMWalkthrough.paths[game];
     const content = db.DQMWalkthrough.render(game,{
-      byId:articles, routes:db.FIELD_ROUTES.routes, escape, hidden:()=>false, title:row=>row.title,
+      byId:articles, routes:db.FIELD_ROUTES.routes, escape, hidden:()=>false, title:row=>row.title, entryNames,
       maps:db.PLAYER_ATLAS.maps,itemReferences:db.DQMItemReference.items,
       mapHref:map=>'places/'+(map.placeId || map.id)+'/',mapImage:map=>'maps/'+map.image,
       entryArt:(row,mapIds)=>{
@@ -278,7 +280,7 @@ function addEntryPages(assets) {
     const itemFacts = item ? db.DQMItemIndex.itemFacts(row,itemOptions) : '';
     const artCredit = item ? '<p class="item-art-credit">Artwork · '+escape(db.DQMItemArt.creditFor(row))+'</p>' : '';
     const gateLinks=[...new Set([...guideLinks,...related])];
-    const gateSummary=gate ? '<div class="entry-gate-summary"><div class="entry-gate-overview"><h1>'+escape(row.title)+'</h1>'+
+    const gateSummary=gate ? '<div class="entry-gate-summary"><div class="entry-gate-overview"><h1>'+escape(row.title)+'</h1>'+entryNames(row)+
       paragraph(db.DQMLocations.leadFor(row))+gateFacts(row,routeData)+locationCharacters(row)+
       (gateLinks.length ? '<nav class="entry-gate-links" aria-label="Related guide entries">'+gateLinks.join('')+'</nav>' : '')+
       '</div>'+gateEncounterTable(routeData.encounters,row.availability==='unused')+'</div>' : '';
@@ -299,24 +301,42 @@ function addEntryPages(assets) {
     const description=name.description || skill.description;
     skillRows.push({id:name.id, name:name.title, description, type:skill.type, effect:skill.effect,
       mpCost:skill.mpCost, target:skill.target});
-    const skillFacts = [['Effect',escape(skill.effect)],['Type',escape(skill.type)]];
+    const skillFacts = [['Type',escape(skill.type)]];
     if (skill.mpCost != null) skillFacts.push(['MP cost',escape(skill.mpCost)]);
     if (skill.target) skillFacts.push(['Target',escape(skill.target)]);
-    if (names[skill.upgradesFrom]) skillFacts.push(['Upgrades from',skillLink(names[skill.upgradesFrom])]);
+    const relatedFacts=[];
+    if (names[skill.upgradesFrom]) relatedFacts.push(['Upgrades from',skillLink(names[skill.upgradesFrom])]);
+    const relatedSkills=predicate=>Object.entries(db.SKILL_DESCRIPTIONS).filter(([,effect])=>predicate(effect))
+      .map(([nativeId])=>names[nativeId]).filter(Boolean).sort((a,b)=>a.title.localeCompare(b.title));
+    const upgrades=relatedSkills(effect=>effect.upgradesFrom===Number(id));
+    if (upgrades.length) relatedFacts.push(['Upgrades to',upgrades.map(skillLink).join(' · ')]);
     const prereqs=(skill.combination || []).map(k=>names[k]).filter(Boolean);
-    if (prereqs.length) skillFacts.push(['Requires skills',prereqs.map(skillLink).join(' + ')]);
+    if (prereqs.length) relatedFacts.push(['Requires skills',prereqs.map(skillLink).join(' + ')]);
+    const combinations=relatedSkills(effect=>effect.combination?.includes(Number(id)));
+    if (combinations.length) relatedFacts.push(['Used to learn',combinations.map(skillLink).join(' · ')]);
     const battleCombos=(db.MONSTER_REFERENCE.guide_names.battle_combos || []).filter(combo=>combo.skills.includes(Number(id)));
-    if (battleCombos.length) skillFacts.push(['Battle combinations',battleCombos.map(combo=>
+    if (battleCombos.length) relatedFacts.push(['Battle combinations',battleCombos.map(combo=>
       link('articles/field-battle-combos/#article-section-combo-recipes',combo.title)).join(' · ')]);
     const stats=db.FIELD_GUIDE.skill_requirements[id] || {};
     const labels={level:'Level',hp:'HP',mp:'MP',attack:'Attack',defense:'Defense',agility:'Agility',intelligence:'Intelligence'};
     const minimums=Object.entries(stats).filter(([,value])=>value>0).map(([key,value])=>[labels[key] || key,escape(value)]);
     const learners=campaignLists('Natural learners',campaign=>species.filter(m=>m.skills[campaign]?.some(s=>s.id===Number(id))).map(m=>m.index),
       illustratedMonster,'No natural learners recorded.');
+    const related=relatedFacts.length ? '<section class="entry-skill-related"><h2>Related skills</h2>'+facts(relatedFacts)+'</section>' : '';
+    const summary='<div class="entry-skill-summary"><div class="entry-skill-heading"><h1>'+escape(name.title)+'</h1>'+entryNames(name)+facts(skillFacts)+'</div>'+
+      '<p class="entry-skill-description"><strong>Skill description:</strong> <span>'+escape(description)+'</span></p>'+
+      '<p class="entry-skill-effect"><strong>Effect:</strong> <span>'+escape(skill.effect)+'</span></p>'+related+'</div>';
+    const toolLinks=[link('#skill-planner?skill='+id,'Check when your monster can learn this')];
+    const nativeId=Number(id);
+    if ((nativeId>=1 && nativeId<=18) || (nativeId>=62 && nativeId<=77) || [102,103].includes(nativeId)) {
+      toolLinks.push(link('#combat-planner?skill='+id,'Compare damage and resistance'));
+    }
+    toolLinks.push(linkArticle('field-skill-inheritance','How inheritance and learning work'));
+    const tools='<section class="entry-skill-tools"><h2>Learning &amp; tools</h2><ul>'+toolLinks.map(item=>'<li>'+item+'</li>').join('')+'</ul></section>';
     add('skills',name.id,name.title,description,
-      facts(skillFacts)+'<p>'+link('#skill-planner?skill='+id,'Check skill learning and growth')+'</p>'+
+      summary+
       (minimums.length ? '<section><h2>Minimum learning stats</h2>'+facts(minimums)+'</section>' : '')+
-      learners,'#field-guide?kind=skill&entry=skill-'+name.id);
+      learners+tools,'#field-guide?kind=skill&entry=skill-'+name.id);
   }
   for (const m of species.filter(m=>m.current_name && (m.system_entry_id || db.DATA.species[m.index]?.playable))) {
     const rewards = db.DQM_PATCH_REWARDS?.species?.[m.index] || [];
@@ -379,19 +399,20 @@ function addEntryPages(assets) {
     const profile=p.kind==='skills' || p.kind==='monsters';
     const monster=p.kind==='monsters' ? bySpecies.get(p.id) : null;
     const item = p.kind === 'articles' && db.DQMItemReference.items[p.id];
+    const namingRow = p.kind === 'articles' ? articles.get(p.id) :
+      p.kind === 'places' ? {...maps.get(p.id),kind:'map',aliases:places.get(p.id).flatMap(row=>row.aliases || [])} : null;
     const location=p.kind==='articles' && articles.get(p.id)?.kind==='location' ? articles.get(p.id) : null;
     const gate=db.DQMLocations.isGate(location);
     const locationNav=location ? '<nav class="entry-places-nav" aria-label="Locations and maps">'+
       '<a href="entries/#locations-'+location.game+'" aria-label="Back to '+escape(adventures[location.game])+(gate?' gates':' locations')+'" title="Back to locations"><span aria-hidden="true">←</span></a>'+
       link('entries/#locations','Overview')+link('entries/#locations-dqm1',adventures.dqm1+'’s gates')+
       link('entries/#locations-dqm2',adventures.dqm2+'’s worlds')+'</nav>' : '';
-    let introduction=item || gate ? '' : '<h1>'+escape(p.title)+'</h1>'+paragraph(p.description);
+    let introduction=item || gate || p.kind==='skills' ? '' : '<h1>'+escape(p.title)+'</h1>'+entryNames(namingRow)+paragraph(p.description);
     if (monster) {
       const species = db.DATA.species[monster.index];
       const icon = db.FAMILY_ICONS[species.family_id];
       const family = '<span class="family-label">'+(icon ? '<img class="family-icon" alt="" src="'+versioned(icon.src)+'" width="'+icon.width+'" height="'+icon.height+'">' : '')+escape(species.family_display || species.family)+' Family</span>';
-      const identity=[monster.short_name!==monster.display_name && monster.short_name,monster.japanese].filter(Boolean);
-      introduction='<div class="entry-identity">'+portrait(monster.index)+'<div><p>'+family+'</p><h1>'+escape(p.title)+'</h1>'+paragraph(identity.join(' · '))+'</div></div>'+
+      introduction='<div class="entry-identity">'+portrait(monster.index)+'<div><p>'+family+'</p><h1>'+escape(p.title)+'</h1>'+entryNames({...monster,kind:'monster'})+'</div></div>'+
         '<div class="entry-library"><h2>In-game library</h2>'+paragraph(monster.library?.text || 'No in-game library entry.')+'</div>';
     }
     const spoilerPreference = p.guarded ? '<script>try{if(localStorage.getItem("dqm-guide-story-spoilers")==="hide"){document.documentElement.classList.add("hide-story");document.title="Story entry · DQM1&2 PSX Player Guide"}}catch{}</script>' : '';
@@ -402,7 +423,7 @@ function addEntryPages(assets) {
       spoilerPreference+'<link rel="stylesheet" href="'+versioned('css/entry-page.css')+'">'+
       '<link rel="stylesheet" href="'+versioned('css/handbook.css')+'">'+
       (p.kind==='walkthroughs' ? '<link rel="stylesheet" href="'+versioned('css/walkthrough.css')+'">' : '')+
-      (p.path==='entries/' || item ? '<link rel="stylesheet" href="'+versioned('css/reference-tables.css')+'">' : '')+
+      '<link rel="stylesheet" href="'+versioned('css/reference-tables.css')+'">'+
       '</head><body><header>'+link('./','DQM1&2 PSX Player Guide')+
       (p.path==='entries/' ? '' : '<nav aria-label="Guide navigation">'+link('entries/','Guide index')+'</nav>')+
       '</header><main'+(gate?' class="entry-gate-page"':'')+'>'+shield+'<div class="entry-content'+(profile ? ' entry-profile' : '')+(monster?' entry-monster-profile':'')+'">'+locationNav+introduction+p.body+

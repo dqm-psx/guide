@@ -133,8 +133,7 @@
   }
 
   function aliasesMarkup(species) {
-    const values = [...new Set([species.short_name, ...(species.aliases || [])].filter(value => value && value !== named(species)))];
-    return values.length ? '<div class="monster-aliases"><span>Also known as</span> ' + values.map(value => '<span class="monster-alias">' + safe(value) + '</span>').join(' ') + '</div>' : '';
+    return DQMEntryNames.aliasesMarkup(species,{escape:safe});
   }
 
   function growthMarkup(species) {

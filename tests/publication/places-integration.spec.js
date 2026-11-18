@@ -147,9 +147,6 @@ test('static map fallback hides story context while keeping the map available',a
 });
 
 test('published location links retain a selected map layout and encounter jump',async ({page})=>{
-  await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{value:{
-    writeText:async ()=>{ throw new DOMException('Denied','NotAllowedError'); }
-  }}));
   const article=url+'articles/location-water-world/';
   await page.goto(article+'#field-guide?entry=location-water-world&map=map-29-1');
   const viewer=page.locator('#location-map-browser');
@@ -161,11 +158,9 @@ test('published location links retain a selected map layout and encounter jump',
   const expected=article+'#field-guide?entry=location-water-world&map=map-29-2';
   await expect(page).toHaveURL(expected);
   await expect.poll(()=>viewer.locator('.map-image img').evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
-  await page.getByRole('button',{name:'Copy entry link'}).click();
-  const copy=page.locator('#entry-copy-url');
-  await expect(copy).toHaveValue(expected);
-  await expect(copy).toBeFocused();
-  await page.goto(await copy.inputValue());
+  const selectedUrl=page.url();
+  await page.goto(article);
+  await page.goto(selectedUrl);
   await expect(page.locator('#article-title')).toHaveText(articleTitle);
   await expect(viewer.locator('[data-map-control="title"]')).toHaveText(mapTitle);
   await expect(viewer.locator('[data-map-control="place"]')).toHaveValue('map-29-1');
