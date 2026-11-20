@@ -48,7 +48,7 @@
   }
 
   function render(game, {byId, routes, escape, campaignLink, sectionLink, entryLink, questIndexLink, prose, title, hidden, places,
-    maps = [], itemReferences = {}, mapHref, mapImage, entryArt}) {
+    maps = [], itemReferences = {}, mapHref, mapImage, entryArt, entryNames = () => ''}) {
     const groups = chapters[game].map(([label, ids]) => {
       const rows = ids.map(id => byId.get('story-'+id));
       return {label:label || rows[0].region, rows};
@@ -129,7 +129,7 @@
         referenceLine('Arena classes',quests.filter(ref => !ref.quest_group)) +
         (context || route.stages ? '' : referenceLine('Bosses',references.filter(ref => ref.kind === 'boss')));
       const reference = contextMarkup(row);
-      return '<div class="walk-part">'+label+'<div class="walk-part-layout"><div class="walk-route">'+objective+
+      return '<div class="walk-part">'+label+entryNames(row)+'<div class="walk-part-layout"><div class="walk-route">'+objective+
         (lines.length ? '<ol class="article-steps">'+lines.join('')+'</ol>' : '')+stageTable(route.stages,row)+links+
         '</div>'+reference.aside+'</div>'+reference.resources+'</div>';
     }

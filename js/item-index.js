@@ -91,29 +91,11 @@
     };
   }
   function profileHeading(row, {escape, art, level}) {
-    const names = row.names || {};
-    const aliases = new Map();
-    const add = (name, source) => {
-      if (!name || name === row.title || name === names.japanese) return;
-      if (!aliases.has(name)) aliases.set(name, []);
-      if (source) aliases.get(name).push(source);
-    };
-    add(names.short, 'Current menu');
-    const editions = {gameboy:'Game Boy-style patch', delocalized:'Delocalized patch', vibecoded:'Vibecoded patch'};
-    for (const [key, forms] of Object.entries(names.editions || {})) {
-      const edition = editions[key] || key;
-      add(forms.full, edition);
-      if (forms.short !== forms.full) add(forms.short, edition+' menu');
-    }
-    for (const alias of row.aliases || []) add(alias);
-    const chips = Array.from(aliases, ([name, sources]) => '<span class="monster-alias"'+
-      (sources.length ? ' title="'+escape(sources.join(' · '))+'"' : '')+'>'+escape(name)+'</span>');
     const heading = level === 1 ? '<h1>'+escape(row.title)+'</h1>' :
       '<h2 id="article-title" tabindex="-1">'+escape(row.title)+'</h2>';
     return '<div class="item-profile-heading">'+(art ? '<div class="item-profile-art">'+art+'</div>' : '')+
       '<div class="item-profile-identity">'+heading+
-      (names.japanese ? '<p class="monster-japanese" lang="ja">'+escape(names.japanese)+'</p>' : '')+
-      (chips.length ? '<div class="monster-aliases"><span>Also known as</span> '+chips.join(' ')+'</div>' : '')+'</div></div>';
+      DQMEntryNames.markup(row,{escape})+'</div></div>';
   }
   function itemFacts(row, options) {
     const {escape, game} = options;

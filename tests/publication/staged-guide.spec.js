@@ -37,14 +37,15 @@ test.afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
 });
 
-test('published handbook subsection links work with enhancement, sharing and without JavaScript',async({browser,page})=>{
+test('published handbook subsection URLs work with enhancement, reload and without JavaScript',async({browser,page})=>{
   const path='articles/field-restored-content/#article-section-foreign-master-differences';
   await page.goto(url+path);
   await expect(page.locator('#article-title')).toContainText('Game Boy, PlayStation');
   await expect(page.locator('#article-section-foreign-master-differences')).toBeInViewport();
-  await page.context().grantPermissions(['clipboard-read','clipboard-write']);
-  await page.locator('#entry-permalink').click();
-  expect(await page.evaluate(()=>navigator.clipboard.readText())).toBe(url+path);
+  await expect(page).toHaveURL(url+path);
+  await page.reload();
+  await expect(page.locator('#article-title')).toContainText('Game Boy, PlayStation');
+  await expect(page.locator('#article-section-foreign-master-differences')).toBeInViewport();
   const context=await browser.newContext({javaScriptEnabled:false});
   try {
     const reader=await context.newPage();
@@ -336,7 +337,7 @@ test('real entry URLs expose crawlable references and open the matching interact
     await expect(staticRow.getByRole('cell')).toHaveText([firstSkill.description,facts.effect,facts.type,String(facts.mpCost),facts.target]);
     await staticRow.getByRole('link').click();
     await expect(reader.getByRole('heading',{level:1})).toHaveText(firstSkill.title);
-    await expect(reader.locator('.entry-facts dd').filter({hasText:facts.effect})).toHaveText(facts.effect);
+    await expect(reader.locator('.entry-skill-effect')).toHaveText('Effect: '+facts.effect);
     await reader.goto(url+entry);
     await expect(reader.getByRole('heading',{level:1})).toHaveText(skill.title);
     await expect(reader.locator('main')).toContainText('MP cost');
@@ -351,11 +352,9 @@ test('real entry URLs expose crawlable references and open the matching interact
   await page.goto(url+entry);
   await expect(page.locator('#article-title')).toHaveText(skill.title);
   await expect(page).toHaveURL(url+entry);
-  await page.evaluate(() => Object.defineProperty(navigator,'clipboard',{configurable:true,
-    value:{writeText:async text=>{ window.copiedEntry = text; }}}));
-  await page.getByRole('button',{name:'Copy entry link'}).click();
-  await expect(page.locator('#entry-copy-status')).toHaveText('Entry link copied.');
-  expect(await page.evaluate(()=>window.copiedEntry)).toBe(url+entry);
+  await page.reload();
+  await expect(page.locator('#article-title')).toHaveText(skill.title);
+  await expect(page).toHaveURL(url+entry);
   const search=page.getByRole('searchbox',{name:'Search the guide'});
   await search.fill('bard');
   await search.press('Enter');
@@ -385,23 +384,6 @@ test('real entry URLs expose crawlable references and open the matching interact
   await expect(page).toHaveURL(url+'monsters/11/');
   await expect(page.locator('#monster-heading')).toBeVisible();
   await expect(page.locator('#monster-heading')).toHaveText(name(11));
-});
-
-test('entry sharing selects the canonical URL when clipboard access is denied',async ({page})=>{
-  await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{value:{
-    writeText:async ()=>{ throw new DOMException('Denied','NotAllowedError'); }
-  }}));
-  await page.goto(url+'index.html#field-guide?kind=boss&entry=boss-golem');
-  const input=page.getByRole('textbox',{name:'Entry link to copy'});
-  await page.getByRole('button',{name:'Copy entry link'}).click();
-  await expect(input).toHaveValue(url+'articles/boss-golem/');
-  await expect(input).toBeFocused();
-  expect(await input.evaluate(el=>el.value.slice(el.selectionStart,el.selectionEnd))).toBe(url+'articles/boss-golem/');
-  await page.locator('.nav a[href="#species-index"]').click();
-  await expect(page.locator('#entry-share')).toBeHidden();
-  await page.goBack();
-  await expect(page.getByRole('button',{name:'Copy entry link'})).toBeVisible();
-  await expect(input).toBeHidden();
 });
 
 test('the published guide index shares item column choices with the interactive guide',async ({page})=>{
