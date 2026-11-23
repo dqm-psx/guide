@@ -83,7 +83,45 @@
 .atlas-browser input,.atlas-browser select{display:block;width:100%;margin-top:4px;background:var(--guide-panel);min-height:40px}
 .guide-action{background:var(--guide-green);color:var(--guide-panel);border:1px solid var(--guide-green);min-height:40px;padding-inline:18px;font-weight:700}
 .home-columns{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(18px,3vw,46px);margin:22px 0}
-.home-topics h2,.campaigns h2,.ranch-links h3,.map-notes h4,.article-related h3{font:700 21px/1.2 Georgia,serif;color:var(--guide-green);letter-spacing:-.02em;margin-bottom:11px}
+.home-reference h2,.home-topics h2,.campaigns h2,.ranch-links h3,.map-notes h4,.article-related h3{font:700 21px/1.2 Georgia,serif;color:var(--guide-green);letter-spacing:-.02em;margin-bottom:11px}
+.reference-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:0 12px; margin-bottom:11px; }
+.reference-heading h2 { margin:0; }
+.reference-heading a { font-size:.875rem; font-weight:600; }
+.reference-chart {
+  display:grid;
+  justify-items:center;
+  overflow:hidden;
+  border:1px solid var(--guide-rule);
+  border-radius:10px;
+  background:var(--guide-soft);
+  color:var(--guide-green);
+  text-decoration:none;
+}
+.reference-chart img {
+  display:block;
+  width:auto;
+  height:auto;
+  max-width:calc(100% - 24px);
+  max-height:24rem;
+  margin:12px;
+  box-shadow:0 2px 7px #101d223b;
+}
+.reference-chart>span {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+  padding:9px 14px;
+  border-top:1px solid var(--guide-rule);
+  background:var(--guide-panel);
+  font-weight:700;
+}
+.reference-chart:is(:hover,:focus-visible) { border-color:var(--guide-accent); }
+.reference-chart:is(:hover,:focus-visible)>span { text-decoration:underline; }
+.reference-notes { margin-top:6px; padding:0; border:0; background:transparent; font-size:.875rem; }
+.reference-notes summary { padding:6px 0; color:var(--guide-green); }
+.reference-notes p { margin:.35rem 0 .65rem; line-height:1.5; }
+.campaigns+.home-topics { margin-top:22px; }
 .breeding-tools { container-type:inline-size; }
 .breeding-shortcuts {
   display:grid;
