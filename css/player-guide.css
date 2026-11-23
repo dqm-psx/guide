@@ -118,9 +118,6 @@
 }
 .reference-chart:is(:hover,:focus-visible) { border-color:var(--guide-accent); }
 .reference-chart:is(:hover,:focus-visible)>span { text-decoration:underline; }
-.reference-notes { margin-top:6px; padding:0; border:0; background:transparent; font-size:.875rem; }
-.reference-notes summary { padding:6px 0; color:var(--guide-green); }
-.reference-notes p { margin:.35rem 0 .65rem; line-height:1.5; }
 .campaigns+.home-topics { margin-top:22px; }
 .breeding-tools { container-type:inline-size; }
 .breeding-shortcuts {
