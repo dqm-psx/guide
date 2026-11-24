@@ -293,7 +293,7 @@ function addEntryPages(assets) {
       list('Arena classes',(row.arena_classes || []).map(articleLink))+dialogue+
       list('Walkthrough',steps)+(gate?'':list('Wild encounters',[...new Set(encounterList(routeData.encounters))]).replace('<section>','<section id="location-encounters">'))+
       list('Encounter base stats',battleList(routeData.fights))+(gate?'':list('In this guide',guideLinks))+list('Shops',stock)+(row.kind==='location' ? '' : list('Maps',places))+list('Monsters',(row.species_ids || []).map(id=>bySpecies.get(id)).filter(Boolean).map(monsterLink))+
-      (gate?'':list('Related entries',related))+artCredit,'#field-guide?entry='+row.id,['story','ending'].includes(row.spoiler));
+      (gate?'':list('Related entries',related))+artCredit,row.id==='field-recruitment'?'#recruiting':'#field-guide?entry='+row.id,['story','ending'].includes(row.spoiler));
   }
   const skillRows = [];
   for (const [id,name] of Object.entries(names)) {

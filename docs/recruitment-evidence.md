@@ -1,10 +1,10 @@
 # PSX recruitment evidence
 
-The Recruiting article also covers recovery items, Terry’s gate bosses and ordinary foreign masters. The calculator remains limited to listed wild encounters, meat and Starry Orb; the additional article guidance does not expand its supported inputs.
+Recruiting is a dedicated reference tool covering listed wild encounters, verified fixed boss battles and ordinary foreign masters across Terry, Cobi and Tara. The calculator accepts enemy-targeted meat, successful recovery-item uses and Starry Orb. It reports a range when healing rolls or Sage’s Stone consumption make the appeal uncertain.
 
 The calculator estimates the joining check for the **eligible defeated candidate already selected by the game**. It does not estimate encounter frequency, the chance that a particular enemy becomes that candidate, or all scripted eligibility and party/farm capacity restrictions. Each enemy in an encounter does not receive an independent joining roll.
 
-The data contains 283 guide-listed wild encounter contexts and 1,131 enemy records across Terry, Cobi and Tara. Species IDs, context IDs, levels, recruitment classes and native species ranks are stored; displayed names and floor labels come from the existing guide references so translation updates do not change identity. Arena, master and special battle records are excluded. Terry contexts 122–125, belonging to the retained unused gate, are also excluded.
+Schema 2 contains 400 encounter contexts and 1,978 candidate records: 283 wild contexts/1,131 records, 57 fixed boss contexts/71 records, and 60 foreign-master pools/776 records. The original wild-record digest remains `bdb2769b4a4f880497165c486c014b33df57592091d89b25f649e4fbb65b6502`. Species IDs, context IDs and native record indices remain stable; names and labels resolve through the current guide references. Each encounter also declares its battle mode, meat eligibility and maximum simultaneous enemies. Enemy base HP/MP are stored as reference hints, not promised live values after native wild-stat randomization. Ranked arenas, unreviewed scripted battles and generated Magic Key wild encounters are outside the calculator. Terry's unused wild contexts 122–125 and the unused gate's inactive fixed-battle remnant are excluded.
 
 ## Sources and verification
 
@@ -27,7 +27,7 @@ All three native harnesses were rerun against **both** retail and v1.0.73 resour
 | Sirloin recruitment threshold and final RNG boundaries | 1,456 |
 | Consecutive native Sirloin effect-handler calls, including cap (before consumption) | 83 |
 
-These are isolated executions of native MIPS instructions using Unicorn, with controlled RNG outputs. They are not full emulator playthroughs. The upstream reports describe their original v1.0.66 input; this guide's wrapper supplies the actual retail and v1.0.73 resources without modifying those harnesses. The initial eight audited native code spans and every included wild enemy record match between both discs. The November follow-up expands the extraction guards to ten spans by including the consumption callback and its successful-item script branch. `data/recruitment-reference.js` records their hashes and the source disc hashes:
+These are isolated executions of native MIPS instructions using Unicorn, with controlled RNG outputs. They are not full emulator playthroughs. The upstream reports describe their original v1.0.66 input; this guide's wrapper supplies the actual retail and v1.0.73 resources without modifying those harnesses. The initial eight audited native code spans and every included wild enemy record match between both discs. The expanded extraction additionally guards successful consumption, fixed-battle setup, foreign-master mode selection, meat rejection, recovery handlers and item target eligibility. `data/recruitment-reference.js` records the checked spans and source disc hashes:
 
 | Disc | SHA-256 |
 | --- | --- |
@@ -67,19 +67,42 @@ The November 23, 2026 follow-up used the authenticated Japanese retail disc abov
 
 The shared appeal value at `0x80110AA8` starts at 10 for each battle. Successful enemy-targeted HP recovery items add `floor(rolled recovery / 2)`, then their consumption adds 5. Medicinal Herb rolls 30–40 and therefore adds 20–25; Amor Water rolls 60–70 and adds 35–40. The recovery roll is credited before the HP cap: a 35-point Herb roll with only 1 HP missing adds 22 appeal. If the target is already at full HP, recovery fails, the original script skips consumption, and appeal does not change. The failed attempt still consumes a recovery RNG draw.
 
-Ally-targeted recovery subtracts half the recovery before the consumption bonus. Each score operation clamps to 0–32,767, so the net change near zero is not a single unclamped subtraction. MP recovery items also affect appeal; full-restoration amounts can depend on the missing points. Healing spells do not change appeal. The article gives the specifically verified Herb and Amor ranges rather than assigning one formula to every restoration effect.
+Ally-targeted recovery subtracts half the recovery before the consumption bonus. Each score operation clamps to 0–32,767, so the net change near zero is not a single unclamped subtraction. MP recovery items also affect appeal; full-restoration amounts depend on the missing points. Healing spells do not change appeal. The calculator models each supported restoration effect separately, including group rounding and possible item consumption.
 
-The native item audit executed eight recovery cases with the original RNG and verified the script branch that skips consumption after a failed recovery. An initial exploratory probe incorrectly forced consumption on failure; that probe was corrected before the retained findings and article were written. Twenty-one isolated recruitment-decision checks covered class/rank restrictions, collection history, baseline and appeal thresholds, and different results at identical appeal. These checks execute original MIPS routines, not a complete emulator playthrough.
+The initial native item audit executed eight recovery cases with the original RNG and verified the script branch that skips consumption after a failed recovery. An initial exploratory probe incorrectly forced consumption on failure; that probe was corrected before the retained findings and article were written. Twenty-one isolated recruitment-decision checks covered class/rank restrictions, collection history, baseline and appeal thresholds, and different results at identical appeal. The expanded verifier adds the target-menu, group-recovery and item-break checks below. These checks execute original MIPS routines, not a complete emulator playthrough.
+
+### Calculator recovery inputs and bounds
+
+Counts mean **successful uses on enemies**. Failed full-HP/full-MP attempts must not be entered as successes. Ally item use and unlisted item effects can also change appeal, but are not modeled by these inputs. Because all supported enemy effects are nonnegative, their score bounds can be added and clamped to 32,767 without introducing an item-order assumption. That would not hold for mixed ally/enemy recovery near zero, which is deliberately outside this model.
+
+| Item | Score added per successful use |
+| --- | --- |
+| Medicinal Herb | 20–25 |
+| Amor Water | 35–40 |
+| Magic Water | 15–20 |
+| Yggdrasil Dew | Sum `floor(HP restored to each enemy / 2)`, plus 5 once |
+| Elfin Elixir | `floor(MP restored / 2) + 5` |
+| Sage’s Stone | 30–35 for each healed enemy, plus 5 once if the Stone is consumed |
+
+The original Magic Water handler loads 20 and 30 into the recovery routine at `0x801279DC` and `0x801279E8`. The equivalent Herb and Amor arguments are guarded as 30–40 and 60–70. The verifier checks these instruction words directly, rather than treating sampled rolls as a proof of their endpoints.
+
+For Dew and Elfin Elixir, the user supplies the points actually restored per use. Repeated counts assume those same supplied amounts for each counted use. Dew accepts separate missing-HP amounts for up to three enemies, including zero for an unaffected target; it rounds each target down separately before adding the single consumption bonus. For example, two enemies missing 3 HP each yield `1 + 1 + 5 = 7` appeal, not 8. If every target is full, the item fails and remains in the bag.
+
+The actual enemy-target menu callback at `0x8014C278` accepts IDs 1, 2, 4 and 5 as single targets; Dew (3), Sage’s Stone (11) and Starry Orb (30) use the enemy group. Group processing traverses four actor positions, but only slots 4–6 are the three live enemy slots; the fourth stays absent. Fixed boss formations confirm at most three simultaneous enemies. An ordinary encounter record pool can contain more than three species, which must not be interpreted as a simultaneous party.
+
+Sage’s Stone restores 60–70 per successfully healed enemy. The user supplies the number of injured enemies healed per use (1–3). Its item-menu consumption threshold byte is 20, but that byte is compared with a derived RNG value; the guide does not equate it to an exact 20% consumption probability. The calculator uses a conservative `[30 × targets, 35 × targets + 5]` score range per successful use. The original script's consume-mode table at `0x800EBE65` branches mode 0 to retention, mode 1 directly to consumption, and mode 2 through the break message and then the same consumption callback. Native three-enemy examples give appeal 116 from seed 0 (rolls 69/65/70 and consumption) and 104 from seed 1 (rolls 63/61/67 without consumption), both starting at 10.
+
+The displayed probability endpoints apply the joining formula to the low and high appeal totals. They bound the nominal chance arising from the entered item outcomes; they are not an averaged roll distribution, a statistical confidence interval, or a promise that all random extremes occur independently. Without uncertain effects the endpoints coincide, preserving the original scalar calculator results. Native Starry Orb execution in boss mode 1 still sets its guarantee flag and adds 4,100 appeal; the class/rank/battle eligibility guards remain decisive. Meat entered through an old link or before changing encounter type is ignored whenever the selected battle rejects it.
 
 `ResultsPrepareRecruit` is at `0x80120814` in resource 104 (load base `0x80114CB8`), with the decision at `0x801212C0–0x801217E0`. It generates randomized candidate stats before the joining decision. The persistent obtained-species bits start at `0x800C7A66`; gifts, breeding and earlier captures affect the same collection history. The initial-chance divisor table is at `0x8011B0C4`. The appeal route requires both the scaled appeal to meet `RandRange(10,100)` and `ResultsRecruitRoll() < 70`; the latter routine at `0x80121864` uses two fresh RNG draws.
 
-For Dark Horn, category 17 slot `0x92` resolves to resource 4590. Its record at offset `0xC0` has family 2, species 10, class 5, base HP 2,000 and level 40. Its species rank is 5, giving an approximately 1% never-collected baseline. Both collection states use `floor(appeal / 8)`: appeal 79 cannot pass the first comparison, 80 can, and 800 saturates it. The separate roughly 70% check still remains. Ten successful Herbs, with no other appeal changes, produce appeal 210–260 and approximately a 14–19% total first-collection chance. The player article keeps the simpler conclusions: a low baseline, useful healing and no guarantee.
+For Dark Horn, category 17 slot `0x92` resolves to resource 4590. Its record at offset `0xC0` has family 2, species 10, class 5, base HP 2,000 and level 40. Its species rank is 5, giving an approximately 1% never-collected baseline. Both collection states use `floor(appeal / 8)`: appeal 79 cannot pass the first comparison, 80 can, and 800 saturates it. The separate roughly 70% check still remains. Ten successful Herbs, with no other appeal changes, produce appeal 210–260 and approximately a 14–19% total first-collection chance. This case is available directly in the calculator; no separate Dark Horn explanation section is required.
 
 The RNG at `0x80023C08` stores its state at `0x800C70A8` and advances it as `state = state * 0x41C64E6D + 12345` modulo `2^32`. Save states restore this state. Repeating actions can repeat a refusal; leaving and returning can change the intervening RNG calls. The traced joining decision contains no gate-entry success roll or leave-and-return requirement. This explains the reported save-state pattern plausibly, but the player's actual state was unavailable and no unique cause or exact playthrough reproduction is claimed.
 
 ### Terry's fixed boss encounters
 
-Category 17 slots `0x80–0x9F` were re-extracted directly from the Japanese BIN. Names were resolved from the original name groups and mapped to current guide names. Class 0 is automatic after normal eligibility; classes 4–6 are conditional; class 7 blocks ordinary recruitment. The table retains secondary enemies rather than treating every record as the named boss.
+Category 17 slots `0x80–0x9F` were re-extracted directly from the Japanese BIN. Names were resolved from the original name groups and mapped to current guide names. Class 0 is automatic after normal eligibility; classes 4–6 are conditional; class 7 blocks ordinary recruitment. The table below is a raw archive-record audit, including inactive records. The calculator narrows these to formations actually called by the event scripts, as described after the table.
 
 | Slot / resource | Enemy records and recruitment classes |
 | --- | --- |
@@ -119,6 +142,16 @@ Matango is family 4/species 7/rank 3; Lips is family 5/species 7/rank 4. An earl
 
 All normal Terry gate boss callbacks in resources 72–101 call `BeginFixedBattle` (`0x80042220`) with nonzero fixed-encounter groups. The resident setup at `0x80041EF8–0x80041F00` selects battle mode 1. Enemy meat preparation (`0x8014CE60`, guard `0x8014D1BC–0x8014D1D4`) rejects meat in mode 1 regardless of recruitment class. Thus no normal gate boss accepts meat, including the class-0 joiners. Ordinary foreign masters use a different mode; their meat acceptance is not an exception among these bosses.
 
+### Boss encounters included in the calculator
+
+Terry's 31 active gate destinations are resolved through resource 18's descriptors at `0x80117068 + (gateId − 1) × 16`, then through the destination area's encounter-context byte. Original and English descriptors, script resource bindings and literal fixed-battle calls must match. This excludes gate 32/context 159/resource 4603: its Deathmore archive record remains, but scene 102 has no working fixed-battle call. It also excludes the Stump Chump record in Treeface's archive: scene 76 only calls formation 2, the Treeface formation. The earlier record-only interpretation did not prove a Stump Chump boss encounter.
+
+Medal Gate context 145 calls three alternative one-monster formations (King Slime, Matango and Lips); it is not a battle against all three together. Mirror Gate context 149 separately calls the two-Servant formation and the later Mysterious Swordsman and Durran formations. The reference stores the called formation IDs and native enemy-record indices so the UI can retain these distinctions.
+
+Cobi and Tara each add 13 reviewed story-boss bindings from `build-field-routes.py`'s `WORLD_FIGHTS`. Native room descriptors and event call offsets are compared against both discs, and only formation 1's actual records are selected. Cursed Lamp (context 94, record 0) and Ice Golem (context 112, record 4) are class 0; the remaining included records are class 7. The Dark Master context 124 has different records for Cobi and Tara and keeps their separate campaign bindings.
+
+The shared fixed-battle callback and setup contain no campaign-specific exception to the mode-1 meat rejection. The generator guards `0x80041EF8–0x80041F04`, `0x80042220–0x80042288`, setup resource 5499 at `0x8018C120–0x8018C18C`, and resource 5502's meat check at `0x8014D1B4–0x8014D1E4`. Arena classes and unreviewed special scripted fights are not inferred from these boss records.
+
 ### English patch comparison
 
 The Japanese retail and checked v1.0.74 Enhanced files have identical bytes in:
@@ -144,7 +177,7 @@ The shared appeal and collection-history calculation is the same as above. Most 
 
 The consumed-meat audit follows native menu preparation, classification, effect preparation/application and the actual successful-script consumption branch, rather than manually adding 5. Eleven native callback chains cover all four enemy-targeted meats, the Orb, two sequential Sirloins and all four ally-targeted meats. Ally meat adds only the consumption bonus of 5, which is why the player article says it lacks the enemy-feeding bonus instead of saying it adds no appeal. This is the source of the corrected full-use increments above.
 
-The full-use and encounter audit is available in `scripts/verify-recruiting-native.py`. It checks the Japanese input hash, runs 19 item callback chains (the 11 above and eight recovery cases) and two Heal command evaluations and HP commits, extracts all 32 Terry boss encounter resources, and checks the Servant formations. Its pool extraction covers 776 appearances: Terry has 110 class-5, 124 class-6 and two class-3 records; Cobi and Tara each have 123 class-5 and 147 class-6 records. This pool and callback probe uses the original Japanese BIN; patch preservation is established by the separate code comparisons above.
+The full-use and encounter audit is available in `scripts/verify-recruiting-native.py`. It checks the Japanese input hash and runs 24 item callback chains: the original 19, two Dew group cases, two Sage’s Stone group cases and a mode-1 Orb case. It also checks seven actual target-menu choices, three native recovery-bound pairs, and two Heal command evaluations and HP commits. It extracts all 32 Terry boss archive resources (including the inactive remnant) and checks the Servant formations. Its pool extraction covers 776 appearances: Terry has 110 class-5, 124 class-6 and two class-3 records; Cobi and Tara each have 123 class-5 and 147 class-6 records. This pool and callback probe uses the original Japanese BIN; patch preservation and the active boss subset are established by the separate source comparisons above.
 
 The guide’s extraction guards additionally cover consumption at `0x8014D6A0–0x8014D77C` and resource 5498’s successful-item script at `0x800EBE51–0x800EBE76` (SHA-256 `274cd4607844a6653f2f83ded4fb465deb514faf688aa659e2d3f6a2819d074c`).
 

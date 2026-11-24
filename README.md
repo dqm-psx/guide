@@ -10,7 +10,7 @@ Walkthroughs, maps, monster profiles and breeding tools for the English PlayStat
 | Explore a gate or world, its maps, walkthrough and encounters | [Locations & maps](https://dqm-psx.github.io/guide/#field-guide?kind=location) |
 | Find a quest, its requirements or the person to speak to | [Quests](https://dqm-psx.github.io/guide/#field-guide?kind=quest) · [Characters and dialogue](https://dqm-psx.github.io/guide/#field-guide?kind=npc) |
 | Look up an item, skill or gameplay question | [Items](https://dqm-psx.github.io/guide/#field-guide?kind=item) · [Skills](https://dqm-psx.github.io/guide/#field-guide?kind=skill) · [Mechanics](https://dqm-psx.github.io/guide/#field-guide?kind=mechanic) |
-| Recruit wild monsters, gate bosses and foreign masters’ monsters | [Recruiting](https://dqm-psx.github.io/guide/#field-guide?entry=field-recruitment) · wild encounter calculator, meat and healing rules |
+| Recruit wild monsters, bosses and foreign masters’ monsters | [Recruiting](https://dqm-psx.github.io/guide/#recruiting) · encounter calculator with meat, healing and MP recovery |
 | Understand inherited skills and learning on the farm | [Skill inheritance & learning](https://dqm-psx.github.io/guide/#field-guide?entry=field-skill-inheritance) |
 | Follow a doorway or see which monsters appear on a floor | [Map atlas](https://dqm-psx.github.io/guide/#atlas) |
 | Find a monster’s locations, parents, stats, skills and library text | [Monster library](https://dqm-psx.github.io/guide/#species-index) |

@@ -21,6 +21,23 @@
     Object.freeze({itemId: 27, appeal: 105}),
     Object.freeze({itemId: 28, appeal: 405}),
   ]);
+  const healingItems = Object.freeze([
+    Object.freeze({itemId: 1, resource: 'hp', variable: false,
+      recoveryRange: Object.freeze([30, 40]), appealRange: Object.freeze([20, 25])}),
+    Object.freeze({itemId: 2, resource: 'hp', variable: false,
+      recoveryRange: Object.freeze([60, 70]), appealRange: Object.freeze([35, 40])}),
+    // Dew heals a whole side. Each restored target contributes half its own
+    // missing HP, rounded down; the consumed item contributes five points once.
+    Object.freeze({itemId: 3, resource: 'hp', variable: true, group: true}),
+    Object.freeze({itemId: 4, resource: 'mp', variable: false,
+      recoveryRange: Object.freeze([20, 30]), appealRange: Object.freeze([15, 20])}),
+    Object.freeze({itemId: 5, resource: 'mp', variable: true}),
+    // Sage's Stone can break after use. Its half-heal bonus applies to each
+    // successfully healed target; a break adds five points once, not per target.
+    Object.freeze({itemId: 11, resource: 'hp', variable: false, group: true,
+      recoveryRange: Object.freeze([60, 70]), appealRange: Object.freeze([30, 40]),
+      effectRange: Object.freeze([30, 35]), consumedBonusRange: Object.freeze([0, 5])}),
+  ]);
   const newFactors = [null, [5, 1], [2, 1], [1, 1], [1, 2], [1, 8], [1, 16]];
   const collectedFactors = [null, [1, 1], [1, 4], [1, 8], [1, 8], [1, 8], [1, 20]];
 
@@ -31,29 +48,33 @@
     return value;
   }
 
-  function calculate(options = {}) {
-    const {recruitmentClass, speciesRank, collected = false, orb = false, battleMode = 0} = options;
-    integer(recruitmentClass, 0, 7, 'Recruitment class');
-    integer(speciesRank, 0, 7, 'Species rank');
-    integer(battleMode, 0, 255, 'Battle mode');
-    if (typeof collected !== 'boolean' || typeof orb !== 'boolean') {
-      throw new TypeError('Collection and Starry Orb settings must be true or false.');
-    }
-    const counts = options.meats ?? {};
+  function countsFor(value, definitions, name) {
+    const counts = value ?? {};
     if (!counts || typeof counts !== 'object' || Array.isArray(counts)) {
-      throw new TypeError('Meat quantities must be an object keyed by item ID.');
+      throw new TypeError(name + ' quantities must be an object keyed by item ID.');
     }
-    if (Object.keys(counts).some(key => !meats.some(meat => String(meat.itemId) === key))) {
-      throw new RangeError('Only the four verified recruitment meats are supported.');
+    if (Object.keys(counts).some(key => !definitions.some(item => String(item.itemId) === key))) {
+      throw new RangeError('Only verified ' + name.toLowerCase() + ' items are supported.');
     }
-    let appeal = rules.initialAppeal;
-    for (const meat of meats) {
-      const count = integer(counts[meat.itemId] ?? 0, 0, Number.MAX_SAFE_INTEGER, 'Meat quantity');
-      appeal = Math.min(rules.maximumAppeal, appeal + Math.min(count, rules.maximumAppeal) * meat.appeal);
-    }
-    if (orb) appeal += 4100; // Effect bonus plus successful consumption.
-    appeal = Math.min(rules.maximumAppeal, appeal);
+    return Object.fromEntries(definitions.map(item => [item.itemId,
+      integer(counts[item.itemId] ?? 0, 0, Number.MAX_SAFE_INTEGER, name + ' quantity')]));
+  }
 
+  function restoredAmounts(values, item, count) {
+    const supplied = values[item.itemId] ?? 0;
+    const amounts = item.group && Array.isArray(supplied) ? supplied : [supplied];
+    if (!amounts.length || amounts.length > (item.group ? 3 : 1)) {
+      throw new RangeError('Enter restored HP for one to three enemies per Yggdrasil Dew use.');
+    }
+    for (const amount of amounts) integer(amount, 0, 65535, 'Restored ' + item.resource.toUpperCase() + ' per use');
+    if (count > 0 && !amounts.some(amount => amount > 0)) {
+      throw new RangeError('Enter the ' + item.resource.toUpperCase() + ' restored per successful ' +
+        (item.itemId === 3 ? 'Yggdrasil Dew' : 'Elfin Elixir') + ' use.');
+    }
+    return amounts;
+  }
+
+  function atAppeal(appeal, {recruitmentClass, speciesRank, collected, orb, battleMode}) {
     const result = {probability: 0, percent: 0, reason: 'normal', appeal,
       adjustedAppeal: 0, firstCollectionChance: 0, feedingChance: 0};
     // The battle-mode guard overrides class-0 and Orb successes.
@@ -78,5 +99,64 @@
     return result;
   }
 
-  return Object.freeze({calculate, rules, meats});
+  function calculate(options = {}) {
+    const {recruitmentClass, speciesRank, collected = false, orb = false,
+      battleMode = 0, meatAllowed = true} = options;
+    integer(recruitmentClass, 0, 7, 'Recruitment class');
+    integer(speciesRank, 0, 7, 'Species rank');
+    integer(battleMode, 0, 255, 'Battle mode');
+    if (typeof collected !== 'boolean' || typeof orb !== 'boolean' || typeof meatAllowed !== 'boolean') {
+      throw new TypeError('Collection, Starry Orb and meat eligibility settings must be true or false.');
+    }
+    const meatsUsed = countsFor(options.meats, meats, 'Meat');
+    const healsUsed = countsFor(options.healing, healingItems, 'Healing');
+    const recovery = options.recoveryPerUse ?? {};
+    if (!recovery || typeof recovery !== 'object' || Array.isArray(recovery)) {
+      throw new TypeError('Restored amounts must be an object keyed by item ID.');
+    }
+    if (Object.keys(recovery).some(key => !['3', '5'].includes(key))) {
+      throw new RangeError('Restored amounts are only needed for Yggdrasil Dew and Elfin Elixir.');
+    }
+    const healedTargets = options.healedTargets ?? {};
+    if (!healedTargets || typeof healedTargets !== 'object' || Array.isArray(healedTargets)) {
+      throw new TypeError('Healed target counts must be an object keyed by item ID.');
+    }
+    if (Object.keys(healedTargets).some(key => key !== '11')) {
+      throw new RangeError('A healed target count is only needed for Sage’s Stone.');
+    }
+    const stoneTargets = integer(healedTargets[11] ?? 1, 1, 3, 'Enemies healed per Sage’s Stone use');
+    // This guard also protects old shared links whose meat counts remain set
+    // after switching to a boss. Refused meat is not successfully consumed.
+    const acceptsMeat = meatAllowed && battleMode !== 1;
+    let minimum = rules.initialAppeal, maximum = minimum;
+    const add = (count, low, high = low) => {
+      const boundedCount = Math.min(count, rules.maximumAppeal);
+      minimum = Math.min(rules.maximumAppeal, minimum + boundedCount * low);
+      maximum = Math.min(rules.maximumAppeal, maximum + boundedCount * high);
+    };
+    for (const meat of meats) if (acceptsMeat) add(meatsUsed[meat.itemId], meat.appeal);
+    for (const item of healingItems) {
+      const count = healsUsed[item.itemId];
+      if (item.variable) {
+        const amounts = restoredAmounts(recovery, item, count);
+        add(count, amounts.reduce((sum, amount) => sum + Math.floor(amount / 2), 5));
+      } else if (item.consumedBonusRange) {
+        add(count, item.effectRange[0] * stoneTargets + item.consumedBonusRange[0],
+          item.effectRange[1] * stoneTargets + item.consumedBonusRange[1]);
+      } else add(count, ...item.appealRange);
+    }
+    if (orb) add(1, 4100);
+    const settings = {recruitmentClass, speciesRank, collected, orb, battleMode};
+    const low = atAppeal(minimum, settings), high = atAppeal(maximum, settings);
+    // The legacy scalar fields remain the lower endpoint. Without uncertain
+    // healing rolls, both endpoints exactly equal the previous scalar result.
+    return {...low, meatAllowed: acceptsMeat,
+      appealRange: [minimum, maximum],
+      adjustedAppealRange: [low.adjustedAppeal, high.adjustedAppeal],
+      feedingChanceRange: [low.feedingChance, high.feedingChance],
+      probabilityRange: [low.probability, high.probability],
+      percentRange: [low.percent, high.percent]};
+  }
+
+  return Object.freeze({calculate, rules, meats, healingItems});
 });

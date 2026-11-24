@@ -34,7 +34,9 @@
     { id: "team-planner", heading: "planner-heading" },
     { id: "sources", heading: "sources-heading" },
   ];
-  const aliases = { "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "sources" };
+  // Recruiting has its own navigation destination while sharing the article
+  // renderer with the other reference pages.
+  const aliases = { "recruiting": "field-guide", "rules-guide": "offspring-finder", "conditional-rules": "offspring-finder", "about": "sources" };
   const aliasTargets = { "rules-guide": "offspring-heading", "conditional-rules": "breeding-conditions", "about": "sources-heading" };
   const known = new Set(views.map(view => view.id));
   const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
@@ -108,7 +110,8 @@
       const row = window.DQMField?.entryForNav(params.get("entry"));
       const kind = row?.kind || params.get("kind");
       const game = row?.game || params.get("game");
-      if (kind === "story") section = "#field-guide?game=" + (game || "dqm1") + "&kind=story";
+      if (parse(currentHash()).id === 'recruiting' || params.get('entry') === 'field-recruitment') section = '#recruiting';
+      else if (kind === "story") section = "#field-guide?game=" + (game || "dqm1") + "&kind=story";
       else if (kind === "location") section = "#field-guide?kind=location";
       else if (kind === "tool") section = "#field-guide?kind=item";
       else if (kind && navLinks.some(link => link.hash === "#field-guide?kind=" + kind)) section = "#field-guide?kind=" + kind;
@@ -255,7 +258,7 @@
   // Cross-view handoff: works for a changed hash and for a destination that is
   // already open, where the URL will not change and nothing else would render.
   function go(viewId, options) {
-    if (!known.has(viewId)) return;
+    if (!known.has(viewId) && viewId !== 'recruiting') return;
     const focusId = (options && options.focusId) || null;
     const query = new URLSearchParams(options?.params || {}).toString();
     const hash = "#" + viewId + (query ? "?" + query : "");
@@ -263,7 +266,7 @@
     // same view (a shared pairing, say) must not read as "already here", or its
     // parameters would linger after a "Try pair" / "Use as pedigree" jump.
     if (location.hash === hash) {
-      render(viewId, { focus: true, focusId });
+      render(viewFor(hash), { focus: true, focusId });
       return;
     }
     pendingFocusId = focusId;
