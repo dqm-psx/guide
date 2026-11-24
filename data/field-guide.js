@@ -3100,7 +3100,7 @@ globalThis.FIELD_GUIDE = {
         },
         {
           "title": "Recruiting and finding a particular monster",
-          "intro": "Talk to the master to battle. Feed meat during the fight and defeat the monster you want last. It can still refuse to join. Ranked arena opponents cannot be recruited.",
+          "intro": "Talk to the master to battle. Their ordinary team monsters are eligible to join, and meat can improve the chance. Defeat the monster you want last, separately from the others; it can still refuse. Ranked arena opponents cannot be recruited. See Recruiting for shared appeal, healing items and collection-history rules.",
           "rows": [
             [
               "Find a species",
@@ -3110,6 +3110,9 @@ globalThis.FIELD_GUIDE = {
               "Calculate your rank",
               "Your active party sets the opponent rank. Average each stat across your party, rounding down separately. Add the averages for maximum HP, maximum MP, Attack and Defense, then add half the combined Agility and Intelligence averages, rounded down. Every 100 points gives one rank, up to rank 19. A party averaging 100 in every stat scores 500 and faces rank 5."
             ]
+          ],
+          "links": [
+            "field-recruitment"
           ]
         }
       ]
@@ -3812,38 +3815,195 @@ globalThis.FIELD_GUIDE = {
       "id": "field-recruitment",
       "kind": "mechanic",
       "game": "both",
-      "title": "Recruit a wild monster",
-      "summary": "Give meat to enemy monsters during battle to improve their chance of joining. More than one piece can help, and a species you have collected before is harder to recruit again.",
-      "details": [
-        "Meat adds to a shared food score for that battle. Feeding your own monsters instead reduces wildness; it does not help recruit the enemy.",
-        "In a generated Magic Key world, defeat the resident boss before trying to recruit local monsters. Meat and even a Starry Orb cannot bypass battle or encounter restrictions.",
-        "Collection history is permanent: gifts and breeding count too. Releasing or breeding away your last copy does not restore its first-collection chance.",
-        "For a particular target, choose its adventure, area and floor band in the recruitment calculator. The same species can have different recruitment settings in different encounters. Compare one piece of meat with two before spending a valuable supply.",
-        "The calculator gives the joining check for an eligible candidate, not the chance per battle. It does not choose which defeated monster gets that check. A Starry Orb guarantees the check only when the monster is otherwise eligible."
-      ],
+      "title": "Recruiting",
+      "summary": "Recruit wild monsters, eligible gate bosses and foreign masters’ monsters. Meat and recovery items can improve the joining chance, but each encounter decides whether a monster is allowed to join.",
+      "details": [],
       "aliases": [
         "recruitment calculator",
         "meat stacking",
         "Sirloin chance",
         "taming",
         "catch a monster",
-        "feeding"
+        "feeding",
+        "recruiting",
+        "boss recruitment",
+        "healing recruitment",
+        "healing bosses",
+        "Medicinal Herb recruitment",
+        "foreign master recruitment",
+        "save state recruitment"
       ],
       "spoiler": "none",
       "source_ids": [
         "s0adf7000_5062",
         "s0039f000_4a3f",
         "s08a74000_0377",
-        "Retail Japanese and English v1.0.73 recruitment, feeding and eligibility routines · native executable verification"
+        "Retail Japanese and English v1.0.73 recruitment, feeding and eligibility routines · native executable verification",
+        "Japanese retail and English v1.0.74 recovery-item, gate-boss and RNG audit",
+        "Japanese retail foreign-master encounter pools and consumed-item callback audit"
       ],
       "related": [
+        "item-1",
+        "item-2",
+        "item-4",
         "item-25",
         "item-26",
         "item-27",
         "item-28",
         "item-30",
-        "field-battle-text-speed",
-        "field-wandering-masters"
+        "field-wandering-masters",
+        "field-battle-text-speed"
+      ],
+      "sections": [
+        {
+          "id": "joining-basics",
+          "title": "Getting a monster to join",
+          "paragraphs": [
+            "The game considers one defeated enemy for joining. To aim for a particular monster, defeat the others first and finish your target separately. Defeating several enemies together can leave the choice to the game’s defeat-processing order.",
+            "Meat used on enemies raises a shared appeal score for that battle. Multiple pieces stack, and the score can help the eventual candidate even when a different enemy received the meat. Meat given to your own monsters reduces their wildness and does not add its enemy-feeding bonus.",
+            "A species you have never collected gets an extra joining chance. Gifts and breeding count as collecting it, and releasing or breeding away your last copy does not restore that first-collection chance. Collection history can also make item-based recruitment harder.",
+            "Battle restrictions come first. Ranked arena opponents cannot join, and neither healing nor a Starry Orb can override an encounter’s recruitment prohibition."
+          ],
+          "links": [
+            "item-25",
+            "item-26",
+            "item-27",
+            "item-28",
+            "item-30"
+          ]
+        },
+        {
+          "id": "healing-recruitment",
+          "title": "Using recovery items to help recruitment",
+          "paragraphs": [
+            "Use a Medicinal Herb or Amor Water on an injured enemy to raise the same shared appeal score used by meat. This is useful for eligible gate bosses, which refuse meat. The score starts fresh each battle; it does not carry over from an earlier attempt.",
+            "The bonus uses the item’s rolled healing amount before the HP cap. Even if the enemy is only 1 HP below full, a successful Herb still gives its normal appeal bonus. At full HP the healing fails: the item is not consumed and adds no appeal."
+          ],
+          "table": {
+            "columns": [
+              "Item used on an injured enemy",
+              "HP roll",
+              "Appeal added"
+            ],
+            "rows": [
+              [
+                "Medicinal Herb",
+                "30–40 HP",
+                "20–25"
+              ],
+              [
+                "Amor Water",
+                "60–70 HP",
+                "35–40"
+              ]
+            ]
+          },
+          "bullets": [
+            "HP and MP recovery items used on your own party can lower the shared appeal score. Healing spells do not change it.",
+            "Repeated successful recovery items can help, but healing alone never guarantees a conditional recruit. Even after the item-related threshold is met, a separate roughly 70% check remains.",
+            "A boss that is forbidden to join stays forbidden regardless of how many recovery items you use."
+          ],
+          "links": [
+            "item-1",
+            "item-2",
+            "item-4"
+          ]
+        },
+        {
+          "id": "terry-boss-rules",
+          "title": "Terry’s Travelers’ Gate bosses",
+          "game": "dqm1",
+          "paragraphs": [
+            "No normal Travelers’ Gate boss accepts meat in the PlayStation game, including bosses that join automatically. Refusing meat does not tell you whether a boss is recruitable.",
+            "Some bosses join automatically after their eligible battle result, some have a chance to join, and others cannot be recruited from that fight. Use recovery items only when trying to improve a conditional recruit. A separate story gift or another encounter with the same species follows its own rules."
+          ]
+        },
+        {
+          "id": "terry-boss-list",
+          "title": "Which Terry bosses can join?",
+          "game": "dqm1",
+          "paragraphs": [
+            "These categories describe the listed boss encounters, not every possible way to obtain the species. Automatic joining still requires the normal candidate and storage checks. Mirror Gate’s Demon Servants are harder to recruit than the Demon Servant in Temptation Gate."
+          ],
+          "table": {
+            "columns": [
+              "Joining result",
+              "Bosses"
+            ],
+            "rows": [
+              [
+                "Automatic",
+                "Healer, Dragon, Golem, Great Sabrecat, Treeface, Demon Knight, Fang Slime, Copycat, Funky Bird, Battle Rex and Dungeon Shrimp (Digster)."
+              ],
+              [
+                "Can join by chance",
+                "Gigantes; Demon Servant in Temptation Gate and the two Demon Servants in Mirror Gate; Dark Horn; King Slime, Matango and Lips in the King Slime encounter. Only one defeated enemy is considered."
+              ],
+              [
+                "Other recruitable enemies in boss encounters",
+                "Stump Chump in the Treeface encounter and Dragon Kid in the Battle Rex encounter can join by chance."
+              ],
+              [
+                "Cannot join from these boss fights",
+                "Big Eye, Living Statue, Sky Dragon, Jamiras, Akbar and Orochi."
+              ],
+              [
+                "Cannot join from these accompanying enemy records",
+                "Centasaur and Devil Armor in Temptation Gate; the Mysterious Swordsman and Durran in Mirror Gate."
+              ],
+              [
+                "Cannot join from these later boss fights",
+                "Dragonlord, Hargon, Sidoh, Baramos, Zoma, Psaro, Estark, Mildrath, Mudo and Deathmore."
+              ]
+            ]
+          },
+          "links": [
+            "boss-demon-servant",
+            "boss-dark-horn",
+            "boss-king-slime"
+          ]
+        },
+        {
+          "id": "dark-horn-example",
+          "title": "Why Dark Horn can keep refusing",
+          "game": "dqm1",
+          "paragraphs": [
+            "Dark Horn has only about a 1% first-collection chance without item help. Successful healing items improve its odds, but a long battle and many Herbs still cannot guarantee that it joins.",
+            "At the same item total, healing your party, the random amount restored by each item, collection history and the final random checks can all matter. Repeating a save state is also different from making a fresh independent attempt."
+          ]
+        },
+        {
+          "id": "foreign-master-recruitment",
+          "title": "Recruiting a foreign master’s monster",
+          "paragraphs": [
+            "The ordinary foreign masters found in Terry’s gates and Cobi or Tara’s random Magic Key worlds can lose a monster after battle. All species in their normal team pools are eligible to join; this includes species whose separate boss encounter forbids recruitment.",
+            "Meat works in these battles. Feed during the fight, defeat the other monsters first, then finish your intended recruit separately. The appeal score is shared by the enemy team, so the meat does not have to go to the final candidate.",
+            "Meat is helpful, but there is no rule requiring at least one piece: a species you have never collected can join through its first-collection chance. These opponents can be difficult to recruit, and ordinary meat or healing still leaves a chance of refusal.",
+            "Your active party’s stats determine the master’s team pool. Check the monster’s profile under Recorded encounters for “Wandering master’s team”, and use the foreign masters article to find the right opponent rank. The wild-encounter calculator below does not calculate these battles."
+          ],
+          "links": [
+            "field-wandering-masters",
+            "field-arena-items"
+          ]
+        },
+        {
+          "id": "wild-recruitment-calculator",
+          "title": "Using the wild recruitment calculator",
+          "paragraphs": [
+            "Choose the adventure, area, floor band and monster for a listed wild encounter. The same species can have different recruitment settings in different encounters. Compare one piece of meat with two before spending a valuable supply.",
+            "The calculator estimates the joining check for an eligible candidate using meat and a Starry Orb. It does not choose the candidate or calculate boss battles, foreign-master battles, healing items or generated Magic Key encounters.",
+            "In a generated Magic Key world, defeat the resident boss before trying to recruit local monsters. A Starry Orb guarantees an otherwise eligible joining check; it cannot bypass battle or encounter restrictions."
+          ]
+        },
+        {
+          "id": "save-states-and-patch",
+          "title": "Save states and the English patch",
+          "paragraphs": [
+            "A save state restores the game’s random-number state as well as the visible battle. Repeating the same actions can therefore repeat a refusal. Even an unsuccessful healing attempt at full HP can advance the random sequence, despite adding no appeal.",
+            "The joining checks happen during the battle results, after other random work such as generating the candidate’s stats. Leaving a gate and returning can change that sequence, but it is not a requirement or a special recruitment unlock.",
+            "These rules come from the original Japanese PlayStation game. The checked English v1.0.74 patch preserves its recruitment checks, recovery-item effects and random-number routine."
+          ]
+        }
       ]
     },
     {

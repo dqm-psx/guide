@@ -33,6 +33,8 @@ GUARDS = [
     (104, 0x801212C0, 0x80121320, OVERLAY, "720154a2400b558efb908424794b846f8997ce50cd03987481eb3abaea37ecb9", "candidate eligibility prechecks"),
     (5502, 0x80147FE0, 0x80148038, OVERLAY, "", "selected defeated candidate updater"),
     (5499, 0x8018C91C, 0x8018C934, 0x8018C0B8, "", "encounter recruitment-class copy"),
+    (5502, 0x8014D6A0, 0x8014D77C, OVERLAY, "", "consumed-item appeal bonus"),
+    (5498, 0x800EBE51, 0x800EBE76, 0x800EB010, "274cd4607844a6653f2f83ded4fb465deb514faf688aa659e2d3f6a2819d074c", "successful item consumption script"),
 ]
 
 
@@ -120,7 +122,8 @@ def build(image, original_image):
             "excludedTerryContexts": sorted(UNUSED_TERRY_CONTEXTS),
         },
         "rules": {"initialAppeal": 10, "maximumAppeal": 32767, "rankDenominators": denominators, "finalGate": [2870, 4096]},
-        "meats": [{"itemId": item, "appeal": value} for item, value in ((25, 10), (26, 30), (27, 100), (28, 400))],
+        # Effect bonus plus the successful consumption callback's five points.
+        "meats": [{"itemId": item, "appeal": value} for item, value in ((25, 15), (26, 35), (27, 105), (28, 405))],
         "encounters": encounters,
     }
 

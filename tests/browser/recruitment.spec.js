@@ -6,19 +6,45 @@ test.beforeAll(async()=>{ url = await (await import('../helpers/modes')).startGu
 test.afterAll(async()=>{ await (await import('../helpers/modes')).stopGuideServer(); });
 const route = '#field-guide?entry=field-recruitment';
 
+test('Recruiting keeps existing calculation links and shows boss reference details directly',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('dqm-guide-story-spoilers','hide'));
+  await page.setViewportSize({width:320,height:780});
+  await page.goto(url+'#field-guide?kind=mechanic&entry=field-recruitment&rc_game=terry&rc_area=1&rc_species=11&rc_enemy=0');
+  await expect(page.locator('#article-title')).toHaveText('Recruiting');
+  await expect(page.locator('#recruit-area')).toHaveValue('terry-1');
+  await expect(page.locator('.recruit-monster a')).toHaveAttribute('href','#monster?id=11');
+  const healing = page.locator('#article-section-healing-recruitment').locator('..');
+  await expect(healing).toContainText('At full HP the healing fails');
+  await expect(healing).toContainText('20–25');
+  const masters = page.locator('#article-section-foreign-master-recruitment').locator('..');
+  await expect(masters).toContainText('Meat works in these battles');
+  await expect(page.locator('.recruit-scope')).toContainText('healing enemies or allies');
+  const bosses = page.locator('#article-section-terry-boss-list').locator('..');
+  await expect(bosses).toContainText('Big Eye');
+  await expect(bosses).toContainText('Dark Horn');
+  await expect(bosses).toContainText('Mirror Gate');
+  await expect(page.locator('#article-section-dark-horn-example').locator('..')).toContainText('1%');
+  await expect(page.locator('#guide-article [data-reveal-section]')).toHaveCount(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  expect(await page.evaluate(()=>localStorage.getItem('dqm-guide-story-spoilers'))).toBe('hide');
+  await masters.getByRole('link',{name:'Foreign masters and their monsters',exact:true}).click();
+  await page.getByRole('link',{name:'Recruiting',exact:true}).last().click();
+  await expect(page.locator('#article-title')).toHaveText('Recruiting');
+});
+
 test('native examples compare extra meat, collection history and the Orb, and survive a shared link',async({page})=>{
   await page.goto(url+route);
   await page.locator('[data-recruit-example="20"]').click();
   await expect(page.locator('.recruit-chance strong')).toHaveText('8.47%');
   await expect(page.locator('#recruit-collected')).toBeChecked();
-  await expect(page.locator('#recruit-comparison')).toContainText('23.87%');
+  await expect(page.locator('#recruit-comparison')).toContainText('24.64%');
   await page.locator('#recruit-meat-28').fill('2');
-  await expect(page.locator('.recruit-chance strong')).toHaveText('23.87%');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('24.64%');
   const saved = page.url();
   expect(new URLSearchParams(new URL(saved).hash.split('?')[1]).has('rc_q')).toBe(false);
   await page.goto(url);
   await page.goto(saved);
-  await expect(page.locator('.recruit-chance strong')).toHaveText('23.87%');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('24.64%');
   await expect(page.locator('#recruit-area')).toHaveValue('terry-22');
   await expect(page.locator('#recruit-meat-28')).toHaveValue('2');
   await page.locator('#recruit-orb').check();

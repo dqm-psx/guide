@@ -15,10 +15,11 @@
     finalGate: Object.freeze([2870, 4096]),
   });
   const meats = Object.freeze([
-    Object.freeze({itemId: 25, appeal: 10}),
-    Object.freeze({itemId: 26, appeal: 30}),
-    Object.freeze({itemId: 27, appeal: 100}),
-    Object.freeze({itemId: 28, appeal: 400}),
+    // Each successful enemy feeding also reaches ConsumeItem's +5 bonus.
+    Object.freeze({itemId: 25, appeal: 15}),
+    Object.freeze({itemId: 26, appeal: 35}),
+    Object.freeze({itemId: 27, appeal: 105}),
+    Object.freeze({itemId: 28, appeal: 405}),
   ]);
   const newFactors = [null, [5, 1], [2, 1], [1, 1], [1, 2], [1, 8], [1, 16]];
   const collectedFactors = [null, [1, 1], [1, 4], [1, 8], [1, 8], [1, 8], [1, 20]];
@@ -50,7 +51,7 @@
       const count = integer(counts[meat.itemId] ?? 0, 0, Number.MAX_SAFE_INTEGER, 'Meat quantity');
       appeal = Math.min(rules.maximumAppeal, appeal + Math.min(count, rules.maximumAppeal) * meat.appeal);
     }
-    if (orb) appeal += 4095;
+    if (orb) appeal += 4100; // Effect bonus plus successful consumption.
     appeal = Math.min(rules.maximumAppeal, appeal);
 
     const result = {probability: 0, percent: 0, reason: 'normal', appeal,

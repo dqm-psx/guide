@@ -211,11 +211,24 @@ test('downloading from home includes unopened planning tools and retains calcula
   check.assertClean();
 });
 
+test('the standalone Recruiting article exposes healing, bosses and foreign masters without JavaScript', async ({browser}) => {
+  const page = await browser.newPage({javaScriptEnabled:false,viewport:{width:320,height:780}});
+  try {
+    await page.goto(url+'articles/field-recruitment/');
+    await expect(page.getByRole('heading',{name:'Recruiting',exact:true})).toBeVisible();
+    await expect(page.locator('#article-section-healing-recruitment').locator('..')).toContainText('At full HP');
+    await expect(page.locator('#article-section-terry-boss-list').locator('..')).toContainText('Mirror Gate');
+    await expect(page.locator('#article-section-foreign-master-recruitment').locator('..')).toContainText('Meat works in these battles');
+    await expect(page.locator('.article-spoilers')).toHaveCount(0);
+  } finally { await page.close(); }
+});
+
 test('recruitment uses synchronized names and survives a shared calculation offline', async ({page,context}) => {
   const check=audit(page,context);
   await page.goto(url+'#field-guide?entry=field-recruitment&rc_game=terry&rc_area=22&rc_species=20&rc_owned=1&rc_28=2');
+  await expect(page.locator('#article-title')).toHaveText('Recruiting');
   await expect(page.locator('.recruit-monster a')).toHaveText(name(20));
-  await expect(page.locator('.recruit-chance strong')).toHaveText('23.87%');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('24.64%');
   const currentLocation=reference(20).locations.find(row=>row.game==='terry'&&row.context_id===22);
   await expect(page.locator('#recruit-result')).toContainText(currentLocation.name);
   await waitForOfflineCache(page);
@@ -223,7 +236,7 @@ test('recruitment uses synchronized names and survives a shared calculation offl
   check.offline();
   await context.setOffline(true);
   await page.reload();
-  await expect(page.locator('.recruit-chance strong')).toHaveText('23.87%');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('24.64%');
   expect(page.url()).toBe(saved);
   await page.locator('#recruit-meat-28').fill('1');
   await expect(page.locator('.recruit-chance strong')).toHaveText('8.47%');
