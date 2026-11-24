@@ -25,7 +25,7 @@
     const group = view === 'combat-planner' ? [...groups.combat] : view === 'skill-planner' ? [...groups.learning] : view === 'field-guide' || view === 'atlas' ? [...groups.field] : [...groups.tools];
     if (view === 'field-guide' && /^(npc|boss)-/.test(route.get('entry') || '')) group.push(...groups.dialogue);
     if (view === 'monster' || view === 'sources') group.unshift(groups.profile[0]);
-    if (view === 'monster') group.push(groups.profile[1]);
+    if (view === 'monster') group.push(...groups.profile.slice(1));
     if (view === 'team-planner') group.unshift(...groups.myGame);
     if (view === 'breeding-tree' || view === 'team-planner') group.push(...groups.tree);
     if (view === 'breeding-table' || view === 'team-planner') group.push(...groups.matrix);

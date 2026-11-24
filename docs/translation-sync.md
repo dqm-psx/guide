@@ -173,7 +173,12 @@ vary the base level limit by ±2, and breeding also changes it.
 
 The native library has 312 entries. Ramia, Dimension Dragon, and Hide-and-seek
 have no entry in that table. The guide keeps that absence explicit. Species
-resistance meanings remain unverified and are not filled with Game Boy values.
+resistance profiles come from the separately verified `data/combat-reference.js`,
+joined by species ID; the older baseline's resistance placeholders do not
+override that evidence. Party-base and wild-enemy grades, applicable damage
+scales, and effect-specific limits are described in the
+[resistance evidence](resistance-inheritance-evidence.md). Game Boy resistance
+values are not substituted for PSX data.
 Locations cover named fixed gate/world encounters and wandering-master teams;
 an empty list does not establish that a monster is breeding-only. Bosses, gifts,
 random magic-key worlds, and other special encounters are not comprehensively

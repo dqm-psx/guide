@@ -320,6 +320,10 @@ test('downloading the guide keeps its tools, atlas and profiles usable offline',
     await expect(page.locator('#monster')).toBeVisible();
     await expect(page.locator('#monster-heading')).toHaveText(name(11));
     await expect(page.locator('.monster-library-quote p')).toHaveText(reference(11).library.text);
+    await expect(page.locator('#monster-resistances table tbody tr')).toHaveCount(27);
+    await expect(page.locator('.monster-experience [data-exp-total]')).toHaveText('301,058');
+    await page.locator('#monster-resistance-context').selectOption('wild');
+    await expect(page.locator('#monster-resistances [data-channel-id="8"] .monster-resistance-grade')).toHaveText('2 / 3');
     expect(await page.locator('.brand img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
     const cached = await page.evaluate(async entries => Promise.all(entries.map(async ({ asset }) => {
       const response = await fetch(new URL(asset, location.href));
