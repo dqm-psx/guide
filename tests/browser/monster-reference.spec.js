@@ -49,18 +49,84 @@ test('first-copy profile recipes carry their verified conditions through to the 
 
 test('growth controls show accumulated base gains without counting level-one starting stats', async ({ page }) => {
   await page.goto(serverUrl + '#monster?id=11');
+  await expect(page.locator('.monster-base-level-limit')).toContainText('40');
+  await expect(page.locator('.monster-experience [data-exp-total]')).toHaveText('301,058');
+  await expect(page.locator('.monster-experience [data-exp-next]')).toHaveText('27,154');
   const slider = page.locator('#monster-growth-level');
   await slider.focus();
   await slider.press('Home');
   await expect(slider).toHaveValue('1');
   await expect(page.locator('.monster-growth-row').first().locator('strong')).toHaveText('+0');
+  await expect(page.locator('.monster-experience [data-exp-total]')).toHaveText('0');
+  await expect(page.locator('.monster-experience [data-exp-next]')).toHaveText('5');
   await slider.press('ArrowRight');
   await expect(slider).toHaveValue('2');
   await expect(page.locator('.monster-growth-row').first().locator('strong')).toHaveText('+8');
+  await expect(page.locator('.monster-experience [data-exp-total]')).toHaveText('5');
+  await expect(page.locator('.monster-experience [data-exp-next]')).toHaveText('10');
   await expect(slider).toBeFocused();
   await slider.press('End');
   await expect(slider).toHaveValue('99');
   await expect(page.locator('#monster-growth > .hint')).toContainText('exceeds');
+  await expect(page.locator('.monster-experience [data-exp-total]')).toHaveText('3,024,955');
+  await expect(page.locator('.monster-experience [data-exp-next]')).toHaveText('Maximum level');
+});
+
+test('species profiles show all native resistance grades and distinguish party bases from wild enemies', async ({ page }) => {
+  await page.goto(serverUrl + '#monster?id=11');
+  const card = page.locator('.monster-resistances');
+  const rows = page.locator('#monster-resistances table tbody tr');
+  const context = page.locator('#monster-resistance-context');
+  await expect(card).toBeVisible();
+  await expect(rows).toHaveCount(27);
+  await expect(context).toHaveValue('saved');
+  const grades = await page.evaluate(() => COMBAT_REFERENCE.species.find(s => s.speciesId === 11));
+  await expect(rows.locator('.monster-resistance-grade')).toHaveText(grades.savedResistances.map(grade => grade + ' / 7'));
+  const sleep = page.locator('#monster-resistances [data-channel-id="8"]');
+  // Blaze and Big Bang share a channel but use different damage scales.
+  await expect(page.locator('#monster-resistances [data-channel-id="1"]')).toContainText('Spell scale: 100%');
+  await expect(page.locator('#monster-resistances [data-channel-id="1"]')).toContainText('Breath scale: 100%');
+  await expect(sleep.locator('td').last()).toHaveText('Effect-specific');
+  await expect(sleep).not.toContainText('%');
+  await context.selectOption('wild');
+  await expect(rows.locator('.monster-resistance-grade')).toHaveText(grades.wildResistances.map(grade => grade + ' / 3'));
+  await page.locator('#monster-campaign').selectOption('tara');
+  await expect(rows.locator('.monster-resistance-grade')).toHaveText(grades.wildResistances.map(grade => grade + ' / 3'));
+  await expect(card).toContainText(/breed|inherit/i);
+  await page.locator('.monster-source > summary').click();
+  await expect(page.locator('.monster-source')).not.toContainText('resistance values have not yet been verified');
+
+  await page.goto(serverUrl + '#monster?id=20');
+  await context.selectOption('saved');
+  await expect(page.locator('#monster-resistances [data-channel-id="1"]')).toContainText('7 / 7');
+  await expect(page.locator('#monster-resistances [data-channel-id="1"]')).toContainText('Spell scale: 0%');
+  await expect(page.locator('#monster-resistances [data-channel-id="16"] .monster-resistance-grade')).toHaveText('2 / 7');
+  await expect(page.locator('#monster-resistances [data-channel-id="16"] td').last()).toHaveText('Effect-specific');
+  await expect(page.locator('#monster-resistances [data-channel-id="22"] .monster-resistance-grade')).toHaveText('0 / 7');
+  await context.selectOption('wild');
+  await expect(page.locator('#monster-resistances [data-channel-id="16"] .monster-resistance-grade')).toHaveText('1 / 3');
+  await expect(page.locator('#monster-resistances [data-channel-id="1"]')).toContainText('Spell scale: 0%');
+});
+
+test('Aibou has verified resistance and EXP data while the unnamed slot stays unavailable', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(serverUrl + '#monster?id=323');
+  await expect(page.locator('#monster-heading')).toHaveText('Aibou');
+  await expect(page.locator('#monster-resistances table tbody tr')).toHaveCount(27);
+  await expect(page.locator('#monster-resistances [data-channel-id="2"] .monster-resistance-grade')).toHaveText('2 / 7');
+  const slider = page.locator('#monster-growth-level');
+  await slider.focus();
+  await slider.press('Home');
+  await expect(page.locator('.monster-experience [data-exp-total]')).toHaveText('0');
+  await expect(page.locator('.monster-experience [data-exp-next]')).toHaveText('2');
+  await page.goto(serverUrl + '#monster?id=325');
+  await expect(page.locator('#monster-heading')).toContainText('Unnamed internal slot');
+  await expect(page.locator('#monster-resistances table tbody tr')).toHaveCount(0);
+  await expect(page.locator('.monster-resistances')).toContainText(/not available|unavailable|not verified/i);
+  await expect(page.locator('#monster-growth-level')).toHaveCount(0);
+  await expect(page.locator('.monster-experience [data-exp-total]')).toHaveCount(0);
+  expect(errors).toEqual([]);
 });
 
 test('profiles keep stable links across navigation and hand off selected species to breeding', async ({ page }) => {
@@ -112,6 +178,9 @@ test('unknown profiles recover and narrow screens keep the reference within the 
   expect(await card.evaluate(el => el.getBoundingClientRect().right <= innerWidth)).toBe(true);
   await card.locator('a[href="#monster?id=11"]').click();
   await expect(page.locator('#monster-heading')).toBeVisible();
+  await expect(page.locator('#monster-resistances table tbody tr')).toHaveCount(27);
+  await page.locator('#monster-resistance-context').selectOption('wild');
+  await expect(page.locator('#monster-resistances [data-channel-id="8"] .monster-resistance-grade')).toHaveText('2 / 3');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.locator('[data-monster-role="mate"]').click();
   await expect(page.locator('[data-monster-role="mate"]')).toHaveAttribute('aria-pressed', 'true');

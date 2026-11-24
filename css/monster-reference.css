@@ -40,6 +40,21 @@ a.monster-label:hover span:last-child{text-decoration:underline}
 .monster-growth-row strong{text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
 .monster-growth-track{height:8px;background:var(--light);border-radius:3px;overflow:hidden}
 .monster-growth-track i{height:100%;display:block;background:var(--teal);border-radius:3px}
+.monster-level-limits{display:flex;flex-wrap:wrap;gap:5px 16px;font-size:12px;color:var(--muted)}
+.monster-experience{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0;padding:12px;background:var(--light);border-radius:7px}
+.monster-experience dt{font-size:11px;color:var(--muted);margin-bottom:4px}
+.monster-experience dd{font-size:15px;font-weight:650;font-variant-numeric:tabular-nums;margin:0}
+.monster-resistances{margin-top:18px}
+.monster-resistance-table{width:100%;table-layout:fixed}
+.monster-resistance-table th,.monster-resistance-table td{font-size:12px;padding:9px 12px;text-align:left;white-space:normal;letter-spacing:0;text-transform:none;overflow-wrap:anywhere}
+.monster-resistance-table thead th{background:var(--light)}
+.monster-resistance-table thead th:first-child{width:39%}
+.monster-resistance-table thead th:nth-child(2){width:18%}
+.monster-resistance-table tbody th{font-weight:600;color:var(--ink);border-top:1px solid var(--line)}
+.monster-resistance-table .monster-resistance-grade{font-variant-numeric:tabular-nums;white-space:nowrap}
+.monster-resistance-table tbody tr:hover{background:var(--light)}
+.monster-damage-scale{display:inline-block;margin-right:14px}
+@media(max-width:600px){.monster-resistances .monster-card-heading{flex-wrap:wrap}.monster-resistances .monster-card-heading select{max-width:100%}.monster-resistance-table th,.monster-resistance-table td{padding:8px 5px;font-size:11px}.monster-damage-scale{margin-right:0;display:block}.monster-resistance-table thead th:first-child{width:38%}.monster-resistance-table thead th:nth-child(2){width:20%}.monster-experience{padding:10px;gap:10px}}
 .monster-growth-table{margin-top:14px;padding:10px 12px;border-radius:7px}
 .monster-growth-table summary{font-size:12px}
 .monster-growth-table .table-scroll{max-height:320px;margin-top:10px}

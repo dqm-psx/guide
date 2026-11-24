@@ -10,7 +10,7 @@ const paragraph = text => text ? '<p>'+escape(text)+'</p>' : '';
 
 function addEntryPages(assets) {
   const db=vm.createContext({});
-  for (const file of ['breeding-data','monster-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-images','family-icons','patch-rewards']) {
+  for (const file of ['breeding-data','monster-reference','combat-reference','skill-learning-reference','handbook-reference','world-guide','field-guide','player-atlas','field-routes','gate-entrances','gate-generation','skill-descriptions','item-reference','item-art','npc-sprites','character-dialogue','sprite-images','family-icons','patch-rewards']) {
     vm.runInContext(assets.get('data/'+file+'.js').toString(),db,{timeout:5000});
   }
   vm.runInContext(assets.get('js/current-names.js').toString(),db,{timeout:5000});
@@ -25,8 +25,11 @@ function addEntryPages(assets) {
   vm.runInContext(assets.get('js/entry-names.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/item-index.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/character-dialogue.js').toString(),db,{timeout:5000});
+  vm.runInContext(assets.get('js/offspring-resistances.js').toString(),db,{timeout:5000});
+  vm.runInContext(assets.get('js/monster-stats.js').toString(),db,{timeout:5000});
   vm.runInContext(assets.get('js/monster-reference.js').toString(),db,{timeout:5000});
   const profiles = db.DQMMonsterCore.create(db.DATA,db.MONSTER_REFERENCE);
+  const monsterStats = db.DQMMonsterStats.create(db.COMBAT_REFERENCE,db.SKILL_LEARNING_REFERENCE,db.DQMOffspringResistances.channels);
   const script='js/entry-page.js';
   const versioned = file => file+'?v='+crypto.createHash('sha256').update(assets.get(file)).digest('hex').slice(0,16);
   const pages=[];
@@ -73,6 +76,41 @@ function addEntryPages(assets) {
   }
   function facts(entries) {
     return '<dl class="entry-facts">'+entries.map(([label,markup])=>'<div><dt>'+escape(label)+'</dt><dd>'+markup+'</dd></div>').join('')+'</dl>';
+  }
+  function monsterGrowth(monster) {
+    const info=monsterStats.growthInfo(monster.stats,monster.index);
+    if (!info) return '<section class="entry-monster-stats"><h2>Stats &amp; growth</h2>'+paragraph('Verified growth and EXP data are unavailable for this extra entry.')+'</section>';
+    const level=40, growth=db.DQMMonsterCore.growthAt(monster.stats,level);
+    const exp=monsterStats.experience(monster.stats,level);
+    const caps=info.baseLevelCap===null ? [] : [['Base level cap',escape(info.baseLevelCap)]];
+    if (info.recruitmentCap) caps.push(['Usual recruitment cap',info.recruitmentCap.min+'–'+info.recruitmentCap.max]);
+    const capNote=info.recruitmentCap ? paragraph('Bred monsters add 3 levels to the base cap per + value, up to level 99. Special gifts can have their own cap.') : '';
+    const gains=facts(growth.map(stat=>[stat.label,stat.total===null?'Unavailable':'+'+stat.total]));
+    const expFacts=exp ? facts([['Total EXP at level '+level,exp.total.toLocaleString('en-US')],['EXP to level '+(level+1),exp.toNext.toLocaleString('en-US')]]) : paragraph('Verified EXP data are unavailable for this entry.');
+    const rows=Array.from({length:99},(_,i)=>{
+      const n=i+1, experience=monsterStats.experience(monster.stats,n);
+      return '<tr><th scope="row">'+n+'</th><td>'+(experience ? experience.total.toLocaleString('en-US') : 'Unavailable')+'</td>'+
+        db.DQMMonsterCore.growthAt(monster.stats,n).map(stat=>'<td>'+(n===1?'—':stat.gain===null?'Unavailable':'+'+stat.gain)+'</td>').join('')+'</tr>';
+    }).join('');
+    const table='<details class="entry-stat-details"><summary>EXP and stat gains by level</summary><div class="entry-stat-scroll" role="region" aria-label="Growth by level" tabindex="0"><table class="entry-stat-table"><caption>EXP thresholds and base gains on reaching each level</caption><thead><tr><th scope="col">Level</th><th scope="col">Total EXP</th>'+growth.map(stat=>'<th scope="col">'+escape(stat.label)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div></details>';
+    return '<section class="entry-monster-stats"><h2>Stats &amp; growth</h2>'+(caps.length?facts(caps):'')+capNote+
+      '<h3>Base gains from level 1 to '+level+'</h3>'+gains+
+      paragraph('Gains exclude starting stats, inheritance and accessories. A bred monster or a special individual cap may be needed to reach the levels shown.')+
+      expFacts+table+'</section>';
+  }
+  function monsterResistances(monster) {
+    const party=monsterStats.resistances(monster.index,'saved'),wild=monsterStats.resistances(monster.index,'wild');
+    if (!party) return '<section class="entry-monster-resistances"><h2>Resistances</h2>'+paragraph('Verified resistance data are unavailable for this entry.')+'</section>';
+    function table(profile,caption) {
+      return '<div class="entry-stat-scroll" role="region" aria-label="'+escape(caption)+'" tabindex="0"><table class="entry-stat-table entry-resistance-table" data-resistance-context="'+profile.mode+'"><caption>'+escape(caption)+'</caption><thead><tr><th scope="col">Channel</th><th scope="col">Grade</th><th scope="col">Verified damage taken</th></tr></thead><tbody>'+
+        profile.rows.map(row=>'<tr data-channel="'+row.id+'"><th scope="row">'+escape(row.label)+'</th><td>'+row.grade+' / '+profile.maximumGrade+'</td><td>'+
+          (row.damage.length ? row.damage.map(damage=>'<span>'+damage.percent+'% ('+(damage.scale==='spell'?'spell':'breath')+' scale)</span>').join('') : '<span class="entry-note">Effect-specific</span>')+'</td></tr>').join('')+'</tbody></table></div>';
+    }
+    return '<section class="entry-monster-resistances"><h2>Resistances</h2>'+paragraph('These are the species’ starting resistance grades for your monsters. Higher grades mean greater resistance. Breeding can improve an individual monster’s grades.')+
+      paragraph('Percentages are damage taken by verified moves before other battle modifiers. Some channels use both spell and breath scales. Status effects use their own checks; grade 7 does not guarantee immunity to every effect.')+
+      table(party,'Your monsters: unbred species resistances')+
+      (wild ? '<details class="entry-stat-details"><summary>Compare ordinary wild monsters</summary>'+paragraph('Wild enemies use a separate 0–3 scale. These values do not establish how scripted bosses or special battles work.')+table(wild,'Ordinary wild monster resistances')+'</details>' : '')+
+      '<p>'+link('articles/field-damage-and-resistance/','Damage and resistance rules')+' · '+link('articles/field-breed/','Resistance inheritance')+'</p></section>';
   }
   function articlePath(article) {
     if (article.redirect_to) {
@@ -359,11 +397,10 @@ function addEntryPages(assets) {
         (recipe.condition ? '<small>'+escape(recipe.condition)+'</small>' : '')+'</li>';
     });
     const desc=m.library?.text || [m.display_name, db.DATA.species[m.index]?.family_display, 'PlayStation monster profile'].filter(Boolean).join(' · ');
-    add('monsters',m.index,m.display_name,desc,skills+rewardMarkup+(rewardOnly ? '' : '<p>'+link('#skill-planner?species='+m.index,'Plan skills and growth')+' · '+link('#combat-planner?species='+m.index,'Compare damage')+'</p>'+
+    add('monsters',m.index,m.display_name,desc,skills+monsterGrowth(m)+monsterResistances(m)+rewardMarkup+(rewardOnly ? '' : '<p>'+link('#skill-planner?species='+m.index,'Plan skills and growth')+' · '+link('#combat-planner?species='+m.index,'Compare damage')+'</p>'+
       '<section><h2>First-copy breeding</h2>'+(pairs.length ? '<p class="entry-note">Pedigree + mate</p><ul class="entry-recipes">'+pairs.join('')+'</ul>' : paragraph('No recorded pairing produces a first copy.'))+'</section>')+
       list('Wild encounters',[...new Set(locations)])+
-      (masters.length ? list('Wandering master teams',masters)+'<p>'+articleLink('field-wandering-masters')+'</p>' : '')+
-      paragraph(m.stats?.base_level_limit ? (rewardOnly ? 'Base level cap: '+m.stats.base_level_limit+'.' : 'Usual recruitment level cap: '+Math.max(1,m.stats.base_level_limit-2)+'–'+Math.min(99,m.stats.base_level_limit+2)+'. Bred offspring use a separate base limit plus three times their + value.') : ''),'#monster?id='+m.index);
+      (masters.length ? list('Wandering master teams',masters)+'<p>'+articleLink('field-wandering-masters')+'</p>' : ''),'#monster?id='+m.index);
   }
   const places=new Map();
   for (const row of maps.values()) {

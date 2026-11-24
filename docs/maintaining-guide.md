@@ -120,8 +120,8 @@ Run `scripts/build-skill-descriptions.py --check` with the verified disc and
 comparison data to check the generated skill records.
 
 Monster links open profiles containing the current and alternate names,
-Japanese name, sprite, library text, stats and growth, natural skills,
-recorded encounters, and breeding uses. Profiles link directly to the pairing,
+Japanese name, sprite, library text, stats and growth, level limits, EXP,
+resistances, natural skills, recorded encounters, and breeding uses. Profiles link directly to the pairing,
 parent-search, and tree tools.
 
 ### Breeding order and conditions
@@ -160,13 +160,31 @@ contains **312 descriptions**; missing descriptions remain identified as missing
 The profile's level control shows accumulated **species growth from level 1**,
 with an expandable table of individual level-up gains. These are not final stats:
 starting stats, inheritance, accessories, and the monster's individual level limit
-also matter. The campaign selector separates Terry, Cobi, and Tara skill and
-encounter records.
+also matter. The same control shows the total EXP threshold for that level and
+the EXP between that level and the next, using the species' verified experience
+curve and the existing native EXP table. At level 99 there is no next level.
+The base level cap appears separately from the usual recruitment range.
+The campaign selector separates Terry, Cobi, and Tara skill and encounter records.
+
+The resistance card joins species IDs to `data/combat-reference.js`, which has
+all 27 channels for all 325 authenticated species, including Aibou. Party-base
+grades run from 0 to 7; ordinary wild-enemy grades run from 0 to 3. The card
+uses the existing verified action metadata to show applicable spell and breath
+damage scales. A shared channel may have both scales. Percentages are damage
+taken before other battle modifiers, not status success probabilities. Status
+and special effects retain effect-specific rules, and a highest grade is not
+a blanket promise of immunity. See the [resistance evidence](resistance-inheritance-evidence.md).
+
+These are species bases, not the individual grades inherited by a bred monster.
+Imported monsters and the offspring forecast in My game retain those individual
+values. The unnamed slot 325 has no authenticated resistance record and shows
+an unavailable message; internal slots without verified growth do not receive
+guessed EXP or level caps. No disc extraction or translation refresh is needed
+to render this existing verified data.
 
 Encounter coverage is incomplete. An empty list does not establish that a monster
-can only be obtained through breeding. Unverified resistance meanings and other
-missing information are labeled rather than filled from another version of the
-game.
+can only be obtained through breeding. Missing information is labeled rather
+than filled from another version of the game.
 
 Extra/internal entries are hidden by default and can be revealed with the
 **Include extra / internal table slots** setting. They remain labeled, and their

@@ -114,6 +114,7 @@ const PRECACHE = [
   "./js/router.js",
   "./js/breeding-tree.js",
   "./js/monster-reference.js",
+  "./js/monster-stats.js",
   "./js/matrix-tools.js",
   "./js/theme.js",
   "./js/offline.js",

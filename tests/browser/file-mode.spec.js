@@ -15,6 +15,20 @@ const brightness = rgb => {
 };
 
 test.describe('file mode', () => {
+  test('a direct monster link loads complete stats from disk without external requests', async ({ page }) => {
+    const requests = [], errors = [];
+    page.on('request', request => requests.push(request.url()));
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(FILE_URL + '#monster?id=11');
+    await expect(page.locator('#monster-heading')).toHaveText('Slime');
+    await expect(page.locator('#monster-resistances table tbody tr')).toHaveCount(27);
+    await expect(page.locator('.monster-experience [data-exp-total]')).toHaveText('301,058');
+    await page.locator('#monster-resistance-context').selectOption('wild');
+    await expect(page.locator('#monster-resistances [data-channel-id="8"] .monster-resistance-grade')).toHaveText('2 / 3');
+    expect(requests.every(url => url.startsWith('file:'))).toBe(true);
+    expect(errors).toEqual([]);
+  });
+
   test('a bare load from disk renders the reference and parses its data', async ({ page }) => {
     await page.goto(FILE_URL);
     await expect(page.locator('#field-guide')).toBeVisible();

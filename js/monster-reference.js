@@ -118,11 +118,13 @@
   if (!root.document || !root.DATA) return;
 
   const model = create(root.DATA, root.MONSTER_REFERENCE);
+  const statsModel = root.DQMMonsterStats.create(root.COMBAT_REFERENCE, root.SKILL_LEARNING_REFERENCE, root.DQMOffspringResistances.channels);
   const P = id => document.getElementById(id);
   let activeIndex = null;
   let campaign = 'terry';
   let level = 40;
   let role = 'pedigree';
+  let resistanceContext = 'saved';
   const sprite = index => typeof spriteMarkup === 'function' ? spriteMarkup(index) : '';
 
   function link(index, text, options) {
@@ -136,17 +138,53 @@
     return DQMEntryNames.aliasesMarkup(species,{escape:safe});
   }
 
+  function experienceMarkup(species) {
+    const experience = statsModel.experience(species.stats, level);
+    if (!experience) return '<p class="monster-experience monster-empty">Verified EXP requirements are not available for this table slot.</p>';
+    return '<dl class="monster-experience"><div><dt>Total EXP to level ' + level + '</dt><dd data-exp-total>' + experience.total.toLocaleString('en-US') + '</dd></div>' +
+      '<div><dt>' + (experience.toNext === null ? 'Level limit' : 'EXP from level ' + level + ' to ' + (level + 1)) + '</dt><dd data-exp-next>' + (experience.toNext === null ? 'Maximum level' : experience.toNext.toLocaleString('en-US')) + '</dd></div></dl>';
+  }
+
+  function growthHeading(species) {
+    const info = statsModel.growthInfo(species.stats, species.index);
+    if (!info || (info.baseLevelCap === null && !info.recruitmentCap)) return '';
+    return '<div class="monster-level-limits">' + (info.baseLevelCap === null ? '' : '<span class="monster-base-level-limit">Base level cap ' + info.baseLevelCap + '</span>') +
+      (info.recruitmentCap ? '<span>Usual recruitment cap ' + info.recruitmentCap.min + '–' + info.recruitmentCap.max + '</span>' : '') + '</div>';
+  }
+
+  function resistancesMarkup(species) {
+    const profile = statsModel.resistances(species.index, resistanceContext);
+    if (!profile) return '<p class="monster-empty">Verified PSX resistances are not available for this table slot.</p>';
+    return '<p class="hint">' + (resistanceContext === 'saved'
+      ? 'Base grades for a party or farm monster, before breeding inheritance. Your individual monster may have stronger resistances.'
+      : 'Ordinary wild-enemy grades. Recruited monsters use the separate party-monster values; special battles may differ.') + '</p>' +
+      '<p class="hint">Higher grades mean stronger resistance: 0 is the weakest, ' + profile.maximumGrade + ' the strongest. Damage taken is the percentage remaining after resistance, before other battle modifiers. Spell and breath scales can differ within the same row.</p>' +
+      '<div class="table-scroll"><table class="monster-resistance-table"><caption class="sr-only">' + safe(named(species)) + ' — ' + (resistanceContext === 'saved' ? 'base party-monster' : 'ordinary wild-enemy') + ' resistances</caption>' +
+      '<thead><tr><th scope="col">Attack or effect</th><th scope="col">Grade</th><th scope="col">Damage taken</th></tr></thead><tbody>' +
+      profile.rows.map(row => '<tr data-channel-id="' + row.id + '"><th scope="row">' + safe(row.label) + '</th><td class="monster-resistance-grade">' + row.grade + ' / ' + profile.maximumGrade + '</td><td>' +
+        (row.damage.length ? row.damage.map(damage => '<span class="monster-damage-scale">' + (damage.scale === 'spell' ? 'Spell' : 'Breath') + ' scale: <strong>' + damage.percent + '%</strong></span>').join('') : '<span class="hint">Effect-specific</span>') + '</td></tr>').join('') +
+      '</tbody></table></div><p class="hint">Sleep, poison and other effects use their own success checks. A grade is not a success percentage, and the highest grade does not guarantee immunity to every effect. <a href="#field-guide?kind=mechanic&amp;entry=field-breed&amp;section=resistance-inheritance">How resistance inheritance works →</a></p>';
+  }
+
+  function resistancesCard(species) {
+    return '<section class="monster-card monster-resistances"><div class="monster-card-heading"><h3>Resistances</h3><label class="sr-only" for="monster-resistance-context">Resistance values for</label>' +
+      '<select id="monster-resistance-context"><option value="saved"' + (resistanceContext === 'saved' ? ' selected' : '') + '>Party monster · base</option><option value="wild"' + (resistanceContext === 'wild' ? ' selected' : '') + '>Wild enemy</option></select></div>' +
+      '<div id="monster-resistances">' + resistancesMarkup(species) + '</div></section>';
+  }
+
   function growthMarkup(species) {
     const stats = species.stats;
-    if (!stats || stats.status !== 'verified' || !stats.growth) return '<p class="monster-empty">Verified PSX stats are not available for this table slot.</p>';
+    if (!stats || stats.status !== 'verified' || !stats.growth) return '<p class="monster-empty">Verified PSX stats are not available for this table slot.</p>' + experienceMarkup(species);
     const values = growthAt(stats, level);
     const max = Math.max(1, ...values.map(value => value.total || 0));
+    const info = statsModel.growthInfo(stats, species.index);
     return '<div class="monster-level-controls"><label for="monster-growth-level">Gains from level 1 to</label><input id="monster-growth-level" type="range" min="1" max="99" value="' + level + '"><output for="monster-growth-level">' + level + '</output></div>' +
       '<div class="monster-growth-bars">' + values.map(value => '<div class="monster-growth-row"><span>' + value.label + '</span><div class="monster-growth-track" aria-hidden="true"><i style="width:' + ((value.total || 0) / max * 100).toFixed(2) + '%"></i></div><strong>' + (value.total === null ? '—' : '+' + value.total) + '</strong></div>').join('') + '</div>' +
-      '<p class="hint">'+(level>Math.min(99,stats.base_level_limit+2)?'This level exceeds the usual recruitment cap; a bred monster or a special individual cap may be needed. ':'')+'Gains exclude starting stats, inheritance and accessories.' + (rewardOnly(species) ? '' : ' <a href="#skill-planner?species='+species.index+'">Check this monster’s level cap and growth →</a>') + '</p>' +
-      '<details class="monster-growth-table"><summary>Exact growth by level</summary><div class="table-scroll"><table><caption class="sr-only">Base stat gains on reaching each level, excluding inherited or starting stats</caption><thead><tr><th scope="col">Level</th>' + STATS.map(([, label]) => '<th scope="col">' + label + '</th>').join('') + '</tr></thead><tbody>' +
-      Array.from({ length: level - 1 }, (_, i) => i + 2).map(n => '<tr><th scope="row">' + n + '</th>' + growthAt(stats, n).map(value => '<td>' + (value.gain === null ? '—' : '+' + value.gain) + '</td>').join('') + '</tr>').join('') +
-      (level === 1 ? '<tr><td colspan="7">No level-up gains at level 1.</td></tr>' : '') + '</tbody></table></div></details>';
+      experienceMarkup(species) +
+      '<p class="hint">'+(info?.recruitmentCap && level>info.recruitmentCap.max?'This level exceeds the usual recruitment cap; a bred monster or a special individual cap may be needed. ':'')+'Gains exclude starting stats, inheritance and accessories.' + (rewardOnly(species) ? '' : ' <a href="#skill-planner?species='+species.index+'">Check this monster’s level cap and growth →</a>') + '</p>' +
+      '<details class="monster-growth-table"><summary>Exact growth by level</summary><div class="table-scroll"><table><caption class="sr-only">Base stat gains and total EXP on reaching each level, excluding inherited or starting stats</caption><thead><tr><th scope="col">Level</th>' + STATS.map(([, label]) => '<th scope="col">' + label + '</th>').join('') + '<th scope="col">Total EXP</th></tr></thead><tbody>' +
+      Array.from({ length: level - 1 }, (_, i) => i + 2).map(n => '<tr><th scope="row">' + n + '</th>' + growthAt(stats, n).map(value => '<td>' + (value.gain === null ? '—' : '+' + value.gain) + '</td>').join('') + '<td>' + (statsModel.experience(stats, n)?.total.toLocaleString('en-US') ?? '—') + '</td></tr>').join('') +
+      (level === 1 ? '<tr><td colspan="8">No level-up gains at level 1.</td></tr>' : '') + '</tbody></table></div></details>';
   }
 
   function skillsMarkup(species) {
@@ -251,9 +289,11 @@
       naturalSkillsCard(species) +
       (species.playable === false && !extraReward ? '<p class="monster-internal">Extra table slot. Availability in normal play is unconfirmed.</p>' : '') +
       acquisitionMarkup(species) +
-      '<div' + (extraReward ? '' : ' class="monster-profile-grid monster-lower-grid"') + '><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3>' + (species.stats?.status === 'verified' ? '<span class="hint">' + (extraReward ? 'Base level cap ' + species.stats.base_level_limit : 'Usual recruitment cap '+Math.max(1,species.stats.base_level_limit-2)+'–'+Math.min(99,species.stats.base_level_limit+2))+'</span>' : '') + '</div><div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
+      '<div' + (extraReward ? '' : ' class="monster-profile-grid monster-lower-grid"') + '><section class="monster-card"><div class="monster-card-heading"><h3>Stats & growth</h3></div>' + growthHeading(species) + '<div id="monster-growth">' + growthMarkup(species) + '</div></section>' +
       (extraReward ? '' : '<section class="monster-card monster-breeding"><div class="monster-card-heading"><div><h3>Breeding with ' + safe(named(species)) + '</h3><p class="hint"><a href="#offspring-finder?target=' + index + '">' + parents.toLocaleString() + ' base-table parent pairings</a></p></div><div class="monster-role-tabs" role="group" aria-label="Parent role"><button type="button" data-monster-role="pedigree" aria-pressed="' + (role === 'pedigree') + '">As pedigree</button><button type="button" data-monster-role="mate" aria-pressed="' + (role === 'mate') + '">As mate</button></div></div><div id="monster-offspring">' + offspringMarkup(species) + '</div>' + conditionsMarkup(species) + '</section>') + '</div>' +
-      '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' + safe(species.resistances && species.resistances.text || 'PSX resistance values have not yet been verified for this reference.') + '</p>' +
+      resistancesCard(species) +
+      '<details class="monster-source"><summary>Data notes & coverage</summary><p>' + safe(species.stats && species.stats.note || 'No verified native stat record is available for this table slot.') + '</p><p>' +
+      (statsModel.resistances(species.index) ? 'Resistance grades and damage scales come from the verified PSX combat reference. Species defaults are shared across Terry, Cobi and Tara; breeding can improve an individual monster’s grades. These values do not include temporary battle effects.' : 'No verified PSX resistance record is available for this table slot.') + '</p>' +
       '<p>' + safe(species.location_coverage || 'Encounter coverage is incomplete.') + '</p>' +
       (root.DQMReference?.sourceSummaryMarkup ? root.DQMReference.sourceSummaryMarkup() : '') +
       '<p>Breeding tables describe ordered species results. Parent eligibility, inheritance, and acquisition must be checked separately.</p></details>';
@@ -267,13 +307,18 @@
     // repeats continue smoothly while its adjacent presentation updates.
     const temp = document.createElement('div');
     temp.innerHTML = growthMarkup(model.get(activeIndex));
-    for (const selector of ['.monster-growth-bars', '.hint', '.monster-growth-table']) {
+    for (const selector of ['.monster-growth-bars', '.monster-experience', '.hint', '.monster-growth-table']) {
       host.querySelector(selector).replaceWith(temp.querySelector(selector));
     }
     host.querySelector('output').textContent = String(level);
   });
 
   document.addEventListener('change', event => {
+    if (event.target.id === 'monster-resistance-context' && activeIndex !== null && ['saved', 'wild'].includes(event.target.value)) {
+      resistanceContext = event.target.value;
+      P('monster-resistances').innerHTML = resistancesMarkup(model.get(activeIndex));
+      return;
+    }
     if (event.target.id !== 'monster-campaign' || activeIndex === null || !CAMPAIGNS[event.target.value]) return;
     campaign = event.target.value;
     P('monster-skills').innerHTML = skillsMarkup(model.get(activeIndex));

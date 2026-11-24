@@ -13,7 +13,7 @@ Walkthroughs, maps, monster profiles and breeding tools for the English PlayStat
 | Recruit wild monsters, bosses and foreign masters’ monsters | [Recruiting](https://dqm-psx.github.io/guide/#recruiting) · encounter calculator with meat, healing and MP recovery |
 | Understand inherited skills and learning on the farm | [Skill inheritance & learning](https://dqm-psx.github.io/guide/#field-guide?entry=field-skill-inheritance) |
 | Follow a doorway or see which monsters appear on a floor | [Map atlas](https://dqm-psx.github.io/guide/#atlas) |
-| Find a monster’s locations, parents, stats, skills and library text | [Monster library](https://dqm-psx.github.io/guide/#species-index) |
+| Find a monster’s locations, parents, growth, EXP, resistances and skills | [Monster library](https://dqm-psx.github.io/guide/#species-index) |
 | Check two parents or find recipes for a first copy | [Find offspring](https://dqm-psx.github.io/guide/#pair-finder) · [Find parents](https://dqm-psx.github.io/guide/#offspring-finder) |
 | Plan several generations or compare many pairs | [Breeding tree](https://dqm-psx.github.io/guide/#breeding-tree) · [Breeding table](https://dqm-psx.github.io/guide/#breeding-table) |
 | See what my own monsters can breed | [Import a save in My game](https://dqm-psx.github.io/guide/#team-planner?import=save) |
@@ -33,6 +33,8 @@ Manual teams still work without a save. **Import, export & backup** in **My game
 Search accepts English names, abbreviated menu names, Japanese and alternate names. Aibou appears in the library with its Enhanced egg exchange. **Settings** contains the story spoiler switch, extra monster slots, sprite style, theme, and **Download guide for offline use**. Once downloaded, the atlas and breeding tools work without a connection. You can also download this repository and open `index.html` directly.
 
 Names and library text follow the public translation export, checked every four hours. The [Sources & coverage page](https://dqm-psx.github.io/guide/#sources) distinguishes current wording from gameplay verified against a specific disc release.
+
+Monster profiles show all 27 species resistance channels, with separate party-base and wild-enemy grades. Verified spell and breath damage percentages explain applicable channels; status effects retain their own rules. The growth level control also shows total EXP and EXP to the next level. These are species values: breeding, accessories and individual level limits can change your own monster’s stats.
 
 ## Development
 

@@ -33,6 +33,10 @@ test('published assets, manifest icons and offline keys share exact fingerprinte
     assert.ok(published.has(url.split('?')[0]));
   }
   assert.ok(keys.has('https://example.com/guide/index.html'));
+  const groups = JSON.parse(html.match(/<script type="application\/json" id="guide-assets">([\s\S]*?)<\/script>/)[1]);
+  for (const url of Object.values(groups).flat()) {
+    assert.ok(keys.has(new URL(url, 'https://example.com/guide/').href), `uncached lazy asset ${url}`);
+  }
   const brandImage = html.match(/<img[^>]+src="(icons\/icon-192\.png[^\"]*)"/);
   assert.ok(brandImage, 'the visible brand image must be tested as an offline asset');
   assert.match(brandImage[1], /\?v=[0-9a-f]{16}$/);
