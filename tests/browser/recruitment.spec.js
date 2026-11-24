@@ -18,12 +18,15 @@ test('Recruiting keeps existing calculation links and shows boss reference detai
   await expect(healing).toContainText('20–25');
   const masters = page.locator('#article-section-foreign-master-recruitment').locator('..');
   await expect(masters).toContainText('Meat works in these battles');
-  await expect(page.locator('.recruit-scope')).toContainText('healing enemies or allies');
+  await expect(page.locator('.recruit-scope')).toContainText('Healing your own party');
   const bosses = page.locator('#article-section-terry-boss-list').locator('..');
   await expect(bosses).toContainText('Big Eye');
   await expect(bosses).toContainText('Dark Horn');
   await expect(bosses).toContainText('Mirror Gate');
-  await expect(page.locator('#article-section-dark-horn-example').locator('..')).toContainText('1%');
+  await expect(page.locator('#article-section-dark-horn-example')).toHaveCount(0);
+  await expect(page.locator('#article-section-wild-recruitment-calculator')).toHaveCount(0);
+  await expect(page.locator('.recruit-examples')).toHaveCount(0);
+  await expect(page.locator('.recruit-heading > span')).toHaveCount(0);
   await expect(page.locator('#guide-article [data-reveal-section]')).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   expect(await page.evaluate(()=>localStorage.getItem('dqm-guide-story-spoilers'))).toBe('hide');
@@ -32,9 +35,8 @@ test('Recruiting keeps existing calculation links and shows boss reference detai
   await expect(page.locator('#article-title')).toHaveText('Recruiting');
 });
 
-test('native examples compare extra meat, collection history and the Orb, and survive a shared link',async({page})=>{
-  await page.goto(url+route);
-  await page.locator('[data-recruit-example="20"]').click();
+test('native meat calculations compare extra items, collection history and the Orb, and survive a shared link',async({page})=>{
+  await page.goto(url+route+'&rc_game=terry&rc_area=22&rc_species=20&rc_owned=1&rc_28=1');
   await expect(page.locator('.recruit-chance strong')).toHaveText('8.47%');
   await expect(page.locator('#recruit-collected')).toBeChecked();
   await expect(page.locator('#recruit-comparison')).toContainText('24.64%');
@@ -51,7 +53,7 @@ test('native examples compare extra meat, collection history and the Orb, and su
   await expect(page.locator('.recruit-chance strong')).toHaveText('100%');
   await page.locator('.recruit-details summary').click();
   await expect(page.locator('#recruit-breakdown')).not.toContainText('feeding multiplier');
-  await page.locator('[data-recruit-example="11"]').click();
+  await page.goto(url+'#recruiting?rc_game=terry&rc_area=1&rc_species=11&rc_owned=1&rc_28=1');
   await expect(page.locator('.recruit-chance strong')).toHaveText('70.07%');
   await expect(page.locator('#recruit-comparison')).toContainText('No change');
   await page.locator('#recruit-collected').uncheck();
@@ -94,7 +96,7 @@ test('filters, invalid counts and unavailable links recover without leaving stal
   await page.locator('#recruit-search').fill('メタルスライム');
   await expect(page.locator('.recruit-monster a')).toHaveAttribute('href','#monster?id=20');
   await page.locator('#recruit-meat-28').fill('1.5');
-  await expect(page.locator('#recruit-result')).toHaveText('Enter a whole-number meat count from 0 to 99.');
+  await expect(page.locator('#recruit-result')).toHaveText('Enter a whole-number item count from 0 to 99.');
   await expect(page.locator('#recruit-meat-28')).toHaveAttribute('aria-invalid','true');
   await expect(page.locator('#recruit-copy')).toBeDisabled();
   await expect(page.locator('#recruit-comparison')).toBeEmpty();
@@ -115,8 +117,7 @@ test('clipboard rejection provides a selectable calculation URL',async({page})=>
 test('calculator fits narrow screens in both themes and works directly from disk',async({page})=>{
   const errors=[]; page.on('pageerror',error=>errors.push(error.message));
   await page.setViewportSize({width:320,height:780});
-  await page.goto(pathToFileURL(path.resolve(__dirname,'../../index.html')).href+route);
-  await page.locator('[data-recruit-example="20"]').click();
+  await page.goto(pathToFileURL(path.resolve(__dirname,'../../index.html')).href+route+'&rc_game=terry&rc_area=22&rc_species=20&rc_owned=1&rc_28=1');
   for (const theme of ['light','dark']) {
     await page.evaluate(value=>document.documentElement.dataset.theme=value,theme);
     await expect(page.locator('.recruit-chance strong')).toHaveText('8.47%');
@@ -135,6 +136,76 @@ test('new mechanics remain reachable from skills, monster profiles and meat page
   await expect(page.locator('#article-title')).toHaveText('How do offspring inherit and learn skills?');
   await expect(page.locator('#guide-article')).toContainText('farm');
   await page.goto(url+'#field-guide?entry=item-28');
-  await page.getByRole('link',{name:'Compare meat and recruitment chances'}).click();
+  await page.getByRole('link',{name:'Compare items and recruitment chances'}).click();
   await expect(page.locator('#recruitment-calculator')).toBeVisible();
+});
+
+test('bosses calculate healing ranges, refuse meat, and preserve blocked and automatic joins',async({page})=>{
+  await page.goto(url+'#recruiting?rc_game=terry&rc_kind=boss&rc_area=146&rc_species=66&rc_28=1.5');
+  await expect(page.locator('.recruit-monster a')).toHaveText('Dark Horn');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('1%');
+  await expect(page.locator('#recruit-meat-28')).toBeDisabled();
+  await expect(page.locator('#recruit-meat-note')).toBeVisible();
+  await expect(page.locator('label[for="recruit-meat-25"]')).toContainText('+15');
+  await expect(page.locator('label[for="recruit-heal-1"]')).toContainText('+20–25');
+  await page.locator('#recruit-heal-1').fill('10');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('13.96%–18.53%');
+  const saved=page.url();
+  await page.reload();
+  expect(page.url()).toBe(saved);
+  await expect(page.locator('#recruit-heal-1')).toHaveValue('10');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('13.96%–18.53%');
+  await expect(page.locator('#recruit-comparison')).not.toContainText('Sirloin');
+  await page.locator('#recruit-orb').check();
+  await expect(page.locator('.recruit-chance strong')).toHaveText('100%');
+  await page.goto(url+'#recruiting?rc_game=terry&rc_kind=boss&rc_area=135&rc_species=84&rc_h1=99&rc_orb=1');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('0%');
+  await page.goto(url+'#recruiting?rc_game=cobi&rc_kind=boss&rc_area=112');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('100%');
+  expect(new URLSearchParams(new URL(page.url()).hash.split('?')[1]).get('rc_record')).toBe('4');
+  await page.reload();
+  await expect(page.locator('.recruit-monster a')).toHaveAttribute('href','#monster?id=255');
+});
+
+test('foreign-master pools support all adventures and stay distinct from a species boss record',async({page})=>{
+  for (const [campaign,area] of [['terry',205],['cobi',164],['tara',164]]) {
+    await page.goto(url+'#recruiting?rc_game='+campaign+'&rc_kind=master&rc_area='+area);
+    await expect(page.locator('#recruit-location')).toContainText('Rank 0');
+    await expect(page.locator('#recruit-area option')).toHaveCount(20);
+    await expect(page.locator('#recruit-meat-28')).toBeEnabled();
+    const before=Number((await page.locator('.recruit-chance strong').textContent()).replace('%',''));
+    await page.locator('#recruit-meat-28').fill('2');
+    const after=Number((await page.locator('.recruit-chance strong').textContent()).replace('%',''));
+    expect(after).toBeGreaterThan(before);
+  }
+  await page.locator('#recruit-search').fill('Orochi');
+  await expect(page.locator('.recruit-monster a')).toHaveText('Orochi');
+  await expect(page.locator('.recruit-chance strong')).not.toHaveText('0%');
+});
+
+test('group healing uses real formations, validates visible inputs and shares restored amounts',async({page})=>{
+  await page.goto(url+'#recruiting?rc_game=terry&rc_kind=boss&rc_area=149&rc_species=221');
+  await expect(page.locator('#recruit-targets-11 option')).toHaveCount(2);
+  await page.locator('#recruit-heal-3').fill('1');
+  await expect(page.locator('#recruit-copy')).toBeDisabled();
+  await page.locator('#recruit-recovery-3-0').fill('101');
+  await page.locator('#recruit-recovery-3-1').fill('103');
+  await expect(page.locator('#recruit-recovery-3-2')).toBeHidden();
+  await page.locator('.recruit-details summary').click();
+  await expect(page.locator('#recruit-breakdown')).toContainText('116');
+  await page.reload();
+  await expect(page.locator('#recruit-recovery-3-0')).toHaveValue('101');
+  await expect(page.locator('#recruit-recovery-3-1')).toHaveValue('103');
+  await page.locator('#recruit-heal-11').fill('1');
+  await page.locator('#recruit-targets-11').selectOption('2');
+  await page.locator('.recruit-details summary').click();
+  await expect(page.locator('#recruit-breakdown')).toContainText('176–191');
+  await page.locator('#recruit-recovery-3-0').fill('-1');
+  await expect(page.locator('#recruit-copy')).toBeDisabled();
+  await page.locator('#recruit-heal-3').fill('0');
+  await expect(page.locator('#recruit-copy')).toBeEnabled();
+  await expect(page.locator('#recruit-recovery-3-0')).toBeHidden();
+  await page.goto(url+'#recruiting?rc_game=terry&rc_kind=boss&rc_area=149&rc_species=197&rc_t11=3');
+  await expect(page.locator('#recruit-targets-11 option')).toHaveCount(1);
+  await expect(page.locator('.recruit-chance strong')).toHaveText('0%');
 });

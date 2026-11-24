@@ -30,7 +30,11 @@ const VIEWS = [
   { hash: '#sources', id: 'sources' },
 ];
 
-const TOP_VIEWS = VIEWS.filter(view => !['sources','atlas'].includes(view.id));
+const TOP_VIEWS = [
+  ...VIEWS.filter(view => !['sources','atlas'].includes(view.id)),
+  // Recruiting is a primary destination rendered in the shared reference view.
+  {hash:'#recruiting', id:'field-guide'},
+];
 
 // Every view id must be one of the view wrappers, and exactly one is displayed.
 async function expectSingleView(page, id) {
@@ -94,6 +98,7 @@ test.describe('served', () => {
       '#breeding-table': 'Breeding table',
       '#species-index': 'Monster library',
       '#team-planner': 'My game',
+      '#recruiting': 'Recruiting',
     };
     for (const view of TOP_VIEWS) {
       await test.step(view.id, async () => {
@@ -102,7 +107,7 @@ test.describe('served', () => {
         await expect(link).toBeVisible();
         await link.click();
         await expectSingleView(page, view.id);
-        await expect(page).toHaveURL(new RegExp(view.hash + (['skill-planner','combat-planner'].includes(view.id) ? '(?:\\?.*)?$' : '$')));
+        await expect(page).toHaveURL(new RegExp(view.hash + (['#skill-planner','#combat-planner','#recruiting'].includes(view.hash) ? '(?:\\?.*)?$' : '$')));
         await expect(page).toHaveTitle(new RegExp('^' + expected[view.hash] + ' · '));
         await page.mouse.move(0,0);
         const marks = await page.evaluate(() =>

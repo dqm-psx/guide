@@ -3937,11 +3937,11 @@ globalThis.FIELD_GUIDE = {
               ],
               [
                 "Can join by chance",
-                "Gigantes; Demon Servant in Temptation Gate and the two Demon Servants in Mirror Gate; Dark Horn; King Slime, Matango and Lips in the King Slime encounter. Only one defeated enemy is considered."
+                "Gigantes; Demon Servant in Temptation Gate and the two Demon Servants in Mirror Gate; Dark Horn; King Slime, Matango and Lips in Medal Gate’s alternative boss fights. Only one defeated enemy is considered."
               ],
               [
                 "Other recruitable enemies in boss encounters",
-                "Stump Chump in the Treeface encounter and Dragon Kid in the Battle Rex encounter can join by chance."
+                "Dragon Kid in the Battle Rex encounter can join by chance."
               ],
               [
                 "Cannot join from these boss fights",
@@ -3964,35 +3964,17 @@ globalThis.FIELD_GUIDE = {
           ]
         },
         {
-          "id": "dark-horn-example",
-          "title": "Why Dark Horn can keep refusing",
-          "game": "dqm1",
-          "paragraphs": [
-            "Dark Horn has only about a 1% first-collection chance without item help. Successful healing items improve its odds, but a long battle and many Herbs still cannot guarantee that it joins.",
-            "At the same item total, healing your party, the random amount restored by each item, collection history and the final random checks can all matter. Repeating a save state is also different from making a fresh independent attempt."
-          ]
-        },
-        {
           "id": "foreign-master-recruitment",
           "title": "Recruiting a foreign master’s monster",
           "paragraphs": [
             "The ordinary foreign masters found in Terry’s gates and Cobi or Tara’s random Magic Key worlds can lose a monster after battle. All species in their normal team pools are eligible to join; this includes species whose separate boss encounter forbids recruitment.",
             "Meat works in these battles. Feed during the fight, defeat the other monsters first, then finish your intended recruit separately. The appeal score is shared by the enemy team, so the meat does not have to go to the final candidate.",
             "Meat is helpful, but there is no rule requiring at least one piece: a species you have never collected can join through its first-collection chance. These opponents can be difficult to recruit, and ordinary meat or healing still leaves a chance of refusal.",
-            "Your active party’s stats determine the master’s team pool. Check the monster’s profile under Recorded encounters for “Wandering master’s team”, and use the foreign masters article to find the right opponent rank. The wild-encounter calculator below does not calculate these battles."
+            "Your active party’s stats determine the master’s team pool. Check the monster’s profile under Recorded encounters for “Wandering master’s team”, and use the foreign masters article to find the right opponent rank. The calculator above includes these teams by adventure and opponent rank."
           ],
           "links": [
             "field-wandering-masters",
             "field-arena-items"
-          ]
-        },
-        {
-          "id": "wild-recruitment-calculator",
-          "title": "Using the wild recruitment calculator",
-          "paragraphs": [
-            "Choose the adventure, area, floor band and monster for a listed wild encounter. The same species can have different recruitment settings in different encounters. Compare one piece of meat with two before spending a valuable supply.",
-            "The calculator estimates the joining check for an eligible candidate using meat and a Starry Orb. It does not choose the candidate or calculate boss battles, foreign-master battles, healing items or generated Magic Key encounters.",
-            "In a generated Magic Key world, defeat the resident boss before trying to recruit local monsters. A Starry Orb guarantees an otherwise eligible joining check; it cannot bypass battle or encounter restrictions."
           ]
         },
         {

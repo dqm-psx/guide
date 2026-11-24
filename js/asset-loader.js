@@ -20,7 +20,8 @@
   }
   function ready(view, hash) {
     const route = new URLSearchParams(String(hash || '').split('?')[1] || '');
-    const home = view === 'field-guide' && !['entry','game','q','kind'].some(key => route.get(key));
+    const recruiting = /^#recruiting(?:[?&/]|$)/.test(String(hash || ''));
+    const home = view === 'field-guide' && !recruiting && !['entry','game','q','kind'].some(key => route.get(key));
     if (home) return null;
     const group = view === 'combat-planner' ? [...groups.combat] : view === 'skill-planner' ? [...groups.learning] : view === 'field-guide' || view === 'atlas' ? [...groups.field] : [...groups.tools];
     if (view === 'field-guide' && /^(npc|boss)-/.test(route.get('entry') || '')) group.push(...groups.dialogue);

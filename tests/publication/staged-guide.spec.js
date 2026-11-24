@@ -243,6 +243,25 @@ test('recruitment uses synchronized names and survives a shared calculation offl
   check.assertClean();
 });
 
+test('published Recruiting calculates bosses and foreign masters with healing offline',async({page,context})=>{
+  const check=audit(page,context);
+  await page.goto(url+'#recruiting?rc_game=terry&rc_kind=boss&rc_area=146&rc_species=66&rc_h1=10');
+  await expect(page.locator('.recruit-chance strong')).toHaveText('13.96%–18.53%');
+  await expect(page.locator('#recruit-meat-28')).toBeDisabled();
+  await expect(page.locator('label[for="recruit-heal-1"]')).toContainText('+20–25');
+  await waitForOfflineCache(page);
+  check.offline();
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.locator('.recruit-chance strong')).toHaveText('13.96%–18.53%');
+  await page.goto(url+'#recruiting?rc_game=cobi&rc_kind=master&rc_area=164&rc_h1=10');
+  await expect(page.locator('#recruit-location')).toContainText('Foreign masters');
+  await expect(page.locator('#recruit-meat-28')).toBeEnabled();
+  await expect(page.locator('.recruit-chance strong')).toContainText('–');
+  await expect(page.locator('#recruit-heal-1')).toHaveValue('10');
+  check.assertClean();
+});
+
 test('current-name search opens the matching library, growth, and provenance profile', async ({ page, context }) => {
   const check = audit(page, context);
   const index = 11;

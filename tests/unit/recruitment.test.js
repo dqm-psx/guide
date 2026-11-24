@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const {loadScripts} = require('../helpers/load-scripts');
-const {calculate, rules, meats} = require('../../js/recruitment');
+const {calculate, rules, meats, healingItems} = require('../../js/recruitment');
 const root = path.join(__dirname, '../..');
 const {RECRUITMENT_REFERENCE: reference, GUIDE_REFERENCE: guide, MONSTER_REFERENCE: monsters} = loadScripts([
   path.join(root, 'data/recruitment-reference.js'),
@@ -37,6 +37,96 @@ test('each consumed meat includes the shared five-point item bonus', () => {
   for (const [item, score] of [[25, 25], [26, 45], [27, 115], [28, 415]]) {
     assert.equal(calculate({...options, meats: {[item]: 1}}).appeal, score);
   }
+});
+
+test('successful recovery items bound the native half-roll and one consumption bonus', () => {
+  const options = {recruitmentClass: 5, speciesRank: 5, battleMode: 1};
+  const herbs = calculate({...options, healing: {1: 10}});
+  assert.deepEqual(herbs.appealRange, [210, 260]);
+  assert.deepEqual(herbs.adjustedAppealRange, [26, 32]);
+  close(herbs.probabilityRange[0], .01 + .99 * (17 / 91 * 2870 / 4096));
+  close(herbs.probabilityRange[1], .01 + .99 * (23 / 91 * 2870 / 4096));
+  assert.equal(herbs.probability, herbs.probabilityRange[0]);
+  for (const [item, range] of [[1, [30, 35]], [2, [45, 50]], [4, [25, 30]]]) {
+    const result = calculate({...options, healing: {[item]: 1}});
+    assert.deepEqual(result.appealRange, range);
+  }
+  assert.deepEqual(healingItems.find(item => item.itemId === 4).recoveryRange, [20, 30]);
+  assert.deepEqual(calculate({...options, healing: {1: 0}}).appealRange, [10, 10]);
+});
+
+test('full recovery uses missing points, rounding each Dew target before one consumption bonus', () => {
+  const options = {recruitmentClass: 3, speciesRank: 5};
+  assert.deepEqual(calculate({...options, healing: {3: 1}, recoveryPerUse: {3: 400}}).appealRange, [215, 215]);
+  assert.deepEqual(calculate({...options, healing: {5: 1}, recoveryPerUse: {5: 80}}).appealRange, [55, 55]);
+  const group = calculate({...options, healing: {3: 2}, recoveryPerUse: {3: [3, 3, 0]}});
+  assert.deepEqual(group.appealRange, [24, 24]);
+  const mixed = calculate({...options, healing: {1: 2, 3: 1, 4: 1, 5: 2},
+    recoveryPerUse: {3: [100, 200, 300], 5: 79}});
+  assert.deepEqual(mixed.appealRange, [458, 473]);
+});
+
+test('Sage’s Stone bounds all healed targets and a possible single break bonus', () => {
+  const options = {recruitmentClass: 5, speciesRank: 5, battleMode: 1};
+  assert.deepEqual(calculate({...options, healing: {11: 1}}).appealRange, [40, 50]);
+  const group = calculate({...options, healing: {11: 1}, healedTargets: {11: 3}});
+  assert.deepEqual(group.appealRange, [100, 120]);
+  // Original callback examples: three rolls 69/65/70 + break give score116;
+  // rolls63/61/67 without break give104. The five-point bonus is not per target.
+  for (const nativeScore of [104, 116]) {
+    assert.ok(nativeScore >= group.appealRange[0] && nativeScore <= group.appealRange[1]);
+  }
+  assert.deepEqual(calculate({...options, healing: {11: 2}, healedTargets: {11: 3}}).appealRange, [190, 230]);
+});
+
+test('boss meat rejection survives stale input while foreign-master meat remains effective', () => {
+  const options = {recruitmentClass: 5, speciesRank: 5, meats: {28: 5}, healing: {1: 10}};
+  const boss = calculate({...options, battleMode: 1, meatAllowed: true});
+  assert.equal(boss.meatAllowed, false);
+  assert.deepEqual(boss.appealRange, [210, 260]);
+  const master = calculate({...options, battleMode: 3});
+  assert.equal(master.meatAllowed, true);
+  assert.deepEqual(master.appealRange, [2235, 2285]);
+  assert.deepEqual(calculate({...options, meatAllowed: false}).appealRange, boss.appealRange);
+});
+
+test('healing cannot bypass eligibility and saturated score ranges collapse correctly', () => {
+  const boosted = {speciesRank: 5, battleMode: 1, healing: {1: 99, 3: 99, 11: 99},
+    recoveryPerUse: {3: [65535, 65535, 65535]}, healedTargets: {11: 3}};
+  for (const [recruitmentClass, probability] of [[0, 1], [7, 0]]) {
+    const result = calculate({...boosted, recruitmentClass});
+    assert.deepEqual(result.probabilityRange, [probability, probability]);
+  }
+  assert.deepEqual(calculate({...boosted, recruitmentClass: 5, speciesRank: 7}).probabilityRange, [0, 0]);
+  assert.deepEqual(calculate({...boosted, recruitmentClass: 0, battleMode: 2}).probabilityRange, [0, 0]);
+  const normal = calculate({...boosted, recruitmentClass: 6, collected: true});
+  assert.deepEqual(normal.appealRange, [32767, 32767]);
+  assert.deepEqual(normal.probabilityRange, [1435 / 2048, 1435 / 2048]);
+  assert.deepEqual(calculate({...boosted, recruitmentClass: 5, orb: true}).probabilityRange, [1, 1]);
+});
+
+test('invalid healing counts, restored points and group sizes cannot yield a plausible chance', () => {
+  const options = {recruitmentClass: 5, speciesRank: 5};
+  for (const healing of [{6: 1}, {1: -1}, {2: .5}, {4: '1'}, {11: Infinity}]) {
+    assert.throws(() => calculate({...options, healing}), RangeError);
+  }
+  assert.throws(() => calculate({...options, healing: []}), TypeError);
+  assert.throws(() => calculate({...options, healing: {3: 1}}), /HP restored/);
+  assert.throws(() => calculate({...options, healing: {5: 1}}), /MP restored/);
+  for (const value of [[], [0, 0, 0], [1, 2, 3, 4], [1, -1], [1, .5]]) {
+    assert.throws(() => calculate({...options, healing: {3: 1}, recoveryPerUse: {3: value}}), RangeError);
+  }
+  for (const value of [[10], -1, .5, 65536, '10']) {
+    assert.throws(() => calculate({...options, healing: {5: 1}, recoveryPerUse: {5: value}}), RangeError);
+  }
+  assert.throws(() => calculate({...options, recoveryPerUse: []}), TypeError);
+  assert.throws(() => calculate({...options, recoveryPerUse: {1: 30}}), RangeError);
+  assert.throws(() => calculate({...options, healedTargets: []}), TypeError);
+  assert.throws(() => calculate({...options, healedTargets: {3: 2}}), RangeError);
+  for (const value of [0, 4, .5, '2']) {
+    assert.throws(() => calculate({...options, healedTargets: {11: value}}), RangeError);
+  }
+  assert.throws(() => calculate({...options, meatAllowed: 'yes'}), TypeError);
 });
 
 test('first collection is a separate chance before the feeding check', () => {
@@ -111,18 +201,19 @@ test('malformed inputs cannot silently produce a plausible percentage', () => {
   assert.throws(() => calculate({...valid, battleMode: 256}), RangeError);
 });
 
-test('native data includes only named guide wild contexts and retains stable species identities', () => {
+test('expanded native data preserves the named wild contexts and their stable species identities', () => {
   const expected = new Set(guide.species.flatMap(mon => mon.locations)
     .filter(row => row.kind === 'wild' && !(row.game === 'terry' && [122, 123, 124, 125].includes(row.context_id)))
     .map(row => `${row.game}:${row.context_id}`));
-  const actual = reference.encounters.map(row => `${row.campaign}:${row.contextId}`);
+  const wild = reference.encounters.filter(row => row.kind === 'wild');
+  const actual = wild.map(row => `${row.campaign}:${row.contextId}`);
   assert.deepEqual(new Set(actual), expected);
   assert.equal(actual.length, new Set(actual).size);
-  assert.equal(reference.provenance.contexts, 283);
-  assert.equal(reference.provenance.enemyRecords, 1131);
-  assert.equal(reference.encounters.reduce((sum, row) => sum + row.enemies.length, 0), 1131);
+  assert.equal(reference.provenance.countsByKind.wild.contexts, 283);
+  assert.equal(reference.provenance.countsByKind.wild.enemyRecords, 1131);
+  assert.equal(wild.reduce((sum, row) => sum + row.enemies.length, 0), 1131);
   const species = new Set(monsters.species.map(row => row.index));
-  for (const row of reference.encounters) {
+  for (const row of wild) {
     assert.equal(row.kind, 'wild');
     assert.ok(row.enemies.length > 0);
     for (const enemy of row.enemies) {

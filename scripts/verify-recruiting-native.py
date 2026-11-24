@@ -3,7 +3,8 @@
 Runs native item-menu preparation and the four item bytecode callbacks using
 Unicorn. The success/consumption script branch is verified byte for byte before
 following it. Rendering/animation portions of the script are not executed.
-Also extracts every ordinary wandering-master strength-tier candidate pool.
+Also checks menu target eligibility, group recovery, item break branches and
+every ordinary wandering-master strength-tier candidate pool.
 """
 import argparse
 import collections
@@ -60,8 +61,9 @@ def image_read(image, address, base=0x80114cb8, size=4):
     return int.from_bytes(image[address - base:address - base + size], 'little')
 
 
-# EBE51 checks the application-success flag; EBE5D checks consume-mode1;
-# EBE71 calls the native consumption routine. Failed applications skip it.
+# EBE51 checks the application-success flag. At EBE65, consume modes0/1/2
+# branch to EBE76 (retain), EBE71 (consume), or EBE6B (break message then
+# consume). EBE71 calls the native consumption routine. Failure skips all three.
 SCRIPT_START, SCRIPT_END = 0x800ebe51, 0x800ebe76
 SCRIPT_BYTES = bytes.fromhex(
     '60 00 dd 0b 11 80 06 00 1d 00 02 00 '
@@ -69,6 +71,22 @@ SCRIPT_BYTES = bytes.fromhex(
     '70 00 35 08 a0 18 04 a0 d6 14 80'
 )
 assert primary[SCRIPT_START - 0x800eb010:SCRIPT_END - 0x800eb010] == SCRIPT_BYTES
+CONSUMPTION_TARGETS = [0x800ebe65 + index * 2 + struct.unpack_from('<h', SCRIPT_BYTES, 20 + index * 2)[0]
+                       for index in range(3)]
+assert CONSUMPTION_TARGETS == [0x800ebe76, 0x800ebe71, 0x800ebe6b]
+
+# These immediate arguments reach the same native recovery routine28748.
+# Guard the endpoints, rather than inferring them from a few random samples.
+roll_guards = []
+for item, low_at, high_at, low, high in (
+    (1, 0x80127788, 0x80127794, 30, 40),
+    (2, 0x80127848, 0x80127854, 60, 70),
+    (4, 0x801279dc, 0x801279e8, 20, 30),
+):
+    assert image_read(actions, low_at) == 0x24040000 | low
+    assert image_read(actions, high_at) == 0x24050000 | high
+    roll_guards.append({'item': item, 'low_argument': hex(low_at),
+                        'high_argument': hex(high_at), 'recovery_range': [low, high]})
 
 
 class Native:
@@ -118,6 +136,24 @@ class Native:
         self.cpu.emu_start(pc, 0x80001000, count=100000)
         assert self.cpu.reg_read(UC_MIPS_REG_PC) == 0x80001000
 
+    def validate_target(self, enemy=True):
+        self.put(0x800ce1d0, int(enemy), 1)
+        self.call(0x8014c278)
+        return {'menu_result': self.read(0x800ce1d0, 1),
+                'target_side': self.read(0x80110bd3, 1),
+                'target_selector': self.read(0x80110162, 1),
+                'target_span': self.read(0x8011016a, 1)}
+
+    def consume_if_successful(self):
+        mode = self.read(0x8011016b, 1)
+        assert mode in (0, 1, 2)
+        # The script's mode2 path displays a break message before this same
+        # callback. We do not execute that presentation-only subroutine.
+        consumed = self.read(0x80110bdd, 1) != 0 and mode in (1, 2)
+        if consumed:
+            self.call(0x8014d6a0)
+        return consumed
+
     def item(self, group_target=True):
         before = self.read(0x80110aa8, 2)
         self.put(0x800ce1d0, 4 if group_target else 0, 1)
@@ -132,9 +168,7 @@ class Native:
         applied = self.read(0x80110aa8, 2)
         success = self.read(0x80110bdd, 1)
         assert consume_mode == 1
-        consumed = success != 0 and consume_mode == 1
-        if consumed:
-            self.call(0x8014d6a0)  # verified bytecode branches above call Consume
+        consumed = self.consume_if_successful()
         return {
             'item': item, 'score_before': before, 'score_after_apply': applied,
             'application_success': success, 'consume_mode': consume_mode,
@@ -147,6 +181,45 @@ class Native:
             'hp_after': self.read(0x801102b4 + self.target * 0x88, 2),
             'mp_after': self.read(0x801102ba + self.target * 0x88, 2),
         }
+
+    def group_item(self, missing_hp, seed=12345):
+        assert 1 <= len(missing_hp) <= 3
+        self.put(0x800c70a8, seed)
+        for index, missing in enumerate(missing_hp):
+            target = 4 + index
+            self.put(0x80110700 + target * 0x74 + 0x20, 1, 1)
+            self.put(0x801102b4 + target * 0x88, 500 - missing, 2)
+            self.put(0x801102b6 + target * 0x88, 500, 2)
+        menu = self.validate_target()
+        assert menu['menu_result'] == 4 and menu['target_span'] == 4
+        self.call(0x8014bfa0)
+        item, consume_mode = self.read(0x80110c0b, 1), self.read(0x8011016b, 1)
+        self.call(0x8014cdb8)
+        self.call(0x8014ce60)
+        before = self.read(0x80110aa8, 2)
+        targets = []
+        # Group target spans visit four slots; only three enemy slots can be
+        # present. Slot7 remains absent and must contribute no recovery bonus.
+        for target in range(4, 8):
+            previous = self.read(0x80110aa8, 2)
+            self.put(0x80110bdb, target, 1)
+            self.call(0x8014d280)
+            bonus = self.read(0x80110aa8, 2) - previous
+            if target < 4 + len(missing_hp):
+                amount = 0 if missing_hp[target - 4] == 0 else self.read(0x8011017c, 2)
+                assert bonus == amount // 2
+                assert self.read(0x801102b4 + target * 0x88, 2) == min(500, 500 - missing_hp[target - 4] + amount)
+                targets.append({'slot': target, 'missing_hp': missing_hp[target - 4],
+                                'recovery_roll': amount, 'appeal_added': bonus})
+            else:
+                assert bonus == 0
+        applied = self.read(0x80110aa8, 2)
+        consumed = self.consume_if_successful()
+        assert self.read(0x80110aa8, 2) == applied + (5 if consumed else 0)
+        return {'item': item, 'seed': seed, 'menu': menu, 'consume_mode': consume_mode,
+                'targets': targets, 'score_before': before, 'score_after_apply': applied,
+                'score_after_consumption': self.read(0x80110aa8, 2), 'consumed': consumed,
+                'remaining_bag_count': self.read(0x800c79a2, 1)}
 
 
 item_cases = []
@@ -195,6 +268,37 @@ for name, item, enemy, hp, max_hp, mp, max_mp, score in (
     assert result['hp_after'] == expected_hp
     assert result['mp_after'] == expected_mp
     healing_results.append({'case': name, **result})
+
+target_menu_results = []
+for item in (1, 2, 3, 4, 5, 11, 30):
+    result = Native([item], mode=1).validate_target()
+    assert result['target_side'] == 1
+    group = item in (3, 11, 30)
+    assert result['menu_result'] == (4 if group else 1)
+    assert result['target_span'] == (4 if group else 1)
+    target_menu_results.append({'item': item, **result})
+
+group_healing_results = [
+    Native([3], mode=1).group_item([3, 3, 0]),
+    Native([3], mode=1).group_item([0, 0, 0]),
+    Native([11], mode=1).group_item([400, 400, 400], seed=0),
+    Native([11], mode=1).group_item([400, 400, 400], seed=1),
+]
+dew, full, broken, retained = group_healing_results
+assert dew['score_after_apply'] == 12 and dew['score_after_consumption'] == 17
+assert dew['remaining_bag_count'] == 0
+assert full['score_after_consumption'] == 10 and full['remaining_bag_count'] == 1
+assert broken['consume_mode'] == 2 and broken['score_after_consumption'] == 116
+assert broken['remaining_bag_count'] == 0
+assert retained['consume_mode'] == 0 and retained['score_after_consumption'] == 104
+assert retained['remaining_bag_count'] == 1
+assert image_read(actions, 0x80115900 + 11, size=1) == 20
+
+orb_boss = Native([30], mode=1)
+assert orb_boss.validate_target()['menu_result'] == 4
+orb_boss_result = orb_boss.item()
+assert orb_boss_result['prepare_message'] == 0
+assert orb_boss_result['score_after_consumption'] == 4110 and orb_boss_result['orb_flag'] == 1
 
 # Isolate the actual Heal command evaluation and its result commit. This does
 # not claim that every target can be selected through the player's spell menu.
@@ -292,6 +396,8 @@ guard_spans = []
 for number, base, lo, hi, name in (
     (5498, 0x800eb010, 0x800ebe51, 0x800ebe76, 'item success/consumption bytecode'),
     (5502, 0x80114cb8, 0x8014bfa0, 0x8014c1cc, 'item menu preparation'),
+    (5502, 0x80114cb8, 0x8014c278, 0x8014c3fc, 'item target eligibility'),
+    (5502, 0x80114cb8, 0x80127784, 0x80127b6c, 'recovery item handlers and roll limits'),
     (5502, 0x80114cb8, 0x8014cdb8, 0x8014ce60, 'item classification'),
     (5502, 0x80114cb8, 0x8014ce60, 0x8014d280, 'item preparation'),
     (5502, 0x80114cb8, 0x8014d280, 0x8014d6a0, 'item application'),
@@ -305,15 +411,19 @@ for number, base, lo, hi, name in (
 output = {
     'source_sha256': SOURCE_SHA256,
     'method': 'Original MIPS callback execution; item script branches verified; no full UI or playthrough.',
-    'item_callback_addresses': ['8014BFA0', '8014CDB8', '8014CE60', '8014D280', '8014D6A0'],
+    'item_callback_addresses': ['8014C278', '8014BFA0', '8014CDB8', '8014CE60', '8014D280', '8014D6A0'],
     'script_span': ['800EBE51', '800EBE76'],
     'script_sha256': hashlib.sha256(SCRIPT_BYTES).hexdigest(),
     'guard_spans': guard_spans,
-    'native_item_chains_executed': len(item_cases) + len(double_results) + len(ally_results) + len(healing_results),
+    'native_item_chains_executed': len(item_cases) + len(double_results) + len(ally_results) + len(healing_results) + len(group_healing_results) + 1,
     'item_cases': item_cases,
     'two_sirloins': double_results,
     'ally_targeted_meats': ally_results,
     'healing_cases': healing_results,
+    'recovery_roll_guards': roll_guards,
+    'target_menu_cases': target_menu_results,
+    'group_healing_cases': group_healing_results,
+    'orb_boss_mode1': orb_boss_result,
     'native_spell_effect_and_commit_cases': spell_results,
     'candidate_pool_count': 60,
     'total_candidate_appearances': len(all_candidates),

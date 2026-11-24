@@ -66,8 +66,21 @@
   const revealedSections = new Set();
   const referencePositions = new Map();
   let activeReference = null;
-  function params() { return new URLSearchParams((window.DQMEntryHash?.() || location.hash).split('?')[1] || ''); }
-  function route(p) { const query = p.toString(); return '#field-guide' + (query ? '?' + query : ''); }
+  function params() {
+    const hash = window.DQMEntryHash?.() || location.hash;
+    const result = new URLSearchParams(hash.split('?')[1] || '');
+    if (/^#recruiting(?:[?&/]|$)/.test(hash)) result.set('entry','field-recruitment');
+    return result;
+  }
+  function route(p) {
+    const recruiting = p.get('entry') === 'field-recruitment';
+    const destination = new URLSearchParams(p);
+    if (recruiting) {
+      for (const key of [...destination.keys()]) if (!key.startsWith('rc_') && key !== 'section') destination.delete(key);
+    }
+    const query = destination.toString();
+    return (recruiting ? '#recruiting' : '#field-guide') + (query ? '?' + query : '');
+  }
   function change(p, key, value) { if (value) p.set(key, value); else p.delete(key); }
   function linked(p, changes) {
     const next = new URLSearchParams(p);
@@ -474,7 +487,7 @@
     const context = [games[row.game] && !['both','system'].includes(row.game) ? games[row.game] : '',
       row.kind === 'story' && !guarded(row) ? 'Chapter ' + row.order : ''].filter(Boolean).join(' · ');
     const locationBack = '<a class="guide-back places-back" href="'+backUrl+'" aria-label="Back to '+safe(backLabel)+'" title="Back to '+safe(backLabel)+'"><span aria-hidden="true">←</span></a>';
-    article.innerHTML = (row.kind==='location' ? DQMLocations.navigation(row.game,safe,locationBack) : '<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>') +
+    article.innerHTML = (row.id==='field-recruitment' ? '' : row.kind==='location' ? DQMLocations.navigation(row.game,safe,locationBack) : '<div class="article-trail">' + back + (context ? '<span class="guide-context">' + safe(context) + '</span>' : '') + '</div>') +
       heading + body;
     if (!guarded(row)) DQMRecruitmentUI.mount(article,row,p);
     if (el('location-map-browser')) DQMAtlas.mountLocationMaps(el('location-map-browser'),row.id,{
