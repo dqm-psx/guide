@@ -11,9 +11,9 @@ const {RECRUITMENT_REFERENCE: reference, GUIDE_REFERENCE: guide, MONSTER_REFEREN
 ]);
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} != ${expected}`);
 
-// Fractions come from counted native MIPS outcomes in the manual's
-// sirloin-stacking-verification.json, not from this JavaScript implementation.
-test('one and two Sirloins reproduce native Slime and Metal Slime outcomes', () => {
+// Native thresholds are counted in the manual's sirloin-stacking harness.
+// The full item path additionally reaches ConsumeItem (+5 per successful use).
+test('one and two consumed Sirloins use the full native item score', () => {
   const slime = reference.encounters.find(row => row.campaign === 'terry' && row.contextId === 1).enemies[0];
   const metal = reference.encounters.find(row => row.campaign === 'terry' && row.contextId === 22).enemies[1];
   assert.equal(slime.speciesIndex, 11);
@@ -21,15 +21,22 @@ test('one and two Sirloins reproduce native Slime and Metal Slime outcomes', () 
   for (const count of [1, 2]) {
     const result = calculate({...slime, collected: true, meats: {28: count}});
     close(result.probability, 1435 / 2048);
-    assert.equal(result.appeal, count === 1 ? 410 : 810);
-    assert.equal(result.adjustedAppeal, count === 1 ? 102 : 202);
+    assert.equal(result.appeal, count === 1 ? 415 : 820);
+    assert.equal(result.adjustedAppeal, count === 1 ? 103 : 205);
   }
   const one = calculate({...metal, collected: true, meats: {28: 1}});
   const two = calculate({...metal, collected: true, meats: {28: 2}});
   close(one.probability, 2255 / 26624);
-  close(two.probability, 6355 / 26624);
+  close(two.probability, 205 / 832);
   assert.equal(one.adjustedAppeal, 20);
-  assert.equal(two.adjustedAppeal, 40);
+  assert.equal(two.adjustedAppeal, 41);
+});
+
+test('each consumed meat includes the shared five-point item bonus', () => {
+  const options = {recruitmentClass: 6, speciesRank: 6, collected: true};
+  for (const [item, score] of [[25, 25], [26, 45], [27, 115], [28, 415]]) {
+    assert.equal(calculate({...options, meats: {[item]: 1}}).appeal, score);
+  }
 });
 
 test('first collection is a separate chance before the feeding check', () => {
@@ -46,9 +53,9 @@ test('first collection is a separate chance before the feeding check', () => {
 
 test('shared appeal stacks different meats and saturates at the native signed-halfword cap', () => {
   const options = {recruitmentClass: 6, speciesRank: 6, collected: true};
-  assert.equal(calculate({...options, meats: {25: 1, 26: 1, 27: 1, 28: 1}}).appeal, 550);
-  assert.equal(calculate({...options, meats: {28: 81}}).appeal, 32410);
-  for (const count of [82, 83, 99, 100, Number.MAX_SAFE_INTEGER]) {
+  assert.equal(calculate({...options, meats: {25: 1, 26: 1, 27: 1, 28: 1}}).appeal, 570);
+  assert.equal(calculate({...options, meats: {28: 80}}).appeal, 32410);
+  for (const count of [81, 82, 99, 100, Number.MAX_SAFE_INTEGER]) {
     const result = calculate({...options, meats: {28: count}});
     assert.equal(result.appeal, 32767);
     close(result.probability, 1435 / 2048);
@@ -65,7 +72,7 @@ test('class, rank, Orb and battle-mode precedence match the native eligibility c
     const result = calculate({recruitmentClass: 6, speciesRank: 6, collected: true, orb: true, battleMode});
     assert.equal(result.reason, 'orb');
     assert.equal(result.probability, 1);
-    assert.equal(result.appeal, 4105);
+    assert.equal(result.appeal, 4110);
   }
   for (const battleMode of [2, 4, 7, 255]) {
     for (const recruitmentClass of [0, 6]) {

@@ -53,7 +53,7 @@
       '</div></div>'+
       '<div id="recruit-result" class="recruit-result" role="status" aria-live="polite" aria-atomic="true"></div>'+
       '<div id="recruit-comparison" class="recruit-comparison"></div>'+
-      '<p class="recruit-scope">This is the joining check for an eligible defeated monster, not the chance of finding it or making it the candidate. It does not cover arena battles, scripted bosses or generated Magic Key encounters. Meat and the Orb cannot bypass battle restrictions.</p>'+
+      '<p class="recruit-scope">This estimates the joining check for an eligible defeated wild monster, using only the meat and Orb entered above. Other item use, including healing enemies or allies, can change the score and is not included. Bosses, foreign masters, arenas and generated Magic Key encounters are outside this calculator. Meat and the Orb cannot bypass battle restrictions.</p>'+
       '<div class="recruit-share"><button type="button" id="recruit-copy">Copy calculation link</button><span id="recruit-copy-status" role="status"></span><input id="recruit-share-url" aria-label="Calculation link" readonly hidden></div>'+
       '<details class="recruit-details"><summary>How the chance is calculated</summary><div id="recruit-breakdown"></div></details>'+
     '</section>';
@@ -139,7 +139,7 @@
       }
       el('recruit-breakdown').innerHTML = (check.reason === 'normal' ? '<p>Food score: <strong>'+check.appeal+'</strong>. After this encounter’s feeding multiplier: <strong>'+check.adjustedAppeal+'</strong>.</p>' : '')+
         (check.reason === 'normal' ? '<p>The first-collection roll is '+percentage(check.firstCollectionChance)+'. If that does not succeed, the feeding roll is '+percentage(check.feedingChance)+'. These rolls combine to give the displayed chance; their percentages are not simply added.</p>' : '<p>'+explanation+'</p>')+
-        '<p>Previously collected means the game’s collection history, not just the monsters currently in your party or farm. Feeding your own monsters changes wildness instead of adding to this score.</p>';
+        '<p>Previously collected means the game’s collection history, not just the monsters currently in your party or farm. Feeding meat to your own monsters changes wildness instead of adding its enemy-feeding bonus; do not enter it above.</p>';
       saveLink(enemy,settings);
     }
     function chooseEnemy(preferredIndex) {
