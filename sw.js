@@ -27,6 +27,7 @@ const PRECACHE = [
   "./css/reference-tables.css",
   "./css/my-game.css",
   "./media/greattree.webp",
+  "./media/quick-reference-preview.webp",
   "./media/terry.webp",
   "./media/cobi.webp",
   "./media/tara.webp",

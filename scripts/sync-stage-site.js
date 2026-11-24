@@ -68,7 +68,9 @@ function stageSite() {
   const destination = path.resolve(root, 'site-dist');
   if (path.dirname(destination) !== root || path.basename(destination) !== 'site-dist') throw new Error('Invalid publication directory');
   const assets = new Map();
-  for (const file of ['index.html', 'manifest.webmanifest', 'sw.js', '.nojekyll']) assets.set(file, fs.readFileSync(path.join(root, file)));
+  const fixedFiles = ['index.html', 'manifest.webmanifest', 'sw.js', '.nojekyll',
+    'downloads/quick-reference.png', 'downloads/quick-reference.pdf'];
+  for (const file of fixedFiles) assets.set(file, fs.readFileSync(path.join(root, file)));
   const allowedExtensions = {css: new Set(['.css']), js: new Set(['.js']), data: new Set(['.js']), icons: new Set(['.png', '.svg', '.ico']), media: new Set(['.webp']), maps: new Set(['.webp'])};
   for (const [directory, extensions] of Object.entries(allowedExtensions)) {
     for (const entry of fs.readdirSync(path.join(root, directory), {withFileTypes: true})) {

@@ -37,6 +37,25 @@ test.afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
 });
 
+test('the homepage links to the full-size chart and printable PDF on demand', async ({page, request}) => {
+  const downloaded = [];
+  page.on('request', req => {
+    if (new URL(req.url()).pathname.startsWith('/guide/downloads/')) downloaded.push(req.url());
+  });
+  await page.goto(url);
+  expect(downloaded).toEqual([]);
+  for (const [file, type] of [['quick-reference.png', 'image/png'], ['quick-reference.pdf', 'application/pdf']]) {
+    const href = 'downloads/' + file;
+    const link = page.locator('a[href="' + href + '"]').first();
+    await expect(link).toBeVisible();
+    const response = await request.get(new URL(await link.getAttribute('href'), page.url()).href);
+    expect(response.ok()).toBeTruthy();
+    expect(response.headers()['content-type']).toBe(type);
+    expect((await response.body()).equals(fs.readFileSync(path.join(__dirname, '../..', href)))).toBe(true);
+    expect(precache.some(({asset}) => asset.split('?')[0] === './' + href)).toBe(false);
+  }
+});
+
 test('published handbook subsection URLs work with enhancement, reload and without JavaScript',async({browser,page})=>{
   const path='articles/field-restored-content/#article-section-foreign-master-differences';
   await page.goto(url+path);
